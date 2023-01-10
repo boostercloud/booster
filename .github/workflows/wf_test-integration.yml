@@ -49,6 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Notify start of integration tests
+        if: github.event.client_payload.pull_request != null
         uses: mshick/add-pr-comment@v2
         with:
           allow-repeats: true
@@ -92,6 +93,7 @@ jobs:
     steps:
       - name: Notify success of integration tests
         uses: mshick/add-pr-comment@v2
+        if: github.event.client_payload.pull_request != null
         with:
           allow-repeats: true
           issue: ${{ github.event.client_payload.pull_request.number }}
@@ -107,6 +109,7 @@ jobs:
     steps:
       - name: Notify failure of integration tests
         uses: mshick/add-pr-comment@v2
+        if: github.event.client_payload.pull_request != null
         with:
           allow-repeats: true
           issue: ${{ github.event.client_payload.pull_request.number }}
