@@ -56,7 +56,7 @@ jobs:
           message: |
             :hourglass: Integration tests are starting...
 
-            Check their status [here](https://github.com/boostercloud/actions/runs/${{ github.run_id }}) 👈
+            Check their status [here](https://github.com/boostercloud/booster/actions/runs/${{ github.run_id }}) 👈
 
   prepare-integration-tests:
     needs: notify-start
@@ -96,7 +96,7 @@ jobs:
           allow-repeats: true
           issue: ${{ github.event.client_payload.pull_request.number }}
           message: |
-            :white_check_mark: Integration tests have [finished successfully](https://github.com/boostercloud/actions/runs/${{ github.run_id }})!
+            :white_check_mark: Integration tests have [finished successfully](https://github.com/boostercloud/booster/actions/runs/${{ github.run_id }})!
 
             ![Carlton dancing](https://tenor.com/bG5JG.gif)
 
@@ -111,4 +111,4 @@ jobs:
           allow-repeats: true
           issue: ${{ github.event.client_payload.pull_request.number }}
           message: |
-            :x: Oh no! Integration tests have [failed](https://github.com/boostercloud/actions/runs/${{ github.run_id }})
+            :x: Oh no! Integration tests have [failed](https://github.com/boostercloud/booster/actions/runs/${{ github.run_id }})
