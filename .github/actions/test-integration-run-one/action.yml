@@ -100,7 +100,7 @@ runs:
     # Update the job status
     - uses: actions/github-script@v5
       id: update-check-run
-      if: always() && steps.fork-based-checkout.result == 'success'
+      if: always() && steps.fork-based-checkout.outcome == 'success'
       env:
         number: ${{ github.event.client_payload.pull_request.number }}
         job: ${{ github.job }}
