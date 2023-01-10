@@ -17,6 +17,11 @@ jobs:
         with:
           ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
 
+      # Run regular checkout if fork-based-checkout step was skipped
+      - name: Checkout
+        if: steps.fork-based-checkout.outputs.skip == 'true'
+        uses: actions/checkout@v3
+
       - name: Build
         uses: ./.github/actions/build
 
