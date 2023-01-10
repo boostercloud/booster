@@ -2,6 +2,17 @@ name: Prepare Integration Tests
 
 on:
   workflow_call:
+    command_sha:
+      required: true
+      type: string
+
+    pr_sha:
+      required: true
+      type: string
+
+    pr_number:
+      required: true
+      type: string
 
 jobs:
   prepare-integration-tests:
@@ -10,12 +21,10 @@ jobs:
       # If this was triggered by a /integration command, check out merge commit
       - name: Fork based /integration checkout
         id: fork-based-checkout
-        if: github.event_name == 'repository_dispatch' &&
-          github.event.client_payload.slash_command.sha != '' &&
-          contains(github.event.client_payload.pull_request.head.sha, github.event.client_payload.slash_command.sha)
+        if: inputs.command_sha != '' && contains(inputs.pr_sha, inputs.command_sha)
         uses: actions/checkout@v3
         with:
-          ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
+          ref: 'refs/pull/${{ inputs.pr_number }}/merge'
 
       # Run regular checkout if fork-based-checkout step was skipped
       - name: Checkout
