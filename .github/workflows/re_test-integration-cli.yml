@@ -15,4 +15,4 @@ jobs:
         uses: ./.github/actions/test-integration-run-one
         with:
           integration-test: cli
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          gh_token: ${{ secrets.GITHUB_TOKEN }}

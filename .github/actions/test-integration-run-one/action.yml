@@ -43,7 +43,7 @@ inputs:
   azure-credentials:
     required: false
     type: string
-  github_token:
+  gh_token:
     required: true
     type: string
 
@@ -107,7 +107,7 @@ runs:
         # Conveniently, job.status maps to https://developer.github.com/v3/checks/runs/#update-a-check-run
         conclusion: ${{ job.status }}
       with:
-        github-token: ${{ inputs.github_token }}
+        github-token: ${{ inputs.gh_token }}
         script: |
           const { data: pull } = await github.rest.pulls.get({
             ...context.repo,
