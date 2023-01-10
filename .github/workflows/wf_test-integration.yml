@@ -1,5 +1,5 @@
 name: Integration
-run-name: Integration tests for ${{ github.event.client_payload.pull_request.number }} (${{ github.sha }})
+run-name: Integration tests ${{ github.event.client_payload.pull_request.number }}
 on:
   repository_dispatch:
     types: [integration-command]
