@@ -50,6 +50,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           # suffix the name with the git commit
-          name: integration-test-dependencies-${{ input.command_sha }}
+          name: integration-test-dependencies-${{ inputs.command_sha }}
           path: packages/framework-integration-tests/.booster
           retention-days: 1
