@@ -76,7 +76,7 @@ runs:
 
     - name: Set BOOSTER_APP_SUFFIX environment variable
       shell: bash
-      run: echo "BOOSTER_APP_SUFFIX=$(echo ${{ env.ACTUAL_SHA }} | head -c 7)"" >> $GITHUB_ENV
+      run: echo "BOOSTER_APP_SUFFIX=$(echo ${{ env.ACTUAL_SHA }} | head -c 7)" >> $GITHUB_ENV
 
     # This step will download the artifact named `integration-test-dependencies-${{ github.sha }}`
     # from the `Prepare Integration Tests` workflow into the `packages/framework-integration-tests/.booster`
