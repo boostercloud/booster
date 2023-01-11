@@ -5,6 +5,7 @@ on:
     inputs:
       command_sha:
         required: false
+        default: ${{ github.sha }}
         type: string
 
       pr_sha:
@@ -13,6 +14,7 @@ on:
 
       pr_number:
         required: false
+        default: '0'
         type: string
 
 jobs:
@@ -25,7 +27,7 @@ jobs:
       # If this was triggered by a /integration command, check out merge commit
       - name: Fork based /integration checkout
         id: fork-based-checkout
-        if: inputs.command_sha != '' && contains(inputs.pr_sha, inputs.command_sha)
+        if: inputs.pr_number != '0' && inputs.command_sha != '' && contains(inputs.pr_sha, inputs.command_sha)
         uses: actions/checkout@v3
         with:
           ref: 'refs/pull/${{ inputs.pr_number }}/merge'
@@ -48,6 +50,6 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           # suffix the name with the git commit
-          name: integration-test-dependencies-${{ github.sha }}
+          name: integration-test-dependencies-${{ input.command_sha }}
           path: packages/framework-integration-tests/.booster
           retention-days: 1
