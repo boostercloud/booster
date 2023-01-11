@@ -27,3 +27,7 @@ This command generates static content into the `build` directory and can be serv
 ### Deployment
 
 The deployment is automatically done through GH actions, see `.github/workflows/wf_publish-docs` for more details.
+
+### Algolia
+
+The search is powered by [Algolia](https://www.algolia.com/). The configuration is done in `docusaurus.config.js` and the search index is updated automatically every Tuesday, contact a Booster maintainer for more information.

@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - website
+      - 'website/**'
 
 jobs:
   deploy-docs:
