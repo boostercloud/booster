@@ -39,6 +39,7 @@ jobs:
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           integration-test: azure-deploy
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           azure-region: ${{ inputs.azure-region }}
@@ -64,6 +65,7 @@ jobs:
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           integration-test: ${{ matrix.integration-test }}
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           azure-region: ${{ inputs.azure-region }}
@@ -88,6 +90,7 @@ jobs:
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           integration-test: azure-nuke
           gh_token: ${{ secrets.GITHUB_TOKEN }}
           azure-region: ${{ inputs.azure-region }}

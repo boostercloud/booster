@@ -47,6 +47,10 @@ inputs:
     required: true
     type: string
 
+  github_token:
+    required: true
+    type: string
+
 runs:
   using: 'composite'
   steps:
