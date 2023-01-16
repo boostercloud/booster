@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 22 Dec 2022 16:52:13 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Jan 2023 18:48:00 GMT and should not be manually modified.
+
+## 1.4.0
+Mon, 16 Jan 2023 18:48:00 GMT
+
+### Minor changes
+
+- Add flush method parameter to Register
 
 ## 1.3.5
 Thu, 22 Dec 2022 16:52:13 GMT
