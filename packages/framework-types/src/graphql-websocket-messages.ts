@@ -63,3 +63,7 @@ export class GraphQLComplete {
   public readonly type = MessageTypes.GQL_COMPLETE
   public constructor(public readonly id: string) {}
 }
+
+export const graphQLWebsocketSubprotocolHeaders = {
+  'Sec-WebSocket-Protocol': 'graphql-ws',
+}

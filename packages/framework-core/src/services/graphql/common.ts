@@ -41,10 +41,6 @@ export interface GraphQLResolverContext {
   context?: ContextEnvelope
 }
 
-export const graphQLWebsocketSubprotocolHeaders = {
-  'Sec-WebSocket-Protocol': 'graphql-ws',
-}
-
 export const DateScalar = new GraphQLScalarType({
   name: 'Date',
   description: 'Date custom scalar type',

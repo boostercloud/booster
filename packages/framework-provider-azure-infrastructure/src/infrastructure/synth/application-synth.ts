@@ -6,9 +6,8 @@ import {
   createResourceGroupName,
   createApiManagementName,
 } from '../helper/utils'
-import { AzurermProvider } from '@cdktf/provider-azurerm'
 import { TerraformStack } from 'cdktf'
-import { TerraformApplicationServicePlan } from './terraform-application-service-plan'
+import { TerraformServicePlan } from './terraform-service-plan'
 import { TerraformResourceGroup } from './terraform-resource-group'
 import { TerraformStorageAccount } from './terraform-storage-account'
 import { TerraformFunctionApp } from './terraform-function-app'
@@ -19,119 +18,187 @@ import { TerraformApiManagement } from './terraform-api-management'
 import { TerraformApiManagementApi } from './terraform-api-management-api'
 import { TerraformApiManagementApiOperation } from './terraform-api-management-api-operation'
 import { TerraformApiManagementApiOperationPolicy } from './terraform-api-management-api-operation-policy'
+import { TerraformWebPubsub } from './terraform-web-pubsub'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
+import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { TerraformOutputs } from './terraform-outputs'
+import { TerraformWebPubsubHub } from './terraform-web-pubsub-hub'
+import { TerraformWebPubSubExtensionKey } from './terraform-web-pub-sub-extension-key'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
   readonly appPrefix: string
-  readonly terraformStack: TerraformStack
+  readonly terraformStackResource: TerraformStack
 
-  public constructor(terraformStack: TerraformStack) {
+  public constructor(terraformStackResource: TerraformStack) {
     this.config = readProjectConfig(process.cwd())
     this.appPrefix = buildAppPrefix(this.config)
-    this.terraformStack = terraformStack
+    this.terraformStackResource = terraformStackResource
   }
 
   public synth(): ApplicationSynthStack {
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
     const functionAppName = createFunctionResourceGroupName(resourceGroupName)
     const apiManagementName = createApiManagementName(resourceGroupName)
-    new AzurermProvider(this.terraformStack, 'azureFeature', {
+    const azurermProvider = new AzurermProvider(this.terraformStackResource, 'azureFeature', {
       features: {},
     })
-    const resourceGroup = TerraformResourceGroup.build(this.terraformStack, this.appPrefix, resourceGroupName)
-    const applicationServicePlan = TerraformApplicationServicePlan.build(
-      this.terraformStack,
-      resourceGroup,
+    const hubName = 'booster'
+
+    const resourceGroupResource = TerraformResourceGroup.build(
+      azurermProvider,
+      this.terraformStackResource,
       this.appPrefix,
       resourceGroupName
     )
-    const storageAccount = TerraformStorageAccount.build(
-      this.terraformStack,
-      resourceGroup,
+    const servicePlanResource = TerraformServicePlan.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
       this.appPrefix,
       resourceGroupName
     )
-    const cosmosdbDatabase = TerraformCosmosdbDatabase.build(
-      this.terraformStack,
-      resourceGroup,
+    const storageAccountResource = TerraformStorageAccount.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
       this.appPrefix,
       resourceGroupName
     )
-    const cosmosdbSqlDatabase = TerraformCosmosdbSqlDatabase.build(
-      this.terraformStack,
-      resourceGroup,
+    const cosmosdbDatabaseResource = TerraformCosmosdbDatabase.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
       this.appPrefix,
-      cosmosdbDatabase,
+      resourceGroupName
+    )
+    const cosmosdbSqlDatabaseResource = TerraformCosmosdbSqlDatabase.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      this.appPrefix,
+      cosmosdbDatabaseResource,
       this.config
     )
-    const containers = TerraformContainers.build(
-      this.terraformStack,
-      resourceGroup,
+    const containersResource = TerraformContainers.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
       this.appPrefix,
-      cosmosdbDatabase,
-      cosmosdbSqlDatabase,
+      cosmosdbDatabaseResource,
+      cosmosdbSqlDatabaseResource,
       this.config
     )
-    const functionApp = TerraformFunctionApp.build(
-      this.terraformStack,
-      resourceGroup,
-      applicationServicePlan,
-      storageAccount,
+
+    const webPubSubResource = TerraformWebPubsub.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      this.appPrefix
+    )
+
+    const functionAppResource = TerraformFunctionApp.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      servicePlanResource,
+      storageAccountResource,
+      webPubSubResource,
       this.appPrefix,
       functionAppName,
-      cosmosdbDatabase.name,
+      cosmosdbDatabaseResource.name,
       apiManagementName,
-      cosmosdbDatabase.primaryKey,
+      cosmosdbDatabaseResource.primaryKey,
       this.config
     )
-    const apiManagement = TerraformApiManagement.build(
-      this.terraformStack,
-      resourceGroup,
+
+    const apiManagementResource = TerraformApiManagement.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
       apiManagementName,
       this.appPrefix
     )
-    const apiManagementApi = TerraformApiManagementApi.build(
-      this.terraformStack,
-      resourceGroup,
-      apiManagement,
+
+    const apiManagementApiResource = TerraformApiManagementApi.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      apiManagementResource,
       this.appPrefix,
       this.config.environmentName,
-      functionApp,
       resourceGroupName
     )
-    const apiManagementApiOperation = TerraformApiManagementApiOperation.build(
-      this.terraformStack,
-      resourceGroup,
-      apiManagementApi,
-      this.appPrefix
+
+    const graphQLApiManagementApiOperationResource = TerraformApiManagementApiOperation.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      apiManagementApiResource,
+      this.appPrefix,
+      'graphql'
     )
-    const apiManagementApiOperationPolicy = TerraformApiManagementApiOperationPolicy.build(
-      this.terraformStack,
-      resourceGroup,
-      apiManagementApiOperation,
+
+    const graphQLApiManagementApiOperationPolicyResource = TerraformApiManagementApiOperationPolicy.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      graphQLApiManagementApiOperationResource,
       this.appPrefix,
       this.config.environmentName,
-      functionApp
+      functionAppResource,
+      'graphql'
+    )
+
+    const functionAppDataResource = TerraformWebPubSubExtensionKey.build(
+      this.config,
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      functionAppResource,
+      this.appPrefix
+    )
+
+    const webPubSubHubResource = TerraformWebPubsubHub.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      webPubSubResource,
+      this.appPrefix,
+      functionAppResource,
+      functionAppDataResource,
+      hubName
+    )
+
+    TerraformOutputs.build(
+      azurermProvider,
+      this.terraformStackResource,
+      this.appPrefix,
+      resourceGroupResource,
+      graphQLApiManagementApiOperationResource,
+      webPubSubResource,
+      hubName
     )
 
     return {
       appPrefix: this.appPrefix,
-      terraformStack: this.terraformStack,
+      terraformStack: this.terraformStackResource,
       resourceGroupName: resourceGroupName,
       apiManagementName: apiManagementName,
       functionAppName: functionAppName,
-      resourceGroup: resourceGroup,
-      applicationServicePlan: applicationServicePlan,
-      storageAccount: storageAccount,
-      functionApp: functionApp,
-      apiManagement: apiManagement,
-      apiManagementApi: apiManagementApi,
-      apiManagementApiOperation: apiManagementApiOperation,
-      apiManagementApiOperationPolicy: apiManagementApiOperationPolicy,
-      cosmosdbDatabase: cosmosdbDatabase,
-      cosmosdbSqlDatabase: cosmosdbSqlDatabase,
-      containers: containers,
+      resourceGroup: resourceGroupResource,
+      applicationServicePlan: servicePlanResource,
+      storageAccount: storageAccountResource,
+      functionApp: functionAppResource,
+      apiManagement: apiManagementResource,
+      apiManagementApi: apiManagementApiResource,
+      graphQLApiManagementApiOperation: graphQLApiManagementApiOperationResource,
+      graphQLApiManagementApiOperationPolicy: graphQLApiManagementApiOperationPolicyResource,
+      cosmosdbDatabase: cosmosdbDatabaseResource,
+      cosmosdbSqlDatabase: cosmosdbSqlDatabaseResource,
+      containers: containersResource,
+      webPubSub: webPubSubResource,
+      webPubSubHub: webPubSubHubResource,
     } as ApplicationSynthStack
   }
 }

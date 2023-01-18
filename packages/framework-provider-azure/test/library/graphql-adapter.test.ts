@@ -50,6 +50,7 @@ describe('GraphQL adapter', () => {
           },
           rawContext: request,
         },
+        connectionID: undefined,
       }
       const gotOutput = await rawGraphQLRequestToEnvelope(config, request)
       expect(gotOutput).to.be.deep.equal(expectedOutput)

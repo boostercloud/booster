@@ -2,6 +2,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { GraphqlFunction } from '../functions/graphql-function'
 import { EventHandlerFunction } from '../functions/event-handler-function'
 import { ScheduledFunctions } from '../functions/scheduled-functions'
+import { SubscriptionsNotifierFunction } from '../functions/subscriptions-notifier-function'
 import { FunctionDefinition } from '../types/functionDefinition'
 import * as fs from 'fs'
 import * as path from 'path'
@@ -11,6 +12,9 @@ import * as archiver from 'archiver'
 import * as needle from 'needle'
 import { azureCredentials, createWebSiteManagementClient } from './utils'
 import { User } from '@azure/arm-appservice'
+import { WebsocketConnectFunction } from '../functions/websocket-connect-function'
+import { WebsocketDisconnectFunction } from '../functions/websocket-disconnect-function'
+import { WebsocketMessagesFunction } from '../functions/websocket-messages-function'
 
 export class FunctionZip {
   static async deployZip(
@@ -66,7 +70,20 @@ export class FunctionZip {
   static buildAzureFunctions(config: BoosterConfig): Array<FunctionDefinition> {
     const graphqlFunctionDefinition = new GraphqlFunction(config).getFunctionDefinition()
     const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
-    let featuresDefinitions = [graphqlFunctionDefinition, eventHandlerFunctionDefinition]
+    const connectFunctionDefinition = new WebsocketConnectFunction(config).getFunctionDefinition()
+    const disconnectFunctionDefinition = new WebsocketDisconnectFunction(config).getFunctionDefinition()
+    const messagesFunctionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
+    let featuresDefinitions = [
+      graphqlFunctionDefinition,
+      eventHandlerFunctionDefinition,
+      connectFunctionDefinition,
+      disconnectFunctionDefinition,
+      messagesFunctionDefinition,
+    ]
+    const subscriptionsNotifierFunctionDefinition = new SubscriptionsNotifierFunction(config).getFunctionDefinition()
+    if (subscriptionsNotifierFunctionDefinition) {
+      featuresDefinitions = featuresDefinitions.concat(subscriptionsNotifierFunctionDefinition)
+    }
     const scheduledFunctionsDefinition = new ScheduledFunctions(config).getFunctionDefinitions()
     if (scheduledFunctionsDefinition) {
       featuresDefinitions = featuresDefinitions.concat(scheduledFunctionsDefinition)

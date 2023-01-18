@@ -1,15 +1,17 @@
 import {
-  ApiManagement,
-  ApiManagementApi,
-  ApiManagementApiOperation,
-  ApiManagementApiOperationPolicy,
-  AppServicePlan,
-  CosmosdbAccount,
-  CosmosdbSqlContainer,
-  CosmosdbSqlDatabase,
-  FunctionApp,
-  ResourceGroup,
-  StorageAccount,
+  apiManagement,
+  apiManagementApi,
+  apiManagementApiOperation,
+  apiManagementApiOperationPolicy,
+  cosmosdbAccount,
+  cosmosdbSqlContainer,
+  cosmosdbSqlDatabase,
+  resourceGroup,
+  servicePlan,
+  storageAccount,
+  webPubsub,
+  webPubsubHub,
+  windowsFunctionApp,
 } from '@cdktf/provider-azurerm'
 import { TerraformResource, TerraformStack } from 'cdktf'
 import { FunctionDefinition } from './functionDefinition'
@@ -20,17 +22,19 @@ export interface ApplicationSynthStack {
   resourceGroupName: string | undefined
   functionAppName: string | undefined
   apiManagementName: string | undefined
-  resourceGroup: ResourceGroup | undefined
-  applicationServicePlan: AppServicePlan | undefined
-  storageAccount: StorageAccount | undefined
-  functionApp: FunctionApp | undefined
-  apiManagement: ApiManagement | undefined
-  apiManagementApi: ApiManagementApi | undefined
-  apiManagementApiOperation: ApiManagementApiOperation | undefined
-  apiManagementApiOperationPolicy: ApiManagementApiOperationPolicy | undefined
-  cosmosdbDatabase: CosmosdbAccount | undefined
-  cosmosdbSqlDatabase: CosmosdbSqlDatabase | undefined
-  containers: Array<CosmosdbSqlContainer> | undefined
+  resourceGroup: resourceGroup.ResourceGroup | undefined
+  applicationServicePlan: servicePlan.ServicePlan | undefined
+  storageAccount: storageAccount.StorageAccount | undefined
+  functionApp: windowsFunctionApp.WindowsFunctionApp | undefined
+  apiManagement: apiManagement.ApiManagement | undefined
+  apiManagementApi: apiManagementApi.ApiManagementApi | undefined
+  graphQLApiManagementApiOperation: apiManagementApiOperation.ApiManagementApiOperation | undefined
+  graphQLApiManagementApiOperationPolicy: apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy | undefined
+  cosmosdbDatabase: cosmosdbAccount.CosmosdbAccount | undefined
+  cosmosdbSqlDatabase: cosmosdbSqlDatabase.CosmosdbSqlDatabase | undefined
+  containers: Array<cosmosdbSqlContainer.CosmosdbSqlContainer> | undefined
+  webPubSub: webPubsub.WebPubsub | undefined
+  webPubSubHub: webPubsubHub.WebPubsubHub | undefined
   functionDefinitions?: Array<FunctionDefinition>
   rocketStack?: Array<TerraformResource>
 }

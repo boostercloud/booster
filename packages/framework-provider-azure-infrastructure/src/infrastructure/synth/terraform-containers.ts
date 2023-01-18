@@ -1,72 +1,156 @@
 import { TerraformStack } from 'cdktf'
-import { CosmosdbAccount, CosmosdbSqlContainer, CosmosdbSqlDatabase, ResourceGroup } from '@cdktf/provider-azurerm'
+import { cosmosdbAccount, cosmosdbSqlContainer, cosmosdbSqlDatabase, resourceGroup } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { eventsStoreAttributes } from '@boostercloud/framework-provider-azure'
+import {
+  connectionsStoreAttributes,
+  eventsStoreAttributes,
+  subscriptionsStoreAttributes,
+} from '@boostercloud/framework-provider-azure'
+import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+
 import { MAX_CONTAINER_THROUGHPUT } from '../constants'
 
 export class TerraformContainers {
   static build(
-    terraformStack: TerraformStack,
-    resourceGroup: ResourceGroup,
+    providerResource: AzurermProvider,
+    terraformStackResource: TerraformStack,
+    resourceGroupResource: resourceGroup.ResourceGroup,
     appPrefix: string,
-    cosmosdbDatabase: CosmosdbAccount,
-    cosmosdbSqlDatabase: CosmosdbSqlDatabase,
+    cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
+    cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase,
     config: BoosterConfig
-  ): Array<CosmosdbSqlContainer> {
+  ): Array<cosmosdbSqlContainer.CosmosdbSqlContainer> {
     const cosmosdbSqlEventContainer = this.createEventContainer(
+      providerResource,
       appPrefix,
-      terraformStack,
+      terraformStackResource,
       config,
-      cosmosdbDatabase,
-      cosmosdbSqlDatabase
+      cosmosdbDatabaseResource,
+      cosmosdbSqlDatabaseResource
     )
     const readModels = Object.keys(config.readModels).map((readModel) =>
-      this.createReadModel(terraformStack, config, readModel, cosmosdbDatabase, cosmosdbSqlDatabase)
+      this.createReadModel(
+        providerResource,
+        terraformStackResource,
+        config,
+        readModel,
+        cosmosdbDatabaseResource,
+        cosmosdbSqlDatabaseResource
+      )
     )
-    return [cosmosdbSqlEventContainer].concat(readModels)
+    const subscriptionsContainer = this.createSubscriptionsContainer(
+      providerResource,
+      appPrefix,
+      terraformStackResource,
+      config,
+      cosmosdbDatabaseResource,
+      cosmosdbSqlDatabaseResource
+    )
+
+    const connectionsContainer = this.createConnectionsContainer(
+      providerResource,
+      appPrefix,
+      terraformStackResource,
+      config,
+      cosmosdbDatabaseResource,
+      cosmosdbSqlDatabaseResource
+    )
+    return [cosmosdbSqlEventContainer, subscriptionsContainer, connectionsContainer].concat(readModels)
   }
 
   private static createEventContainer(
+    providerResource: AzurermProvider,
     appPrefix: string,
-    terraformStack: TerraformStack,
+    terraformStackResource: TerraformStack,
     config: BoosterConfig,
-    cosmosdbDatabase: CosmosdbAccount,
-    cosmosdbSqlDatabase: CosmosdbSqlDatabase
-  ): CosmosdbSqlContainer {
+    cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
+    cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase
+  ): cosmosdbSqlContainer.CosmosdbSqlContainer {
     const idEvent = toTerraformName(appPrefix, 'events')
-    return new CosmosdbSqlContainer(terraformStack, idEvent, {
+    return new cosmosdbSqlContainer.CosmosdbSqlContainer(terraformStackResource, idEvent, {
       name: config.resourceNames.eventsStore,
-      resourceGroupName: cosmosdbDatabase.resourceGroupName,
-      accountName: cosmosdbDatabase.name,
-      databaseName: cosmosdbSqlDatabase.name,
+      resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
+      accountName: cosmosdbDatabaseResource.name,
+      databaseName: cosmosdbSqlDatabaseResource.name,
       partitionKeyPath: `/${eventsStoreAttributes.partitionKey}`,
       partitionKeyVersion: 2,
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
+      provider: providerResource,
     })
   }
 
   private static createReadModel(
-    terraformStack: TerraformStack,
+    providerResource: AzurermProvider,
+    terraformStackResource: TerraformStack,
     config: BoosterConfig,
     readModel: string,
-    cosmosdbDatabase: CosmosdbAccount,
-    cosmosdbSqlDatabase: CosmosdbSqlDatabase
-  ): CosmosdbSqlContainer {
+    cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
+    cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase
+  ): cosmosdbSqlContainer.CosmosdbSqlContainer {
     const readModelName = config.resourceNames.forReadModel(readModel)
     const idReadModel = toTerraformName(readModel)
-    return new CosmosdbSqlContainer(terraformStack, idReadModel, {
+    return new cosmosdbSqlContainer.CosmosdbSqlContainer(terraformStackResource, idReadModel, {
       name: readModelName,
-      resourceGroupName: cosmosdbDatabase.resourceGroupName,
-      accountName: cosmosdbDatabase.name,
-      databaseName: cosmosdbSqlDatabase.name,
+      resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
+      accountName: cosmosdbDatabaseResource.name,
+      databaseName: cosmosdbSqlDatabaseResource.name,
       partitionKeyPath: '/id',
       partitionKeyVersion: 2,
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
+      provider: providerResource,
+    })
+  }
+
+  private static createSubscriptionsContainer(
+    providerResource: AzurermProvider,
+    appPrefix: string,
+    terraformStackResource: TerraformStack,
+    config: BoosterConfig,
+    cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
+    cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase
+  ): cosmosdbSqlContainer.CosmosdbSqlContainer {
+    const id = toTerraformName(appPrefix, 'subscriptions-table')
+    return new cosmosdbSqlContainer.CosmosdbSqlContainer(terraformStackResource, id, {
+      name: config.resourceNames.subscriptionsStore,
+      resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
+      accountName: cosmosdbDatabaseResource.name,
+      databaseName: cosmosdbSqlDatabaseResource.name,
+      partitionKeyPath: `/${subscriptionsStoreAttributes.partitionKey}`,
+      partitionKeyVersion: 2,
+      defaultTtl: -1,
+      autoscaleSettings: {
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
+      },
+      provider: providerResource,
+    })
+  }
+
+  private static createConnectionsContainer(
+    providerResource: AzurermProvider,
+    appPrefix: string,
+    terraformStackResource: TerraformStack,
+    config: BoosterConfig,
+    cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
+    cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase
+  ): cosmosdbSqlContainer.CosmosdbSqlContainer {
+    const id = toTerraformName(appPrefix, 'connections-table')
+    return new cosmosdbSqlContainer.CosmosdbSqlContainer(terraformStackResource, id, {
+      name: config.resourceNames.connectionsStore,
+      resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
+      accountName: cosmosdbDatabaseResource.name,
+      databaseName: cosmosdbSqlDatabaseResource.name,
+      partitionKeyPath: `/${connectionsStoreAttributes.partitionKey}`,
+      partitionKeyVersion: 2,
+      defaultTtl: -1,
+      autoscaleSettings: {
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
+      },
+      provider: providerResource,
     })
   }
 }
