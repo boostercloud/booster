@@ -17,6 +17,7 @@ export interface PackageManagerService {
   readonly installProductionDependencies: () => Effect<unknown, InstallDependenciesError, void>
   readonly installAllDependencies: () => Effect<unknown, InstallDependenciesError, void>
   readonly runScript: (scriptName: string, args: ReadonlyArray<string>) => Effect<unknown, RunScriptError, string>
+  readonly build: (args: ReadonlyArray<string>) => Effect<unknown, RunScriptError, string>
 }
 
 export const PackageManagerService = tag<PackageManagerService>()
