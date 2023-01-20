@@ -1,0 +1,19 @@
+name: Local Provider Integration Tests
+
+on:
+  workflow_call:
+
+jobs:
+  local-integration:
+    name: Local Provider Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Run integration test
+        uses: ./.github/actions/test-integration-run-one
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          integration-test: local
+          gh_token: ${{ secrets.GITHUB_TOKEN }}

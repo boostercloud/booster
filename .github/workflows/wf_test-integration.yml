@@ -1,0 +1,116 @@
+name: Integration
+run-name: Integration tests ${{ github.event.client_payload.pull_request.number }}
+on:
+  repository_dispatch:
+    types: [integration-command]
+
+  workflow_call:
+    # TODO: These inputs are not being used for now, we will change this when
+    # we start reacting to comments in the PR
+    inputs:
+      aws-region:
+        default: 'us-east-1'
+        required: false
+        type: string
+      azure-region:
+        default: 'Central US'
+        required: false
+        type: string
+      azure-publisher-email:
+        default: noreply@booster.cloud
+        required: false
+        type: string
+      azure-publisher-name:
+        default: Booster App
+        required: false
+        type: string
+
+    secrets:
+      BOT_AWS_ACCESS_KEY_ID:
+        required: true
+      BOT_AWS_SECRET_ACCESS_KEY:
+        required: true
+      AZURE_CLIENTID:
+        required: true
+      AZURE_SECRET:
+        required: true
+      AZURE_TENANTID:
+        required: true
+      AZURE_SUBSCRIPTIONID:
+        required: true
+      AZURE_CREDENTIALS:
+        required: true
+
+permissions:
+  pull-requests: write
+  id-token: write
+
+jobs:
+  notify-start:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify start of integration tests
+        if: github.event.client_payload.pull_request != null
+        uses: mshick/add-pr-comment@v2
+        with:
+          allow-repeats: true
+          issue: ${{ github.event.client_payload.pull_request.number }}
+          message: |
+            :hourglass: Integration tests are running...
+
+            Check their status [here](https://github.com/boostercloud/booster/actions/runs/${{ github.run_id }}) 👈
+
+  prepare-integration-tests:
+    uses: ./.github/workflows/re_test-integration-prepare.yml
+    with:
+      command_sha: ${{ github.event.client_payload.slash_command.args.named.sha }}
+      pr_sha: ${{ github.event.client_payload.pull_request.head.sha }}
+      pr_number: ${{ github.event.client_payload.pull_request.number }}
+
+  aws-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-aws.yml
+    secrets: inherit
+
+  cli-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-cli.yml
+    secrets: inherit
+
+  local-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-local.yml
+    secrets: inherit
+
+  azure-integration-tests:
+    needs: prepare-integration-tests
+    uses: ./.github/workflows/re_test-integration-azure.yml
+    secrets: inherit
+
+  notify-end-success:
+    runs-on: ubuntu-latest
+    needs: [aws-integration-tests, cli-integration-tests, local-integration-tests, azure-integration-tests]
+    if: ${{ always() && github.event.client_payload.pull_request != null && !contains(needs.*.result, 'failure') }}
+    steps:
+      - name: Notify success of integration tests
+        uses: mshick/add-pr-comment@v2
+        if: github.event.client_payload.pull_request != null
+        with:
+          allow-repeats: true
+          issue: ${{ github.event.client_payload.pull_request.number }}
+          message: |
+            :white_check_mark: Integration tests have [finished successfully](https://github.com/boostercloud/booster/actions/runs/${{ github.run_id }})!
+
+  notify-end-failure:
+    runs-on: ubuntu-latest
+    needs: [aws-integration-tests, cli-integration-tests, local-integration-tests, azure-integration-tests]
+    if: ${{ always() && github.event.client_payload.pull_request != null && contains(needs.*.result, 'failure') }}
+    steps:
+      - name: Notify failure of integration tests
+        uses: mshick/add-pr-comment@v2
+        if: github.event.client_payload.pull_request != null
+        with:
+          allow-repeats: true
+          issue: ${{ github.event.client_payload.pull_request.number }}
+          message: |
+            :x: Oh no! Integration tests have [failed](https://github.com/boostercloud/booster/actions/runs/${{ github.run_id }})

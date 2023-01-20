@@ -57,7 +57,9 @@ async function nukeApplication(config: BoosterConfig, cdkToolkit: CdkToolkit): P
   const logger = getLogger(config, 'nuke#nukeApplication')
   logger.info('Destroying the application stack...')
   await cdkToolkit.destroy({
-    stackNames: getStackNames(config),
+    selector: {
+      patterns: getStackNames(config),
+    },
     exclusively: false,
     force: true,
   })

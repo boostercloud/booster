@@ -6,12 +6,8 @@ import gql from 'graphql-tag'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 import { UUID } from '@boostercloud/framework-types'
-import {
-  QUANTITY_AFTER_DATA_MIGRATION,
-  QUANTITY_AFTER_DATA_MIGRATION_ID,
-  QUANTITY_TO_MIGRATE_DATA,
-  QUANTITY_TO_MIGRATE_ID,
-} from '../../../src/constants'
+import { NEW_CART_IDS, QUANTITY_AFTER_DATA_MIGRATION_V2, QUANTITY_TO_MIGRATE_DATA } from '../../../src/constants'
+import { ProductType } from '../../../src/entities/product'
 
 const secs = 10
 
@@ -31,6 +27,8 @@ describe('Entities end-to-end tests', () => {
     let mockDescription: string
     let mockPriceInCents: number
     let mockCurrency: string
+    let mockProductType: ProductType
+    let mockProductDetails
 
     let productId: string
 
@@ -40,6 +38,11 @@ describe('Entities end-to-end tests', () => {
       mockDescription = lorem.paragraph()
       mockPriceInCents = random.number({ min: 1 })
       mockCurrency = finance.currencyCode()
+      mockProductType = 'Clothing'
+      mockProductDetails = {
+        color: commerce.color(),
+        material: commerce.productMaterial(),
+      }
 
       // Add one item
       await client.mutate({
@@ -49,6 +52,8 @@ describe('Entities end-to-end tests', () => {
           description: mockDescription,
           priceInCents: mockPriceInCents,
           currency: mockCurrency,
+          productDetails: mockProductDetails,
+          productType: mockProductType,
         },
         mutation: gql`
           mutation CreateProduct(
@@ -57,6 +62,8 @@ describe('Entities end-to-end tests', () => {
             $description: String!
             $priceInCents: Float!
             $currency: String!
+            $productDetails: JSON
+            $productType: JSON
           ) {
             CreateProduct(
               input: {
@@ -65,6 +72,8 @@ describe('Entities end-to-end tests', () => {
                 description: $description
                 priceInCents: $priceInCents
                 currency: $currency
+                productDetails: $productDetails
+                productType: $productType
               }
             )
           }
@@ -88,6 +97,8 @@ describe('Entities end-to-end tests', () => {
                   }
                   availability
                   deleted
+                  productDetails
+                  productType
                 }
               }
             `,
@@ -112,6 +123,8 @@ describe('Entities end-to-end tests', () => {
         },
         availability: 0,
         deleted: false,
+        productDetails: mockProductDetails,
+        productType: mockProductType,
       }
 
       expect(product).to.be.deep.equal(expectedResult)
@@ -160,6 +173,8 @@ describe('Entities end-to-end tests', () => {
                   }
                   availability
                   deleted
+                  productDetails
+                  productType
                 }
               }
             `,
@@ -183,7 +198,7 @@ describe('Entities end-to-end tests', () => {
       return
     }
 
-    context('with same id', () => {
+    context('with different id and values', () => {
       const mockCartCount = 3
       const mockCartItems: Array<UUID> = []
 
@@ -242,10 +257,10 @@ describe('Entities end-to-end tests', () => {
       })
 
       it('find migrated entities', async () => {
-        const migrated = await client.mutate({
+        await client.mutate({
           mutation: gql`
-            mutation CartDataMigrateCommand {
-              CartDataMigrateCommand
+            mutation MigrateCommand {
+              MigrateCommand
             }
           `,
         })
@@ -255,7 +270,7 @@ describe('Entities end-to-end tests', () => {
             return client.query({
               variables: {
                 filter: {
-                  id: { in: [...migrated.data.CartDataMigrateCommand] },
+                  id: { in: [...NEW_CART_IDS] },
                 },
               },
               query: gql`
@@ -280,8 +295,8 @@ describe('Entities end-to-end tests', () => {
               return `Waiting for ${mockCartCount} items. ${jsonItems} `
             }
 
-            if (!allItemsHasQuantity(items, QUANTITY_AFTER_DATA_MIGRATION)) {
-              return `Waiting for quantities to be equal to ${QUANTITY_AFTER_DATA_MIGRATION}. ${jsonItems}`
+            if (!allItemsHasQuantity(items, QUANTITY_AFTER_DATA_MIGRATION_V2)) {
+              return `Waiting for quantities to be equal to ${QUANTITY_AFTER_DATA_MIGRATION_V2}. ${jsonItems}`
             }
 
             return true
@@ -293,131 +308,38 @@ describe('Entities end-to-end tests', () => {
           expect(
             item.cartItems[0].quantity,
             `Not matching quantity on cartId ${item.id} and productId: ${item.cartItems[0].productId}`
-          ).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION)
+          ).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION_V2)
         )
-        expect(
-          migrated.data.CartDataMigrateCommand,
-          `migrated items ${migrated.data.CartDataMigrateCommand} doesn't match with mocked items ${mockCartItems}`
-        ).to.have.members(mockCartItems)
-      })
-    })
-
-    context('with different id and name', () => {
-      const mockCartCount = 3
-      const mockCartItems: Array<UUID> = []
-
-      beforeEach(async () => {
-        const changeCartPromises: Array<Promise<unknown>> = []
-
-        for (let i = 0; i < mockCartCount; i++) {
-          const mockCartId = random.uuid()
-          const mockProductId: string = random.uuid()
-          const mockQuantity = QUANTITY_TO_MIGRATE_ID
-          mockCartItems.push(mockCartId)
-
-          changeCartPromises.push(
-            client.mutate({
-              variables: {
-                cartId: mockCartId,
-                productId: mockProductId,
-                quantity: mockQuantity,
-              },
-              mutation: gql`
-                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
-                  ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
-                }
-              `,
-            })
-          )
-        }
-
-        await Promise.all(changeCartPromises)
 
         await waitForIt(
           () => {
             return client.query({
               variables: {
-                filter: {
-                  id: { in: [...mockCartItems] },
-                },
+                filter: {},
               },
               query: gql`
-                query ListCartReadModels($filter: ListCartReadModelFilter) {
-                  ListCartReadModels(filter: $filter) {
+                query ListDataMigrationsReadModels($filter: ListDataMigrationsReadModelFilter) {
+                  ListDataMigrationsReadModels(filter: $filter) {
                     items {
                       id
-                      cartItems {
-                        productId
-                        quantity
-                      }
+                      status
+                      lastUpdated
                     }
-                  }
-                }
-              `,
-            })
-          },
-          (result) => result?.data?.ListCartReadModels.items.length == mockCartCount
-        )
-      })
-
-      it('find migrated entities', async () => {
-        const migrated = await client.mutate({
-          mutation: gql`
-            mutation CartIdDataMigrateCommand {
-              CartIdDataMigrateCommand
-            }
-          `,
-        })
-
-        const queryResult = await waitForIt(
-          () => {
-            return client.query({
-              variables: {
-                filter: {
-                  id: { in: [...migrated.data.CartIdDataMigrateCommand] },
-                },
-              },
-              query: gql`
-                query ListCartReadModels($filter: ListCartReadModelFilter) {
-                  ListCartReadModels(filter: $filter) {
-                    items {
-                      id
-                      cartItems {
-                        productId
-                        quantity
-                      }
-                    }
+                    count
+                    cursor
                   }
                 }
               `,
             })
           },
           (result) => {
-            const items = result?.data?.ListCartReadModels?.items
-            const jsonItems = JSON.stringify(items)
-            if (!items || items.length !== mockCartCount) {
-              return `Waiting for ${mockCartCount} items. ${jsonItems} `
+            const count = result?.data?.ListDataMigrationsReadModels?.count
+            if (count < 2) {
+              return `Waiting for ${count} migrations. Done ${count} migrations`
             }
-
-            if (!allItemsHasQuantity(items, QUANTITY_AFTER_DATA_MIGRATION_ID)) {
-              return `Waiting for quantities to be equal to ${QUANTITY_AFTER_DATA_MIGRATION_ID}. ${jsonItems}`
-            }
-
             return true
           }
         )
-
-        const readModels = queryResult.data.ListCartReadModels
-        readModels.items.forEach((item: { id: any; cartItems: { quantity: any; productId: any }[] }) =>
-          expect(
-            item.cartItems[0].quantity,
-            `Not matching quantity on cartId ${item.id} and productId: ${item.cartItems[0].productId}`
-          ).to.be.eq(QUANTITY_AFTER_DATA_MIGRATION_ID)
-        )
-        expect(
-          migrated.data.CartIdDataMigrateCommand,
-          `Migrated items ${migrated.data.CartDataMigrateCommand} match with mocked items ${mockCartItems}`
-        ).to.not.have.members(mockCartItems)
       })
     })
   })

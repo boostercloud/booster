@@ -30,7 +30,10 @@ async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]
   const applicationBuilder = new ApplicationBuilder(config, rockets)
   const applicationBuild = await applicationBuilder.buildApplication()
 
-  const command = await runCommand(process.cwd(), 'npx cdktf deploy --auto-approve')
+  const command = await runCommand(
+    process.cwd(),
+    'npx cdktf-cli deploy --auto-approve --ignore-missing-stack-dependencies'
+  )
   if (command.childProcess.exitCode !== 0) {
     return Promise.reject(`Deploy application ${config.appName} failed. Check cdktf logs`)
   }
@@ -52,7 +55,7 @@ async function nukeApp(config: BoosterConfig, rockets?: InfrastructureRocket[]):
   rockets?.forEach((rocket) => rocket.unmountStack?.())
 
   // By deleting the resource group we are deleting all the resources within it.
-  await resourceManagementClient.resourceGroups.deleteMethod(
+  await resourceManagementClient.resourceGroups.beginDeleteAndWait(
     createResourceGroupName(config.appName, config.environmentName)
   )
 }

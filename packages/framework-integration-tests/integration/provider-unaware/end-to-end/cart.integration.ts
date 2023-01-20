@@ -4,6 +4,7 @@ import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
 import gql from 'graphql-tag'
 import { CartItem } from '../../../src/common/cart-item'
+import { ProductType } from '../../../src/entities/product'
 import { sleep, waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 import {
@@ -257,6 +258,8 @@ describe('Cart end-to-end tests', () => {
       let mockDescription: string
       let mockPriceInCents: number
       let mockCurrency: string
+      let mockProductDetails: Record<string, unknown>
+      let mockProductType: ProductType
 
       let productId: string
 
@@ -266,6 +269,11 @@ describe('Cart end-to-end tests', () => {
         mockDescription = lorem.paragraph()
         mockPriceInCents = random.number({ min: 1 })
         mockCurrency = finance.currencyCode()
+        mockProductDetails = {
+          color: commerce.color(),
+          size: commerce.productAdjective(),
+        }
+        mockProductType = 'Furniture'
 
         // Add one item
         await client.mutate({
@@ -275,6 +283,8 @@ describe('Cart end-to-end tests', () => {
             description: mockDescription,
             priceInCents: mockPriceInCents,
             currency: mockCurrency,
+            productDetails: mockProductDetails,
+            productType: mockProductType,
           },
           mutation: gql`
             mutation CreateProduct(
@@ -283,6 +293,8 @@ describe('Cart end-to-end tests', () => {
               $description: String!
               $priceInCents: Float!
               $currency: String!
+              $productDetails: JSON
+              $productType: JSON
             ) {
               CreateProduct(
                 input: {
@@ -291,6 +303,8 @@ describe('Cart end-to-end tests', () => {
                   description: $description
                   priceInCents: $priceInCents
                   currency: $currency
+                  productDetails: $productDetails
+                  productType: $productType
                 }
               )
             }
@@ -314,6 +328,8 @@ describe('Cart end-to-end tests', () => {
                     }
                     availability
                     deleted
+                    productDetails
+                    productType
                   }
                 }
               `,
@@ -340,6 +356,8 @@ describe('Cart end-to-end tests', () => {
           },
           availability: 0,
           deleted: false,
+          productDetails: mockProductDetails,
+          productType: mockProductType,
         }
 
         expect(product).to.be.deep.equal(expectedResult)

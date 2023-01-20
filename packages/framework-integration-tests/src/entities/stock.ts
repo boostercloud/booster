@@ -1,8 +1,15 @@
 import { Entity, Reduces } from '@boostercloud/framework-core'
-import { UUID } from '@boostercloud/framework-types'
+import { UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { StockMoved } from '../events/stock-moved'
 
-@Entity
+@Entity({
+  authorizeReadEvents: async (currentUser?: UserEnvelope): Promise<void> => {
+    if (currentUser?.claims['magicWord'] === 'opensesame') {
+      return Promise.resolve()
+    }
+    return Promise.reject("You don't know the magic word!")
+  },
+})
 export class Stock {
   public constructor(readonly id: UUID, readonly warehouses: Record<string, number>) {}
 

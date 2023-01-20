@@ -1,4 +1,4 @@
-import { Projects, ReadModel } from '@boostercloud/framework-core'
+import { Booster, Projects, ReadModel } from '@boostercloud/framework-core'
 import {
   ProjectionResult,
   ReadModelInterface,
@@ -11,6 +11,7 @@ import { Address } from '../common/address'
 import { Cart, MigratedCart } from '../entities/cart'
 import { Payment } from '../entities/payment'
 import { beforeHookException, projectionErrorCartId, projectionErrorCartMessage, throwExceptionId } from '../constants'
+import { ProductReadModel } from './product-read-model'
 
 @ReadModel({
   authorize: 'all',
@@ -28,6 +29,25 @@ export class CartReadModel {
 
   public getChecks(): number {
     return this.checks
+  }
+
+  public get cartItemsSize(): number | undefined {
+    return this.cartItems ? this.cartItems.length : 0
+  }
+
+  public get myAddress(): Promise<Address> {
+    return Promise.resolve(this.shippingAddress || new Address('', '', '', '', '', ''))
+  }
+
+  public get lastProduct(): Promise<ProductReadModel | undefined> {
+    if (this.cartItemsSize === 0) {
+      return Promise.resolve(undefined)
+    }
+    return Booster.readModel(ProductReadModel)
+      .filter({
+        id: { eq: this.cartItems.at(-1)?.productId },
+      })
+      .searchOne()
   }
 
   public static async beforeFn(

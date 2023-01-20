@@ -1,0 +1,20 @@
+import DocCardList from '@theme/DocCardList'
+
+# Booster architecture
+
+Booster is a highly opinionated framework that provides a complete toolset to build production-ready event-driven serverless applications. 
+
+
+Two patterns influence the Booster's event-driven architecture: Command-Query Responsibility Segregation ([CQRS](https://www.martinfowler.com/bliki/CQRS.html)) and [Event Sourcing](https://martinfowler.com/eaaDev/EventSourcing.html). They're complex techniques to implement from scratch with lower-level frameworks, but Booster makes them feel natural and very easy to use.
+
+![architecture](/img/booster-arch.jpg)
+
+As you can see in the diagram, Booster applications consist of four main building blocks: `Commands`, `Events`, `Entities`, and `Read Models`. `Commands` and `Read Models` are the public interface of the application, while `Events` and `Entities` are private implementation details. With Booster, clients submit `Commands`, query the `Read Models`, or subscribe to them for receiving real-time updates thanks to the out of the box [GraphQL API](/graphql)
+
+Booster applications are event-driven and event-sourced so, **the source of truth is the whole history of events**. When a client submits a command, Booster _wakes up_ and handles it throght `Command Handlers`. As part of the process, some `Events` may be _registered_ as needed. 
+
+On the other side, the framework caches the current state by automatically _reducing_ all the registered events into `Entities`. You can also _react_ to events via `Event Handlers`, triggering side effect actions to certain events. Finally, `Entities` are not directly exposed, they are transformed or _projected_ into `ReadModels`, which are exposed to the public.
+
+In this chapter you'll walk through these concepts in detail.
+
+<DocCardList />

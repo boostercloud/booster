@@ -10,7 +10,7 @@ import {
   GraphQLString,
 } from 'graphql'
 import { buildGraphqlSimpleEnumFor, GraphQLResolverContext, ResolverBuilder } from '../common'
-import { GraphQLJSONObject } from 'graphql-type-json'
+import { GraphQLJSON } from 'graphql-scalars'
 import { BoosterConfig } from '@boostercloud/framework-types'
 
 export class GraphqlQueryEventsGenerator {
@@ -71,7 +71,7 @@ export class GraphqlQueryEventsGenerator {
             }),
           },
           createdAt: { type: new GraphQLNonNull(GraphQLString) },
-          value: { type: new GraphQLNonNull(GraphQLJSONObject) },
+          value: { type: new GraphQLNonNull(GraphQLJSON) },
         },
       })
     )

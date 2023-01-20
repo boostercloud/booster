@@ -8,6 +8,8 @@ import { Picture } from '../common/picture'
 import { ProductAvailabilityChanged } from '../events/product-availability-changed'
 import { UserWithEmail } from '../roles'
 
+export type ProductType = 'Furniture' | 'Electronics' | 'Books' | 'Clothing' | 'Other'
+
 /**
  * A product is the representation of a sellable unit in our sample store
  */
@@ -23,7 +25,9 @@ export class Product {
     readonly price: Money,
     readonly pictures: Array<Picture>,
     public deleted: boolean = false,
-    public availability: number = 0
+    public availability: number = 0,
+    readonly productDetails: Record<string, unknown> = {},
+    readonly productType: ProductType = 'Other'
   ) {}
 
   public getId(): UUID {
@@ -31,12 +35,34 @@ export class Product {
   }
   @Reduces(ProductCreated)
   public static create(event: ProductCreated): Product {
-    return new Product(event.productId, event.sku, event.displayName, event.description, event.price, [])
+    return new Product(
+      event.productId,
+      event.sku,
+      event.displayName,
+      event.description,
+      event.price,
+      [],
+      false,
+      0,
+      event.productDetails,
+      event.productType
+    )
   }
 
   @Reduces(ProductUpdated)
   public static update(event: ProductUpdated): Product {
-    return new Product(event.id, event.sku, event.name, event.description, event.price, event.pictures, event.deleted)
+    return new Product(
+      event.id,
+      event.sku,
+      event.name,
+      event.description,
+      event.price,
+      event.pictures,
+      event.deleted,
+      0,
+      event.productDetails,
+      event.productType
+    )
   }
 
   @Reduces(ProductDeleted)

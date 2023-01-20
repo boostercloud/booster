@@ -8,10 +8,8 @@ import {
   FilterFor,
   PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
-  Instance,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
-  Register,
   Searcher,
   SearcherFunction,
   SequenceKey,
@@ -26,7 +24,11 @@ import { Importer } from './importer'
 import { EventStore } from './services/event-store'
 import { BoosterRocketDispatcher } from './booster-rocket-dispatcher'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
-import { RegisterHandler } from './booster-register-handler'
+import { BoosterDataMigrationEntity } from './core-concepts/data-migration/entities/booster-data-migration-entity'
+import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
+import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
+import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
+import { BoosterAuthorizer } from './booster-authorizer'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -68,7 +70,9 @@ export class Booster {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
+    this.configureBoosterConcepts()
     this.configureDataMigrations()
+    this.loadTokenVerifierFromEnv()
     this.config.validate()
   }
 
@@ -175,20 +179,59 @@ export class Booster {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
   }
 
-  public static migrateEntity(
-    oldEntityName: string,
-    oldEntityId: UUID,
-    newEntity: Instance & EntityInterface
-  ): Promise<void> {
-    const requestID = UUID.generate()
-    const register = new Register(requestID, {})
-    register.events(new BoosterEntityMigrated(oldEntityName, oldEntityId, newEntity.constructor.name, newEntity))
-    return RegisterHandler.handle(this.config, register)
+  private static configureBoosterConcepts(): void {
+    this.configureDataMigrations()
   }
 
   private static configureDataMigrations(): void {
     this.config.events[BoosterEntityMigrated.name] = {
       class: BoosterEntityMigrated,
+    }
+
+    this.config.events[BoosterDataMigrationStarted.name] = {
+      class: BoosterDataMigrationStarted,
+    }
+
+    this.config.reducers[BoosterDataMigrationStarted.name] = {
+      class: BoosterDataMigrationEntity,
+      methodName: 'started',
+    }
+
+    this.config.events[BoosterDataMigrationFinished.name] = {
+      class: BoosterDataMigrationFinished,
+    }
+
+    this.config.reducers[BoosterDataMigrationFinished.name] = {
+      class: BoosterDataMigrationEntity,
+      methodName: 'finished',
+    }
+
+    this.config.entities[BoosterDataMigrationEntity.name] = {
+      class: BoosterDataMigrationEntity,
+      eventStreamAuthorizer: BoosterAuthorizer.denyAccess,
+    }
+  }
+
+  /**
+   * TODO: We're loading tokenVerifier options from environment variables here for backwards
+   * compatibility reasons, but the preferred way to initialize the project token verifiers
+   * is by setting an implementation of the `TokenVerifier` interface in the project's config.
+   * The Authentication Booster Rocket for AWS uses this initialization mechanism.
+   *
+   * @deprecated Please set your own implementation of the `TokenVerifier` interface in the project config.
+   */
+  private static loadTokenVerifierFromEnv(): void {
+    const BOOSTER_JWT_ISSUER = process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER]
+    const BOOSTER_JWKS_URI = process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI]
+    const BOOSTER_ROLES_CLAIM = process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM]
+    if (BOOSTER_JWT_ISSUER && BOOSTER_JWKS_URI && BOOSTER_ROLES_CLAIM) {
+      console.warn(
+        'Deprecation notice: Implicitly loading the JWT token verifier options from default environment variables is deprecated.' +
+          " Please set your application's `config.tokenVerifiers` options explicitly in your `src/config/config.ts` file."
+      )
+      this.config.tokenVerifiers.push(
+        new JwksUriTokenVerifier(BOOSTER_JWT_ISSUER, BOOSTER_JWKS_URI, BOOSTER_ROLES_CLAIM)
+      )
     }
   }
 }

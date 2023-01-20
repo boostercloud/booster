@@ -26,7 +26,7 @@ describe('environment service', (): void => {
     })
 
     it('get current environment: undefined', async () => {
-      expect(currentEnvironment()).to.be.equal(undefined)
+      expect(currentEnvironment()).to.be.undefined
     })
   })
 
@@ -66,7 +66,7 @@ describe('environment service', (): void => {
       it('environment not set as param: log message', async () => {
         initializeEnvironment(logger)
         expect(logger.error).to.have.been.calledWithMatch(logMessage)
-        expect(process.env.BOOSTER_ENV).to.be.equal(undefined)
+        expect(process.env.BOOSTER_ENV).to.be.undefined
       })
     })
   })

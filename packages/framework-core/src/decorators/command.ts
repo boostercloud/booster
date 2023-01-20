@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Booster } from '../booster'
-import { CommandInterface, CommandFilterHooks, RoleAccess, Register, Class } from '@boostercloud/framework-types'
+import {
+  CommandInterface,
+  CommandFilterHooks,
+  CommandRoleAccess,
+  Register,
+  Class,
+  CommandAuthorizer,
+} from '@boostercloud/framework-types'
 import { getClassMetadata } from './metadata'
+import { BoosterAuthorizer } from '../booster-authorizer'
 
 /**
  * Annotation to tell Booster which classes are your entities
@@ -9,7 +17,7 @@ import { getClassMetadata } from './metadata'
  * @constructor
  */
 export function Command(
-  attributes: RoleAccess & CommandFilterHooks
+  attributes: CommandRoleAccess & CommandFilterHooks
 ): <TCommand>(commandClass: CommandInterface<TCommand>) => void {
   return (commandClass) => {
     Booster.configureCurrentEnv((config): void => {
@@ -18,10 +26,19 @@ export function Command(
         If you think that this is an error, try performing a clean build.`)
       }
 
+      let authorizer: CommandAuthorizer = BoosterAuthorizer.denyAccess
+      if (attributes.authorize === 'all') {
+        authorizer = BoosterAuthorizer.allowAccess
+      } else if (Array.isArray(attributes.authorize)) {
+        authorizer = BoosterAuthorizer.authorizeRoles.bind(null, attributes.authorize)
+      } else if (typeof attributes.authorize === 'function') {
+        authorizer = attributes.authorize
+      }
+
       const metadata = getClassMetadata(commandClass)
       config.commandHandlers[commandClass.name] = {
         class: commandClass,
-        authorizedRoles: attributes.authorize,
+        authorizer,
         before: attributes.before ?? [],
         properties: metadata.fields,
         methods: metadata.methods,

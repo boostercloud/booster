@@ -1,10 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "declaration": false, // Required for MS Rush to compile Oclif properly
     "outDir": "./dist",
     "rootDir": "./src"
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

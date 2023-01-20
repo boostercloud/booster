@@ -1,13 +1,15 @@
 import {
+  BOOSTER_SUPER_KIND,
   BoosterConfig,
   EventEnvelope,
   InvalidParameterError,
   ReducerGlobalError,
+  SnapshotPersistHandlerGlobalError,
   UUID,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
-import { Migrator } from '../migrator'
+import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
@@ -61,16 +63,28 @@ export class EventStore {
     }
   }
 
-  public async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
-    const logger = getLogger(this.config, 'EventStore#storeSnapshot')
-    logger.debug('Storing snapshot in the event store:', snapshot)
-    return this.config.provider.events.store([snapshot], this.config)
+  private async storeSnapshot(snapshot: EventEnvelope): Promise<EventEnvelope> {
+    try {
+      const logger = getLogger(this.config, 'EventStore#storeSnapshot')
+      logger.debug('Storing snapshot in the event store:', snapshot)
+      await this.config.provider.events.store([snapshot], this.config)
+      return snapshot
+    } catch (e) {
+      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
+      const error = await globalErrorDispatcher.dispatch(new SnapshotPersistHandlerGlobalError(snapshot, e))
+      if (error) throw error
+    }
+    return snapshot
   }
 
-  private loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
     const logger = getLogger(this.config, 'EventStore#loadLatestSnapshot')
     logger.debug(`Loading latest snapshot for entity ${entityName} and ID ${entityID}`)
-    return this.config.provider.events.latestEntitySnapshot(this.config, entityName, entityID)
+    const latestSnapshot = await this.config.provider.events.latestEntitySnapshot(this.config, entityName, entityID)
+    if (latestSnapshot) {
+      return new SchemaMigrator(this.config).migrate(latestSnapshot)
+    }
+    return null
   }
 
   private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
@@ -85,7 +99,7 @@ export class EventStore {
   ): Promise<EventEnvelope> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
-      if (eventEnvelope.superKind && eventEnvelope.superKind === 'booster') {
+      if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
         if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
           return this.toBoosterEntityMigratedSnapshot(eventEnvelope)
         }
@@ -93,16 +107,10 @@ export class EventStore {
 
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
       const eventMetadata = this.config.events[eventEnvelope.typeName]
-      const migratedEventEnvelope = await new Migrator(this.config).migrate(eventEnvelope)
+      const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
-      let migratedLatestSnapshot: EventEnvelope | null = null
-      if (latestSnapshot) {
-        migratedLatestSnapshot = await new Migrator(this.config).migrate(latestSnapshot)
-      }
-      const snapshotInstance = migratedLatestSnapshot
-        ? createInstance(entityMetadata.class, migratedLatestSnapshot.value)
-        : null
+      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
       let newEntity: any
       try {
         newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)

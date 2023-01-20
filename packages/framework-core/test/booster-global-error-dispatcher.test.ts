@@ -4,6 +4,7 @@ import {
   CommandEnvelope,
   CommandHandlerGlobalError,
   EntityInterface,
+  EventEnvelope,
   EventHandlerGlobalError,
   EventInterface,
   GlobalErrorContainer,
@@ -12,6 +13,7 @@ import {
   ReadModelInterface,
   ReducerGlobalError,
   ScheduleCommandGlobalError,
+  SnapshotPersistHandlerGlobalError,
 } from '@boostercloud/framework-types'
 import { GlobalErrorHandler } from '../src'
 import { restore } from 'sinon'
@@ -172,6 +174,21 @@ describe('BoosterGlobalErrorDispatcher', () => {
     const errorDispatcher = new BoosterGlobalErrorDispatcher(config)
     const result = await errorDispatcher.dispatch(projectionGlobalError)
     expect(result?.toString()).to.be.eq(`Error: Error: ${baseError.message}.onProjectionError`)
+  })
+
+  it('should dispatch SnapshotPersistHandlerGlobalError', async () => {
+    @GlobalErrorHandler()
+    class ErrorHandler {
+      public static async onSnapshotPersistError(error: Error, snapshot: EventEnvelope): Promise<Error | undefined> {
+        return new Error(`${error}.onSnapshotPersistError`)
+      }
+    }
+    const mockEvent = {} as EventEnvelope
+    const snapshotPersistHandlerGlobalError = new SnapshotPersistHandlerGlobalError(mockEvent, baseError)
+    config.globalErrorsHandler = { class: ErrorHandler } as GlobalErrorHandlerMetadata
+    const errorDispatcher = new BoosterGlobalErrorDispatcher(config)
+    const result = await errorDispatcher.dispatch(snapshotPersistHandlerGlobalError)
+    expect(result?.toString()).to.be.eq(`Error: Error: ${baseError.message}.onSnapshotPersistError`)
   })
 
   it('should ignore errors on ProjectionGlobalError if undefined is returned', async () => {

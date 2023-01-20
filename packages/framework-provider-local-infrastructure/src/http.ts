@@ -8,6 +8,7 @@ export enum HttpCodes {
   InternalError = 500,
 }
 
+// Wrapper to return a failed request through GraphQL
 export async function requestFailed(error: Error, res: express.Response): Promise<void> {
   const statusCode = httpStatusCodeFor(error)
   res.status(statusCode).json({

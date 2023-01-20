@@ -1,0 +1,71 @@
+name: AWS Integration Tests
+
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        default: 'us-east-1'
+        required: false
+        type: string
+
+    secrets:
+      BOT_AWS_ACCESS_KEY_ID:
+        required: true
+      BOT_AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  aws-deploy:
+    name: AWS Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/test-integration-run-one
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          integration-test: aws-deploy
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          aws-region: ${{ inputs.aws-region }}
+          bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+
+  aws-integration-tests:
+    needs: [aws-deploy]
+    strategy:
+      max-parallel: 1
+      matrix:
+        integration-test: [aws-func, aws-end-to-end, aws-load]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/test-integration-run-one
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          integration-test: ${{ matrix.integration-test }}
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          aws-region: ${{ inputs.aws-region }}
+          bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}
+
+  aws-nuke:
+    name: AWS Nuke
+    needs: [aws-deploy, aws-integration-tests]
+    if: always() && needs.aws-deploy.result == 'success'
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: ./.github/actions/test-integration-run-one
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          integration-test: aws-nuke
+          gh_token: ${{ secrets.GITHUB_TOKEN }}
+          aws-region: ${{ inputs.aws-region }}
+          bot-aws-access-key-id: ${{ secrets.BOT_AWS_ACCESS_KEY_ID }}
+          bot-aws-secret-access-key: ${{ secrets.BOT_AWS_SECRET_ACCESS_KEY }}

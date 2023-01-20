@@ -209,7 +209,7 @@
       "name": "framework-core tests",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
-        "-r",
+        "--require",
         "ts-node/register",
         "--timeout",
         "999999",
@@ -254,14 +254,14 @@
         "--forbid-only",
         "--full-stack",
         "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/**/*.integration.ts"
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/cli/.mocharc.yml",
+        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/cli/**/*.integration.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
     },
     {
       "type": "node",
@@ -297,7 +297,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",
@@ -315,7 +319,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",
@@ -333,7 +341,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",
@@ -351,7 +363,11 @@
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "runtimeArgs": ["--preserve-symlinks"],
+      "env": {
+        "BOOSTER_ENV": "production",
+        "TESTED_PROVIDER": "AWS"
+      }
     },
     {
       "type": "node",
@@ -417,14 +433,9 @@
       "request": "launch",
       "name": "Server in debug mode",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests/local-project-integration-sandbox",
-      "skipFiles": [
-      ],
+      "skipFiles": [],
       "program": "${workspaceFolder}/packages/cli/bin/run",
-      "args": [
-          "start",
-          "-e",
-          "local"
-      ],
+      "args": ["start", "-e", "local"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",

@@ -13,7 +13,7 @@ import {
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError, createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
-import { ReadModelMigrator } from '../read-model-migrator'
+import { ReadModelSchemaMigrator } from '../read-model-schema-migrator'
 
 export class ReadModelStore {
   public constructor(readonly config: BoosterConfig) {}
@@ -100,7 +100,7 @@ export class ReadModelStore {
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
     let migratedReadModel: ReadModelInterface | undefined
     if (readModel) {
-      migratedReadModel = await new ReadModelMigrator(this.config).migrate(readModel, readModelName)
+      migratedReadModel = await new ReadModelSchemaMigrator(this.config).migrate(readModel, readModelName)
     }
     const currentReadModelVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
 

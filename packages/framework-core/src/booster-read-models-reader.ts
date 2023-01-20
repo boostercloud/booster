@@ -3,7 +3,6 @@ import {
   BoosterConfig,
   GraphQLOperation,
   InvalidParameterError,
-  NotAuthorizedError,
   NotFoundError,
   ReadModelInterface,
   ReadModelListResult,
@@ -13,8 +12,8 @@ import {
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
-import { BoosterAuth } from './booster-auth'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
+import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig) {}
@@ -22,7 +21,7 @@ export class BoosterReadModelsReader {
   public async findById(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<ReadModelInterface | ReadOnlyNonEmptyArray<ReadModelInterface>> {
-    this.validateByIdRequest(readModelRequest)
+    await this.validateByIdRequest(readModelRequest)
 
     const readModelMetadata = this.config.readModels[readModelRequest.class.name]
     const readModelTransformedRequest = await applyReadModelRequestBeforeFunctions(
@@ -35,13 +34,22 @@ export class BoosterReadModelsReader {
     if (!key) {
       throw 'Tried to run a findById operation without providing a key. An ID is required to perform this operation.'
     }
-    return Booster.readModel(readModelMetadata.class).findById(key.id, key.sequenceKey)
+    const currentReadModel = await Booster.readModel(readModelMetadata.class).findById(key.id, key.sequenceKey)
+    if (currentReadModel) {
+      const readModelName = readModelMetadata.class.name
+      const readModelSchemaMigrator = new ReadModelSchemaMigrator(this.config)
+      if (Array.isArray(currentReadModel)) {
+        return [await readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel[0], readModelName)]
+      }
+      return readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel, readModelName)
+    }
+    return currentReadModel
   }
 
   public async search(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<Array<ReadModelInterface> | ReadModelListResult<ReadModelInterface>> {
-    this.validateRequest(readModelRequest)
+    await this.validateRequest(readModelRequest)
 
     const readModelMetadata = this.config.readModels[readModelRequest.class.name]
     const readModelTransformedRequest = await applyReadModelRequestBeforeFunctions(
@@ -50,13 +58,23 @@ export class BoosterReadModelsReader {
       readModelRequest.currentUser
     )
 
-    return Booster.readModel(readModelMetadata.class)
+    const readModelName = readModelMetadata.class.name
+    const readModels = await Booster.readModel(readModelMetadata.class)
       .filter(readModelTransformedRequest.filters)
       .sortBy(readModelTransformedRequest.sortBy)
       .limit(readModelTransformedRequest.limit)
       .afterCursor(readModelTransformedRequest.afterCursor)
       .paginatedVersion(readModelTransformedRequest.paginatedVersion)
       .search()
+
+    const readModelSchemaMigrator = new ReadModelSchemaMigrator(this.config)
+    if (Array.isArray(readModels)) {
+      return Promise.all(readModels.map((readModel) => readModelSchemaMigrator.migrate(readModel, readModelName)))
+    }
+    readModels.items = await Promise.all(
+      readModels.items.map((readModel) => readModelSchemaMigrator.migrate(readModel, readModelName))
+    )
+    return readModels
   }
 
   public async subscribe(
@@ -64,7 +82,7 @@ export class BoosterReadModelsReader {
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>,
     operation: GraphQLOperation
   ): Promise<unknown> {
-    this.validateRequest(readModelRequest)
+    await this.validateRequest(readModelRequest)
     return this.processSubscription(connectionID, readModelRequest, operation)
   }
 
@@ -76,7 +94,7 @@ export class BoosterReadModelsReader {
     return this.config.provider.readModels.deleteAllSubscriptions(this.config, connectionID)
   }
 
-  private validateByIdRequest(readModelByIdRequest: ReadModelRequestEnvelope<ReadModelInterface>): void {
+  private async validateByIdRequest(readModelByIdRequest: ReadModelRequestEnvelope<ReadModelInterface>): Promise<void> {
     const logger = getLogger(this.config, 'BoosterReadModelsReader#validateByIdRequest')
     logger.debug('Validating the following read model by id request: ', readModelByIdRequest)
     if (!readModelByIdRequest.version) {
@@ -88,9 +106,7 @@ export class BoosterReadModelsReader {
       throw new NotFoundError(`Could not find read model ${readModelByIdRequest.class.name}`)
     }
 
-    if (!BoosterAuth.isUserAuthorized(readModelMetadata.authorizedRoles, readModelByIdRequest.currentUser)) {
-      throw new NotAuthorizedError(`Access denied for read model ${readModelByIdRequest.class.name}`)
-    }
+    await readModelMetadata.authorizer(readModelByIdRequest.currentUser, readModelByIdRequest)
 
     if (
       readModelByIdRequest?.key?.sequenceKey &&
@@ -102,7 +118,7 @@ export class BoosterReadModelsReader {
     }
   }
 
-  private validateRequest(readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>): void {
+  private async validateRequest(readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>): Promise<void> {
     const logger = getLogger(this.config, 'BoosterReadModelsReader#validateRequest')
     logger.debug('Validating the following read model request: ', readModelRequest)
     if (!readModelRequest.version) {
@@ -114,9 +130,7 @@ export class BoosterReadModelsReader {
       throw new NotFoundError(`Could not find read model ${readModelRequest.class.name}`)
     }
 
-    if (!BoosterAuth.isUserAuthorized(readModelMetadata.authorizedRoles, readModelRequest.currentUser)) {
-      throw new NotAuthorizedError(`Access denied for read model ${readModelRequest.class.name}`)
-    }
+    await readModelMetadata.authorizer(readModelRequest.currentUser, readModelRequest)
   }
 
   private async processSubscription(

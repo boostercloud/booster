@@ -4,9 +4,10 @@ import { Booster } from '../src/booster'
 import { fake, replace, restore, spy } from 'sinon'
 import { expect } from './expect'
 import { BoosterCommandDispatcher } from '../src/booster-command-dispatcher'
-import { CommandBeforeFunction, Register } from '@boostercloud/framework-types'
+import { CommandBeforeFunction, Register, NotAuthorizedError } from '@boostercloud/framework-types'
 import { Command, RegisterHandler } from '../src'
 import { random } from 'faker'
+import { BoosterAuthorizer } from '../src/booster-authorizer'
 
 describe('the `BoosterCommandsDispatcher`', () => {
   afterEach(() => {
@@ -51,7 +52,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       const config = {
         commandHandlers: {
           UnauthorizedCommand: {
-            authorizedRoles: [Thor],
+            authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [Thor]),
           },
         },
       }
@@ -66,7 +67,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
 
       await expect(
         new BoosterCommandDispatcher(config as any).dispatchCommand(commandEnvelope as any, {} as any)
-      ).to.be.eventually.rejectedWith("Access denied for command 'UnauthorizedCommand'")
+      ).to.be.eventually.rejectedWith(NotAuthorizedError)
     })
 
     it('calls the handler method of a registered command', async () => {
@@ -81,7 +82,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       const config = {
         commandHandlers: {
           ProperlyHandledCommand: {
-            authorizedRoles: 'all',
+            authorizer: BoosterAuthorizer.allowAccess,
             before: [],
             class: ProperlyHandledCommand,
           },
@@ -120,7 +121,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       const config = {
         commandHandlers: {
           ProperlyHandledCommand: {
-            authorizedRoles: 'all',
+            authorizer: BoosterAuthorizer.allowAccess,
             before: [],
             class: ProperlyHandledCommand,
           },
@@ -175,7 +176,7 @@ describe('the `BoosterCommandsDispatcher`', () => {
       const config = {
         commandHandlers: {
           ProperlyHandledCommand: {
-            authorizedRoles: 'all',
+            authorizer: BoosterAuthorizer.allowAccess,
             before: [],
             class: ProperlyHandledCommand,
           },

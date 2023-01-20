@@ -12,16 +12,35 @@ import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import * as prettierRc from '../templates/project/prettierrc-yaml'
 import * as mochaRc from '../templates/project/mocharc-yml'
-import { wrapExecError } from '../common/errors'
-import { installAllDependencies } from './dependencies'
+import { guardError, wrapExecError } from '../common/errors'
+import { PackageManagerService } from './package-manager'
+import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { LivePackageManager } from './package-manager/live.impl'
 
 export async function generateConfigFiles(config: ProjectInitializerConfig): Promise<void> {
   await Promise.all(filesToGenerate.map(renderToFile(config)))
 }
 
 export async function installDependencies(config: ProjectInitializerConfig): Promise<void> {
-  return installAllDependencies(projectDir(config))
+  const effect = installDependenciesEff(config)
+  return unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Could not install dependencies'),
+    }
+  )
 }
+
+const installDependenciesEff = (config: ProjectInitializerConfig) =>
+  gen(function* ($) {
+    const { setProjectRoot, installAllDependencies } = yield* $(PackageManagerService)
+    yield* $(setProjectRoot(projectDir(config)))
+    yield* $(installAllDependencies())
+  })
 
 export async function generateRootDirectory(config: ProjectInitializerConfig): Promise<void> {
   const srcDir = path.join(projectDir(config), 'src')

@@ -9,7 +9,8 @@ import {
 } from 'graphql'
 import { GraphQLResolverContext, ResolverBuilder } from '../common'
 import * as inflected from 'inflected'
-import { GraphQLJSONObject } from 'graphql-type-json'
+import { GraphQLJSON } from 'graphql-scalars'
+
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { GraphqlQuerySortBuilder } from '../query-helpers/graphql-query-sort-builder'
 import { GraphqlQueryFilterArgumentsBuilder } from '../query-helpers/graphql-query-filter-arguments-builder'
@@ -43,7 +44,7 @@ export class GraphqlQueryListedGenerator {
             fields: {
               items: { type: new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(graphQLType))) },
               count: { type: new GraphQLNonNull(GraphQLInt) },
-              cursor: { type: GraphQLJSONObject },
+              cursor: { type: GraphQLJSON },
             },
           })
         ),
@@ -76,7 +77,7 @@ export class GraphqlQueryListedGenerator {
       filter: { type: filter },
       limit: { type: GraphQLInt },
       sortBy: { type: sort },
-      afterCursor: { type: GraphQLJSONObject },
+      afterCursor: { type: GraphQLJSON },
     }
   }
 }

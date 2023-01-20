@@ -6,6 +6,10 @@ class GenericClass<T> {
   constructor(readonly genericValue: T) {}
 }
 
+class BaseClass {
+  constructor(readonly base: string) {}
+}
+
 @ReadModel({
   authorize: 'all',
 })
@@ -26,6 +30,7 @@ export class SchemaReadModel {
     readonly unknown0: unknown,
     readonly record: Record<string, string>,
     readonly generic: GenericClass<string>,
+    readonly child: BaseClass,
     readonly optionalString?: string,
     readonly optionalNull?: string,
     readonly optionalUndefined?: undefined,
@@ -33,6 +38,7 @@ export class SchemaReadModel {
     readonly optionalAny?: any,
     readonly optionalRecord?: Record<string, string>,
     readonly optionalGeneric?: GenericClass<Cart>,
+    readonly optionalChild?: BaseClass,
     readonly readonlyArray?: ReadonlyArray<string>
   ) {}
 
@@ -58,7 +64,8 @@ export class SchemaReadModel {
       {
         test: 'test',
       },
-      new GenericClass<string>('test')
+      new GenericClass<string>('test'),
+      new BaseClass('base')
     )
   }
 }

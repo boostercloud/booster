@@ -1,5 +1,7 @@
 import {
+  BOOSTER_SUPER_KIND,
   BoosterConfig,
+  DOMAIN_SUPER_KIND,
   EventEnvelope,
   EventInterface,
   Instance,
@@ -8,19 +10,33 @@ import {
   SuperKindType,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
+import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
+import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
+import { Booster } from './booster'
+
+const boosterEventsTypesNames: Array<string> = [
+  BoosterEntityMigrated.name,
+  BoosterDataMigrationStarted.name,
+  BoosterDataMigrationFinished.name,
+]
 
 export class RegisterHandler {
   public static async handle(config: BoosterConfig, register: Register): Promise<void> {
     if (register.eventList.length == 0) {
       return
     }
+
     return config.provider.events.store(
-      register.eventList.map(RegisterHandler.wrapEvent.bind(null, register, config)),
+      register.eventList.map((event) => RegisterHandler.wrapEvent(config, event, register)),
       config
     )
   }
 
-  private static wrapEvent(register: Register, config: BoosterConfig, event: Instance & EventInterface): EventEnvelope {
+  public static async flush(record: Register): Promise<void> {
+    return RegisterHandler.handle(Booster.config, record)
+  }
+
+  private static wrapEvent(config: BoosterConfig, event: Instance & EventInterface, register: Register): EventEnvelope {
     const eventTypeName = event.constructor.name
     const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
     if (!entityTypeName) {
@@ -49,10 +65,7 @@ export class RegisterHandler {
   }
 
   private static getSuperKind(eventTypeName: string): SuperKindType {
-    if (eventTypeName !== BoosterEntityMigrated.name) {
-      return 'domain'
-    }
-    return 'booster'
+    return boosterEventsTypesNames.includes(eventTypeName) ? BOOSTER_SUPER_KIND : DOMAIN_SUPER_KIND
   }
 
   private static getEntityTypeName(

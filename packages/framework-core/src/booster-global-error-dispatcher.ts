@@ -7,6 +7,7 @@ import {
   ScheduleCommandGlobalError,
   ReducerGlobalError,
   ProjectionGlobalError,
+  SnapshotPersistHandlerGlobalError,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
@@ -39,6 +40,9 @@ export class BoosterGlobalErrorDispatcher {
           break
         case ProjectionGlobalError:
           newError = await this.handleProjectionError(error)
+          break
+        case SnapshotPersistHandlerGlobalError:
+          newError = await this.handleSnapshotPersistError(error)
           break
       }
 
@@ -90,6 +94,12 @@ export class BoosterGlobalErrorDispatcher {
       currentError.entity,
       currentError.readModel
     )
+  }
+
+  private async handleSnapshotPersistError(error: GlobalErrorContainer): Promise<Error | undefined> {
+    if (!this.errorHandler || !this.errorHandler.onSnapshotPersistError) throw error.originalError
+    const currentError = error as SnapshotPersistHandlerGlobalError
+    return this.errorHandler.onSnapshotPersistError(currentError.originalError, currentError.snapshot)
   }
 
   private async handleGenericError(error: Error | undefined): Promise<Error | undefined> {

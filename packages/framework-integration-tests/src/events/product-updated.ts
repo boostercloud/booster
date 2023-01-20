@@ -2,6 +2,7 @@ import { Event } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { Money } from '../common/money'
 import { Picture } from '../common/picture'
+import { ProductType } from '../entities/product'
 
 export enum ProductUpdateReason {
   CatalogChange = 'CatalogChange',
@@ -19,7 +20,9 @@ export class ProductUpdated {
     readonly price: Money,
     readonly pictures: Array<Picture>,
     readonly deleted: boolean = false,
-    readonly reason: ProductUpdateReason
+    readonly reason: ProductUpdateReason,
+    readonly productDetails: Record<string, unknown> = {},
+    readonly productType: ProductType = 'Other'
   ) {}
 
   public entityID(): UUID {

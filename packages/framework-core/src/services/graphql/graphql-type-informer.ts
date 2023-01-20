@@ -13,8 +13,8 @@ import {
   GraphQLString,
   GraphQLType,
 } from 'graphql'
-import { GraphQLJSONObject } from 'graphql-type-json'
-import { ClassMetadata, ClassType, TypeMetadata } from 'metadata-booster'
+import { GraphQLJSON } from 'graphql-scalars'
+import { ClassMetadata, ClassType, TypeMetadata } from '@boostercloud/metadata-booster'
 import { DateScalar, isExternalType } from './common'
 import { Logger } from '@boostercloud/framework-types'
 
@@ -36,6 +36,9 @@ export class GraphQLTypeInformer {
   public getOrCreateGraphQLType(typeMetadata: TypeMetadata, inputType?: false): GraphQLOutputType
   public getOrCreateGraphQLType(typeMetadata: TypeMetadata, inputType: boolean): GraphQLType
   public getOrCreateGraphQLType(typeMetadata: TypeMetadata, inputType = false): GraphQLType {
+    if (typeMetadata.typeName === 'Promise') {
+      return this.getOrCreateGraphQLType(typeMetadata.parameters[0], inputType)
+    }
     const name = this.getGraphQLName(typeMetadata, inputType)
 
     // Check if GraphQL type already exists and reuse
@@ -83,7 +86,7 @@ export class GraphQLTypeInformer {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }
-    return GraphQLJSONObject
+    return GraphQLJSON
   }
 
   private createEnumType(typeMetadata: TypeMetadata): GraphQLEnumType {

@@ -4,6 +4,7 @@ import { ProductUpdated, ProductUpdateReason } from '../events/product-updated'
 import { Money } from '../common/money'
 import { UUID } from '@boostercloud/framework-types'
 import { Picture } from '../common/picture'
+import { ProductType } from '../entities/product'
 
 @Command({
   authorize: 'all',
@@ -18,7 +19,9 @@ export class UpdateProduct {
     readonly price: Money,
     readonly pictures: Array<Picture>,
     readonly deleted: boolean = false,
-    readonly reason: ProductUpdateReason = ProductUpdateReason.CatalogChange
+    readonly reason: ProductUpdateReason = ProductUpdateReason.CatalogChange,
+    readonly productDetails?: Record<string, unknown>,
+    readonly productType?: ProductType
   ) {}
 
   public static async handle(command: UpdateProduct, register: Register): Promise<void> {
@@ -31,7 +34,9 @@ export class UpdateProduct {
         command.price,
         command.pictures,
         command.deleted,
-        command.reason
+        command.reason,
+        command.productDetails,
+        command.productType
       )
     )
   }

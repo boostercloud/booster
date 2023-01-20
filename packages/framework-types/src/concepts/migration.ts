@@ -1,6 +1,6 @@
 import { AnyClass } from '../typelevel'
 
-export interface MigrationMetadata {
+export interface SchemaMigrationMetadata {
   migrationClass: AnyClass
   methodName: string
   toVersion: number

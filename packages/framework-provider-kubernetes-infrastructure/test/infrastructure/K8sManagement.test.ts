@@ -156,7 +156,7 @@ describe('Users interaction with K8s cluster', () => {
 
   it('allows searching a non existing namespace', async () => {
     const clusterResponse = await k8sManager.getNamespace(NAMESPACE_NAME_NON_EXIST)
-    expect(clusterResponse).to.be.equal(undefined)
+    expect(clusterResponse).to.be.undefined
   })
 
   it('allows getting a specific pod', async () => {
@@ -166,7 +166,7 @@ describe('Users interaction with K8s cluster', () => {
 
   it('allows searching a non existing pod', async () => {
     const clusterResponse = await k8sManager.getPodFromNamespace(NAMESPACE_NAME, POD_NAME_NON_EXIST)
-    expect(clusterResponse).to.be.equal(undefined)
+    expect(clusterResponse).to.be.undefined
   })
 
   it('allows getting the main node node', async () => {
