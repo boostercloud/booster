@@ -17,7 +17,12 @@ export const makeRushPackageManager = gen(function* ($) {
     ...commonService,
     runScript: (scriptName: string, args: ReadonlyArray<string>) =>
       pipe(
-        runRushX(scriptName, args),
+        runRushX(scriptName, null, args),
+        mapError((error) => new RunScriptError(error.error))
+      ),
+    build: (args: ReadonlyArray<string>) =>
+      pipe(
+        runRush('build', null, args),
         mapError((error) => new RunScriptError(error.error))
       ),
     installProductionDependencies: () =>
@@ -28,7 +33,7 @@ export const makeRushPackageManager = gen(function* ($) {
       ),
     installAllDependencies: () =>
       pipe(
-        runRush('update', []),
+        runRush('update', null, []),
         mapError((error) => new InstallDependenciesError(error.error))
       ),
   }

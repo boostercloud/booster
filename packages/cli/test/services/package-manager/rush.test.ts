@@ -39,6 +39,21 @@ describe('PackageManager - Rush Implementation', () => {
     expect(TestProcess.fakes.exec).to.have.been.calledWith(`rushx ${script} ${args.join(' ')}`)
   })
 
+  it('runs the `build` script', async () => {
+    const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
+
+    const effect = gen(function* ($) {
+      const { build } = yield* $(PackageManagerService)
+      return yield* $(build([]))
+    })
+
+    await unsafeRunEffect(mapEffError(effect), {
+      layer: Layer.using(testLayer)(RushPackageManager),
+      onError: guardError('An error ocurred'),
+    })
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('rush build')
+  })
+
   it('can set the project root properly', async () => {
     const projectRoot = 'projectRoot'
 

@@ -36,6 +36,44 @@ describe('PackageManager - npm Implementation', () => {
     expect(TestProcess.fakes.exec).to.have.been.calledWith(`npm run ${script} ${args.join(' ')}`)
   })
 
+  describe('when the `compile` script exists', () => {
+    const TestFileSystemWithCompileScript = makeTestFileSystem({
+      readFileContents: fake.returns('{"scripts": {"compile": "tsc"}}'),
+    })
+
+    it('run the `compile` script', async () => {
+      const compileLayer = Layer.all(TestFileSystemWithCompileScript.layer, TestProcess.layer)
+
+      const effect = gen(function* ($) {
+        const { build } = yield* $(PackageManagerService)
+        return yield* $(build([]))
+      })
+
+      await unsafeRunEffect(mapEffError(effect), {
+        layer: Layer.using(compileLayer)(NpmPackageManager),
+        onError: guardError('An error ocurred'),
+      })
+      expect(TestProcess.fakes.exec).to.have.been.calledWith('npm run compile')
+    })
+  })
+
+  describe('when the `compile` script does not exist', () => {
+    it('run the `build` script', async () => {
+      const testLayer = Layer.all(TestFileSystem.layer, TestProcess.layer)
+
+      const effect = gen(function* ($) {
+        const { build } = yield* $(PackageManagerService)
+        return yield* $(build([]))
+      })
+
+      await unsafeRunEffect(mapEffError(effect), {
+        layer: Layer.using(testLayer)(NpmPackageManager),
+        onError: guardError('An error ocurred'),
+      })
+      expect(TestProcess.fakes.exec).to.have.been.calledWith('npm build')
+    })
+  })
+
   it('can set the project root properly', async () => {
     const projectRoot = 'projectRoot'
 

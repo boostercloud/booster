@@ -17,7 +17,7 @@ const ensureProjectDir = (processService: ProcessService, projectDirRef: Ref.Ref
   })
 
 /**
- * Checks that the script exists in the package.json file
+ * Checks if a script exists in the package.json file
  */
 const checkScriptExists = (processService: ProcessService, fileSystemService: FileSystemService, scriptName: string) =>
   gen(function* ($) {
@@ -26,37 +26,43 @@ const checkScriptExists = (processService: ProcessService, fileSystemService: Fi
     const pwd = yield* $(cwd())
     const packageJson = yield* $(readFileContents(`${pwd}/package.json`))
     const packageJsonContents = JSON.parse(packageJson)
-    return !packageJsonContents.scripts || !packageJsonContents.scripts[scriptName]
+    return packageJsonContents.scripts && packageJsonContents.scripts[scriptName]
   })
 
-const effectfulRun = (processService: ProcessService, command: string, projectDirRef: Ref.Ref<string>) => {
-  const { exec } = processService
-  return (scriptName: string, args: ReadonlyArray<string>) =>
-    gen(function* ($) {
-      const projectDir = yield* $(ensureProjectDir(processService, projectDirRef))
-      return yield* $(exec(`${command} ${scriptName} ${args.join(' ')}`.trim(), projectDir))
-    })
-}
+/**
+ * Function that returns a function to run the build script in the project directory.
+ */
+const makeRunBuildScript = (command: string, projectDirRef: Ref.Ref<string>) =>
+  gen(function* ($) {
+    const run = yield* $(makeScopedRun(command, projectDirRef))
+    const processService = yield* $(ProcessService)
+    const fileSystemService = yield* $(FileSystemService)
+    return (args: ReadonlyArray<string>) =>
+      gen(function* ($) {
+        const scriptExists = yield* $(checkScriptExists(processService, fileSystemService, 'compile'))
+        const scriptName = scriptExists ? 'run compile' : 'build'
+        return yield* $(run(scriptName, null, args))
+      })
+  })
 
 /**
  * Returns a function that executes a package manager command in the project directory.
  */
-export const makeScopedRun = (command: string, projectDirRef: Ref.Ref<string>) =>
+export const makeScopedRun = (packageManagerCommand: string, projectDirRef: Ref.Ref<string>) =>
   gen(function* ($) {
     const processService = yield* $(ProcessService)
-    return effectfulRun(processService, command, projectDirRef)
-  })
-
-/**
- * Returns a function that executes the proper build command in the project directory.
- */
-export const makeScopedBuild = (command: string, projectDirRef: Ref.Ref<string>) =>
-  gen(function* ($) {
-    const processService = yield* $(ProcessService)
-    const fileSystemService = yield* $(FileSystemService)
-    const scriptExists = yield* $(checkScriptExists(processService, fileSystemService, 'compile'))
-    const scriptName = scriptExists ? 'compile' : 'build'
-    return effectfulRun(processService, command, projectDirRef).bind(null, scriptName)
+    return (scriptName: string, subscriptName: string | null, args: ReadonlyArray<string>) =>
+      gen(function* ($) {
+        const projectDir = yield* $(ensureProjectDir(processService, projectDirRef))
+        return yield* $(
+          processService.exec(
+            `${packageManagerCommand} ${scriptName} ${subscriptName ? subscriptName + ' ' : ''}${args.join(
+              ' '
+            )}`.trim(),
+            projectDir
+          )
+        )
+      })
   })
 
 export const makePackageManager = (packageManagerCommand: string) =>
@@ -66,13 +72,14 @@ export const makePackageManager = (packageManagerCommand: string) =>
 
     // Create a function to run a script in the project directory
     const run = yield* $(makeScopedRun(packageManagerCommand, projectDirRef))
-    const runBuild = yield* $(makeScopedBuild(packageManagerCommand, projectDirRef))
+
+    const runBuild = yield* $(makeRunBuildScript(packageManagerCommand, projectDirRef))
 
     const service: PackageManagerService = {
       setProjectRoot: (projectDir: string) => Ref.set_(projectDirRef, projectDir),
       runScript: (scriptName: string, args: ReadonlyArray<string>) =>
         pipe(
-          run('run', [scriptName, ...args]),
+          run('run', scriptName, args),
           mapError((error) => new RunScriptError(error.error))
         ),
       build: (args: ReadonlyArray<string>) =>
@@ -82,12 +89,12 @@ export const makePackageManager = (packageManagerCommand: string) =>
         ),
       installProductionDependencies: () =>
         pipe(
-          run('install', ['--production', '--no-bin-links', '--no-optional']),
+          run('install', null, ['--production', '--no-bin-links', '--no-optional']),
           mapError((error) => new InstallDependenciesError(error.error))
         ),
       installAllDependencies: () =>
         pipe(
-          run('install', []),
+          run('install', null, []),
           mapError((error) => new InstallDependenciesError(error.error))
         ),
     }
