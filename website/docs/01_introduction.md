@@ -21,7 +21,7 @@ Events are the cornerstone of a Booster application, and that’s why we say tha
 
 - **Real-time**: Events can trigger other actions when they’re created, and updates can be pushed to connected clients without extra requests.
 - **High data resiliency**: Events are stored by default in an append-only database, so the data is never lost and it’s possible to recover any previous state of the system.
-- **Scalable by nature**: Dependencies only happen at data level, so Booster apps can ingest more data without waiting for other operatons to complete. Low coupling also makes it easier to evolve the code without affecting other parts of the system.
+- **Scalable by nature**: Dependencies only happen at data level, so Booster apps can ingest more data without waiting for other operations to complete. Low coupling also makes it easier to evolve the code without affecting other parts of the system.
 - **Asynchronous**: Your users won't need to wait for your system to process the whole operation before continuing using it.
 
 Before Booster, building an event-driven system with the mentioned characteristics required huge investments in hiring engineers with the needed expertise. Booster packs this expertise, acquired from real-case scenarios in high-scale companies, into a very simple tool that handles with the hard parts for you, even provisioning the infrastructure!
