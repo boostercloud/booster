@@ -22,7 +22,7 @@ describe('configService', () => {
       replace(PackageManager, 'LivePackageManager', TestPackageManager.layer)
       await configService.compileProject(userProjectPath)
       expect(TestPackageManager.fakes.runScript).to.have.calledWith('clean')
-      expect(TestPackageManager.fakes.runScript).to.have.calledWith('build')
+      expect(TestPackageManager.fakes.build).to.have.been.called
     })
   })
 

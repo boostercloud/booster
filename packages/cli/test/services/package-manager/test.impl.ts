@@ -6,6 +6,7 @@ export const makeTestPackageManager = (overrides?: FakeOverrides<PackageManagerS
   fakeService(PackageManagerService, {
     setProjectRoot: fake(),
     runScript: fake.returns(''),
+    build: fake.returns(''),
     installAllDependencies: fake(),
     installProductionDependencies: fake(),
     ...overrides,

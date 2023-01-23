@@ -26,10 +26,7 @@ const checkScriptExists = (processService: ProcessService, fileSystemService: Fi
     const pwd = yield* $(cwd())
     const packageJson = yield* $(readFileContents(`${pwd}/package.json`))
     const packageJsonContents = JSON.parse(packageJson)
-    if (!packageJsonContents.scripts || !packageJsonContents.scripts[scriptName]) {
-      return false
-    }
-    return true
+    return !packageJsonContents.scripts || !packageJsonContents.scripts[scriptName]
   })
 
 const effectfulRun = (processService: ProcessService, command: string, projectDirRef: Ref.Ref<string>) => {
@@ -58,10 +55,8 @@ export const makeScopedBuild = (command: string, projectDirRef: Ref.Ref<string>)
     const processService = yield* $(ProcessService)
     const fileSystemService = yield* $(FileSystemService)
     const scriptExists = yield* $(checkScriptExists(processService, fileSystemService, 'compile'))
-    if (scriptExists) {
-      return effectfulRun(processService, command, projectDirRef).bind(null, 'compile')
-    }
-    return effectfulRun(processService, command, projectDirRef).bind(null, 'build')
+    const scriptName = scriptExists ? 'compile' : 'build'
+    return effectfulRun(processService, command, projectDirRef).bind(null, scriptName)
   })
 
 export const makePackageManager = (packageManagerCommand: string) =>
