@@ -70,7 +70,7 @@ describe('PackageManager - Yarn Implementation', () => {
         layer: Layer.using(testLayer)(YarnPackageManager),
         onError: guardError('An error ocurred'),
       })
-      expect(TestProcess.fakes.exec).to.have.been.calledWith('yarn build')
+      expect(TestProcess.fakes.exec).to.have.been.calledWith('yarn run build')
     })
   })
 

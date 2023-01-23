@@ -70,7 +70,7 @@ describe('PackageManager - npm Implementation', () => {
         layer: Layer.using(testLayer)(NpmPackageManager),
         onError: guardError('An error ocurred'),
       })
-      expect(TestProcess.fakes.exec).to.have.been.calledWith('npm build')
+      expect(TestProcess.fakes.exec).to.have.been.calledWith('npm run build')
     })
   })
 

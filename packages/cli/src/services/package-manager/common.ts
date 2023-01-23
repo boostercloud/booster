@@ -40,8 +40,8 @@ const makeRunBuildScript = (command: string, projectDirRef: Ref.Ref<string>) =>
     return (args: ReadonlyArray<string>) =>
       gen(function* ($) {
         const scriptExists = yield* $(checkScriptExists(processService, fileSystemService, 'compile'))
-        const scriptName = scriptExists ? 'run compile' : 'build'
-        return yield* $(run(scriptName, null, args))
+        const scriptName = scriptExists ? 'compile' : 'build'
+        return yield* $(run('run', scriptName, args))
       })
   })
 

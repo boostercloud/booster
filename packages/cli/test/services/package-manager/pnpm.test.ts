@@ -68,7 +68,7 @@ describe('PackageManager - Pnpm Implementation', () => {
         layer: Layer.using(testLayer)(PnpmPackageManager),
         onError: guardError('An error ocurred'),
       })
-      expect(TestProcess.fakes.exec).to.have.been.calledWith('pnpm build')
+      expect(TestProcess.fakes.exec).to.have.been.calledWith('pnpm run build')
     })
   })
 
