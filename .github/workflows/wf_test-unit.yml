@@ -6,12 +6,16 @@ on:
       - '1.0.0'
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
 
   pull_request:
     branches:
       - main
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
 
 jobs:
   unit-tests:

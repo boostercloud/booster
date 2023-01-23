@@ -6,6 +6,8 @@ on:
       - '1.0.0'
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
 
 jobs:
   lint:
