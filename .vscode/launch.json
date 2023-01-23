@@ -245,23 +245,11 @@
       "runtimeArgs": ["--preserve-symlinks"]
     },
     {
-      "type": "node",
-      "request": "launch",
+      "command": "rushx integration/cli",
       "name": "CLI Integration Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--colors",
-        "--forbid-only",
-        "--full-stack",
-        "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/cli/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/cli/**/*.integration.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
+      "request": "launch",
+      "type": "node-terminal",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"],
     },
     {
       "type": "node",

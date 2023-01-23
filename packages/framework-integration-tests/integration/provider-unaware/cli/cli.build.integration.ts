@@ -48,7 +48,7 @@ describe('Compile fallback', () => {
     // Add a 'compile' script to the package.json
     const packageJsonPath = path.join(compileSandboxDir, 'package.json')
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
-    packageJson.scripts.compile = 'echo "eureka"'
+    packageJson.scripts.compile = 'echo "eureka" > eureka'
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
   })
 
@@ -60,11 +60,14 @@ describe('Compile fallback', () => {
 
   context('when a compile script is present', () => {
     it('should call the compile script instead', async () => {
-      const expectedOutputRegex = new RegExp('eureka')
+      const expectedOutputRegex = new RegExp(
+        ['boost build', 'Checking project structure', 'Building project', 'Build complete'].join('(.|\n)*')
+      )
 
       const { stdout } = await exec(`${cliPath} build`, { cwd: compileSandboxDir })
 
       expect(stdout).to.match(expectedOutputRegex)
+      expect(fileExists(path.join(compileSandboxDir, 'eureka'))).to.be.true
     })
   })
 })
