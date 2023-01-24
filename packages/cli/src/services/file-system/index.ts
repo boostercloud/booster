@@ -7,6 +7,7 @@ export class FileSystemError {
 
 export interface FileSystemService {
   readonly readDirectoryContents: (directoryPath: string) => Effect<unknown, FileSystemError, ReadonlyArray<string>>
+  readonly readFileContents: (filePath: string) => Effect<unknown, FileSystemError, string>
 }
 
 export const FileSystemService = tag<FileSystemService>()

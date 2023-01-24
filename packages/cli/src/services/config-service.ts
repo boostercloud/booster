@@ -57,10 +57,10 @@ export async function compileProject(projectPath: string): Promise<void> {
 
 const compileProjectEff = (projectPath: string) =>
   gen(function* ($) {
-    const { setProjectRoot, runScript } = yield* $(PackageManagerService)
+    const { setProjectRoot, build } = yield* $(PackageManagerService)
     yield* $(setProjectRoot(projectPath))
     yield* $(cleanProjectEff(projectPath))
-    return yield* $(runScript('build', []))
+    return yield* $(build([]))
   })
 
 export async function cleanProject(projectPath: string): Promise<void> {

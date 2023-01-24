@@ -5,6 +5,8 @@ on:
       - 'main'
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
 
 jobs:
   integration-tests:

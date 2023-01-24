@@ -6,11 +6,13 @@ const readDirectoryContents = (directoryPath: string) =>
   tryCatchPromise(
     () => fs.promises.readdir(directoryPath),
     (reason) =>
-      new FileSystemError(
-        new Error(`There were some issues reading the directory ${directoryPath}:
-
-    ${reason}`)
-      )
+      new FileSystemError(new Error(`There were some issues reading the directory ${directoryPath}: ${reason}`))
   )
 
-export const LiveFileSystem = Layer.fromValue(FileSystemService)({ readDirectoryContents })
+const readFileContents = (filePath: string) =>
+  tryCatchPromise(
+    () => fs.promises.readFile(filePath, 'utf8'),
+    (reason) => new FileSystemError(new Error(`There were some issues reading the file ${filePath}: ${reason}`))
+  )
+
+export const LiveFileSystem = Layer.fromValue(FileSystemService)({ readDirectoryContents, readFileContents })

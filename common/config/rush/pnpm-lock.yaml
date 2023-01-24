@@ -1809,14 +1809,12 @@ packages:
       constructs: ^3.3.69
     dependencies:
       '@aws-cdk/aws-iam': 1.184.0_rzudzuad5afy77xhglc4x2xrhi
-      '@aws-cdk/aws-kms': 1.184.0_22keh33mwgayl25ncpc4ioktxa
       '@aws-cdk/aws-logs': 1.184.0_xwtgc7oo4aiwabr435sqa4g4ce
       '@aws-cdk/aws-s3': 1.184.0_d6tbnp5fcqq7uq2j3427xw35se
       '@aws-cdk/aws-ssm': 1.184.0_22keh33mwgayl25ncpc4ioktxa
       '@aws-cdk/cloud-assembly-schema': 1.184.0
       '@aws-cdk/core': 1.184.0_faxhqvroc6gcqql5kmmny4subm
       '@aws-cdk/cx-api': 1.184.0
-      '@aws-cdk/region-info': 1.184.0
       constructs: 3.4.193
     dev: false
 
