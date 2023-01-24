@@ -8,6 +8,7 @@ import {
   NotFoundError,
   Register,
   SuperKindType,
+  UUID,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
@@ -44,6 +45,7 @@ export class RegisterHandler {
         `Couldn't find information about event ${eventTypeName}. Is the event handled by an entity?`
       )
     }
+    const entityID = RegisterHandler.getEntityID(event, config)
     if (!event.entityID || !event.entityID()) {
       throw new Error(
         `Event ${eventTypeName} has an empty 'entityID' or the required 'entityID' method was not implemented. Make sure to return a string-compatible value identifying the entity this event belongs to.`
@@ -54,7 +56,7 @@ export class RegisterHandler {
       version: config.currentVersionFor(eventTypeName),
       kind: 'event',
       superKind: RegisterHandler.getSuperKind(eventTypeName),
-      entityID: event.entityID(),
+      entityID,
       requestID: register.requestID,
       currentUser: register.currentUser,
       entityTypeName: entityTypeName,
@@ -78,5 +80,51 @@ export class RegisterHandler {
     }
     const reducerInfo = config.reducers[eventTypeName]
     return reducerInfo.class.name
+  }
+
+  private static getEntityID(event: Instance & EventInterface, config: BoosterConfig): UUID {
+    const eventName = event.constructor.name
+    const evtObject = event as Record<string, unknown>
+    const entityIdField = config.entityIdFields[eventName]
+    if (entityIdField && entityIdField in evtObject && typeof evtObject[entityIdField] === 'string') {
+      return evtObject[entityIdField] as UUID
+    }
+    if (eventName in config.notifications) {
+      return RegisterHandler.getDefaultNotificationTopic(event)
+    }
+    return RegisterHandler.getDefaultStateEventEntityId(event)
+  }
+
+  private static getDefaultStateEventEntityId(event: Instance & EventInterface): UUID {
+    if (event.entityID && typeof event.entityID === 'function') {
+      return event.entityID()
+    }
+    if (event.id && typeof event.id === 'string') {
+      return event.id
+    }
+    throw new Error(
+      `Event ${event.constructor.name} has no specification for the entity ID. Make sure to specify a string-compatible value identifying the entity this event belongs to.
+
+      You can do it by:
+
+      1. Using the @EntityID decorator to mark a field as the entity ID
+      2. Adding an id field to the event
+      3. Adding an entityID method to the event`
+    )
+  }
+
+  private static getDefaultNotificationTopic(event: Instance & EventInterface): UUID {
+    if (event.topic && typeof event.topic === 'string') {
+      return event.topic
+    }
+
+    throw new Error(
+      `Event ${event.constructor.name} has no specification for the topic. Make sure to specify a string-compatible value identifying the topic this event belongs to.
+
+      You can do it by:
+
+      1. Using the @Topic decorator to mark a field as the topic
+      2. Adding a topic field to the event`
+    )
   }
 }

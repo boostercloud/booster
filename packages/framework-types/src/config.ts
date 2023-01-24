@@ -52,6 +52,8 @@ export class BoosterConfig {
 
   public readonly functionRelativePath: string = path.join('..', this.codeRelativePath, 'index.js')
   public readonly events: Record<EventName, EventMetadata> = {}
+  public readonly notifications: Record<EventName, EventMetadata> = {}
+  public readonly entityIdFields: Record<EventName, string> = {}
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
