@@ -2,8 +2,7 @@ import { ApolloClient, ApolloQueryResult } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { internet, random } from 'faker'
 import gql from 'graphql-tag'
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../../helper/expect'
 import { sleep, waitForIt } from '../../helper/sleep'
 import {
   EventSearchResponse,
@@ -13,7 +12,6 @@ import {
 } from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
 import { unique } from '@boostercloud/framework-common-helpers'
-chai.use(require('chai-as-promised'))
 
 describe('Events end-to-end tests', () => {
   let anonymousClient: ApolloClient<NormalizedCacheObject>
