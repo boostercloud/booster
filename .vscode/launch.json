@@ -5,248 +5,239 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/cli (rushx test)",
       "request": "launch",
-      "name": "all booster tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/*/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "test"
-      }
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/cli",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-common-helpers (rushx test)",
       "request": "launch",
-      "name": "framework-provider-aws tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-aws/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-common-helpers",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-core (rushx test)",
       "request": "launch",
-      "name": "framework-provider-aws-infrastructure tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-aws-infrastructure/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-core",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-aws (rushx test)",
       "request": "launch",
-      "name": "framework-provider-azure tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-azure/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-aws",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-infrastructure (rushx test)",
       "request": "launch",
-      "name": "framework-provider-azure-infrastructure tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-azure-infrastructure/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-infrastructure",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-azure (rushx test)",
       "request": "launch",
-      "name": "framework-provider-kubernetes tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-kubernetes/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-azure",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-azure-infrastructure (rushx test)",
       "request": "launch",
-      "name": "framework-provider-kubernetes-infrastructure tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-kubernetes-infrastructure/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-azure-infrastructure",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-kubernetes (rushx test)",
       "request": "launch",
-      "name": "framework-provider-local tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-local/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "test"
-      }
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-kubernetes",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-kubernetes-infrastructure (rushx test)",
       "request": "launch",
-      "name": "framework-provider-local-infrastructure tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-local-infrastructure/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "test"
-      }
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-kubernetes-infrastructure",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-local (rushx test)",
       "request": "launch",
-      "name": "cli tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/cli/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-local",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-provider-local-infrastructure (rushx test)",
       "request": "launch",
-      "name": "framework-core tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--require",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-core/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "test"
-      }
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-provider-local-infrastructure",
     },
     {
-      "type": "node",
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/framework-types (rushx test)",
       "request": "launch",
-      "name": "framework-types tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-types/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-types",
+    },
+    {
+      "command": "rushx test",
+      "name": "Unit Tests - @boostercloud/metadata-booster (rushx test)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/metadata-booster",
     },
     {
       "command": "rushx integration/cli",
-      "name": "CLI Integration Tests",
+      "name": "Integration Tests - CLI",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/aws",
+      "name": "Integration Tests (aws)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/aws-deploy",
+      "name": "Integration Tests (aws-deploy)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/aws-func",
+      "name": "Integration Tests (aws-func)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/aws-end-to-end",
+      "name": "Integration Tests (aws-end-to-end)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/aws-load",
+      "name": "Integration Tests (aws-load)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/aws-nuke",
+      "name": "Integration Tests (aws-nuke)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/k8s",
+      "name": "Integration Tests (k8s)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/k8s-deploy",
+      "name": "Integration Tests (k8s-deploy)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/k8s-nuke",
+      "name": "Integration Tests (k8s-nuke)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/local",
+      "name": "Integration Tests (local)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/local-ongoing",
+      "name": "Integration Tests (local-ongoing)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/local-start",
+      "name": "Integration Tests (local-start)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/local-func",
+      "name": "Integration Tests (local-func)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/local-end-to-end",
+      "name": "Integration Tests (local-end-to-end)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/local-stop",
+      "name": "Integration Tests (local-stop)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/azure",
+      "name": "Integration Tests (azure)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/azure-deploy",
+      "name": "Integration Tests (azure-deploy)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/azure-nuke",
+      "name": "Integration Tests (azure-nuke)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/azure-end-to-end",
+      "name": "Integration Tests (azure-end-to-end)",
+      "request": "launch",
+      "type": "node-terminal",
+      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
+    },
+    {
+      "command": "rushx integration/azure-func",
+      "name": "Integration Tests (azure-func)",
       "request": "launch",
       "type": "node-terminal",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests",
@@ -254,179 +245,13 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Project Generator CLI Integration Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--colors",
-        "--forbid-only",
-        "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/cli/cli.project.integration.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "AWS Deploy Integration Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--colors",
-        "--forbid-only",
-        "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/deployment/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/deployment/**/*.integration.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "production",
-        "TESTED_PROVIDER": "AWS"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "AWS Functionality Integration Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--colors",
-        "--forbid-only",
-        "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/functionality/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/functionality/**/*.integration.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "production",
-        "TESTED_PROVIDER": "AWS"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "End-to-end Integration Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--colors",
-        "--forbid-only",
-        "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/end-to-end/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/provider-unaware/end-to-end/**/*.integration.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "production",
-        "TESTED_PROVIDER": "AWS"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "AWS Nuke Integration Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--colors",
-        "--forbid-only",
-        "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/nuke/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/aws/nuke/**/*.integration.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "production",
-        "TESTED_PROVIDER": "AWS"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Local Integration Tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--colors",
-        "--forbid-only",
-        "--config",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/local/.mocharc.yml",
-        "${workspaceFolder}/packages/framework-integration-tests/integration/providers/local/**/*.integration.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/framework-integration-tests",
-      "runtimeArgs": ["--preserve-symlinks"],
-      "env": {
-        "BOOSTER_ENV": "local"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "framework-provider-kubernetes tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-kubernetes/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "framework-provider-kubernetes-infrastructure tests",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--forbid-only",
-        "${workspaceFolder}/packages/framework-provider-kubernetes-infrastructure/test/**/*.test.ts"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "runtimeArgs": ["--preserve-symlinks"]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Server in debug mode",
+      "name": "Run Integration Application in Debug Mode",
       "cwd": "${workspaceFolder}/packages/framework-integration-tests/local-project-integration-sandbox",
       "skipFiles": [],
       "program": "${workspaceFolder}/packages/cli/bin/run",
       "args": ["start", "-e", "local"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
       "runtimeArgs": ["--preserve-symlinks"]
     }
   ]
