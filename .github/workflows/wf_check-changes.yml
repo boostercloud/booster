@@ -8,6 +8,8 @@ on:
       - '**.md'
       - 'website/**'
       - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
 
   pull_request:
     branches:
@@ -16,6 +18,8 @@ on:
       - '**.md'
       - 'website/**'
       - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
 
 jobs:
   changes-check:
