@@ -31,7 +31,7 @@ export async function readEntityEventsSince(
   entityID: UUID,
   since?: string
 ): Promise<Array<EventEnvelope>> {
-  const logger = getLogger(config, 'ReadModelStore#readEntityEventsSince')
+  const logger = getLogger(config, 'EventsAdapter#readEntityEventsSince')
   const fromTime = since ? since : originOfTime
   const result = await dynamoDB
     .query({
@@ -58,7 +58,7 @@ export async function readEntityLatestSnapshot(
   entityTypeName: string,
   entityID: UUID
 ): Promise<EventEnvelope | null> {
-  const logger = getLogger(config, 'ReadModelStore#readEntityLatestSnapshot')
+  const logger = getLogger(config, 'EventsAdapter#readEntityLatestSnapshot')
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
@@ -92,13 +92,13 @@ export async function storeEvents(
   eventEnvelopes: Array<EventEnvelope>,
   config: BoosterConfig
 ): Promise<void> {
-  const logger = getLogger(config, 'ReadModelStore#storeEvents')
-  logger.debug('[EventsAdapter#storeEvents] Storing the following event envelopes:', eventEnvelopes)
+  const logger = getLogger(config, 'EventsAdapter#storeEvents')
+  logger.debug('Storing the following event envelopes:', eventEnvelopes)
   // const putRequests = []
   for (const eventEnvelope of eventEnvelopes) {
     await retryIfError(() => persistEvent(dynamoDB, config, eventEnvelope), OptimisticConcurrencyUnexpectedVersionError)
   }
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
+  logger.debug('EventEnvelopes stored')
 }
 
 async function persistEvent(

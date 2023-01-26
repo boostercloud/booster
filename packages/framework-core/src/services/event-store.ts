@@ -38,18 +38,23 @@ export class EventStore {
     if (pendingEvents.length <= 0) {
       return latestSnapshotEnvelope
     } else {
-      logger.debug(
-        `[EventStore#fetchEntitySnapshot] Looking for the reducer for entity ${entityName} with ID ${entityID}`
-      )
+      logger.debug(`Looking for the reducer for entity ${entityName} with ID ${entityID}`)
       let newEntitySnapshot = latestSnapshotEnvelope
       for (const pendingEvent of pendingEvents) {
-        newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+        // We double check that what we are reducing is an event
+        if (pendingEvent.kind === 'event') {
+          newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+        }
       }
 
-      logger.debug(
-        `[EventStore#fetchEntitySnapshot] Reduced new snapshot for entity ${entityName} with ID ${entityID}: `,
-        newEntitySnapshot
-      )
+      if (newEntitySnapshot?.entityID !== entityID) {
+        logger.debug(
+          `Migrated entity ${entityName} with previous ID ${entityID} to ${newEntitySnapshot?.typeName} with the new ID ${newEntitySnapshot?.entityID}`,
+          newEntitySnapshot
+        )
+      } else {
+        logger.debug(`Reduced new snapshot for entity ${entityName} with ID ${entityID}: `, newEntitySnapshot)
+      }
 
       if (!newEntitySnapshot) {
         logger.debug('No snapshot was fetched, returning')
@@ -63,18 +68,21 @@ export class EventStore {
     }
   }
 
-  private async storeSnapshot(snapshot: EventEnvelope): Promise<EventEnvelope> {
+  private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
+    const logger = getLogger(this.config, 'EventStore#storeSnapshot')
     try {
-      const logger = getLogger(this.config, 'EventStore#storeSnapshot')
       logger.debug('Storing snapshot in the event store:', snapshot)
       await this.config.provider.events.store([snapshot], this.config)
-      return snapshot
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
       const error = await globalErrorDispatcher.dispatch(new SnapshotPersistHandlerGlobalError(snapshot, e))
-      if (error) throw error
+      logger.error(
+        `The snapshot for entity ${snapshot.typeName} with ID ${snapshot.entityID} couldn't be stored (Tried on ${snapshot.createdAt})`,
+        snapshot,
+        '\nError:',
+        error
+      )
     }
-    return snapshot
   }
 
   private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {

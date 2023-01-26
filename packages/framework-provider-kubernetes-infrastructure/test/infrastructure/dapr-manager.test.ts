@@ -7,7 +7,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { stateStore } from '../../src/infrastructure/templates/statestore'
 import { internet } from 'faker'
 import { CoreV1Api, KubeConfig, KubernetesObjectApi } from '@kubernetes/client-node'
-const fs = require('fs')
+import * as fs from 'fs'
 
 describe('Users Dapr interaction inside the cluster', () => {
   replace(KubeConfig.prototype, 'makeApiClient', fake.returns(new CoreV1Api()))
