@@ -22,11 +22,15 @@ export class RawEventsParser {
     for (const entityEnvelopes of Object.values(eventEnvelopesPerEntity)) {
       const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
       // All envelopes are for the same entity type/ID, so we get the first one to get those values
-      const { entityTypeName, entityID } = entityEnvelopes[0]
+      let { entityTypeName } = entityEnvelopes[0]
+      const { entityID } = entityEnvelopes[0]
       logger.debug(
         `Streaming the following events for entity '${entityTypeName}' and ID '${entityID}':`,
         entityEnvelopes
       )
+      if (entityTypeName in config.topicToEvent) {
+        entityTypeName = config.topicToEvent[entityTypeName]
+      }
       await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
     }
   }

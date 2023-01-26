@@ -9,6 +9,8 @@ import {
   Register,
   SuperKindType,
   UUID,
+  NotificationInterface,
+  ReducerMetadata,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
@@ -45,7 +47,7 @@ export class RegisterHandler {
         `Couldn't find information about event ${eventTypeName}. Is the event handled by an entity?`
       )
     }
-    const entityID = RegisterHandler.getEntityID(event, config)
+    const entityID = RegisterHandler.getPartitionKey(event, config)
     if (!event.entityID || !event.entityID()) {
       throw new Error(
         `Event ${eventTypeName} has an empty 'entityID' or the required 'entityID' method was not implemented. Make sure to return a string-compatible value identifying the entity this event belongs to.`
@@ -59,7 +61,7 @@ export class RegisterHandler {
       entityID,
       requestID: register.requestID,
       currentUser: register.currentUser,
-      entityTypeName: entityTypeName,
+      entityTypeName,
       typeName: eventTypeName,
       value: event,
       createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
@@ -78,19 +80,25 @@ export class RegisterHandler {
     if (eventTypeName === BoosterEntityMigrated.name) {
       return (event as BoosterEntityMigrated).oldEntityName
     }
-    const reducerInfo = config.reducers[eventTypeName]
-    return reducerInfo.class.name
+    if (!(eventTypeName in config.notifications)) {
+      const reducerInfo: ReducerMetadata | undefined = config.reducers[eventTypeName]
+      return reducerInfo?.class?.name
+    }
+    if (eventTypeName in config.eventToTopic) {
+      return config.eventToTopic[eventTypeName]
+    }
+    return eventTypeName
   }
 
-  private static getEntityID(event: Instance & EventInterface, config: BoosterConfig): UUID {
+  private static getPartitionKey(event: Instance & EventInterface, config: BoosterConfig): UUID {
     const eventName = event.constructor.name
     const evtObject = event as Record<string, unknown>
-    const entityIdField = config.entityIdFields[eventName]
+    const entityIdField = config.partitionKeys[eventName]
     if (entityIdField && entityIdField in evtObject && typeof evtObject[entityIdField] === 'string') {
       return evtObject[entityIdField] as UUID
     }
     if (eventName in config.notifications) {
-      return RegisterHandler.getDefaultNotificationTopic(event)
+      return RegisterHandler.getDefaultNotificationPartitionId(event)
     }
     return RegisterHandler.getDefaultStateEventEntityId(event)
   }
@@ -113,18 +121,10 @@ export class RegisterHandler {
     )
   }
 
-  private static getDefaultNotificationTopic(event: Instance & EventInterface): UUID {
-    if (event.topic && typeof event.topic === 'string') {
-      return event.topic
+  private static getDefaultNotificationPartitionId(event: Instance & NotificationInterface): UUID {
+    if (event.partitionId && typeof event.partitionId === 'string') {
+      return event.partitionId
     }
-
-    throw new Error(
-      `Event ${event.constructor.name} has no specification for the topic. Make sure to specify a string-compatible value identifying the topic this event belongs to.
-
-      You can do it by:
-
-      1. Using the @Topic decorator to mark a field as the topic
-      2. Adding a topic field to the event`
-    )
+    return 'default'
   }
 }

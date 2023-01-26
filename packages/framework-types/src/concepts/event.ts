@@ -8,7 +8,6 @@ import { Class } from '../typelevel'
 export interface EventInterface {
   entityID?: () => UUID
   id?: UUID
-  topic?: UUID
 }
 
 export interface EventMetadata {

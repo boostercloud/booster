@@ -16,7 +16,7 @@ import { createInstance, Promises, getLogger } from '@boostercloud/framework-com
 export class BoosterEventDispatcher {
   /**
    * Entry point to dispatch events coming from the cloud provider.
-   * @param rawEvents List of RAW events from the cloud provider
+   * @param rawEvents List of raw events from the cloud provider
    * @param config
    * @param logger
    */
