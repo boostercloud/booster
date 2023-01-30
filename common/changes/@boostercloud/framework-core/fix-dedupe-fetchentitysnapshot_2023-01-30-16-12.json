@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Implented a lazy entity snapshot system that caches the entities when they're read instead of every time an event is registered in the event store. It also solves a bug that was missing events during reducers if a reducer trew an error.",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
