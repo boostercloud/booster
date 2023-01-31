@@ -6,8 +6,7 @@ import { Class } from '../typelevel'
  * All Event classes of your application must implement this interface.
  */
 export interface EventInterface {
-  entityID?: () => UUID
-  id?: UUID
+  entityID: () => UUID
 }
 
 export interface EventMetadata {

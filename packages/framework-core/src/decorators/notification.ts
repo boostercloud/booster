@@ -1,4 +1,4 @@
-import { AnyClass } from '@boostercloud/framework-types'
+import { Class, NotificationInterface } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
 
 export type NotificationOptions = {
@@ -12,20 +12,18 @@ export type NotificationOptions = {
  */
 export const Notification =
   (options?: NotificationOptions) =>
-  (eventClass: AnyClass): void => {
+  <TEvent extends NotificationInterface>(eventClass: Class<TEvent>): void => {
     Booster.configureCurrentEnv((config): void => {
       if (config.events[eventClass.name] || config.events[eventClass.name]) {
         throw new Error(`A notification called ${eventClass.name} is already registered.
         If you think that this is an error, try performing a clean build.`)
       }
+      const topic = options?.topic ?? 'default-topic'
       if (options?.topic) {
-        config.eventToTopic[eventClass.name] = options.topic
-        config.topicToEvent[options.topic] = eventClass.name
+        config.eventToTopic[eventClass.name] = topic
+        config.topicToEvent[topic] = eventClass.name
       }
       config.notifications[eventClass.name] = {
-        class: eventClass,
-      }
-      config.events[eventClass.name] = {
         class: eventClass,
       }
     })

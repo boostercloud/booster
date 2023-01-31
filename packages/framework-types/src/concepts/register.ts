@@ -1,6 +1,7 @@
 import { EventInterface } from './event'
 import { UserEnvelope, ContextEnvelope } from '../envelope'
 import { UUID } from './uuid'
+import { NotificationInterface } from './notification'
 
 export type FlusherFunction = (record: Register) => Promise<void>
 
@@ -25,7 +26,7 @@ export type FlusherFunction = (record: Register) => Promise<void>
  * ```
  */
 export class Register {
-  public readonly eventList: Array<EventInterface> = []
+  public readonly eventList: Array<EventInterface | NotificationInterface> = []
 
   public constructor(
     readonly requestID: UUID,
@@ -41,6 +42,15 @@ export class Register {
    */
   public events(...events: Array<EventInterface>): Register {
     this.eventList.push(...events)
+    return this
+  }
+
+  /**
+   * Register a list of notifications to be added to the event-store on handler completion
+   * @param notifications
+   */
+  public notifications(...notifications: Array<NotificationInterface>): Register {
+    this.eventList.push(...notifications)
     return this
   }
 

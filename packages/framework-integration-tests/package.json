@@ -76,6 +76,7 @@
     "nyc": "^15.1.0",
     "prettier": "2.3.0",
     "rimraf": "3.0.2",
+    "reflect-metadata": "0.1.13",
     "serverless": "3.8.0",
     "serverless-artillery": "0.5.2",
     "subscriptions-transport-ws": "0.9.18",

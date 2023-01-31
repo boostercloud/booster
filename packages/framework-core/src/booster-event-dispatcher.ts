@@ -38,15 +38,17 @@ export class BoosterEventDispatcher {
 
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
-      await BoosterEventDispatcher.snapshotAndUpdateReadModels(
-        config,
-        entityName,
-        entityID,
-        eventEnvelopes,
-        eventStore,
-        readModelStore
-      )
+      if (!(entityName in config.topicToEvent)) {
+        // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
+        await BoosterEventDispatcher.snapshotAndUpdateReadModels(
+          config,
+          entityName,
+          entityID,
+          eventEnvelopes,
+          eventStore,
+          readModelStore
+        )
+      }
       await BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config)
     }
   }
