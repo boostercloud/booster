@@ -50,7 +50,7 @@
     "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^1.0.0",
+    "@boostercloud/eslint-config": "workspace:^1.4.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.23.1",

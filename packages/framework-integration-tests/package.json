@@ -22,7 +22,7 @@
     "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^1.0.0",
+    "@boostercloud/eslint-config": "workspace:^1.4.0",
     "@boostercloud/application-tester": "workspace:^1.4.0",
     "@boostercloud/cli": "workspace:^1.4.0",
     "@boostercloud/framework-provider-aws-infrastructure": "workspace:^1.4.0",

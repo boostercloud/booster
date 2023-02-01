@@ -39,7 +39,7 @@
     "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^1.0.0",
+    "@boostercloud/eslint-config": "workspace:^1.4.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/child-process-promise": "^2.2.1",
