@@ -39,7 +39,11 @@ export class RegisterHandler {
     return RegisterHandler.handle(Booster.config, record)
   }
 
-  private static wrapEvent(config: BoosterConfig, event: Instance & EventInterface, register: Register): EventEnvelope {
+  private static wrapEvent(
+    config: BoosterConfig,
+    event: Instance & (EventInterface | NotificationInterface),
+    register: Register
+  ): EventEnvelope {
     const eventTypeName = event.constructor.name
     const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
     if (!entityTypeName) {
@@ -48,7 +52,7 @@ export class RegisterHandler {
       )
     }
     const entityID = RegisterHandler.getPartitionKey(event, config)
-    if (!event.entityID || !event.entityID()) {
+    if (!entityID) {
       throw new Error(
         `Event ${eventTypeName} has an empty 'entityID' or the required 'entityID' method was not implemented. Make sure to return a string-compatible value identifying the entity this event belongs to.`
       )
@@ -74,23 +78,23 @@ export class RegisterHandler {
 
   private static getEntityTypeName(
     eventTypeName: string,
-    event: Instance & EventInterface,
+    event: Instance & (EventInterface | NotificationInterface),
     config: BoosterConfig
   ): string {
     if (eventTypeName === BoosterEntityMigrated.name) {
       return (event as BoosterEntityMigrated).oldEntityName
     }
-    if (!(eventTypeName in config.notifications)) {
-      const reducerInfo: ReducerMetadata | undefined = config.reducers[eventTypeName]
-      return reducerInfo?.class?.name
+    if (eventTypeName in config.notifications) {
+      return config.eventToTopic[eventTypeName] ?? 'default-topic'
     }
-    if (eventTypeName in config.eventToTopic) {
-      return config.eventToTopic[eventTypeName]
-    }
-    return eventTypeName
+    const reducerInfo: ReducerMetadata | undefined = config.reducers[eventTypeName]
+    return reducerInfo?.class?.name
   }
 
-  private static getPartitionKey(event: Instance & EventInterface, config: BoosterConfig): UUID {
+  private static getPartitionKey(
+    event: Instance & (EventInterface | NotificationInterface),
+    config: BoosterConfig
+  ): UUID {
     const eventName = event.constructor.name
     const evtObject = event as Record<string, unknown>
     const entityIdField = config.partitionKeys[eventName]
@@ -100,24 +104,20 @@ export class RegisterHandler {
     if (eventName in config.notifications) {
       return RegisterHandler.getDefaultNotificationPartitionId(event)
     }
-    return RegisterHandler.getDefaultStateEventEntityId(event)
+    return RegisterHandler.getDefaultStateEventEntityId(event as Instance & EventInterface)
   }
 
   private static getDefaultStateEventEntityId(event: Instance & EventInterface): UUID {
-    if (event.entityID && typeof event.entityID === 'function') {
-      return event.entityID()
-    }
-    if (event.id && typeof event.id === 'string') {
-      return event.id
+    const entityID = event.entityID()
+    if (entityID) {
+      return entityID
     }
     throw new Error(
       `Event ${event.constructor.name} has no specification for the entity ID. Make sure to specify a string-compatible value identifying the entity this event belongs to.
 
       You can do it by:
 
-      1. Using the @EntityID decorator to mark a field as the entity ID
-      2. Adding an id field to the event
-      3. Adding an entityID method to the event`
+      1. Adding an entityID method to the event`
     )
   }
 
