@@ -1,6 +1,6 @@
 import { Notification } from '@boostercloud/framework-core'
 
-@Notification()
+@Notification({ partitionKey: 'something' })
 export class CartAbandoned {
   public constructor(readonly something: string) {}
 }

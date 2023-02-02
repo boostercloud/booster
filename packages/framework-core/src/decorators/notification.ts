@@ -1,8 +1,9 @@
 import { Class, NotificationInterface } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
 
-export type NotificationOptions = {
-  topic: string
+export type NotificationOptions<TEvent> = {
+  topic?: string
+  partitionKey?: keyof TEvent
 }
 
 /**
@@ -11,8 +12,8 @@ export type NotificationOptions = {
  * @constructor
  */
 export const Notification =
-  (options?: NotificationOptions) =>
-  <TEvent extends NotificationInterface>(eventClass: Class<TEvent>): void => {
+  <TEvent extends NotificationInterface>(options?: NotificationOptions<TEvent>) =>
+  (eventClass: Class<TEvent>): void => {
     Booster.configureCurrentEnv((config): void => {
       if (config.notifications[eventClass.name] || config.events[eventClass.name]) {
         throw new Error(`A notification called ${eventClass.name} is already registered.
@@ -25,6 +26,12 @@ export const Notification =
       }
       config.notifications[eventClass.name] = {
         class: eventClass,
+      }
+      if (options?.partitionKey) {
+        if (config.partitionKeys[eventClass.name]) {
+          throw new Error(`A partition key for ${eventClass.name} is already registered.`)
+        }
+        config.partitionKeys[eventClass.name] = options.partitionKey as string
       }
     })
   }
