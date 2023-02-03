@@ -26,18 +26,28 @@ export interface ScheduledCommandEnvelope extends Envelope {
 
 export type SuperKindType = 'domain' | 'notification' | 'booster'
 
-export interface EventEnvelope extends Envelope {
+interface EventStoreEntryEnvelope extends Envelope {
   typeName: string
   version: number
-  kind: 'event' | 'snapshot'
   superKind: SuperKindType
   entityID: UUID
   entityTypeName: string
   value: EventInterface | EntityInterface
   createdAt: string
-  snapshottedEventCreatedAt?: string
 }
 
+export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
+  kind: 'event'
+}
+export interface EventEnvelope extends NonPersistedEventEnvelope {
+  persistedAt: string
+}
+
+export interface EntitySnapshotEnvelope extends EventStoreEntryEnvelope {
+  kind: 'snapshot'
+  snapshottedEventCreatedAt: string
+  snapshottedEventPersistedAt: string
+}
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
 }

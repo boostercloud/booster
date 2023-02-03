@@ -2,9 +2,9 @@ import {
   BOOSTER_SUPER_KIND,
   BoosterConfig,
   DOMAIN_SUPER_KIND,
-  EventEnvelope,
   EventInterface,
   Instance,
+  NonPersistedEventEnvelope,
   NotFoundError,
   Register,
   SuperKindType,
@@ -36,7 +36,11 @@ export class RegisterHandler {
     return RegisterHandler.handle(Booster.config, record)
   }
 
-  private static wrapEvent(config: BoosterConfig, event: Instance & EventInterface, register: Register): EventEnvelope {
+  private static wrapEvent(
+    config: BoosterConfig,
+    event: Instance & EventInterface,
+    register: Register
+  ): NonPersistedEventEnvelope {
     const eventTypeName = event.constructor.name
     const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
     if (!entityTypeName) {

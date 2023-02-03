@@ -2,6 +2,7 @@
 import {
   BoosterConfig,
   EventEnvelope,
+  EntitySnapshotEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
@@ -23,9 +24,19 @@ export const store = async (
   const logger = getLogger(config, 'events-adapter#store')
   for (const envelope of events) {
     logger.debug('Storing event envelope', envelope)
-    await registry.store(config, envelope)
+    await registry.storeEvent(config, envelope)
   }
   await userApp.boosterEventDispatcher(events)
+}
+
+export const storeSnapshot = async (
+  registry: EventRegistry,
+  snapshotEnvelope: EntitySnapshotEnvelope,
+  config: BoosterConfig
+): Promise<void> => {
+  const logger = getLogger(config, 'events-adapter#storeSnapshot')
+  logger.debug('Storing snapshot envelope', snapshotEnvelope)
+  await registry.storeSnapshot(config, snapshotEnvelope)
 }
 
 const isNewerThan = (isoString: string) => (key: string) => {
@@ -50,7 +61,7 @@ export const forEntitySince = async (
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
   }
   const queryResult = await registry.query(config, query)
-  return queryResult
+  return queryResult as Array<EventEnvelope>
 }
 
 export async function latestEntitySnapshot(
@@ -58,7 +69,7 @@ export async function latestEntitySnapshot(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
+): Promise<EntitySnapshotEnvelope | undefined> {
   const logger = getLogger(config, 'events-adapter#latestEntitySnapshot')
   const query = {
     keyQuery: ['ee', entityTypeName, entityID, 'snapshot'].join(RedisAdapter.keySeparator),
@@ -66,19 +77,19 @@ export async function latestEntitySnapshot(
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
   }
-  const snapshot = (await registry.queryLatest(config, query)) as EventEnvelope
+  const snapshot = (await registry.queryLatest(config, query)) as EntitySnapshotEnvelope
 
   if (snapshot) {
     logger.debug(
       `[EventsAdapter#latestEntitySnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
       snapshot
     )
-    return snapshot as EventEnvelope
+    return snapshot as EntitySnapshotEnvelope
   } else {
     logger.debug(
       `[EventsAdapter#latestEntitySnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
-    return null
+    return undefined
   }
 }
 

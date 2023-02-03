@@ -2,11 +2,13 @@ import { ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
+  EntitySnapshotEnvelope,
   EventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
+  NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
   ReadModelEnvelope,
   ReadModelListResult,
@@ -35,7 +37,11 @@ export interface ProviderEventsLibrary {
     entityID: UUID,
     since?: string
   ): Promise<Array<EventEnvelope>>
-  latestEntitySnapshot(config: BoosterConfig, entityTypeName: string, entityID: UUID): Promise<EventEnvelope | null>
+  latestEntitySnapshot(
+    config: BoosterConfig,
+    entityTypeName: string,
+    entityID: UUID
+  ): Promise<EntitySnapshotEnvelope | undefined>
   search(config: BoosterConfig, parameters: EventSearchParameters): Promise<Array<EventSearchResponse>>
   searchEntitiesIDs(
     config: BoosterConfig,
@@ -43,8 +49,10 @@ export interface ProviderEventsLibrary {
     afterCursor: Record<string, string> | undefined,
     entityTypeName: string
   ): Promise<PaginatedEntitiesIdsResult>
-  /** Streams an event to the corresponding event handler */
-  store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<void>
+  /** Stores a list of events in the events store */
+  store(eventEnvelopes: Array<NonPersistedEventEnvelope>, config: BoosterConfig): Promise<void>
+  /** Stores an entity snapshot in the event store */
+  storeSnapshot(snapshotEnvelope: EntitySnapshotEnvelope, config: BoosterConfig): Promise<void>
 }
 export interface ProviderReadModelsLibrary {
   rawToEnvelopes(config: BoosterConfig, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>
@@ -73,7 +81,7 @@ export interface ProviderReadModelsLibrary {
     readModel: ReadModelInterface,
     expectedCurrentVersion?: number
   ): Promise<unknown>
-  delete(config: BoosterConfig, readModelName: string, readModel: ReadModelInterface | undefined): Promise<any>
+  delete(config: BoosterConfig, readModelName: string, readModel: ReadModelInterface | undefined): Promise<unknown>
   subscribe(config: BoosterConfig, subscriptionEnvelope: SubscriptionEnvelope): Promise<void>
   fetchSubscriptions(config: BoosterConfig, subscriptionName: string): Promise<Array<SubscriptionEnvelope>>
   deleteSubscription(config: BoosterConfig, connectionID: string, subscriptionID: string): Promise<void>

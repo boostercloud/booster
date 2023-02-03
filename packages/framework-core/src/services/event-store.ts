@@ -1,6 +1,7 @@
 import {
   BOOSTER_SUPER_KIND,
   BoosterConfig,
+  EntitySnapshotEnvelope,
   EventEnvelope,
   InvalidParameterError,
   ReducerGlobalError,
@@ -27,12 +28,12 @@ export class EventStore {
    * Also, in order to make next calls faster, this method stores the calculated
    * snapshot.
    */
-  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
 
-    const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventCreatedAt ?? originOfTime
+    const lastVisitedTime = latestSnapshotEnvelope?.snapshottedEventPersistedAt ?? originOfTime
     const pendingEvents = await this.loadEventStreamSince(entityName, entityID, lastVisitedTime)
 
     if (pendingEvents.length <= 0) {
@@ -43,7 +44,7 @@ export class EventStore {
       for (const pendingEvent of pendingEvents) {
         // We double check that what we are reducing is an event
         if (pendingEvent.kind === 'event') {
-          newEntitySnapshot = await this.entityReducer(newEntitySnapshot, pendingEvent)
+          newEntitySnapshot = await this.entityReducer(pendingEvent, newEntitySnapshot)
         }
       }
 
@@ -68,11 +69,11 @@ export class EventStore {
     }
   }
 
-  private async storeSnapshot(snapshot: EventEnvelope): Promise<void> {
+  private async storeSnapshot(snapshot: EntitySnapshotEnvelope): Promise<void> {
     const logger = getLogger(this.config, 'EventStore#storeSnapshot')
     try {
       logger.debug('Storing snapshot in the event store:', snapshot)
-      await this.config.provider.events.store([snapshot], this.config)
+      await this.config.provider.events.storeSnapshot(snapshot, this.config)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
       const error = await globalErrorDispatcher.dispatch(new SnapshotPersistHandlerGlobalError(snapshot, e))
@@ -85,14 +86,14 @@ export class EventStore {
     }
   }
 
-  private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EventEnvelope | null> {
+  private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#loadLatestSnapshot')
     logger.debug(`Loading latest snapshot for entity ${entityName} and ID ${entityID}`)
     const latestSnapshot = await this.config.provider.events.latestEntitySnapshot(this.config, entityName, entityID)
     if (latestSnapshot) {
       return new SchemaMigrator(this.config).migrate(latestSnapshot)
     }
-    return null
+    return undefined
   }
 
   private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
@@ -102,9 +103,9 @@ export class EventStore {
   }
 
   private async entityReducer(
-    latestSnapshot: EventEnvelope | null,
-    eventEnvelope: EventEnvelope
-  ): Promise<EventEnvelope> {
+    eventEnvelope: EventEnvelope,
+    latestSnapshot?: EntitySnapshotEnvelope
+  ): Promise<EntitySnapshotEnvelope> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
       if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
@@ -119,41 +120,41 @@ export class EventStore {
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
       const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
-      let newEntity: any
       try {
-        newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
+        const newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
+
+        const newSnapshot: EntitySnapshotEnvelope = {
+          version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
+          kind: 'snapshot',
+          superKind: migratedEventEnvelope.superKind,
+          requestID: migratedEventEnvelope.requestID,
+          entityID: migratedEventEnvelope.entityID,
+          entityTypeName: migratedEventEnvelope.entityTypeName,
+          typeName: migratedEventEnvelope.entityTypeName,
+          value: newEntity,
+          createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
+          snapshottedEventCreatedAt: migratedEventEnvelope.createdAt,
+          snapshottedEventPersistedAt: migratedEventEnvelope.persistedAt,
+        }
+        logger.debug('Reducer result: ', newSnapshot)
+        return newSnapshot
       } catch (e) {
         const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
         const error = await globalErrorDispatcher.dispatch(new ReducerGlobalError(eventInstance, snapshotInstance, e))
-        if (error) throw error
+        throw error
       }
-
-      const newSnapshot: EventEnvelope = {
-        version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
-        kind: 'snapshot',
-        superKind: migratedEventEnvelope.superKind,
-        requestID: migratedEventEnvelope.requestID,
-        entityID: migratedEventEnvelope.entityID,
-        entityTypeName: migratedEventEnvelope.entityTypeName,
-        typeName: migratedEventEnvelope.entityTypeName,
-        value: newEntity,
-        createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
-        snapshottedEventCreatedAt: migratedEventEnvelope.createdAt,
-      }
-      logger.debug('Reducer result: ', newSnapshot)
-      return newSnapshot
     } catch (e) {
       logger.error('Error when calling reducer', e)
       throw e
     }
   }
 
-  private toBoosterEntityMigratedSnapshot(eventEnvelope: EventEnvelope): EventEnvelope {
+  private toBoosterEntityMigratedSnapshot(eventEnvelope: EventEnvelope): EntitySnapshotEnvelope {
     const logger = getLogger(this.config, 'EventStore#toBoosterEntityMigratedSnapshot')
     const value = eventEnvelope.value as BoosterEntityMigrated
     const entity = value.newEntity
     const className = value.newEntityName
-    const boosterMigratedSnapshot = {
+    const boosterMigratedSnapshot: EntitySnapshotEnvelope = {
       version: this.config.currentVersionFor(className),
       kind: 'snapshot',
       superKind: eventEnvelope.superKind,
@@ -164,7 +165,8 @@ export class EventStore {
       value: entity,
       createdAt: new Date().toISOString(),
       snapshottedEventCreatedAt: eventEnvelope.createdAt,
-    } as EventEnvelope
+      snapshottedEventPersistedAt: eventEnvelope.persistedAt,
+    }
     logger.debug('BoosterEntityMigrated result: ', boosterMigratedSnapshot)
     return boosterMigratedSnapshot
   }

@@ -1,8 +1,14 @@
 import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
-import { EventEnvelope, BoosterConfig, UUID } from '@boostercloud/framework-types'
+import {
+  EventEnvelope,
+  BoosterConfig,
+  UUID,
+  EntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
+} from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
-import { partitionKeyForEvent } from './partition-keys'
+import { partitionKeyForEvent, partitionKeyForSnapshot } from './partition-keys'
 import { Context } from '@azure/functions'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -48,7 +54,7 @@ export async function readEntityLatestSnapshot(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
+): Promise<EntitySnapshotEnvelope | undefined> {
   const logger = getLogger(config, 'events-adapter#readEntityLatestSnapshot')
   const { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
@@ -60,7 +66,7 @@ export async function readEntityLatestSnapshot(
       parameters: [
         {
           name: '@partitionKey',
-          value: partitionKeyForEvent(entityTypeName, entityID, 'snapshot'),
+          value: partitionKeyForSnapshot(entityTypeName, entityID),
         },
       ],
     })
@@ -72,35 +78,69 @@ export async function readEntityLatestSnapshot(
       `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
       snapshot
     )
-    return snapshot as EventEnvelope
+    return snapshot as EntitySnapshotEnvelope
   } else {
     logger.debug(
       `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
-    return null
+    return undefined
   }
 }
 
 export async function storeEvents(
   cosmosDb: CosmosClient,
-  eventEnvelopes: Array<EventEnvelope>,
+  eventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
 ): Promise<void> {
   const logger = getLogger(config, 'events-adapter#storeEvents')
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
   for (const eventEnvelope of eventEnvelopes) {
+    const persistableEvent: EventEnvelope = {
+      ...eventEnvelope,
+      persistedAt: new Date().toISOString(),
+    }
     await cosmosDb
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.eventsStore)
       .items.create({
-        ...eventEnvelope,
+        ...persistableEvent,
         [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
           eventEnvelope.entityTypeName,
-          eventEnvelope.entityID,
-          eventEnvelope.kind
+          eventEnvelope.entityID
         ),
-        [eventsStoreAttributes.sortKey]: new Date().toISOString(),
+        [eventsStoreAttributes.sortKey]: persistableEvent.persistedAt,
       })
   }
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
+}
+
+export async function storeSnapshot(
+  cosmosDb: CosmosClient,
+  snapshotEnvelope: EntitySnapshotEnvelope,
+  config: BoosterConfig
+): Promise<void> {
+  const logger = getLogger(config, 'events-adapter#storeSnapshot')
+  logger.debug('[EventsAdapter#storeSnapshot] Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
+
+  const partitionKey = partitionKeyForSnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
+  /**
+   * The sort key of the snapshot matches the sort key of the last event that generated it.
+   * Entity snapshots can be potentially created by competing processes, so we need to make sure
+   * that no matter what snapshot we find, we can always rebuild the correct state by
+   * replaying all the events that happened after the snapshot we take as the origin.
+   * This way of storing the data makes snapshot caching an idempotent operation, and allows us to
+   * aggressively caching snapshots without worrying about insertion order.
+   */
+  const sortKey = snapshotEnvelope.snapshottedEventPersistedAt
+
+  await cosmosDb
+    .database(config.resourceNames.applicationStack)
+    .container(config.resourceNames.eventsStore)
+    .items.create({
+      ...snapshotEnvelope,
+      [eventsStoreAttributes.partitionKey]: partitionKey,
+      [eventsStoreAttributes.sortKey]: sortKey,
+    })
+
+  logger.debug('[EventsAdapter#storeSnapshot] Snapshot stored')
 }

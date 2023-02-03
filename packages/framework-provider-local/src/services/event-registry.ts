@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { EventEnvelope } from '@boostercloud/framework-types'
+import { EventEnvelope, EntitySnapshotEnvelope } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { eventsDatabase } from '../paths'
 
 export class EventRegistry {
-  public readonly events: DataStore<EventEnvelope> = new DataStore(eventsDatabase)
+  public readonly events: DataStore<EventEnvelope | EntitySnapshotEnvelope> = new DataStore(eventsDatabase)
   constructor() {
     this.events.loadDatabase()
   }
@@ -28,11 +28,11 @@ export class EventRegistry {
     return await queryPromise
   }
 
-  public async queryLatest(query: object): Promise<EventEnvelope | null> {
+  public async queryLatestSnapshot(query: object): Promise<EntitySnapshotEnvelope | undefined> {
     const queryPromise = new Promise((resolve, reject) =>
       this.events
         .find(query)
-        .sort({ createdAt: -1 }) // Sort in descending order (newer timestamps first)
+        .sort({ snapshottedEventPersistedAt: -1 }) // Sort in descending order (newer timestamps first)
         .exec((err, docs) => {
           if (err) reject(err)
           else resolve(docs)
@@ -41,12 +41,12 @@ export class EventRegistry {
 
     const events = (await queryPromise) as Array<EventEnvelope>
     if (events.length <= 0) {
-      return null
+      return undefined
     }
-    return events[0]
+    return events[0] as unknown as EntitySnapshotEnvelope
   }
 
-  public async store(event: EventEnvelope): Promise<void> {
+  public async store(event: EventEnvelope | EntitySnapshotEnvelope): Promise<void> {
     return new Promise((resolve, reject) => {
       this.events.insert(event, (err) => {
         err ? reject(err) : resolve()
