@@ -1,9 +1,9 @@
 import { Class, NotificationInterface } from '@boostercloud/framework-types'
 import { Booster } from '../booster'
+import { getFunctionArguments } from './metadata'
 
-export type NotificationOptions<TEvent> = {
+export type NotificationOptions = {
   topic?: string
-  partitionKey?: keyof TEvent
 }
 
 /**
@@ -12,7 +12,7 @@ export type NotificationOptions<TEvent> = {
  * @constructor
  */
 export const Notification =
-  <TEvent extends NotificationInterface>(options?: NotificationOptions<TEvent>) =>
+  <TEvent extends NotificationInterface>(options?: NotificationOptions) =>
   (eventClass: Class<TEvent>): void => {
     Booster.configureCurrentEnv((config): void => {
       if (config.notifications[eventClass.name] || config.events[eventClass.name]) {
@@ -27,11 +27,27 @@ export const Notification =
       config.notifications[eventClass.name] = {
         class: eventClass,
       }
-      if (options?.partitionKey) {
-        if (config.partitionKeys[eventClass.name]) {
-          throw new Error(`A partition key for ${eventClass.name} is already registered.`)
-        }
-        config.partitionKeys[eventClass.name] = options.partitionKey as string
-      }
     })
   }
+
+export function partitionKey(
+  notificationClass: Class<NotificationInterface>,
+  _functionName: string,
+  parameterIndex: number
+): void {
+  const args = getFunctionArguments(notificationClass)
+  const propertyName = args[parameterIndex]
+  Booster.configureCurrentEnv((config): void => {
+    if (config.partitionKeys[notificationClass.name] && config.partitionKeys[notificationClass.name] !== propertyName) {
+      throw new Error(
+        `Error trying to register a partition key named \`${propertyName}\` for class \`${
+          notificationClass.name
+        }\`. It already had the partition key \`${
+          config.partitionKeys[notificationClass.name]
+        }\` defined and only one partition key is allowed for each notification.`
+      )
+    } else {
+      config.partitionKeys[notificationClass.name] = propertyName
+    }
+  })
+}
