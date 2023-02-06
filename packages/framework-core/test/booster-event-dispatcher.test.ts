@@ -4,12 +4,13 @@ import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { fake, replace, restore, createStubInstance } from 'sinon'
 import {
   BoosterConfig,
-  EventEnvelope,
+  EntitySnapshotEnvelope,
   UUID,
   EntityInterface,
   ProviderLibrary,
   Register,
   EventInterface,
+  NonPersistedEventEnvelope,
 } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { RawEventsParser } from '../src/services/raw-events-parser'
@@ -34,7 +35,7 @@ class AnEventHandler {
     event.getPrefixedId('prefix')
   }
 }
-const someEvent: EventEnvelope = {
+const someEvent: NonPersistedEventEnvelope = {
   version: 1,
   kind: 'event',
   superKind: 'domain',
@@ -55,7 +56,7 @@ const someEntity: EntityInterface = {
   id: '42',
 }
 
-const someEntitySnapshot: EventEnvelope = {
+const someEntitySnapshot: EntitySnapshotEnvelope = {
   version: 1,
   kind: 'snapshot',
   superKind: 'domain',
@@ -65,6 +66,8 @@ const someEntitySnapshot: EventEnvelope = {
   requestID: '234',
   typeName: 'SomeEntity',
   createdAt: 'a few nanoseconds later',
+  snapshottedEventCreatedAt: 'an uncertain future',
+  snapshottedEventPersistedAt: 'a certain future',
 }
 
 describe('BoosterEventDispatcher', () => {

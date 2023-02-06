@@ -1,11 +1,14 @@
-import { EventEnvelope } from '@boostercloud/framework-types'
+import { EntitySnapshotEnvelope, EventEnvelope, NonPersistedEventEnvelope } from '@boostercloud/framework-types'
 import { random, date } from 'faker'
 
-export function createMockEventEnvelop(): EventEnvelope {
-  return createMockEventEnvelopForEntity(random.word(), random.uuid())
+export function createMockNonPersistedEventEnvelop(): NonPersistedEventEnvelope {
+  return createMockNonPersistedEventEnvelopeForEntity(random.word(), random.uuid())
 }
 
-export function createMockEventEnvelopForEntity(entityTypeName: string, entityID: string): EventEnvelope {
+export function createMockNonPersistedEventEnvelopeForEntity(
+  entityTypeName: string,
+  entityID: string
+): NonPersistedEventEnvelope {
   return {
     kind: 'event',
     superKind: 'domain',
@@ -21,12 +24,16 @@ export function createMockEventEnvelopForEntity(entityTypeName: string, entityID
   }
 }
 
-export function createMockSnapshot(): EventEnvelope {
+export function createMockEventEnvelope(): EventEnvelope {
+  return createMockEventEnvelopeForEntity(random.word(), random.uuid())
+}
+
+export function createMockEventEnvelopeForEntity(entityTypeName: string, entityID: string): EventEnvelope {
   return {
-    kind: 'snapshot',
+    kind: 'event',
     superKind: 'domain',
-    entityID: random.uuid(),
-    entityTypeName: random.word(),
+    entityID: entityID,
+    entityTypeName: entityTypeName,
     value: {
       id: random.uuid(),
     },
@@ -34,5 +41,27 @@ export function createMockSnapshot(): EventEnvelope {
     requestID: random.uuid(),
     typeName: random.word(),
     version: random.number(),
+    persistedAt: date.past().toISOString(),
+  }
+}
+
+export function createMockEntitySnapshotEnvelope(entityTypeName?: string, entityId?: string): EntitySnapshotEnvelope {
+  const creationDate = date.past()
+  const snapshottedEventCreatedAt = creationDate.toISOString()
+  const snapshottedEventPersistedAt = new Date(creationDate.getDate() + 1000).toISOString() // 1 second after creation date
+  return {
+    kind: 'snapshot',
+    superKind: 'domain',
+    entityID: entityId ?? random.uuid(),
+    entityTypeName: entityTypeName ?? random.word(),
+    value: {
+      id: random.uuid(),
+    },
+    createdAt: date.past().toISOString(),
+    requestID: random.uuid(),
+    typeName: random.word(),
+    version: random.number(),
+    snapshottedEventCreatedAt,
+    snapshottedEventPersistedAt,
   }
 }

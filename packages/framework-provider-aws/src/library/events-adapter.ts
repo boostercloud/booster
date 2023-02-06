@@ -91,7 +91,7 @@ export async function readEntityLatestSnapshot(
 
 export async function storeEvents(
   dynamoDB: DynamoDB.DocumentClient,
-  eventEnvelopes: Array<EventEnvelope>,
+  eventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
 ): Promise<void> {
   const logger = getLogger(config, 'EventsAdapter#storeEvents')

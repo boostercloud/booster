@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { EventEnvelope, EntitySnapshotEnvelope } from '@boostercloud/framework-types'
+import { EntitySnapshotEnvelope, EventEnvelope, EventStoreEntryEnvelope } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { eventsDatabase } from '../paths'
 
 export class EventRegistry {
-  public readonly events: DataStore<EventEnvelope | EntitySnapshotEnvelope> = new DataStore(eventsDatabase)
+  public readonly events: DataStore<EventStoreEntryEnvelope> = new DataStore(eventsDatabase)
   constructor() {
     this.events.loadDatabase()
   }
@@ -13,25 +13,30 @@ export class EventRegistry {
     return this.events.find(query, projections).sort({ createdAt: createdAt })
   }
 
-  public async query(query: object, createdAt = 1, limit?: number, projections?: unknown): Promise<unknown> {
+  public async query(
+    query: object,
+    createdAt = 1,
+    limit?: number,
+    projections?: unknown
+  ): Promise<EventStoreEntryEnvelope[]> {
     const cursor = this.getCursor(query, createdAt, projections)
     if (limit) {
       cursor.limit(Number(limit))
     }
-    const queryPromise = new Promise((resolve, reject) => {
+    const queryPromise = await new Promise<EventStoreEntryEnvelope[]>((resolve, reject) => {
       cursor.exec((err, docs) => {
         if (err) reject(err)
         else resolve(docs)
       })
     })
 
-    return await queryPromise
+    return queryPromise
   }
 
   public async queryLatestSnapshot(query: object): Promise<EntitySnapshotEnvelope | undefined> {
-    const queryPromise = new Promise((resolve, reject) =>
+    const results = await new Promise<EventStoreEntryEnvelope[]>((resolve, reject) =>
       this.events
-        .find(query)
+        .find({ ...query, kind: 'snapshot' })
         .sort({ snapshottedEventPersistedAt: -1 }) // Sort in descending order (newer timestamps first)
         .exec((err, docs) => {
           if (err) reject(err)
@@ -39,16 +44,15 @@ export class EventRegistry {
         })
     )
 
-    const events = (await queryPromise) as Array<EventEnvelope>
-    if (events.length <= 0) {
+    if (results.length <= 0) {
       return undefined
     }
-    return events[0] as unknown as EntitySnapshotEnvelope
+    return results[0] as EntitySnapshotEnvelope
   }
 
-  public async store(event: EventEnvelope | EntitySnapshotEnvelope): Promise<void> {
+  public async store(storableObject: EventEnvelope | EntitySnapshotEnvelope): Promise<void> {
     return new Promise((resolve, reject) => {
-      this.events.insert(event, (err) => {
+      this.events.insert(storableObject, (err) => {
         err ? reject(err) : resolve()
       })
     })

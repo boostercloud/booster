@@ -6,7 +6,6 @@ import { createInstance } from '@boostercloud/framework-common-helpers'
 import {
   Level,
   BoosterConfig,
-  EventEnvelope,
   UUID,
   ProviderLibrary,
   ReadModelAction,
@@ -14,6 +13,7 @@ import {
   ProjectionResult,
   ReadModelInterface,
   ProjectionMetadata,
+  EntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { BoosterAuthorizer } from '../../src/booster-authorizer'
@@ -150,11 +150,14 @@ describe('ReadModelStore', () => {
     } as ProjectionMetadata<any>,
   ]
 
-  function eventEnvelopeFor(entityName: string): EventEnvelope {
+  function entitySnapshotEnvelopeFor(entityName: string): EntitySnapshotEnvelope {
     let someKeyValue: any = 'joinColumnID'
     if (AnImportantEntityWithArray.name == entityName) {
       someKeyValue = ['joinColumnID', 'anotherJoinColumnID']
     }
+    const snapshottedEventCreatedAtDate = new Date()
+    const snapshottedEventCreatedAt = snapshottedEventCreatedAtDate.toISOString()
+    const snapshottedEventPersistedAt = new Date(snapshottedEventCreatedAtDate.getTime() + 1000).toISOString()
     return {
       version: 1,
       kind: 'snapshot',
@@ -169,13 +172,15 @@ describe('ReadModelStore', () => {
       requestID: 'whatever',
       typeName: entityName,
       createdAt: new Date().toISOString(),
+      snapshottedEventCreatedAt,
+      snapshottedEventPersistedAt,
     }
   }
 
   describe('the `project` method', () => {
     context('when the entity class has no projections', () => {
       it('returns without errors and without performing any actions', async () => {
-        const entitySnapshotWithNoProjections: EventEnvelope = {
+        const entitySnapshotWithNoProjections: EntitySnapshotEnvelope = {
           version: 1,
           kind: 'snapshot',
           superKind: 'domain',
@@ -185,6 +190,8 @@ describe('ReadModelStore', () => {
           requestID: 'whatever',
           typeName: AnImportantEntity.name,
           createdAt: new Date().toISOString(),
+          snapshottedEventCreatedAt: new Date().toISOString(),
+          snapshottedEventPersistedAt: new Date().toISOString(),
         }
 
         replace(config.provider.readModels, 'store', fake())
@@ -209,7 +216,7 @@ describe('ReadModelStore', () => {
         )
         const readModelStore = new ReadModelStore(config)
 
-        await readModelStore.project(eventEnvelopeFor(AnImportantEntity.name))
+        await readModelStore.project(entitySnapshotEnvelopeFor(AnImportantEntity.name))
         expect(config.provider.readModels.store).not.to.have.been.called
         expect(config.provider.readModels.delete).to.have.been.calledThrice
       })
@@ -226,7 +233,7 @@ describe('ReadModelStore', () => {
         )
         const readModelStore = new ReadModelStore(config)
 
-        await readModelStore.project(eventEnvelopeFor(AnImportantEntity.name))
+        await readModelStore.project(entitySnapshotEnvelopeFor(AnImportantEntity.name))
         expect(config.provider.readModels.store).not.to.have.been.called
         expect(config.provider.readModels.delete).not.to.have.been.called
       })
@@ -239,10 +246,10 @@ describe('ReadModelStore', () => {
         replace(readModelStore, 'fetchReadModel', fake.returns(null))
         spy(SomeReadModel, 'someObserver')
         spy(AnotherReadModel, 'anotherObserver')
-        const entityValue: any = eventEnvelopeFor(AnImportantEntity.name).value
+        const entityValue: any = entitySnapshotEnvelopeFor(AnImportantEntity.name).value
         const anEntityInstance = new AnImportantEntity(entityValue.id, entityValue.someKey, entityValue.count)
 
-        await readModelStore.project(eventEnvelopeFor(AnImportantEntity.name))
+        await readModelStore.project(entitySnapshotEnvelopeFor(AnImportantEntity.name))
 
         expect(readModelStore.fetchReadModel).to.have.been.calledThrice
         expect(readModelStore.fetchReadModel).to.have.been.calledWith(SomeReadModel.name, 'joinColumnID')
@@ -311,7 +318,7 @@ describe('ReadModelStore', () => {
         )
         spy(SomeReadModel, 'someObserver')
         spy(AnotherReadModel, 'anotherObserver')
-        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntitySnapshot = entitySnapshotEnvelopeFor(AnImportantEntity.name)
         const entityValue: any = anEntitySnapshot.value
         const anEntityInstance = new AnImportantEntity(entityValue.id, entityValue.someKey, entityValue.count)
         await readModelStore.project(anEntitySnapshot)
@@ -374,7 +381,7 @@ describe('ReadModelStore', () => {
         const readModelStore = new ReadModelStore(config)
         const getPrefixedKeyFake = fake()
         replace(AnImportantEntity.prototype, 'getPrefixedKey', getPrefixedKeyFake)
-        await readModelStore.project(eventEnvelopeFor(AnImportantEntity.name))
+        await readModelStore.project(entitySnapshotEnvelopeFor(AnImportantEntity.name))
         expect(getPrefixedKeyFake).to.have.been.called
       })
     })
@@ -385,7 +392,7 @@ describe('ReadModelStore', () => {
         replace(config.provider.readModels, 'fetch', fake.returns([{ id: 'joinColumnID', count: 31415 }]))
         const getIdFake = fake()
         replace(SomeReadModel.prototype, 'getId', getIdFake)
-        await readModelStore.project(eventEnvelopeFor(AnEntity.name))
+        await readModelStore.project(entitySnapshotEnvelopeFor(AnEntity.name))
         expect(getIdFake).to.have.been.called
       })
     })
@@ -403,7 +410,7 @@ describe('ReadModelStore', () => {
         })
         replace(config.provider.readModels, 'store', fakeStore)
         const readModelStore = new ReadModelStore(config)
-        await readModelStore.project(eventEnvelopeFor(AnImportantEntity.name))
+        await readModelStore.project(entitySnapshotEnvelopeFor(AnImportantEntity.name))
 
         const someReadModelStoreCalls = fakeStore.getCalls().filter((call) => call.args[1] === SomeReadModel.name)
         expect(someReadModelStoreCalls).to.be.have.length(expectedTries)
@@ -444,7 +451,7 @@ describe('ReadModelStore', () => {
         )
         spy(SomeReadModel, 'someObserver')
         spy(SomeReadModel, 'someObserverArray')
-        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntityWithArray.name)
+        const anEntitySnapshot = entitySnapshotEnvelopeFor(AnImportantEntityWithArray.name)
         const entityValue: any = anEntitySnapshot.value
         const anEntityInstance = new AnImportantEntityWithArray(entityValue.id, entityValue.someKey, entityValue.count)
         await readModelStore.project(anEntitySnapshot)
@@ -521,7 +528,7 @@ describe('ReadModelStore', () => {
         replace(config.provider.readModels, 'store', fakeStore)
 
         const readModelStore = new ReadModelStore(config)
-        await readModelStore.project(eventEnvelopeFor(AnImportantEntityWithArray.name))
+        await readModelStore.project(entitySnapshotEnvelopeFor(AnImportantEntityWithArray.name))
 
         const someReadModelStoreCalls = fakeStore.getCalls().filter((call) => call.args[1] === SomeReadModel.name)
         expect(someReadModelStoreCalls).to.be.have.length(expectedJoinColumnIDTries + expectedAnotherJoinColumnIDTries)
@@ -568,7 +575,7 @@ describe('ReadModelStore', () => {
       })
 
       it('applies the projections with the right sequenceMetadata', async () => {
-        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntitySnapshot = entitySnapshotEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config)
         const fakeApplyProjectionToReadModel = fake()
@@ -662,7 +669,7 @@ describe('ReadModelStore', () => {
   describe('the `joinKeyForProjection` private method', () => {
     context('when the joinKey exists', () => {
       it('returns the joinKey value', () => {
-        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntitySnapshot = entitySnapshotEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config) as any
 
@@ -674,7 +681,7 @@ describe('ReadModelStore', () => {
 
     context('when the joinkey does not exist', () => {
       it('should not throw and error an skip', () => {
-        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntitySnapshot = entitySnapshotEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config) as any
         expect(readModelStore.joinKeyForProjection(anEntityInstance, { joinKey: 'whatever' })).to.be.undefined
@@ -685,7 +692,7 @@ describe('ReadModelStore', () => {
   describe('the `sequenceKeyForProjection` private method', () => {
     context('when there is no sequence key for the read model in the config', () => {
       it('returns undefined', () => {
-        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntitySnapshot = entitySnapshotEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config) as any
 
@@ -703,7 +710,7 @@ describe('ReadModelStore', () => {
       })
 
       it('returns a `SequenceMetadata`object with the right sequenceKeyName and sequenceValue values', () => {
-        const anEntitySnapshot = eventEnvelopeFor(AnImportantEntity.name)
+        const anEntitySnapshot = entitySnapshotEnvelopeFor(AnImportantEntity.name)
         const anEntityInstance = createInstance(AnImportantEntity, anEntitySnapshot.value) as any
         const readModelStore = new ReadModelStore(config) as any
 

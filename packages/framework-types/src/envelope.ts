@@ -26,7 +26,7 @@ export interface ScheduledCommandEnvelope extends Envelope {
 
 export type SuperKindType = 'domain' | 'notification' | 'booster'
 
-interface EventStoreEntryEnvelope extends Envelope {
+export interface EventStoreEntryEnvelope extends Envelope {
   typeName: string
   version: number
   superKind: SuperKindType

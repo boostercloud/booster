@@ -18,7 +18,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     const { Provider } = require('./setup')
     return Provider(rockets)
   } catch (e) {
-    // This only happens when running the project locally, where the dependency is not needed
+    // This only happens when running the project from an environment where the dependency is not needed
     return {} as ProviderLibrary
   }
 }

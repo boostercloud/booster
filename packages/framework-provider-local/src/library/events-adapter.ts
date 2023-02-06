@@ -35,10 +35,10 @@ export async function readEntityEventsSince(
       $gt: fromTime,
     },
   }
-  const result = (await eventRegistry.query(query)) as Array<EventEnvelope>
+  const result = await eventRegistry.query(query)
 
   logger.debug(`Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`, result)
-  return result
+  return result as Array<EventEnvelope>
 }
 
 export async function readEntityLatestSnapshot(
@@ -68,17 +68,26 @@ export async function readEntityLatestSnapshot(
 export async function storeEvents(
   userApp: UserApp,
   eventRegistry: EventRegistry,
-  eventEnvelopes: Array<NonPersistedEventEnvelope>,
+  nonPersistedEventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
 ): Promise<void> {
   const logger = getLogger(config, 'events-adapter#storeEvents')
-  logger.debug('Storing the following event envelopes:', eventEnvelopes)
-  for (const eventEnvelope of eventEnvelopes) {
-    await retryIfError(() => persistEvent(eventRegistry, eventEnvelope), OptimisticConcurrencyUnexpectedVersionError)
+  logger.debug('Storing the following event envelopes:', nonPersistedEventEnvelopes)
+  const persistedEventEnvelopes: Array<EventEnvelope> = []
+  for (const nonPersistedEventEnvelope of nonPersistedEventEnvelopes) {
+    const persistableEventEnvelope = {
+      ...nonPersistedEventEnvelope,
+      persistedAt: new Date().toISOString(),
+    }
+    await retryIfError(
+      async () => await persistEvent(eventRegistry, persistableEventEnvelope),
+      OptimisticConcurrencyUnexpectedVersionError
+    )
+    persistedEventEnvelopes.push(persistableEventEnvelope)
   }
-  logger.debug('EventEnvelopes stored')
+  logger.debug('EventEnvelopes stored: ', persistedEventEnvelopes)
 
-  await userApp.boosterEventDispatcher(eventEnvelopes)
+  await userApp.boosterEventDispatcher(persistedEventEnvelopes)
 }
 
 export async function storeSnapshot(
@@ -92,11 +101,7 @@ export async function storeSnapshot(
   logger.debug('Snapshot stored')
 }
 
-async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: NonPersistedEventEnvelope): Promise<void> {
-  const persistableEvent = {
-    ...eventEnvelope,
-    persistedAt: new Date().toISOString(),
-  }
-  return eventRegistry.store(persistableEvent)
+async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
+  await eventRegistry.store(eventEnvelope)
   //TODO: check when there is a write error to implement Optimistic Concurrency
 }

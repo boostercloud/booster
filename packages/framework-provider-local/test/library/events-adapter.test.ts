@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
+import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub, restore } from 'sinon'
 import { EventRegistry } from '../../src/services'
 import {
   readEntityEventsSince,
@@ -7,15 +7,22 @@ import {
   storeEvents,
   rawEventsToEnvelopes,
 } from '../../src/library/events-adapter'
-import { UserApp, EventEnvelope, UUID, BoosterConfig } from '@boostercloud/framework-types'
+import {
+  UserApp,
+  EventEnvelope,
+  EntitySnapshotEnvelope,
+  UUID,
+  BoosterConfig,
+  NonPersistedEventEnvelope,
+} from '@boostercloud/framework-types'
 import { expect } from '../expect'
-import { createMockEventEnvelop, createMockSnapshot } from '../helpers/event-helper'
+import { createMockNonPersistedEventEnvelop, createMockEntitySnapshotEnvelope } from '../helpers/event-helper'
 import { random, date } from 'faker'
 
 describe('events-adapter', () => {
   let mockConfig: BoosterConfig
-  let mockEventEnvelop: EventEnvelope
-  let mockSnapshot: EventEnvelope
+  let mockEventEnvelop: NonPersistedEventEnvelope
+  let mockSnapshot: EntitySnapshotEnvelope
 
   let loggerDebugStub: SinonStub
   let storeStub: SinonStub
@@ -30,8 +37,8 @@ describe('events-adapter', () => {
     mockConfig = new BoosterConfig('test')
     mockConfig.appName = 'nuke-button'
 
-    mockEventEnvelop = createMockEventEnvelop()
-    mockSnapshot = createMockSnapshot()
+    mockEventEnvelop = createMockNonPersistedEventEnvelop()
+    mockSnapshot = createMockEntitySnapshotEnvelope()
 
     loggerDebugStub = stub()
     storeStub = stub()
@@ -52,7 +59,11 @@ describe('events-adapter', () => {
 
     replace(mockEventRegistry, 'store', storeStub as any)
     replace(mockEventRegistry, 'query', queryStub as any)
-    replace(mockEventRegistry, 'queryLatest', queryLatestStub as any)
+    replace(mockEventRegistry, 'queryLatestSnapshot', queryLatestStub as any)
+  })
+
+  afterEach(() => {
+    restore()
   })
 
   describe('rawEventsToEnvelopes', () => {
@@ -63,11 +74,11 @@ describe('events-adapter', () => {
     })
 
     it('should return an array of envelopes', async () => {
-      const value1: EventEnvelope = createMockEventEnvelop()
-      const value2: EventEnvelope = createMockEventEnvelop()
-      const rawEvents: unknown[] = [value1 as unknown, value2 as unknown]
+      const event1: NonPersistedEventEnvelope = createMockNonPersistedEventEnvelop()
+      const event2: NonPersistedEventEnvelope = createMockNonPersistedEventEnvelop()
+      const rawEvents: unknown[] = [event1 as unknown, event2 as unknown]
       const results = rawEventsToEnvelopes(rawEvents)
-      const expected: EventEnvelope[] = [value1, value2]
+      const expected: NonPersistedEventEnvelope[] = [event1, event2]
       expect(results).to.deep.equal(expected)
     })
   })
@@ -212,7 +223,7 @@ describe('events-adapter', () => {
       it('should return null', async () => {
         const result = await readEntityLatestSnapshot(mockEventRegistry, mockConfig, mockEntityTypeName, mockEntityID)
 
-        expect(result).to.be.deep.equal(null)
+        expect(result).to.be.undefined
       })
     })
   })
@@ -233,20 +244,29 @@ describe('events-adapter', () => {
     })
 
     context('with event envelopes', () => {
-      let mockEventEnvelop: EventEnvelope
-
-      beforeEach(async () => {
-        mockEventEnvelop = createMockEventEnvelop()
+      it('should call event registry store', async () => {
+        const mockEventEnvelop = createMockNonPersistedEventEnvelop()
+        // The `persistedAt` will be set in the `persistEvent` method
+        replace(Date.prototype, 'toISOString', () => 'a magical time')
 
         await storeEvents(mockUserApp, mockEventRegistry, [mockEventEnvelop], mockConfig)
+
+        expect(storeStub).to.have.been.calledWithExactly({
+          ...mockEventEnvelop,
+          persistedAt: 'a magical time',
+        })
       })
 
-      it('should call event registry store', () => {
-        expect(storeStub).to.have.been.calledWithExactly(mockEventEnvelop)
-      })
+      it('should call userApp boosterEventDispatcher', async () => {
+        const mockEventEnvelop = createMockNonPersistedEventEnvelop()
+        // The `persistedAt` will be set in the `persistEvent` method
+        replace(Date.prototype, 'toISOString', () => 'a magical time')
 
-      it('should call userApp boosterEventDispatcher', () => {
-        expect(boosterEventDispatcherStub).to.have.been.calledOnceWithExactly([mockEventEnvelop])
+        await storeEvents(mockUserApp, mockEventRegistry, [mockEventEnvelop], mockConfig)
+
+        expect(boosterEventDispatcherStub).to.have.been.calledOnceWithExactly([
+          { ...mockEventEnvelop, persistedAt: 'a magical time' },
+        ])
       })
     })
   })

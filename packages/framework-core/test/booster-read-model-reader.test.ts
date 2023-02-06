@@ -13,7 +13,7 @@ import {
   SubscriptionEnvelope,
   UUID,
 } from '@boostercloud/framework-types'
-import { fake, match, replace, restore, SinonStub, spy, stub } from 'sinon'
+import { fake, match, replace, restore, SinonStub, stub } from 'sinon'
 import { BoosterReadModelsReader } from '../src/booster-read-models-reader'
 import { internet, random } from 'faker'
 import { Booster } from '../src/booster'
@@ -30,6 +30,14 @@ describe('BoosterReadModelReader', () => {
       deleteAllSubscriptions: fake(),
     },
   } as any
+
+  // Avoid printing logs during tests
+  config.logger = {
+    debug: fake(),
+    info: fake(),
+    warn: fake(),
+    error: fake(),
+  }
 
   afterEach(() => {
     restore()
@@ -325,7 +333,7 @@ describe('BoosterReadModelReader', () => {
       claims: {},
     }
 
-    const envelope: ReadModelRequestEnvelope<TestReadModel> = {
+    const readModelRequestEnvelope: ReadModelRequestEnvelope<TestReadModel> = {
       class: TestReadModel,
       className: TestReadModel.name,
       requestID: random.uuid(),
@@ -335,11 +343,11 @@ describe('BoosterReadModelReader', () => {
     } as any
 
     const beforeFn = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
-      return { ...request, filters: { id: { eq: request.filters.id } } }
+      return Promise.resolve({ ...request, filters: { id: { eq: request.filters.id } } })
     }
 
     const beforeFnV2 = async (request: ReadModelRequestEnvelope<any>): Promise<ReadModelRequestEnvelope<any>> => {
-      return { ...request, filters: { id: { eq: request.currentUser?.username } } }
+      return Promise.resolve({ ...request, filters: { id: { eq: request.currentUser?.username } } })
     }
 
     describe('the "search" method', () => {
@@ -368,7 +376,7 @@ describe('BoosterReadModelReader', () => {
 
         migratorStub.callsFake(async (readModel, readModelName) => readModel)
 
-        const result = await readModelReader.search(envelope)
+        const result = await readModelReader.search(readModelRequestEnvelope)
 
         expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
           match.any,
@@ -391,7 +399,7 @@ describe('BoosterReadModelReader', () => {
 
         migratorStub.callsFake(async (readModel, readModelName) => readModel)
 
-        const result = await readModelReader.search(envelope)
+        const result = await readModelReader.search(readModelRequestEnvelope)
 
         expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
           match.any,
@@ -420,8 +428,8 @@ describe('BoosterReadModelReader', () => {
 
         migratorStub.callsFake(async (readModel, readModelName) => readModel)
 
-        envelope.paginatedVersion = true
-        const result = await readModelReader.search(envelope)
+        readModelRequestEnvelope.paginatedVersion = true
+        const result = await readModelReader.search(readModelRequestEnvelope)
 
         expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
           match.any,
@@ -437,7 +445,7 @@ describe('BoosterReadModelReader', () => {
       })
 
       context('when there is only one before hook function', () => {
-        const beforeFnSpy = spy(beforeFn)
+        const fakeBeforeFn = fake(beforeFn)
 
         beforeEach(() => {
           const providerSearcherFunctionFake = fake.returns([])
@@ -446,7 +454,7 @@ describe('BoosterReadModelReader', () => {
             class: TestReadModel,
             authorizer: BoosterAuthorizer.authorizeRoles.bind(null, [UserRole]),
             properties: [],
-            before: [beforeFnSpy],
+            before: [fakeBeforeFn],
           }
 
           replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
@@ -458,18 +466,21 @@ describe('BoosterReadModelReader', () => {
         })
 
         it('calls the before hook function', async () => {
-          await readModelReader.search(envelope)
+          await readModelReader.search(readModelRequestEnvelope)
 
-          const currentUser = envelope.currentUser
-          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, currentUser)
-          const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
-          expect(beforeFnSpy).to.have.returned(expectedReturn)
+          const currentUser = readModelRequestEnvelope.currentUser
+          expect(fakeBeforeFn).to.have.been.calledOnceWithExactly(readModelRequestEnvelope, currentUser)
+          const expectedReturn = {
+            ...readModelRequestEnvelope,
+            filters: { id: { eq: readModelRequestEnvelope.filters.id } },
+          }
+          await expect(fakeBeforeFn.getCall(0).returnValue).to.have.eventually.become(expectedReturn)
         })
       })
 
       context('when there are more than one before hook functions', () => {
-        const beforeFnSpy = spy(beforeFn)
-        const beforeFnV2Spy = spy(beforeFnV2)
+        const beforeFnSpy = fake(beforeFn)
+        const beforeFnV2Spy = fake(beforeFnV2)
 
         beforeEach(() => {
           const providerSearcherFunctionFake = fake.returns([])
@@ -491,20 +502,26 @@ describe('BoosterReadModelReader', () => {
         })
 
         it('chains the before hook functions when there is more than one', async () => {
-          await readModelReader.search(envelope)
+          await readModelReader.search(readModelRequestEnvelope)
 
-          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(envelope, envelope.currentUser)
-          const expectedReturn = Promise.resolve({ ...envelope, filters: { id: { eq: envelope.filters.id } } })
-          expect(beforeFnSpy).to.have.returned(expectedReturn)
+          expect(beforeFnSpy).to.have.been.calledOnceWithExactly(
+            readModelRequestEnvelope,
+            readModelRequestEnvelope.currentUser
+          )
+          const expectedReturn = {
+            ...readModelRequestEnvelope,
+            filters: { id: { eq: readModelRequestEnvelope.filters.id } },
+          }
+          await expect(beforeFnSpy.getCall(0).returnValue).to.have.eventually.become(expectedReturn)
 
           const returnedEnvelope = await beforeFnSpy.returnValues[0]
           expect(beforeFnV2Spy).to.have.been.calledAfter(beforeFnSpy)
           expect(beforeFnV2Spy).to.have.been.calledOnceWithExactly(returnedEnvelope, returnedEnvelope.currentUser)
-          const expectedReturnEnvelope = Promise.resolve({
+          const expectedReturnEnvelope = {
             ...returnedEnvelope,
             filters: { id: { eq: returnedEnvelope.currentUser?.username } },
-          })
-          expect(beforeFnV2Spy).to.have.returned(expectedReturnEnvelope)
+          }
+          await expect(beforeFnV2Spy.getCall(0).returnValue).to.have.eventually.become(expectedReturnEnvelope)
         })
       })
     })
@@ -527,13 +544,13 @@ describe('BoosterReadModelReader', () => {
         it('calls the provider subscribe function and returns its results', async () => {
           const connectionID = random.uuid()
           const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
-            ...envelope,
+            ...readModelRequestEnvelope,
             connectionID,
             operation: noopGraphQLOperation,
             expirationTime: 1,
           }
 
-          await readModelReader.subscribe(connectionID, envelope, noopGraphQLOperation)
+          await readModelReader.subscribe(connectionID, readModelRequestEnvelope, noopGraphQLOperation)
 
           expect(providerSubscribeFunctionFake).to.have.been.calledOnce
           const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
@@ -559,15 +576,15 @@ describe('BoosterReadModelReader', () => {
 
         it('calls the provider subscribe function when setting before hooks and returns the new filter in the result', async () => {
           const connectionID = random.uuid()
-          envelope.filters = { id: { eq: currentUser?.username } } as Record<string, FilterFor<unknown>>
+          readModelRequestEnvelope.filters = { id: { eq: currentUser?.username } } as Record<string, FilterFor<unknown>>
           const expectedSubscriptionEnvelope: SubscriptionEnvelope = {
-            ...envelope,
+            ...readModelRequestEnvelope,
             connectionID,
             operation: noopGraphQLOperation,
             expirationTime: 1,
           }
 
-          await readModelReader.subscribe(connectionID, envelope, noopGraphQLOperation)
+          await readModelReader.subscribe(connectionID, readModelRequestEnvelope, noopGraphQLOperation)
 
           expect(providerSubscribeFunctionFake).to.have.been.calledOnce
           const gotSubscriptionEnvelope = providerSubscribeFunctionFake.getCall(0).lastArg
