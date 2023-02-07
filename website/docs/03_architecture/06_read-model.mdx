@@ -1,6 +1,6 @@
 # Read model
 
-A read model is contains the data of your application that is exposed to the client through the GraphQL API. It's a _projection_ of one or more entities, so you dont have to directly expose them to the client. Booster generates the GraphQL queries that allow you to fetch your read models.
+A read model contains the data of your application that is exposed to the client through the GraphQL API. It's a _projection_ of one or more entities, so you dont have to directly expose them to the client. Booster generates the GraphQL queries that allow you to fetch your read models.
 
 In other words, Read Models are cached data optimized for read operations. They're updated reactively when [Entities](entity) are updated after reducing [events](event).
 
@@ -155,6 +155,87 @@ export class UserReadModel {
 :::info
 Keeping the read model untouched higly recommended in favour of returning a new instance of the read model with the same data. This will not only prevent a new write operation in the database, making your application more efficient. It will also prevent an unnecessary update to be dispatched to any GrahpQL clients subscribed to that read model.
 :::
+
+## Nested queries and calculated values using getters
+
+You can use TypeScript getters in your read models to allow nested queries and/or return calculated values. You can write arbitrary code in a getter, but you will tipically query for related read model objects or generate a value computed based on the current read model instance or context. This greatly improves the potential of customizing your read model responses.
+
+Here's an example of a getter in the `UserReadModel` class that returns all `PostReadModel`s that belong to a specific `UserReadModel`:
+
+```typescript
+@ReadModel
+export class UserReadModel {
+  public constructor(readonly id: UUID, readonly name: string, private postIds: UUID[]) {}
+
+  public get posts(): Promise<PostReadModel[]> {
+    return this.postIds.map((postId) => Booster.readModel(PostReadModel)
+      .filter({
+        id: { eq: postId }
+      })
+      .search()
+  }
+
+  @Projects(User, 'id')
+  public static projectUser(entity: User, current?: UserReadModel): ProjectionResult<UserReadModel>  {
+    return new UserReadModel(entity.id, entity.name, entity.postIds)
+  }
+}
+```
+
+As you can see, the getter posts uses the Booster.readModel(PostReadModel) method and filters it by the ids of the posts saved in the postIds private property. This allows you to retrieve all the PostReadModels that belong to a specific UserReadModel and include them as part of the GraphQL response.
+
+Also, you can see here a simple example of a getter called `currentTime` that returns the timestamp at the moment of the request:
+
+```typescript
+public get currentTime(): Date {
+  return new Date()
+}
+```
+
+With the getters in place, your GraphQL API will start exposing the getters as regular fields and you will be able to transparently read them as follows:
+
+```gql
+query {
+  user(id: "123") {
+    id
+    name
+    currentTime
+    posts {
+      id
+      title
+      content
+    }
+  }
+}
+```
+
+And here is an example of the corresponding JSON response when this query is executed:
+
+```json
+{
+  "data": {
+    "user": {
+      "id": "123",
+      "name": "John Doe",
+      "currentTime": "2022-09-20T18:30:00.000Z",
+      "posts": [
+        {
+          "id": "1",
+          "title": "My first post",
+          "content": "This is the content of my first post"
+        },
+        {
+          "id": "2",
+          "title": "My second post",
+          "content": "This is the content of my second post"
+        }
+      ]
+    }
+  }
+}
+```
+
+Notice that getters are not cached in the read models database, so the getters will be executed every time you include these fields in the queries. If access to nested queries is frequent or the size of the responses are big, you could improe your API response performance by querying the read models separately and joining the results in the client application.
 
 ## Authorizing a read model
 

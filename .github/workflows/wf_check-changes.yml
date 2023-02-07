@@ -6,12 +6,20 @@ on:
       - '1.0.0'
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
 
   pull_request:
     branches:
       - main
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
 
 jobs:
   changes-check:

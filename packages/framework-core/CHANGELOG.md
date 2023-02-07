@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 16 Jan 2023 18:48:00 GMT and should not be manually modified.
+This log was last generated on Tue, 24 Jan 2023 12:31:04 GMT and should not be manually modified.
+
+## 1.4.1
+Tue, 24 Jan 2023 12:31:04 GMT
+
+### Patches
+
+- Implemented a fallback to check the existence of a 'compile' command in the project package.json file for backwards compatibility
 
 ## 1.4.0
 Mon, 16 Jan 2023 18:48:00 GMT

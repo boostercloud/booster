@@ -5,5 +5,6 @@ import { FakeOverrides, fakeService } from '@boostercloud/application-tester/src
 export const makeTestFileSystem = (overrides?: FakeOverrides<FileSystemService>) =>
   fakeService(FileSystemService, {
     readDirectoryContents: fake.returns([]),
+    readFileContents: fake.returns('{}'),
     ...overrides,
   })

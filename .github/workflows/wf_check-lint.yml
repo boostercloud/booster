@@ -6,6 +6,10 @@ on:
       - '1.0.0'
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
 
 jobs:
   lint:

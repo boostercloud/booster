@@ -5,6 +5,10 @@ on:
       - 'main'
     paths-ignore:
       - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
 
 jobs:
   integration-tests:
