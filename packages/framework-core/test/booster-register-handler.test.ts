@@ -17,6 +17,10 @@ class SomeEvent {
   }
 }
 
+class SomeNotification {
+  public constructor() {}
+}
+
 describe('the `RegisterHandler` class', () => {
   const testConfig = new BoosterConfig('Test')
   testConfig.logLevel = Level.debug
@@ -145,6 +149,37 @@ describe('the `RegisterHandler` class', () => {
       createdAt: 'right here, right now!',
       currentUser: user,
       typeName: 'SomeEvent',
+    })
+  })
+
+  it('can wrap notifications to produce eventEnvelopes', () => {
+    const config = new BoosterConfig('test')
+    config.notifications[SomeNotification.name] = {
+      class: SomeNotification,
+    }
+
+    const user: UserEnvelope = {
+      username: 'paco@example.com',
+      roles: ['Paco'],
+      claims: {},
+    }
+
+    const register = new Register('1234', {} as any, RegisterHandler.flush, user)
+    const notification = new SomeNotification()
+    replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
+
+    const registerHandler = RegisterHandler as any
+    expect(registerHandler.wrapEvent(config, notification, register)).to.deep.equal({
+      version: 1,
+      kind: 'event',
+      superKind: 'domain',
+      entityID: 'default',
+      requestID: '1234',
+      entityTypeName: 'default-topic',
+      value: notification,
+      createdAt: 'right here, right now!',
+      currentUser: user,
+      typeName: SomeNotification.name,
     })
   })
 
