@@ -148,6 +148,25 @@ describe('BoosterEventDispatcher', () => {
           config
         )
       })
+
+      it("doesn't call snapshotAndUpdateReadModels if the entity name is in config.topicToEvent", async () => {
+        const stubEventStore = createStubInstance(EventStore)
+        const stubReadModelStore = createStubInstance(ReadModelStore)
+
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
+        replace(boosterEventDispatcher, 'dispatchEntityEventsToEventHandlers', fake())
+
+        const overriddenConfig = { ...config }
+        overriddenConfig.topicToEvent = { [someEvent.entityTypeName]: 'SomeEvent' }
+
+        const callback = boosterEventDispatcher.eventProcessor(stubEventStore, stubReadModelStore)
+
+        await callback(someEvent.entityTypeName, someEvent.entityID, [someEvent], overriddenConfig)
+        overriddenConfig.topicToEvent = {}
+
+        expect(boosterEventDispatcher.snapshotAndUpdateReadModels).not.to.have.been.called
+      })
     })
 
     describe('the `snapshotAndUpdateReadModel` method', () => {
