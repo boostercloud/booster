@@ -1,2 +1,2 @@
 # Raise this number when you want to force a new commit hash, useful for integration tests
-version: 2
+version: 3
