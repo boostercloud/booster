@@ -24,7 +24,13 @@ export class FlushNotifications {
     return [previousCart, afterCart]
   }
 
-  private static async getEntity(cartId: UUID): Promise<Cart> {
-    return (await Booster.entity(Cart, cartId)) as Cart
+  private static async getEntity(cartId: UUID, retries = 0): Promise<Cart> {
+    const cart = await Booster.entity(Cart, cartId)
+    if (cart || retries >= 10) {
+      return cart as Cart
+    }
+    return new Promise((resolve) => {
+      setTimeout(async () => resolve(await FlushNotifications.getEntity(cartId, retries + 1)), 1000)
+    })
   }
 }

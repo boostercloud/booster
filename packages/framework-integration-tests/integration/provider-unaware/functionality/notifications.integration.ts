@@ -79,13 +79,9 @@ describe('notifications', async () => {
     )
 
     const mockCartId = random.uuid()
-    const mockProductId = random.uuid()
-    const mockQuantity = random.number({ min: 1 })
     const response = await client.mutate({
       variables: {
         cartId: mockCartId,
-        productId: mockProductId,
-        quantity: mockQuantity,
       },
       mutation: gql`
         mutation AbandonCart($cartId: ID!) {
@@ -107,6 +103,7 @@ describe('notifications', async () => {
     // Verify latest event
     const latestEvent: Array<any> = await applicationUnderTest.query.events(`defaultTopic-${mockCartId}-event`)
     expect(latestEvent).not.to.be.null
+    expect(latestEvent).not.to.be.empty
 
     expect(latestEvent[0].entityTypeName_entityID_kind).to.be.equal(`defaultTopic-${mockCartId}-event`)
     expect(latestEvent[0].value.something).to.be.equal(mockCartId)
