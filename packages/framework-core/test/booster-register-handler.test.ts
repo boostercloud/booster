@@ -175,7 +175,7 @@ describe('the `RegisterHandler` class', () => {
       superKind: 'domain',
       entityID: 'default',
       requestID: '1234',
-      entityTypeName: 'default-topic',
+      entityTypeName: 'defaultTopic',
       value: notification,
       createdAt: 'right here, right now!',
       currentUser: user,

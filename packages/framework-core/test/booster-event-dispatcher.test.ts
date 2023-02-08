@@ -61,7 +61,7 @@ const someNotification: EventEnvelope = {
   kind: 'event',
   superKind: 'domain',
   entityID: 'default',
-  entityTypeName: 'default-topic',
+  entityTypeName: 'defaultTopic',
   value: {},
   requestID: '123',
   typeName: SomeNotification.name,
