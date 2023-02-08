@@ -16,6 +16,10 @@ runs:
 
     - uses: ./.github/actions/call-rush
       with:
+        command: update
+
+    - uses: ./.github/actions/call-rush
+      with:
         command: install
 
     - id: rush-build
