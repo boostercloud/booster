@@ -19,7 +19,7 @@ export const Notification =
         throw new Error(`A notification called ${eventClass.name} is already registered.
         If you think that this is an error, try performing a clean build.`)
       }
-      const topic = options?.topic ?? 'default-topic'
+      const topic = options?.topic ?? 'defaultTopic'
       if (topic) {
         config.eventToTopic[eventClass.name] = topic
         config.topicToEvent[topic] = eventClass.name

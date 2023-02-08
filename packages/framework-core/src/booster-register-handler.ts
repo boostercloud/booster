@@ -85,7 +85,7 @@ export class RegisterHandler {
       return (event as BoosterEntityMigrated).oldEntityName
     }
     if (eventTypeName in config.notifications) {
-      return config.eventToTopic[eventTypeName] ?? 'default-topic'
+      return config.eventToTopic[eventTypeName] ?? 'defaultTopic'
     }
     const reducerInfo: ReducerMetadata | undefined = config.reducers[eventTypeName]
     return reducerInfo?.class?.name
