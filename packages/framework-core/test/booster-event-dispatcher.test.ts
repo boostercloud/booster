@@ -78,6 +78,12 @@ describe('BoosterEventDispatcher', () => {
   const config = new BoosterConfig('test')
   config.provider = {} as ProviderLibrary
   config.events[SomeEvent.name] = { class: SomeEvent }
+  config.logger = {
+    info: fake(),
+    error: fake(),
+    debug: fake(),
+    warn: fake(),
+  }
 
   context('with a configured provider', () => {
     describe('the `dispatch` method', () => {
@@ -91,6 +97,20 @@ describe('BoosterEventDispatcher', () => {
           config,
           rawEvents,
           (BoosterEventDispatcher as any).eventProcessor
+        )
+      })
+
+      it('logs and ignores errors thrown by `streamPerEntityEvents`', async () => {
+        const error = new Error('some error')
+        replace(RawEventsParser, 'streamPerEntityEvents', fake.rejects(error))
+
+        const rawEvents = [{ some: 'raw event' }, { some: 'other raw event' }]
+        await expect(BoosterEventDispatcher.dispatch(rawEvents, config)).not.to.be.rejected
+
+        expect(config.logger?.error).to.have.been.calledWith(
+          '[Booster]|BoosterEventDispatcher#dispatch: ',
+          'Unhandled error while dispatching event: ',
+          error
         )
       })
     })

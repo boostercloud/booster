@@ -68,6 +68,12 @@ describe('RawEventsParser', () => {
         rawToEnvelopes: fakeRawToEnvelopes,
       },
     } as unknown as ProviderLibrary
+    config.logger = {
+      error: fake(),
+      info: fake(),
+      debug: fake(),
+      warn: fake(),
+    }
   })
 
   describe('streamPerEntityEvents', () => {
@@ -101,16 +107,20 @@ describe('RawEventsParser', () => {
     })
 
     it('calls the callback function for all the events per entity even if for some it throws', async () => {
+      const error = new Error('Wow, such error, many failures!')
       const events = [] as Array<EventEnvelope>
       const callbackFunction = fake(
         async (entityName: string, entityId: UUID, eventEnvelopes: Array<EventEnvelope>): Promise<void> => {
           if (entityName === entityAName) {
-            throw new Error('Wow, such error, many failures!')
+            throw error
           }
           events.push(...eventEnvelopes)
         }
       )
-      await RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)
+
+      await expect(RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)).to.be.eventually
+        .fulfilled
+
       expect(callbackFunction).to.have.been.calledTwice
       expect(callbackFunction).to.have.been.calledWithExactly(
         entityAName,
@@ -126,6 +136,12 @@ describe('RawEventsParser', () => {
       ]
       expect(callbackFunction).to.have.been.calledWithExactly(entityBName, entityBID, entityBEvents, config)
       expect(events).to.deep.equal(entityBEvents)
+
+      expect(config.logger?.error).to.have.been.calledWithExactly(
+        '[Booster]|RawEventsParser#streamPerEntityEvents: ',
+        `An error occurred while processing events for entity ${entityAName} with ID ${entityAID}`,
+        error
+      )
     })
   })
 })
