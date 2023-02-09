@@ -156,7 +156,7 @@ describe('BoosterEventDispatcher', () => {
       })
     })
 
-    describe('the `snapshotAndUpdateReadModel` method', () => {
+    describe('the `snapshotAndUpdateReadModels` method', () => {
       it('gets the updated state for the event entity', async () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         const eventStore = createStubInstance(EventStore)
@@ -191,6 +191,33 @@ describe('BoosterEventDispatcher', () => {
         )
         expect(readModelStore.project).to.have.been.calledOnce
         expect(readModelStore.project).to.have.been.calledWith(someEntitySnapshot)
+      })
+
+      context('when the entity reduction fails', () => {
+        it('logs the error, does not throw it, and the projects method is not called', async () => {
+          const boosterEventDispatcher = BoosterEventDispatcher as any
+          const eventStore = createStubInstance(EventStore)
+          const readModelStore = createStubInstance(ReadModelStore)
+          const error = new Error('some error')
+          eventStore.fetchEntitySnapshot = fake.rejects(error) as any
+
+          await expect(
+            boosterEventDispatcher.snapshotAndUpdateReadModels(
+              config,
+              someEvent.entityTypeName,
+              someEvent.entityID,
+              eventStore,
+              readModelStore
+            )
+          ).to.be.eventually.fulfilled
+
+          expect(readModelStore.project).not.to.have.been.called
+          expect(config.logger?.error).to.have.been.calledWith(
+            '[Booster]|BoosterEventDispatcher#snapshotAndUpdateReadModels: ',
+            'Error while fetching or reducing entity snapshot:',
+            error
+          )
+        })
       })
     })
 

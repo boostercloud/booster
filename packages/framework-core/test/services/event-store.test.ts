@@ -504,31 +504,30 @@ describe('EventStore', () => {
 
           const reducer = stub()
           const reducersIds = ['42', '90', '42', '91', '42', '92'] // BEM events could return a different ID
-          const reducersCount = [1, 2, 3, 4, 5, 6]
-          reducersCount.forEach((result, index) => {
+          for (let index = 0; index < 6; index++) {
             if (index === 2) {
               reducer.onCall(index).rejects(new Error('Error on reducer'))
             } else {
               reducer.onCall(index).returns(
                 snapshotEnvelopeFor({
                   id: reducersIds[index],
-                  count: result,
+                  count: index + 1,
                 })
               )
             }
-          })
+          }
           replace(eventStore, 'entityReducer', reducer)
 
           replace(eventStore, 'storeSnapshot', fake())
 
           // A list of pending events for entityID = 42 and for BEM 90, 91 and 92
-          const someEventEnvelope = eventEnvelopeFor(someEvent, AnEvent.name)
-          const bemEventsEnvelopes = ['90', '91', '92'].map((id) => {
+          const someEventEnvelopes = [1, 3, 5].map((delta) => eventEnvelopeFor({ ...someEvent, delta }, AnEvent.name))
+          const bemEventsEnvelopes = ['90', '91', '92'].map((id, index) => {
             return eventEnvelopeFor(
               {
                 entityID: () => '42', // BEM events will return oldEntityId
                 entityId: 42,
-                delta: 2,
+                delta: 2 * (index + 1),
                 superKind: BOOSTER_SUPER_KIND,
                 newEntity: {
                   id: id,
@@ -538,11 +537,11 @@ describe('EventStore', () => {
             )
           })
           const pendingEvents = [
-            someEventEnvelope,
+            someEventEnvelopes[0],
             bemEventsEnvelopes[0],
-            someEventEnvelope,
+            someEventEnvelopes[1],
             bemEventsEnvelopes[1],
-            someEventEnvelope,
+            someEventEnvelopes[2],
             bemEventsEnvelopes[2],
           ]
           replace(eventStore, 'loadEventStreamSince', fake.resolves(pendingEvents))
@@ -554,6 +553,14 @@ describe('EventStore', () => {
           )
 
           expect(eventStore.entityReducer).to.have.been.calledThrice
+          expect(eventStore.entityReducer).to.have.been.calledWith(pendingEvents[0], someSnapshotEnvelope)
+          expect(eventStore.entityReducer).to.have.been.calledWith(pendingEvents[1], match.any)
+          expect(eventStore.entityReducer).to.have.been.calledWith(pendingEvents[2], match.any)
+          expect(eventStore.entityReducer).not.to.have.been.calledWith(pendingEvents[3], match.any)
+          expect(eventStore.entityReducer).not.to.have.been.calledWith(pendingEvents[4], match.any)
+          expect(eventStore.entityReducer).not.to.have.been.calledWith(pendingEvents[5], match.any)
+
+          expect(eventStore.storeSnapshot).not.to.have.been.called
         })
       })
 

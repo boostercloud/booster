@@ -36,6 +36,10 @@ export class BoosterEventDispatcher {
     }
   }
 
+  /**
+   * Builds a function that will be called once for each entity from the `RawEventsParser.streamPerEntityEvents` method
+   * after the page of events is grouped by entity.
+   */
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
       await Promise.allSettled([
@@ -59,7 +63,12 @@ export class BoosterEventDispatcher {
     readModelStore: ReadModelStore
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#snapshotAndUpdateReadModels')
-    const entitySnapshot = await eventStore.fetchEntitySnapshot(entityName, entityID)
+    let entitySnapshot = undefined
+    try {
+      entitySnapshot = await eventStore.fetchEntitySnapshot(entityName, entityID)
+    } catch (e) {
+      logger.error('Error while fetching or reducing entity snapshot:', e)
+    }
     if (!entitySnapshot) {
       logger.debug('No new snapshot generated, skipping read models projection')
       return
