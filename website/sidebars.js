@@ -10,7 +10,7 @@ const sidebars = {
       link: {
         type: 'generated-index',
       },
-      items: ['getting-started/installation', 'getting-started/configuration', 'getting-started/coding'],
+      items: ['getting-started/installation', 'getting-started/coding'],
     },
     {
       type: 'category',
@@ -55,7 +55,22 @@ const sidebars = {
     },
     'graphql',
     'booster-cli',
-    'going-deeper',
+    {
+      type: 'category',
+      label: 'Going deeper with Booster',
+      link: {
+        type: 'generated-index',
+      },
+      items: [
+        'going-deep/framework-packages',
+        'going-deep/infrastructure-providers',
+        'going-deep/custom-providers',
+        'going-deep/environment-configuration',
+        'going-deep/rockets',
+        'going-deep/custom-templates',
+        'going-deep/migrate-version',
+      ],
+    },
     'frequently-asked-questions',
     'contributing',
   ],
