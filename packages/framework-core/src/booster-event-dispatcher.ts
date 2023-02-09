@@ -38,9 +38,16 @@ export class BoosterEventDispatcher {
 
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      // TODO: Separate the snapshot creation/read-model generation from the event handling into two independent processes.
-      await BoosterEventDispatcher.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
-      await BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config)
+      await Promise.allSettled([
+        await BoosterEventDispatcher.snapshotAndUpdateReadModels(
+          config,
+          entityName,
+          entityID,
+          eventStore,
+          readModelStore
+        ),
+        await BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config),
+      ])
     }
   }
 
