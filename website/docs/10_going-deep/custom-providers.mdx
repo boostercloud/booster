@@ -1,0 +1,80 @@
+# Create custom providers
+
+If you want to have the control over the infrastructure deployed to any cloud provider or have a full custom cloud implementation. Booster provides the possibility to develop a fully custom clod provider. 
+
+## How do Booster cloud providers work?
+
+Clouds providers have to implement two specific interfaces: 
+-  **Infrastructure:** This interface is used during deployment to create, destroy and configurate all the infrastructure necessary to run the application. 
+-  **Runtime:** This inteface implements all the interaction between Booster framework and the deployed infrastructure in runtime. 
+
+![architecture](/img/interface.jpg)
+
+## The infrastructure interface in detail
+
+The provider infrastructure interface by convention is implemented in a package ending with `-infrastructure` name like the `framework-provider-aws-infrastructure`.  As it has been commented, this package 
+includes all the necessary to deploy and configure cloud elements for running your application. For instance in the case of AWS, this package is in charge of deploy the DynamoDB for your event store, 
+create all the lambdas, and configure all the API gateway configuration for your application.
+
+Internally the infrastructure package interface is composed by two methods:
+
+- **deploy**: This method is called during the deployment by the CLI and it should be in charge to deploy all the neccesary resource for your application and rockets. 
+- **nuke**: This is method is charge of destroy all generated resources during the deploy and it is called during the nuke process. 
+
+For the implementation of the infrastructure interface you can use any Infrastructure as Code tool provided by cloud providers or third parties.
+
+## The runtime interface in detail
+
+The other key aspect during the implementation of a provider is the runtime package. This package is in charge of the interaction between Booster framework and all deployed resources when the application is running.
+For instance, this package has the responsability to store data in the event store, performs the data projections, etc...
+
+The runtime interface is divided in different sections:
+
+### Events
+This section is in charge of all operations related to events. the methods of this section are the following:
+- **rawToEnvelopes:** Inside the framework all user application data is processed encapsulated in an envelope object. This particular function performs the transformation from the used database data into a Booster framework envelope object.
+- **forEntitySince:** This method have to returns all the events associated with an specific entity.
+- **latestEntitySnapshot:** With this method the framework should be able to obtains the latest snapshot for an specific entity.
+- **search:** This method receives a query and it should perform it in the database used by the provider and return the result. 
+- **store:** This method is used to store new events in the database. 
+- **searchEntitiesIDs:** This method is used for implementing the pagination in searches. 
+
+### Read Models
+This section of the interface provides to the framework the ability to interact with the database to manage read models thanks to the following methods:
+- **rawToEnvelopes:** This method is used to transform all database data into read models envelopes. 
+- **fetch:** Fetch a specific read model from the database. 
+- **search:** This method receives a search query and it should return the read model search result.
+- **store:** Save a new read model projection on the database. 
+- **delete:** Delete a read model from the database. 
+- **subscribe:** This method is used to susbcribe a client to an specific read model.
+- **fetchSubscriptions:** Get the list of all clients subscribed to a specific read model.
+- **deleteSubscription:** Delete a specific read model subscription.
+- **deleteAllSubscriptions:** Delete all subscription for a specific read model. 
+
+### GraphQL
+This section of the API provides all necessary to receive and return GraphQL query from client side and create the return for requests:
+- **rawToEnvelope:** This method receives the request from the client with the GraphQL query and it should return the envelope object for the GraphQL query
+- **handleResult** This method receives the GraphQL results and it should return the response object for the client.
+
+### API responses
+General API response management:
+- **requestSucceeded:** This is a general method for processing sucess responses.
+- **requestFailed:** This is a general method for processing error responses.
+
+### Connections
+This section of the API is in charge of the connection management for subscription at API gateway level:
+- **storeData:** This method receives all the information about the incoming connection and it should store the data on a database. 
+- **fetchData:** Fetch the specific client connection information from the database.
+- **deleteData:** Delete all the information about a specific client connection.
+- **sendMessage:** Send a message to a specific client. This method get the message and destination as parameters and it should be able to fetch the connection information from the database and send the provided data to the client. 
+
+### Scheduled
+Finally, this section of the API is related to scheduled commands:
+- **rawToEnvelope:** as in other sections, this method is in charge to transform the scheduled command into a framework envelope.
+
+## Tips for developing custom providers
+
+- As a starting point, check the implementation of other providers to check how evertyhing is implemented. 
+- Start the provider implementation by the infrastructure package because you will get all the infrastructure deployed and later the work with the runtime API will be easier. 
+- If you need support during the development remember that you can have access to our [Discord](https://discord.gg/bDY8MKx) where some community members will can help you. 
+
