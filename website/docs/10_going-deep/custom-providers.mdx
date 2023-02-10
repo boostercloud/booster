@@ -20,6 +20,8 @@ Internally the infrastructure package interface is composed by two methods:
 
 - **deploy**: This method is called during the deployment by the CLI and it should be in charge to deploy all the neccesary resource for your application and rockets. 
 - **nuke**: This is method is charge of destroy all generated resources during the deploy and it is called during the nuke process. 
+- **start**: This method is used when the provider implements a server that needs to be started (i.e. the local provider)
+- **synth**: This method allows you to export the infrastructure to a file (for instance, if you use the Terraform CDK, you can export the script here to run it using conventional terraform tools)
 
 For the implementation of the infrastructure interface you can use any Infrastructure as Code tool provided by cloud providers or third parties.
 
