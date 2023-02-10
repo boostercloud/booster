@@ -39,9 +39,7 @@ const sidebars = {
         'features/event-stream',
         'features/schedule-actions',
         'features/logging',
-        'features/error-handling',
-        'features/data-migrations',
-        'features/testing',
+        'features/error-handling'
       ],
     },
     {
@@ -62,13 +60,14 @@ const sidebars = {
         type: 'generated-index',
       },
       items: [
-        'going-deep/framework-packages',
-        'going-deep/infrastructure-providers',
-        'going-deep/custom-providers',
         'going-deep/environment-configuration',
+        'going-deep/infrastructure-providers',
+        'going-deep/framework-packages',
+        'going-deep/testing',
+        'going-deep/data-migrations',
+        'going-deep/custom-providers',
         'going-deep/rockets',
-        'going-deep/custom-templates',
-        'going-deep/migrate-version',
+        'going-deep/custom-templates'
       ],
     },
     'frequently-asked-questions',
