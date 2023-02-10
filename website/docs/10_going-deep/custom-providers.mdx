@@ -23,7 +23,7 @@ Internally the infrastructure package interface is composed by two methods:
 - **start**: This method is used when the provider implements a server that needs to be started (i.e. the local provider)
 - **synth**: This method allows you to export the infrastructure to a file (for instance, if you use the Terraform CDK, you can export the script here to run it using conventional terraform tools)
 
-For the implementation of the infrastructure interface you can use any Infrastructure as Code tool provided by cloud providers or third parties.
+The infrastructure interface just defines an adapter for Booster so the framework knows how to start any of the described processes, but you can use any Infrastructure as Code tool that has a Typescript DSL (CDK) or even call other CLI tools or scripts if you rather maintain it using a different technology.
 
 ## The runtime interface in detail
 
