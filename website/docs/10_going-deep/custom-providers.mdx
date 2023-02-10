@@ -30,7 +30,7 @@ For the implementation of the infrastructure interface you can use any Infrastru
 The other key aspect during the implementation of a provider is the runtime package. This package is in charge of the interaction between Booster framework and all deployed resources when the application is running.
 For instance, this package has the responsability to store data in the event store, performs the data projections, etc...
 
-The runtime interface is divided in different sections:
+The runtime interface ([ProviderLibrary](https://github.com/boostercloud/booster/blob/main/packages/framework-types/src/provider.ts)) is divided in seven sections:
 
 ### Events
 This section is in charge of all operations related to events. the methods of this section are the following:
