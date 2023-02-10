@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
