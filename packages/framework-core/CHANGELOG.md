@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 24 Jan 2023 12:31:04 GMT and should not be manually modified.
+This log was last generated on Mon, 13 Feb 2023 13:56:07 GMT and should not be manually modified.
+
+## 1.5.0
+Mon, 13 Feb 2023 13:56:07 GMT
+
+### Minor changes
+
+- rocket dispatcher request rocketFunctionId to the provider
 
 ## 1.4.1
 Tue, 24 Jan 2023 12:31:04 GMT
