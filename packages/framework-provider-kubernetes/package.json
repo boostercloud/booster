@@ -46,7 +46,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^1.4.1",
+    "@boostercloud/eslint-config": "workspace:^1.5.0",
     "@types/body-parser": "~1.19.2",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
