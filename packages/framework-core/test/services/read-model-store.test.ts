@@ -170,7 +170,8 @@ describe('ReadModelStore', () => {
       } as any,
       requestID: 'whatever',
       typeName: entityName,
-      createdAt: new Date().toISOString(),
+      createdAt: snapshottedEventCreatedAt,
+      persistedAt: new Date().toISOString(),
       snapshottedEventCreatedAt,
     }
   }
@@ -188,6 +189,7 @@ describe('ReadModelStore', () => {
           requestID: 'whatever',
           typeName: AnImportantEntity.name,
           createdAt: new Date().toISOString(),
+          persistedAt: new Date().toISOString(),
           snapshottedEventCreatedAt: new Date().toISOString(),
         }
 

@@ -54,7 +54,8 @@ export function createMockEntitySnapshotEnvelope(entityTypeName?: string, entity
     value: {
       id: random.uuid(),
     },
-    createdAt: date.past().toISOString(),
+    createdAt: snapshottedEventCreatedAt,
+    persistedAt: new Date(creationDate.getTime() + 1000).toISOString(),
     requestID: random.uuid(),
     typeName: random.word(),
     version: random.number(),

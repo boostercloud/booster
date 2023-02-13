@@ -5,6 +5,7 @@ import {
   EntitySnapshotEnvelope,
   UUID,
   NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import fetch from 'node-fetch'
@@ -23,7 +24,7 @@ export class EventRegistry {
     this.redis = RedisAdapter.build()
   }
 
-  public async storeEvent(config: BoosterConfig, event: NonPersistedEventEnvelope): Promise<void> {
+  public async storeEvent(config: BoosterConfig, event: NonPersistedEventEnvelope): Promise<EventEnvelope> {
     const logger = getLogger(config, 'event-registry#store')
     const stateUrl = `${this.url}/v1.0/state/statestore`
     logger.debug('About to post', event)
@@ -44,13 +45,22 @@ export class EventRegistry {
       const err = response.text()
       throw err
     }
+    return persistableEvent
   }
 
-  public async storeSnapshot(config: BoosterConfig, snapshot: EntitySnapshotEnvelope): Promise<void> {
+  public async storeSnapshot(
+    config: BoosterConfig,
+    snapshot: NonPersistedEntitySnapshotEnvelope
+  ): Promise<EntitySnapshotEnvelope> {
     const logger = getLogger(config, 'event-registry#storeSnapshot')
     const stateUrl = `${this.url}/v1.0/state/statestore`
     logger.debug('About to post', snapshot)
-    const data = [{ key: this.snapshotKey(snapshot), value: snapshot }]
+    const persistableSnapshot = {
+      ...snapshot,
+      createdAt: snapshot.snapshottedEventCreatedAt,
+      persistedAt: new Date().toISOString(),
+    }
+    const data = [{ key: this.snapshotKey(persistableSnapshot), value: snapshot }]
     const response = await fetch(stateUrl, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -63,6 +73,7 @@ export class EventRegistry {
       const err = response.text()
       throw err
     }
+    return persistableSnapshot
   }
 
   public async query(config: BoosterConfig, query: Query): Promise<Array<EventEnvelope | EntitySnapshotEnvelope>> {

@@ -880,7 +880,6 @@ describe('EventStore', () => {
             }
 
             const newSnapshot = await eventStore.entityReducer(eventEnvelope, snapshot)
-            delete newSnapshot.createdAt
 
             expect(newSnapshot).to.be.deep.equal({
               version: 1,

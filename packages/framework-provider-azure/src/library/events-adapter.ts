@@ -5,6 +5,7 @@ import {
   UUID,
   EntitySnapshotEnvelope,
   NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
@@ -91,9 +92,10 @@ export async function storeEvents(
   cosmosDb: CosmosClient,
   eventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
-): Promise<void> {
+): Promise<Array<EventEnvelope>> {
   const logger = getLogger(config, 'events-adapter#storeEvents')
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
+  const persistableEvents = []
   for (const eventEnvelope of eventEnvelopes) {
     const persistableEvent: EventEnvelope = {
       ...eventEnvelope,
@@ -110,15 +112,17 @@ export async function storeEvents(
         ),
         [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
       })
+    persistableEvents.push(persistableEvent)
   }
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
+  return persistableEvents
 }
 
 export async function storeSnapshot(
   cosmosDb: CosmosClient,
-  snapshotEnvelope: EntitySnapshotEnvelope,
+  snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
   config: BoosterConfig
-): Promise<void> {
+): Promise<EntitySnapshotEnvelope> {
   const logger = getLogger(config, 'events-adapter#storeSnapshot')
   logger.debug('[EventsAdapter#storeSnapshot] Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
 
@@ -159,15 +163,20 @@ export async function storeSnapshot(
     })
     .fetchAll()
 
-  // If there is no existing record, create a new one
-  if (resources.length <= 0) {
-    await container.items.create({
-      ...snapshotEnvelope,
-      [eventsStoreAttributes.partitionKey]: partitionKey,
-      [eventsStoreAttributes.sortKey]: sortKey,
-    })
-    logger.debug('[EventsAdapter#storeSnapshot] Snapshot stored')
-  } else {
-    logger.debug('[EventsAdapter#storeSnapshot] Snapshot already exists. skipping...')
+  if (resources.length > 0) {
+    throw new Error('Snapshot already exists. skipping...')
   }
+
+  const persistableEntitySnapshot: EntitySnapshotEnvelope = {
+    ...snapshotEnvelope,
+    createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+    persistedAt: new Date().toISOString(),
+  }
+  await container.items.create({
+    ...persistableEntitySnapshot,
+    [eventsStoreAttributes.partitionKey]: partitionKey,
+    [eventsStoreAttributes.sortKey]: sortKey,
+  })
+  logger.debug('[EventsAdapter#storeSnapshot] Snapshot stored')
+  return persistableEntitySnapshot
 }

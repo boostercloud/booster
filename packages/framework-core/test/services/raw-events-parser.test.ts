@@ -172,7 +172,8 @@ function createEntitySnapshotEnvelope(entityTypeName: string, entityID: string):
     value: { id: random.uuid() },
     requestID: random.uuid(),
     typeName: 'Snapshot' + random.alpha(),
-    createdAt: random.alpha(),
+    createdAt: snapshottedEventCreatedAt,
+    persistedAt: random.alpha(),
     snapshottedEventCreatedAt,
   }
 }

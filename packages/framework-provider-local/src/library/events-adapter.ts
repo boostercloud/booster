@@ -102,6 +102,7 @@ export async function storeSnapshot(
   const persistableEntitySnapshot = {
     ...snapshotEnvelope,
     createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+    persistedAt: new Date().toISOString(),
   }
   await retryIfError(() => eventRegistry.store(persistableEntitySnapshot), OptimisticConcurrencyUnexpectedVersionError)
   logger.debug('Snapshot stored')

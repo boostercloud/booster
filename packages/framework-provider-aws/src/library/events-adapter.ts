@@ -129,6 +129,7 @@ export async function storeSnapshot(
     const persistableSnapshot = {
       ...snapshotEnvelope,
       createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+      persistedAt: new Date().toISOString(),
     }
     await dynamoDB
       .put({

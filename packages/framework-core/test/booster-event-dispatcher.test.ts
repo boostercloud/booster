@@ -65,7 +65,8 @@ const someEntitySnapshot: EntitySnapshotEnvelope = {
   value: someEntity,
   requestID: '234',
   typeName: 'SomeEntity',
-  createdAt: 'a few nanoseconds later',
+  createdAt: 'an uncertain future',
+  persistedAt: 'a few nanoseconds later',
   snapshottedEventCreatedAt: 'an uncertain future',
 }
 

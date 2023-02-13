@@ -8,6 +8,8 @@ import {
   PaginatedEntitiesIdsResult,
   UserApp,
   UUID,
+  NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '../services/event-registry'
@@ -18,25 +20,28 @@ export const rawToEnvelopes = (events: Array<unknown>): Array<EventEnvelope> => 
 export const store = async (
   registry: EventRegistry,
   userApp: UserApp,
-  events: Array<EventEnvelope>,
+  events: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
-): Promise<void> => {
+): Promise<Array<EventEnvelope>> => {
   const logger = getLogger(config, 'events-adapter#store')
+  const persistableEvents = []
   for (const envelope of events) {
     logger.debug('Storing event envelope', envelope)
-    await registry.storeEvent(config, envelope)
+    const persistedEvent = await registry.storeEvent(config, envelope)
+    persistableEvents.push(persistedEvent)
   }
   await userApp.boosterEventDispatcher(events)
+  return persistableEvents
 }
 
 export const storeSnapshot = async (
   registry: EventRegistry,
-  snapshotEnvelope: EntitySnapshotEnvelope,
+  snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
   config: BoosterConfig
-): Promise<void> => {
+): Promise<EntitySnapshotEnvelope> => {
   const logger = getLogger(config, 'events-adapter#storeSnapshot')
   logger.debug('Storing snapshot envelope', snapshotEnvelope)
-  await registry.storeSnapshot(config, snapshotEnvelope)
+  return await registry.storeSnapshot(config, snapshotEnvelope)
 }
 
 const isNewerThan = (isoString: string) => (key: string) => {

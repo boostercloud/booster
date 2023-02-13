@@ -48,7 +48,10 @@ export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvel
 }
 
 export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelope {
+  /** Logic creation date of the snapshot, it always matches the creation date of the latest event included in it. */
   createdAt: string
+  /** Time when this snapshot was actually persisted in the database. */
+  persistedAt: string
 }
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
