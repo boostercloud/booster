@@ -56,6 +56,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       scheduled: {
         rawToEnvelope: undefined as any,
       },
+      rockets: {
+        rawToEnvelopes: undefined as any,
+      },
       // ProviderInfrastructureGetter
       infrastructure: () =>
         require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,

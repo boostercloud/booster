@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "rocket dispatcher request rocketFunctionId to the provider",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

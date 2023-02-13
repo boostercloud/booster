@@ -20,6 +20,7 @@ import {
 } from './library/read-model-adapter'
 import { searchEntitiesIds, searchEvents } from './library/events-search-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 
 export * from './paths'
 export * from './services'
@@ -87,6 +88,9 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   // ScheduledCommandsLibrary
   scheduled: {
     rawToEnvelope: rawScheduledInputToEnvelope,
+  },
+  rockets: {
+    rawToEnvelopes: rawRocketInputToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
