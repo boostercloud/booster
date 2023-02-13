@@ -1,10 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventEnvelope } from '@boostercloud/framework-types'
+import { EventEnvelope, EntitySnapshotEnvelope } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
 import { EventRegistry } from '../../src/services'
-import { createMockEventEnvelop, createMockEventEnvelopForEntity } from '../helpers/event-helper'
+import {
+  createMockEventEnvelope,
+  createMockEventEnvelopeForEntity,
+  createMockEntitySnapshotEnvelope,
+} from '../helpers/event-helper'
 import { date, random } from 'faker'
 
 describe('the event registry', () => {
@@ -31,12 +35,12 @@ describe('the event registry', () => {
         const publishPromises: Array<Promise<any>> = []
 
         for (let i = 0; i < initialEventsCount; i++) {
-          publishPromises.push(eventRegistry.store(createMockEventEnvelop()))
+          publishPromises.push(eventRegistry.store(createMockEventEnvelope()))
         }
 
         await Promise.all(publishPromises)
 
-        mockTargetEvent = createMockEventEnvelop()
+        mockTargetEvent = createMockEventEnvelope()
         await eventRegistry.store(mockTargetEvent)
       })
 
@@ -65,15 +69,15 @@ describe('the event registry', () => {
         const publishPromises: Array<Promise<any>> = []
 
         for (let i = 0; i < initialEventsCount; i++) {
-          publishPromises.push(eventRegistry.store(createMockEventEnvelopForEntity(entityName, entityId)))
+          publishPromises.push(eventRegistry.store(createMockEventEnvelopeForEntity(entityName, entityId)))
         }
 
         for (let i = 0; i < initialEventsCount; i++) {
-          publishPromises.push(eventRegistry.store(createMockEventEnvelopForEntity(entityName, random.uuid())))
+          publishPromises.push(eventRegistry.store(createMockEventEnvelopeForEntity(entityName, random.uuid())))
         }
 
         for (let i = 0; i < initialEventsCount; i++) {
-          publishPromises.push(eventRegistry.store(createMockEventEnvelop()))
+          publishPromises.push(eventRegistry.store(createMockEventEnvelope()))
         }
 
         await Promise.all(publishPromises)
@@ -94,47 +98,48 @@ describe('the event registry', () => {
     })
   })
 
-  describe('query latest', () => {
-    let copyOfMockTargetEvent: EventEnvelope
+  describe('query latest entity snapshot', () => {
+    let mockTargetSnapshot: EntitySnapshotEnvelope
+    let copyOfMockTargetSnapshot: EntitySnapshotEnvelope
     let newerMockDate: string
 
     beforeEach(async () => {
-      mockTargetEvent = createMockEventEnvelop()
-      await eventRegistry.store(mockTargetEvent)
+      mockTargetSnapshot = createMockEntitySnapshotEnvelope()
+      await eventRegistry.store(mockTargetSnapshot)
 
       newerMockDate = date.recent().toISOString()
-      copyOfMockTargetEvent = {
-        ...mockTargetEvent,
-        createdAt: newerMockDate,
+      copyOfMockTargetSnapshot = {
+        ...mockTargetSnapshot,
+        snapshottedEventCreatedAt: newerMockDate,
       }
-      await eventRegistry.store(copyOfMockTargetEvent)
+      await eventRegistry.store(copyOfMockTargetSnapshot)
     })
 
     it('should return latest item', async () => {
-      const result: EventEnvelope | null = await eventRegistry.queryLatest({
-        kind: mockTargetEvent.kind,
-        entityID: mockTargetEvent.entityID,
-        entityTypeName: mockTargetEvent.entityTypeName,
+      const result = await eventRegistry.queryLatestSnapshot({
+        entityID: mockTargetSnapshot.entityID,
+        entityTypeName: mockTargetSnapshot.entityTypeName,
       })
 
-      expect(result).not.to.be.null
-      expect(result).to.deep.include(copyOfMockTargetEvent)
+      expect(result).not.to.be.undefined
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { _id, ...rest } = result as any
+      expect(rest).to.deep.equal(copyOfMockTargetSnapshot)
     })
 
     it('should return null', async () => {
-      const result: EventEnvelope | null = await eventRegistry.queryLatest({
-        kind: mockTargetEvent.kind,
+      const result = await eventRegistry.queryLatestSnapshot({
         entityID: random.uuid(),
-        entityTypeName: mockTargetEvent.entityTypeName,
+        entityTypeName: mockTargetSnapshot.entityTypeName,
       })
 
-      expect(result).to.be.null
+      expect(result).to.be.undefined
     })
   })
 
   describe('delete all', () => {
     beforeEach(async () => {
-      const mockEvent: EventEnvelope = createMockEventEnvelop()
+      const mockEvent: EventEnvelope = createMockEventEnvelope()
       await eventRegistry.store(mockEvent)
     })
 
@@ -148,7 +153,7 @@ describe('the event registry', () => {
 
   describe('the publish method', () => {
     it('should insert events into the events database', async () => {
-      const mockEvent: EventEnvelope = createMockEventEnvelop()
+      const mockEvent: EventEnvelope = createMockEventEnvelope()
 
       eventRegistry.events.insert = stub().yields(null, mockEvent)
 

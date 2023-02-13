@@ -34,7 +34,7 @@ export class BoosterDataMigrations {
         BoosterDataMigrationEntity.name,
         configuredMigration.class.name
       )
-      if (migrationEntityForConfiguredMigration === null) {
+      if (migrationEntityForConfiguredMigration === undefined) {
         logger.debug('Not found running or finished migrations for the DataMigration', configuredMigration)
         migrating = true
         await BoosterDataMigrations.migrate(configuredMigration)

@@ -34,7 +34,7 @@ export class RawEventsParser {
       try {
         await callbackFn(entityTypeName, entityID, entityEnvelopes, config)
       } catch (e) {
-        logger.error('An error occurred while processing events', e)
+        logger.error(`An error occurred while processing events for entity ${entityTypeName} with ID ${entityID}`, e)
       }
     })
     // We use allSettled because we don't care if some of the processes fail

@@ -1,5 +1,5 @@
 import { GlobalErrorContainer } from './global-error-container'
-import { EventEnvelope } from '../envelope'
+import { NonPersistedEntitySnapshotEnvelope } from '../envelope'
 
 /**
  * @deprecated Errors when persisting snapshots can be safely ignored because
@@ -12,7 +12,7 @@ import { EventEnvelope } from '../envelope'
  * This class is kept for backwards compatibility.
  */
 export class SnapshotPersistHandlerGlobalError extends GlobalErrorContainer {
-  constructor(readonly snapshot: EventEnvelope, originalError: Error) {
+  constructor(readonly snapshot: NonPersistedEntitySnapshotEnvelope, originalError: Error) {
     super(originalError)
   }
 }

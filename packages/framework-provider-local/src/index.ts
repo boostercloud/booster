@@ -4,6 +4,7 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeEvents,
+  storeSnapshot,
 } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
 import { EventRegistry, ReadModelRegistry } from './services'
@@ -43,6 +44,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
+    storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
   },

@@ -1,8 +1,15 @@
 import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
-import { EventEnvelope, BoosterConfig, UUID } from '@boostercloud/framework-types'
+import {
+  EventEnvelope,
+  BoosterConfig,
+  UUID,
+  EntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+} from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
-import { partitionKeyForEvent } from './partition-keys'
+import { partitionKeyForEvent, partitionKeyForSnapshot } from './partition-keys'
 import { Context } from '@azure/functions'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -48,7 +55,7 @@ export async function readEntityLatestSnapshot(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
+): Promise<EntitySnapshotEnvelope | undefined> {
   const logger = getLogger(config, 'events-adapter#readEntityLatestSnapshot')
   const { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
@@ -60,7 +67,7 @@ export async function readEntityLatestSnapshot(
       parameters: [
         {
           name: '@partitionKey',
-          value: partitionKeyForEvent(entityTypeName, entityID, 'snapshot'),
+          value: partitionKeyForSnapshot(entityTypeName, entityID),
         },
       ],
     })
@@ -72,35 +79,104 @@ export async function readEntityLatestSnapshot(
       `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
       snapshot
     )
-    return snapshot as EventEnvelope
+    return snapshot as EntitySnapshotEnvelope
   } else {
     logger.debug(
       `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
-    return null
+    return undefined
   }
 }
 
 export async function storeEvents(
   cosmosDb: CosmosClient,
-  eventEnvelopes: Array<EventEnvelope>,
+  eventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
-): Promise<void> {
+): Promise<Array<EventEnvelope>> {
   const logger = getLogger(config, 'events-adapter#storeEvents')
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
+  const persistableEvents = []
   for (const eventEnvelope of eventEnvelopes) {
+    const persistableEvent: EventEnvelope = {
+      ...eventEnvelope,
+      createdAt: new Date().toISOString(),
+    }
     await cosmosDb
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.eventsStore)
       .items.create({
-        ...eventEnvelope,
+        ...persistableEvent,
         [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
           eventEnvelope.entityTypeName,
-          eventEnvelope.entityID,
-          eventEnvelope.kind
+          eventEnvelope.entityID
         ),
-        [eventsStoreAttributes.sortKey]: new Date().toISOString(),
+        [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
       })
+    persistableEvents.push(persistableEvent)
   }
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
+  return persistableEvents
+}
+
+export async function storeSnapshot(
+  cosmosDb: CosmosClient,
+  snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
+  config: BoosterConfig
+): Promise<EntitySnapshotEnvelope> {
+  const logger = getLogger(config, 'events-adapter#storeSnapshot')
+  logger.debug('[EventsAdapter#storeSnapshot] Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
+
+  const partitionKey = partitionKeyForSnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
+  /**
+   * The sort key of the snapshot matches the sort key of the last event that generated it.
+   * Entity snapshots can be potentially created by competing processes, and this way
+   * of storing the data makes snapshot creation an idempotent operation, allowing us to
+   * aggressively cache snapshots. If the snapshot already exists, it will be silently overwritten.
+   */
+  const sortKey = snapshotEnvelope.snapshottedEventCreatedAt
+
+  const container = cosmosDb.database(config.resourceNames.applicationStack).container(config.resourceNames.eventsStore)
+
+  /* TODO: As the sortKey is not part of an unique key in the table by default, there's no easy way to
+   * ensure that a snapshot is created only once, so we need to check if it exists first.
+   * This is not ideal, but conditional writes doesn't seem to have a simple solution in CosmosDB at
+   * the moment. We should revisit this in the future.
+   *
+   * Notice that while this implementation can potentially fail to prevent an extra snapshot to be created,
+   * the existence of such extra snapshot has no impact on the way Booster works. This check is here
+   * because we want to avoid snapshots to be created out of control in scenarios where a big number
+   * of event handlers are requesting the latest state of the same entity.
+   */
+  const { resources } = await container.items
+    .query({
+      query: 'SELECT * FROM c WHERE c.partitionKey = @partitionKey AND c.sortKey = @sortKey',
+      parameters: [
+        {
+          name: '@partitionKey',
+          value: partitionKey,
+        },
+        {
+          name: '@sortKey',
+          value: sortKey,
+        },
+      ],
+    })
+    .fetchAll()
+
+  if (resources.length > 0) {
+    throw new Error('Snapshot already exists. skipping...')
+  }
+
+  const persistableEntitySnapshot: EntitySnapshotEnvelope = {
+    ...snapshotEnvelope,
+    createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+    persistedAt: new Date().toISOString(),
+  }
+  await container.items.create({
+    ...persistableEntitySnapshot,
+    [eventsStoreAttributes.partitionKey]: partitionKey,
+    [eventsStoreAttributes.sortKey]: sortKey,
+  })
+  logger.debug('Snapshot stored', snapshotEnvelope)
+  return persistableEntitySnapshot
 }

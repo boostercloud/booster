@@ -2,9 +2,9 @@ import {
   BOOSTER_SUPER_KIND,
   BoosterConfig,
   DOMAIN_SUPER_KIND,
-  EventEnvelope,
   EventInterface,
   Instance,
+  NonPersistedEventEnvelope,
   NotFoundError,
   Register,
   SuperKindType,
@@ -26,7 +26,7 @@ export class RegisterHandler {
       return
     }
 
-    return config.provider.events.store(
+    await config.provider.events.store(
       register.eventList.map((event) => RegisterHandler.wrapEvent(config, event, register)),
       config
     )
@@ -36,7 +36,11 @@ export class RegisterHandler {
     return RegisterHandler.handle(Booster.config, record)
   }
 
-  private static wrapEvent(config: BoosterConfig, event: Instance & EventInterface, register: Register): EventEnvelope {
+  private static wrapEvent(
+    config: BoosterConfig,
+    event: Instance & EventInterface,
+    register: Register
+  ): NonPersistedEventEnvelope {
     const eventTypeName = event.constructor.name
     const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
     if (!entityTypeName) {
@@ -60,7 +64,6 @@ export class RegisterHandler {
       entityTypeName: entityTypeName,
       typeName: eventTypeName,
       value: event,
-      createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
     }
   }
 

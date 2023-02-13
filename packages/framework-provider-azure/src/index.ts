@@ -7,6 +7,7 @@ import {
   storeEvents,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
@@ -35,6 +36,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
     store: storeEvents.bind(null, cosmosClient),
+    storeSnapshot: storeSnapshot.bind(null, cosmosClient),
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
     search: searchEvents.bind(null, cosmosClient),

@@ -26,18 +26,33 @@ export interface ScheduledCommandEnvelope extends Envelope {
 
 export type SuperKindType = 'domain' | 'notification' | 'booster'
 
-export interface EventEnvelope extends Envelope {
+export interface EventStoreEntryEnvelope extends Envelope {
   typeName: string
   version: number
-  kind: 'event' | 'snapshot'
   superKind: SuperKindType
   entityID: UUID
   entityTypeName: string
   value: EventInterface | EntityInterface
-  createdAt: string
-  snapshottedEventCreatedAt?: string
 }
 
+export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
+  kind: 'event'
+}
+export interface EventEnvelope extends NonPersistedEventEnvelope {
+  createdAt: string
+}
+
+export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvelope {
+  kind: 'snapshot'
+  snapshottedEventCreatedAt: string
+}
+
+export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelope {
+  /** Logic creation date of the snapshot, it always matches the creation date of the latest event included in it. */
+  createdAt: string
+  /** Time when this snapshot was actually persisted in the database. */
+  persistedAt: string
+}
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
 }
