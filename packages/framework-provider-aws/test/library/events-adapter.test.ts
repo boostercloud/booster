@@ -117,7 +117,6 @@ describe('the events-adapter', () => {
           value: {
             entityID: e.entityID,
           },
-          createdAt: new Date().toISOString(),
         }
       })
 
@@ -161,7 +160,6 @@ function buildEventEnvelopes(): Array<NonPersistedEventEnvelope> {
       typeName: 'EventName',
       entityTypeName: 'EntityName',
       requestID: 'requestID',
-      createdAt: 'once',
     },
     {
       version: 1,
@@ -174,7 +172,6 @@ function buildEventEnvelopes(): Array<NonPersistedEventEnvelope> {
       typeName: 'EventName2',
       entityTypeName: 'EntityName2',
       requestID: 'requestID2',
-      createdAt: 'once upon a time',
     },
   ]
 }

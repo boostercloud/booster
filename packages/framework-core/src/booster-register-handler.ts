@@ -26,7 +26,7 @@ export class RegisterHandler {
       return
     }
 
-    return config.provider.events.store(
+    await config.provider.events.store(
       register.eventList.map((event) => RegisterHandler.wrapEvent(config, event, register)),
       config
     )
@@ -64,7 +64,6 @@ export class RegisterHandler {
       entityTypeName: entityTypeName,
       typeName: eventTypeName,
       value: event,
-      createdAt: new Date().toISOString(), // TODO: This could be overridden by the provider. We should not set it. Ensure all providers set it
     }
   }
 

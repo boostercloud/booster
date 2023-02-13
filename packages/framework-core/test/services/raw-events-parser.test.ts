@@ -158,7 +158,6 @@ function createPersistedEventEnvelope(entityTypeName: string, entityID: string):
     requestID: random.uuid(),
     typeName: 'Event' + random.alpha(),
     createdAt,
-    persistedAt: createdAt + '1',
   }
 }
 
@@ -175,6 +174,5 @@ function createEntitySnapshotEnvelope(entityTypeName: string, entityID: string):
     typeName: 'Snapshot' + random.alpha(),
     createdAt: random.alpha(),
     snapshottedEventCreatedAt,
-    snapshottedEventPersistedAt: snapshottedEventCreatedAt + '1',
   }
 }

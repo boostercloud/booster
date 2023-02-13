@@ -4,10 +4,10 @@ import {
   BOOSTER_SUPER_KIND,
   BoosterConfig,
   EntityInterface,
-  EntitySnapshotEnvelope,
   EventEnvelope,
   EventInterface,
   Level,
+  NonPersistedEntitySnapshotEnvelope,
   ProviderLibrary,
   UUID,
 } from '@boostercloud/framework-types'
@@ -53,6 +53,7 @@ describe('EventStore', () => {
       return new AnEntity(event.entityId, event.delta)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     public static reducerThatCallsEventMethod(event: AnotherEvent, currentEntity?: AnEntity): AnEntity {
       event.getPrefixedId('prefix')
       return new AnEntity('1', 1)
@@ -115,7 +116,6 @@ describe('EventStore', () => {
     timestamp: Date = new Date()
   ): EventEnvelope {
     const createdAt = timestamp.toISOString()
-    const persistedAt = new Date(timestamp.getTime() + 1).toISOString() // Just 1 ms later
     return {
       version: 1,
       kind: 'event',
@@ -126,11 +126,10 @@ describe('EventStore', () => {
       requestID: 'whatever',
       typeName: typeName,
       createdAt,
-      persistedAt,
     }
   }
 
-  function snapshotEnvelopeFor<TEntity extends EntityInterface>(entity: TEntity): EntitySnapshotEnvelope {
+  function snapshotEnvelopeFor<TEntity extends EntityInterface>(entity: TEntity): NonPersistedEntitySnapshotEnvelope {
     return {
       version: 1,
       kind: 'snapshot',
@@ -140,9 +139,7 @@ describe('EventStore', () => {
       value: entity,
       requestID: 'whatever',
       typeName: AnEntity.name,
-      createdAt: 'fakeTimeStamp',
       snapshottedEventCreatedAt: importantDateTimeStamp,
-      snapshottedEventPersistedAt: importantDateTimeStamp,
     }
   }
 
@@ -223,7 +220,14 @@ describe('EventStore', () => {
               })
             )
           replace(eventStore, 'entityReducer', reducer)
-          replace(eventStore, 'storeSnapshot', fake())
+          const expectedResult = {
+            ...snapshotEnvelopeFor({
+              id: '42',
+              count: 3,
+            }),
+            createdAt: importantDateTimeStamp,
+          }
+          replace(eventStore, 'storeSnapshot', fake.resolves(expectedResult))
 
           const entityName = AnEntity.name
           const entityID = '42'
@@ -248,12 +252,8 @@ describe('EventStore', () => {
 
           expect(eventStore.storeSnapshot).to.have.been.called
 
-          expect(entity).to.be.deep.equal(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 3,
-            })
-          )
+          // Directly returns the value returned by storeSnapshot
+          expect(entity).to.be.deep.equal(expectedResult)
         })
       })
 
@@ -297,7 +297,14 @@ describe('EventStore', () => {
           })
 
           replace(eventStore, 'entityReducer', reducer)
-          replace(eventStore, 'storeSnapshot', fake())
+          const expectedResult = {
+            ...snapshotEnvelopeFor({
+              id: '42',
+              count: 9,
+            }),
+            createdAt: importantDateTimeStamp,
+          }
+          replace(eventStore, 'storeSnapshot', fake.resolves(expectedResult))
 
           const entityName = AnEntity.name
           const entityID = '42'
@@ -317,12 +324,7 @@ describe('EventStore', () => {
 
           expect(eventStore.storeSnapshot).to.have.been.called
 
-          expect(entity).to.be.deep.equal(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 9,
-            })
-          )
+          expect(entity).to.be.deep.equal(expectedResult)
         })
       })
 
@@ -362,7 +364,14 @@ describe('EventStore', () => {
           })
 
           replace(eventStore, 'entityReducer', reducer)
-          replace(eventStore, 'storeSnapshot', fake())
+          const expectedResult = {
+            ...snapshotEnvelopeFor({
+              id: '42',
+              count: 9,
+            }),
+            createdAt: importantDateTimeStamp,
+          }
+          replace(eventStore, 'storeSnapshot', fake.resolves(expectedResult))
 
           const entityName = AnEntity.name
           const entityID = '42'
@@ -380,12 +389,7 @@ describe('EventStore', () => {
 
           expect(eventStore.storeSnapshot).to.have.been.called
 
-          expect(entity).to.be.deep.equal(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 9,
-            })
-          )
+          expect(entity).to.be.deep.equal(expectedResult)
         })
       })
 
@@ -434,7 +438,6 @@ describe('EventStore', () => {
             )
           })
           replace(eventStore, 'entityReducer', fakeEntityReducer)
-
           replace(eventStore, 'storeSnapshot', fake())
 
           // A list of pending events for entityID = 42 and for BEM 90, 91 and 92
@@ -465,7 +468,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          await eventStore.fetchEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
 
@@ -490,8 +493,6 @@ describe('EventStore', () => {
             count: 7,
           })
           expect(eventStore.storeSnapshot).to.have.been.calledOnceWith(expectedFinalSnapshot)
-
-          expect(entity).to.be.deep.equal(expectedFinalSnapshot)
         })
       })
 
@@ -565,7 +566,7 @@ describe('EventStore', () => {
       })
 
       context('when persisting the entity fails', () => {
-        it('does not throw an exception and returns null', async () => {
+        it('does not throw an exception and returns undefined', async () => {
           //eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config) as any
 
@@ -634,7 +635,7 @@ describe('EventStore', () => {
 
           expect(eventStore.storeSnapshot).to.have.been.calledOnce
           expect(config.provider.events.storeSnapshot).to.have.been.calledOnce
-          expect(entity).to.be.deep.equal(expectedSnapshotArguments[expectedSnapshotArguments.length - 1])
+          expect(entity).to.be.undefined
         })
       })
 
@@ -684,7 +685,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          await expect(eventStore.fetchEntitySnapshot(entityName, entityID)).to.eventually.be.fulfilled
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(entityName, entityID, originOfTime)
@@ -699,13 +700,6 @@ describe('EventStore', () => {
           }
 
           expect(eventStore.storeSnapshot).to.have.been.calledOnce
-
-          expect(entity).to.be.deep.equal(
-            snapshotEnvelopeFor({
-              id: '42',
-              count: 9,
-            })
-          )
         })
       })
     })
@@ -822,7 +816,6 @@ describe('EventStore', () => {
                 count: 1,
               },
               snapshottedEventCreatedAt: fakeTime.toISOString(),
-              snapshottedEventPersistedAt: new Date(fakeTime.getTime() + 1).toISOString(),
             })
           })
         })
@@ -859,7 +852,6 @@ describe('EventStore', () => {
                 count: 1,
               },
               snapshottedEventCreatedAt: fakeTime.toISOString(),
-              snapshottedEventPersistedAt: new Date(fakeTime.getTime() + 1).toISOString(),
             })
           })
         })
@@ -885,7 +877,6 @@ describe('EventStore', () => {
               typeName: BoosterEntityMigrated.name,
               superKind: 'booster',
               createdAt: fakeTime.toISOString(),
-              persistedAt: new Date(fakeTime.getTime() + 100).toISOString(),
             }
 
             const newSnapshot = await eventStore.entityReducer(eventEnvelope, snapshot)
@@ -903,7 +894,6 @@ describe('EventStore', () => {
                 id: '42',
               },
               snapshottedEventCreatedAt: fakeTime.toISOString(),
-              snapshottedEventPersistedAt: new Date(fakeTime.getTime() + 100).toISOString(),
             })
           })
         })

@@ -29,7 +29,7 @@ export class EventRegistry {
     logger.debug('About to post', event)
     const persistableEvent: EventEnvelope = {
       ...event,
-      persistedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     }
     const data = [{ key: this.eventKey(persistableEvent), value: persistableEvent }]
     const response = await fetch(stateUrl, {
@@ -103,7 +103,7 @@ export class EventRegistry {
       event.entityID, // entityId
       event.kind, // 'event' | 'snapshot'
       event.typeName, // 'PostCreated' event name
-      event.persistedAt, // timespan
+      event.createdAt, // timespan
       UUID.generate(), // hash to make key unique
     ]
     return keyParts.join(RedisAdapter.keySeparator)
@@ -116,7 +116,7 @@ export class EventRegistry {
       snapshot.entityID, // entityId
       snapshot.kind, // 'event' | 'snapshot'
       snapshot.version, // snapshot version
-      snapshot.snapshottedEventPersistedAt, // timespan
+      snapshot.snapshottedEventCreatedAt, // timespan
       UUID.generate(), // hash to make key unique
     ]
     return keyParts.join(RedisAdapter.keySeparator)

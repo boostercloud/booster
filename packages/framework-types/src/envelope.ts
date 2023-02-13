@@ -33,20 +33,22 @@ export interface EventStoreEntryEnvelope extends Envelope {
   entityID: UUID
   entityTypeName: string
   value: EventInterface | EntityInterface
-  createdAt: string
 }
 
 export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
   kind: 'event'
 }
 export interface EventEnvelope extends NonPersistedEventEnvelope {
-  persistedAt: string
+  createdAt: string
 }
 
-export interface EntitySnapshotEnvelope extends EventStoreEntryEnvelope {
+export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvelope {
   kind: 'snapshot'
   snapshottedEventCreatedAt: string
-  snapshottedEventPersistedAt: string
+}
+
+export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelope {
+  createdAt: string
 }
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters

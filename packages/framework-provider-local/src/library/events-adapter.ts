@@ -6,6 +6,7 @@ import {
   OptimisticConcurrencyUnexpectedVersionError,
   EntitySnapshotEnvelope,
   NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { retryIfError, getLogger } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
@@ -70,14 +71,14 @@ export async function storeEvents(
   eventRegistry: EventRegistry,
   nonPersistedEventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
-): Promise<void> {
+): Promise<Array<EventEnvelope>> {
   const logger = getLogger(config, 'events-adapter#storeEvents')
   logger.debug('Storing the following event envelopes:', nonPersistedEventEnvelopes)
   const persistedEventEnvelopes: Array<EventEnvelope> = []
   for (const nonPersistedEventEnvelope of nonPersistedEventEnvelopes) {
     const persistableEventEnvelope = {
       ...nonPersistedEventEnvelope,
-      persistedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     }
     await retryIfError(
       async () => await persistEvent(eventRegistry, persistableEventEnvelope),
@@ -88,20 +89,25 @@ export async function storeEvents(
   logger.debug('EventEnvelopes stored: ', persistedEventEnvelopes)
 
   await userApp.boosterEventDispatcher(persistedEventEnvelopes)
+  return persistedEventEnvelopes
 }
 
 export async function storeSnapshot(
   eventRegistry: EventRegistry,
-  snapshotEnvelope: EntitySnapshotEnvelope,
+  snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
   config: BoosterConfig
-): Promise<void> {
+): Promise<EntitySnapshotEnvelope> {
   const logger = getLogger(config, 'events-adapter#storeSnapshot')
   logger.debug('Storing the following snapshot envelope:', snapshotEnvelope)
-  await retryIfError(() => eventRegistry.store(snapshotEnvelope), OptimisticConcurrencyUnexpectedVersionError)
+  const persistableEntitySnapshot = {
+    ...snapshotEnvelope,
+    createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+  }
+  await retryIfError(() => eventRegistry.store(persistableEntitySnapshot), OptimisticConcurrencyUnexpectedVersionError)
   logger.debug('Snapshot stored')
+  return persistableEntitySnapshot
 }
 
 async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
   await eventRegistry.store(eventEnvelope)
-  //TODO: check when there is a write error to implement Optimistic Concurrency
 }

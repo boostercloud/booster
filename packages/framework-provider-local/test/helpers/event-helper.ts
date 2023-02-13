@@ -17,7 +17,6 @@ export function createMockNonPersistedEventEnvelopeForEntity(
     value: {
       id: random.uuid(),
     },
-    createdAt: date.past().toISOString(),
     requestID: random.uuid(),
     typeName: random.word(),
     version: random.number(),
@@ -41,14 +40,12 @@ export function createMockEventEnvelopeForEntity(entityTypeName: string, entityI
     requestID: random.uuid(),
     typeName: random.word(),
     version: random.number(),
-    persistedAt: date.past().toISOString(),
   }
 }
 
 export function createMockEntitySnapshotEnvelope(entityTypeName?: string, entityId?: string): EntitySnapshotEnvelope {
   const creationDate = date.past()
   const snapshottedEventCreatedAt = creationDate.toISOString()
-  const snapshottedEventPersistedAt = new Date(creationDate.getDate() + 1000).toISOString() // 1 second after creation date
   return {
     kind: 'snapshot',
     superKind: 'domain',
@@ -62,6 +59,5 @@ export function createMockEntitySnapshotEnvelope(entityTypeName?: string, entity
     typeName: random.word(),
     version: random.number(),
     snapshottedEventCreatedAt,
-    snapshottedEventPersistedAt,
   }
 }

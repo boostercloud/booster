@@ -246,26 +246,26 @@ describe('events-adapter', () => {
     context('with event envelopes', () => {
       it('should call event registry store', async () => {
         const mockEventEnvelop = createMockNonPersistedEventEnvelop()
-        // The `persistedAt` will be set in the `persistEvent` method
+        // The `createdAt` will be set in the `persistEvent` method
         replace(Date.prototype, 'toISOString', () => 'a magical time')
 
         await storeEvents(mockUserApp, mockEventRegistry, [mockEventEnvelop], mockConfig)
 
         expect(storeStub).to.have.been.calledWithExactly({
           ...mockEventEnvelop,
-          persistedAt: 'a magical time',
+          createdAt: 'a magical time',
         })
       })
 
       it('should call userApp boosterEventDispatcher', async () => {
         const mockEventEnvelop = createMockNonPersistedEventEnvelop()
-        // The `persistedAt` will be set in the `persistEvent` method
+        // The `createdAt` will be set in the `persistEvent` method
         replace(Date.prototype, 'toISOString', () => 'a magical time')
 
         await storeEvents(mockUserApp, mockEventRegistry, [mockEventEnvelop], mockConfig)
 
         expect(boosterEventDispatcherStub).to.have.been.calledOnceWithExactly([
-          { ...mockEventEnvelop, persistedAt: 'a magical time' },
+          { ...mockEventEnvelop, createdAt: 'a magical time' },
         ])
       })
     })

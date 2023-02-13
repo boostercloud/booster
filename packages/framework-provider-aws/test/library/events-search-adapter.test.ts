@@ -3,6 +3,7 @@ import { expect } from '../expect'
 import { createStubInstance, restore, SinonStubbedInstance, fake, replace } from 'sinon'
 import {
   BoosterConfig,
+  EventEnvelope,
   EventParametersFilterByEntity,
   EventParametersFilterByType,
   EventSearchParameters,
@@ -297,7 +298,7 @@ describe('Events searcher adapter', () => {
   }
 })
 
-function buildEventEnvelope(id: string, createdAt: string): NonPersistedEventEnvelope {
+function buildEventEnvelope(id: string, createdAt: string): EventEnvelope {
   return {
     entityID: id,
     createdAt,

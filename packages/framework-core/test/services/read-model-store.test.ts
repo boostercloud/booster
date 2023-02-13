@@ -157,7 +157,6 @@ describe('ReadModelStore', () => {
     }
     const snapshottedEventCreatedAtDate = new Date()
     const snapshottedEventCreatedAt = snapshottedEventCreatedAtDate.toISOString()
-    const snapshottedEventPersistedAt = new Date(snapshottedEventCreatedAtDate.getTime() + 1000).toISOString()
     return {
       version: 1,
       kind: 'snapshot',
@@ -173,7 +172,6 @@ describe('ReadModelStore', () => {
       typeName: entityName,
       createdAt: new Date().toISOString(),
       snapshottedEventCreatedAt,
-      snapshottedEventPersistedAt,
     }
   }
 
@@ -191,7 +189,6 @@ describe('ReadModelStore', () => {
           typeName: AnImportantEntity.name,
           createdAt: new Date().toISOString(),
           snapshottedEventCreatedAt: new Date().toISOString(),
-          snapshottedEventPersistedAt: new Date().toISOString(),
         }
 
         replace(config.provider.readModels, 'store', fake())

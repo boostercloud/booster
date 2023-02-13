@@ -3,12 +3,13 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EntitySnapshotEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
   EventEnvelope,
+  NonPersistedEventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
-  NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
   ReadModelEnvelope,
   ReadModelListResult,
@@ -50,9 +51,12 @@ export interface ProviderEventsLibrary {
     entityTypeName: string
   ): Promise<PaginatedEntitiesIdsResult>
   /** Stores a list of events in the events store */
-  store(eventEnvelopes: Array<NonPersistedEventEnvelope>, config: BoosterConfig): Promise<void>
+  store(eventEnvelopes: Array<NonPersistedEventEnvelope>, config: BoosterConfig): Promise<Array<EventEnvelope>>
   /** Stores an entity snapshot in the event store */
-  storeSnapshot(snapshotEnvelope: EntitySnapshotEnvelope, config: BoosterConfig): Promise<void>
+  storeSnapshot(
+    snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
+    config: BoosterConfig
+  ): Promise<EntitySnapshotEnvelope>
 }
 export interface ProviderReadModelsLibrary {
   rawToEnvelopes(config: BoosterConfig, rawEvents: unknown): Promise<Array<ReadModelEnvelope>>

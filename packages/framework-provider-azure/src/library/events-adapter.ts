@@ -97,7 +97,7 @@ export async function storeEvents(
   for (const eventEnvelope of eventEnvelopes) {
     const persistableEvent: EventEnvelope = {
       ...eventEnvelope,
-      persistedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     }
     await cosmosDb
       .database(config.resourceNames.applicationStack)
@@ -108,7 +108,7 @@ export async function storeEvents(
           eventEnvelope.entityTypeName,
           eventEnvelope.entityID
         ),
-        [eventsStoreAttributes.sortKey]: persistableEvent.persistedAt,
+        [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
       })
   }
   logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
@@ -125,22 +125,49 @@ export async function storeSnapshot(
   const partitionKey = partitionKeyForSnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
   /**
    * The sort key of the snapshot matches the sort key of the last event that generated it.
-   * Entity snapshots can be potentially created by competing processes, so we need to make sure
-   * that no matter what snapshot we find, we can always rebuild the correct state by
-   * replaying all the events that happened after the snapshot we take as the origin.
-   * This way of storing the data makes snapshot caching an idempotent operation, and allows us to
-   * aggressively caching snapshots without worrying about insertion order.
+   * Entity snapshots can be potentially created by competing processes, and this way
+   * of storing the data makes snapshot creation an idempotent operation, allowing us to
+   * aggressively cache snapshots. If the snapshot already exists, it will be silently overwritten.
    */
-  const sortKey = snapshotEnvelope.snapshottedEventPersistedAt
+  const sortKey = snapshotEnvelope.snapshottedEventCreatedAt
 
-  await cosmosDb
-    .database(config.resourceNames.applicationStack)
-    .container(config.resourceNames.eventsStore)
-    .items.create({
+  const container = cosmosDb.database(config.resourceNames.applicationStack).container(config.resourceNames.eventsStore)
+
+  /* TODO: As the sortKey is not part of an unique key in the table by default, there's no easy way to
+   * ensure that a snapshot is created only once, so we need to check if it exists first.
+   * This is not ideal, but conditional writes doesn't seem to have a simple solution in CosmosDB at
+   * the moment. We should revisit this in the future.
+   *
+   * Notice that while this implementation can potentially fail to prevent an extra snapshot to be created,
+   * the existence of such extra snapshot has no impact on the way Booster works. This check is here
+   * because we want to avoid snapshots to be created out of control in scenarios where a big number
+   * of event handlers are requesting the latest state of the same entity.
+   */
+  const { resources } = await container.items
+    .query({
+      query: 'SELECT * FROM c WHERE c.partitionKey = @partitionKey AND c.sortKey = @sortKey',
+      parameters: [
+        {
+          name: '@partitionKey',
+          value: partitionKey,
+        },
+        {
+          name: '@sortKey',
+          value: sortKey,
+        },
+      ],
+    })
+    .fetchAll()
+
+  // If there is no existing record, create a new one
+  if (resources.length <= 0) {
+    await container.items.create({
       ...snapshotEnvelope,
       [eventsStoreAttributes.partitionKey]: partitionKey,
       [eventsStoreAttributes.sortKey]: sortKey,
     })
-
-  logger.debug('[EventsAdapter#storeSnapshot] Snapshot stored')
+    logger.debug('[EventsAdapter#storeSnapshot] Snapshot stored')
+  } else {
+    logger.debug('[EventsAdapter#storeSnapshot] Snapshot already exists. skipping...')
+  }
 }

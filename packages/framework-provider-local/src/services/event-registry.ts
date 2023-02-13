@@ -37,7 +37,7 @@ export class EventRegistry {
     const results = await new Promise<EventStoreEntryEnvelope[]>((resolve, reject) =>
       this.events
         .find({ ...query, kind: 'snapshot' })
-        .sort({ snapshottedEventPersistedAt: -1 }) // Sort in descending order (newer timestamps first)
+        .sort({ snapshottedEventCreatedAt: -1 }) // Sort in descending order (newer timestamps first)
         .exec((err, docs) => {
           if (err) reject(err)
           else resolve(docs)

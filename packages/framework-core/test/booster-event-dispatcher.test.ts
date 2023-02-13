@@ -31,6 +31,7 @@ class SomeEvent {
 }
 
 class AnEventHandler {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public static async handle(event: SomeEvent, register: Register): Promise<void> {
     event.getPrefixedId('prefix')
   }
@@ -49,7 +50,6 @@ const someEvent: NonPersistedEventEnvelope = {
   },
   requestID: '123',
   typeName: 'SomeEvent',
-  createdAt: 'an uncertain future',
 }
 
 const someEntity: EntityInterface = {
@@ -67,7 +67,6 @@ const someEntitySnapshot: EntitySnapshotEnvelope = {
   typeName: 'SomeEntity',
   createdAt: 'a few nanoseconds later',
   snapshottedEventCreatedAt: 'an uncertain future',
-  snapshottedEventPersistedAt: 'a certain future',
 }
 
 describe('BoosterEventDispatcher', () => {
