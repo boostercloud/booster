@@ -31,6 +31,7 @@ import {
   fetchSubscriptions,
   subscribeToReadModel,
 } from './library/subscription-adapter'
+import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
   maxRetries: 10,
@@ -97,6 +98,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     // ScheduledCommandsLibrary
     scheduled: {
       rawToEnvelope: rawScheduledInputToEnvelope,
+    },
+    rockets: {
+      rawToEnvelopes: rawRocketInputToEnvelope,
     },
     // ProviderInfrastructureGetter
     infrastructure: () => {

@@ -90,3 +90,15 @@ timeout: 5000
 full-trace: true
 bail: true
 ```
+
+## Framework integration tests
+
+Booster framework integration tests package is used to test the Booster project itself, but it is also an example of how a Booster application could be tested. We encourage developers to have a look at our [Booster project repository](https://github.com/boostercloud/booster/tree/main/packages/framework-integration-tests).
+
+Some integration tests highly depend on the provider chosen for the project, and the infrastructure is normally deployed in the cloud right before the tests run. Once tests are completed, the application is teared down.
+
+There are several types of integration tests in this package:
+
+- Tests to ensure that different packages integrate as expected with each other.
+- Tests to ensure that a Booster application behaves as expected when it is hit by a client (a GraphQL client).
+- Tests to ensure that the application behaves in the same way no matter what provider is selected.

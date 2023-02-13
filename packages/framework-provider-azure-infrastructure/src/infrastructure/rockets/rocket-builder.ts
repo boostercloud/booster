@@ -32,37 +32,31 @@ export class RocketBuilder {
     await Promises.allSettledAndFulfilled(rocketsInfrastructure)
   }
 
-  public uploadRocketsFiles(rocketsZipResources: RocketZipResource[] | undefined): void {
-    if (this.rockets) {
-      this.rockets.map(async (rocket) => {
-        const rocketZipResource = rocketsZipResources?.find(
-          (rocketZipResource) => rocketZipResource.functionAppName === this.getFunctionAppName(rocket)
-        )
-        if (rocketZipResource) {
-          const zip = rocketZipResource?.zip
-          await this.uploadRocketFile(zip)
-        }
-      })
+  public async uploadRocketsFiles(rocketsZipResources: RocketZipResource[] | undefined): Promise<void> {
+    if (rocketsZipResources) {
+      const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
+      const rocketZipResourcesPromises = rocketsZipResources.map((rocketZipResource) =>
+        this.uploadRocketFile(rocketZipResource, resourceGroupName)
+      )
+      await Promise.all(rocketZipResourcesPromises)
     }
   }
 
-  private async uploadRocketFile(zipResource: ZipResource): Promise<void> {
+  private async uploadRocketFile(rocketZipResource: RocketZipResource, resourceGroupName: string): Promise<void> {
     const logger = getLogger(this.config, 'RocketBuilder#uploadRocketFile')
-    logger.info('Uploading rockets zip file')
-    const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
-    this.deployRocketsZips(resourceGroupName, zipResource)
-    logger.info('Rocket zip files uploaded')
+    logger.info('Uploading rockets zip file: ', rocketZipResource.functionAppName, rocketZipResource.zip.fileName)
+    await FunctionZip.deployZip(rocketZipResource.functionAppName, resourceGroupName, rocketZipResource.zip)
+    logger.info('Rocket zip files uploaded', rocketZipResource.functionAppName, rocketZipResource.zip.fileName)
   }
 
   public async mountRocketsZipResources(): Promise<Array<RocketZipResource> | undefined> {
     if (!this.rockets) {
       return
     }
-    return await Promise.all(
-      this.rockets
-        ?.filter((value) => value.mountFunctions)
-        .map(async (rocket: InfrastructureRocket) => await this.mountRocketZipResource(rocket))
-    )
+    const mountRocketZipResourcePromises = this.rockets
+      ?.filter((value) => value.mountFunctions)
+      .map((rocket: InfrastructureRocket) => this.mountRocketZipResource(rocket))
+    return Promise.all(mountRocketZipResourcePromises)
   }
 
   private async mountRocketZipResource(rocket: InfrastructureRocket): Promise<RocketZipResource> {
@@ -77,21 +71,6 @@ export class RocketBuilder {
       functionAppName: rocketFunctionAppName,
       zip: rocketZipResource,
     } as RocketZipResource
-  }
-
-  private deployRocketsZips(resourceGroupName: string, zipResource: ZipResource): void {
-    this.rockets
-      ? this.rockets.map((rocket: InfrastructureRocket) => this.deployRocketZip(rocket, resourceGroupName, zipResource))
-      : []
-  }
-
-  private async deployRocketZip(
-    rocket: InfrastructureRocket,
-    resourceGroupName: string,
-    zipResource: ZipResource
-  ): Promise<void> {
-    const functionAppName = this.getFunctionAppName(rocket)
-    await FunctionZip.deployZip(functionAppName, resourceGroupName, zipResource)
   }
 
   private mountFunction(rocket: InfrastructureRocket): Array<FunctionDefinition> {

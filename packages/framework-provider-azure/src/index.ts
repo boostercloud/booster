@@ -15,6 +15,7 @@ import { deleteReadModel, fetchReadModel, storeReadModel } from './library/read-
 import { searchReadModel } from './library/searcher-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 import { searchEvents, searchEntitiesIds } from './library/events-searcher-adapter'
+import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -73,6 +74,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   // ScheduledCommandsLibrary
   scheduled: {
     rawToEnvelope: rawScheduledInputToEnvelope,
+  },
+  rockets: {
+    rawToEnvelopes: rawRocketInputToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
