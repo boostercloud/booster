@@ -3,7 +3,7 @@ import { BoosterConfig, rocketFunctionIDEnvVar } from '@boostercloud/framework-t
 export class BoosterRocketDispatcher {
   constructor(readonly config: BoosterConfig) {}
 
-  public dispatch(request: unknown): Promise<unknown> {
+  public async dispatch(request: unknown): Promise<unknown> {
     const rocketFunctionID = process.env[rocketFunctionIDEnvVar]
     if (!rocketFunctionID) {
       throw new Error(
