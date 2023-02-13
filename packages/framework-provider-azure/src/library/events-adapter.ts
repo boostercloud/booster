@@ -177,6 +177,6 @@ export async function storeSnapshot(
     [eventsStoreAttributes.partitionKey]: partitionKey,
     [eventsStoreAttributes.sortKey]: sortKey,
   })
-  logger.debug('[EventsAdapter#storeSnapshot] Snapshot stored')
+  logger.debug('Snapshot stored', snapshotEnvelope)
   return persistableEntitySnapshot
 }
