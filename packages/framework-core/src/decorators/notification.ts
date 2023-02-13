@@ -30,6 +30,11 @@ export const Notification =
     })
   }
 
+/**
+ * Optional decorator that marks a field in a notification class as the partition key.
+ * This is useful if you want to guarantee that all the event handlers for notifications
+ * of the same type will be executed in the same order.
+ */
 export function partitionKey(
   notificationClass: Class<NotificationInterface>,
   _functionName: string,
@@ -44,7 +49,7 @@ export function partitionKey(
           notificationClass.name
         }\`. It already had the partition key \`${
           config.partitionKeys[notificationClass.name]
-        }\` defined and only one partition key is allowed for each notification.`
+        }\` defined and only one partition key is allowed for each notification event.`
       )
     } else {
       config.partitionKeys[notificationClass.name] = propertyName

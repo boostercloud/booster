@@ -40,17 +40,8 @@ export class Register {
    * Register a list of events to be added to the event-store on handler completion
    * @param events
    */
-  public events(...events: Array<EventInterface>): Register {
+  public events(...events: Array<EventInterface | NotificationInterface>): Register {
     this.eventList.push(...events)
-    return this
-  }
-
-  /**
-   * Register a list of notifications to be added to the event-store on handler completion
-   * @param notifications
-   */
-  public notifications(...notifications: Array<NotificationInterface>): Register {
-    this.eventList.push(...notifications)
     return this
   }
 

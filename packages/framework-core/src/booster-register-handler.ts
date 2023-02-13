@@ -45,7 +45,7 @@ export class RegisterHandler {
     register: Register
   ): EventEnvelope {
     const eventTypeName = event.constructor.name
-    const entityTypeName = RegisterHandler.getEntityTypeName(eventTypeName, event, config)
+    const entityTypeName = RegisterHandler.getTopicName(eventTypeName, event, config)
     if (!entityTypeName) {
       throw new NotFoundError(
         `Couldn't find information about event ${eventTypeName}. Is the event handled by an entity?`
@@ -76,7 +76,7 @@ export class RegisterHandler {
     return boosterEventsTypesNames.includes(eventTypeName) ? BOOSTER_SUPER_KIND : DOMAIN_SUPER_KIND
   }
 
-  private static getEntityTypeName(
+  private static getTopicName(
     eventTypeName: string,
     event: Instance & (EventInterface | NotificationInterface),
     config: BoosterConfig

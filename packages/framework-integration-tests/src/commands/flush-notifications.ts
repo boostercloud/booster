@@ -14,12 +14,12 @@ export class FlushNotifications {
 
     const afterEvents = new Array(command.afterProducts).map(() => new CartAbandoned(command.cartId.toString()))
 
-    register.notifications(...previousEvents)
+    register.events(...previousEvents)
 
     await register.flush()
     const previousCart = await FlushNotifications.getEntity(command.cartId)
 
-    register.notifications(...afterEvents)
+    register.events(...afterEvents)
     const afterCart = await FlushNotifications.getEntity(command.cartId)
     return [previousCart, afterCart]
   }
