@@ -15,7 +15,7 @@ import {
 } from './envelope'
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
-import { RocketDescriptor } from './rockets'
+import { RocketDescriptor, RocketEnvelope } from './rockets'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -25,6 +25,11 @@ export interface ProviderLibrary {
   connections: ProviderConnectionsLibrary
   scheduled: ScheduledCommandsLibrary
   infrastructure: () => ProviderInfrastructure
+  rockets: ProviderRocketLibrary
+}
+
+export interface ProviderRocketLibrary {
+  rawToEnvelopes(config: BoosterConfig, request: unknown): RocketEnvelope
 }
 
 export interface ProviderEventsLibrary {

@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-kubernetes-infrastructure",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "Handle Booster's integration with Kubernetes",
   "keywords": [
     "framework-provider-kubernetes-infrastructure"
@@ -50,7 +50,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/framework-types": "workspace:^1.4.1",
+    "@boostercloud/framework-types": "workspace:^1.5.0",
     "@types/archiver": "5.1.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
