@@ -48,6 +48,10 @@ const config = {
   ],
 
   themeConfig: {
+    fathomAnalytics: {
+      siteId: 'LHRTIPFZ',
+      customDomain: 'https://tools.eventsource.cloud',
+    },
     colorMode: {
       defaultMode: 'light',
       disableSwitch: true,
@@ -166,6 +170,7 @@ const config = {
         },
       }
     },
+    require.resolve('docusaurus-plugin-fathom')
   ],
 }
 
