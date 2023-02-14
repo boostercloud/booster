@@ -1,12 +1,12 @@
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
+import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import * as path from 'path'
 import { guardError } from '../common/errors'
-import { checkItIsABoosterProject } from './project-checker'
-import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
+import { currentEnvironment } from './environment'
 import { PackageManagerService } from './package-manager'
-import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LivePackageManager } from './package-manager/live.impl'
+import { checkItIsABoosterProject } from './project-checker'
 
 export const DEPLOYMENT_SANDBOX = path.join(process.cwd(), '.deploy')
 
@@ -84,7 +84,7 @@ const cleanProjectEff = (projectPath: string) =>
     yield* $(runScript('clean', []))
   })
 
-function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
+export function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   const userProject = loadUserProject(userProjectPath)
   return new Promise((resolve): void => {
     const app: BoosterApp = userProject.Booster
