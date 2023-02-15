@@ -6,14 +6,13 @@ In other words, Read Models are cached data optimized for read operations. They'
 
 ## Creating a read model
 
-The Bosoter CLI will help you to create new read models. You just need to run the following command and the CLI will generate all the boilerplate for you:
+The Booster CLI will help you to create new read models. You just need to run the following command and the CLI will generate all the boilerplate for you:
 
 ```shell
 boost new:read-model CartReadModel --fields id:UUID cartItems:"Array<CartItem>" paid:boolean --projects Cart
 ```
 
 This will generate a new file called `cart-read-model.ts` in the `src/read-models` directory. You can also create the file manually, but you will need to create the class and decorate it, so we recommend using the CLI.
-
 
 ## Declaring a read model
 
@@ -30,7 +29,6 @@ export class ReadModelName {
 The `ReadModelName` class name will be used as the read model name in the GraphQL schema. Also, the types on the constructor will be used to generate the GraphQL schema. For example, if you have a property of type `Array<CartItem>` the GraphQL schema will know that is an array of `CartItem` objects.
 :::
 
-
 ## The projection function
 
 The projection function is a static method decorated with the `@Projects` decorator. It is used to define how the read model is updated when an entity is modified. he projection function must return a new instance of the read model, it receives two arguments:
@@ -38,16 +36,12 @@ The projection function is a static method decorated with the `@Projects` decora
 - `entity`: The entity that has been modified
 - `current?`: The current read model instance. If it's the first time the read model is created, this argument will be `undefined`
 
-You must provide the `@Projects` decorator with an entity class and the ***join key***. The join key is the name of the field in the entity that is used to match it with the read model's `id` field. In the example below, we are using the `id` field of the `Cart` entity to match it with the `CartReadModel` read model.
-  
+You must provide the `@Projects` decorator with an entity class and the **_join key_**. The join key is the name of the field in the entity that is used to match it with the read model's `id` field. In the example below, we are using the `id` field of the `Cart` entity to match it with the `CartReadModel` read model.
+
 ```typescript
 @ReadModel
 export class CartReadModel {
-  public constructor(
-    readonly id: UUID,
-    readonly cartItems: Array<CartItem>,
-    readonly paid: boolean
-  ) {}
+  public constructor(readonly id: UUID, readonly cartItems: Array<CartItem>, readonly paid: boolean) {}
 
   // highlight-start
   @Projects(Cart, 'id')
@@ -83,11 +77,11 @@ export class UserReadModel {
 
 ### Advanced join keys
 
-There might be cases where you need to project an entity into a read model using a more complex join key. For that reason, Booster supports other types of join keys. 
+There might be cases where you need to project an entity into a read model using a more complex join key. For that reason, Booster supports other types of join keys.
 
 #### Array of entities
 
-You can use an array of entities as a join key.  For example, if you have a `Group` entity with an array of users in that group (`users: Array<UUID>`), you can have the following to update each `UserReadModel` accordingly:
+You can use an array of entities as a join key. For example, if you have a `Group` entity with an array of users in that group (`users: Array<UUID>`), you can have the following to update each `UserReadModel` accordingly:
 
 ```typescript
   @Projects(Group, 'users')
@@ -132,7 +126,6 @@ export class UserReadModel {
 :::info
 Deleting a read model is a very expensive operation. It will trigger a write operation in the read model store. If you can, try to avoid deleting read models.
 :::
-
 
 #### Keeping read models untouched
 
@@ -239,19 +232,14 @@ Notice that getters are not cached in the read models database, so the getters w
 
 ## Authorizing a read model
 
-Read models are part of the public API of a Booster application, so you can define who is authorized to submit them. All read models are protected by default, which means that no one can query them. In order to allow users to query a read model, you must explicitly authorize them. You can use the `authorize` field of the `@ReadModel` decorator to specify the authorization rule. 
+Read models are part of the public API of a Booster application, so you can define who is authorized to submit them. All read models are protected by default, which means that no one can query them. In order to allow users to query a read model, you must explicitly authorize them. You can use the `authorize` field of the `@ReadModel` decorator to specify the authorization rule.
 
 ```typescript title="src/read-model/product-read-model.ts"
 @ReadModel({
-  authorize: 'all'
+  authorize: 'all',
 })
 export class ProductReadModel {
-  public constructor(
-    public id: UUID,
-    readonly name: string,
-    readonly description: string,
-    readonly price: number
-  ) {}
+  public constructor(public id: UUID, readonly name: string, readonly description: string, readonly price: number) {}
 
   @Projects(Product, 'id')
   public static projectProduct(entity: Product, current?: ProductReadModel): ProjectionResult<ProductReadModel> {
@@ -261,7 +249,6 @@ export class ProductReadModel {
 ```
 
 You can read more about this on the [Authorization section](/security/authorization).
-
 
 ## Querying a read model
 
@@ -300,7 +287,6 @@ Booster GraphQL API provides support for filtering Read Models on `queries` and 
 ## Subscribing to a read model
 
 Booster GraphQL API also provides support for real-time updates using subscriptions and a web-socket. To get more information about it go to the [GraphQL API](/graphql#subscribing-to-read-models) section.
-
 
 ## Sorting Read Models
 

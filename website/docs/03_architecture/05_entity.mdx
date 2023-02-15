@@ -1,6 +1,5 @@
 import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
 
-
 # Entity
 
 If events are the _source of truth_ of your application, entities are the _current state_ of your application. For example, if you have an application that allows users to create bank accounts, the events would be something like `AccountCreated`, `MoneyDeposited`, `MoneyWithdrawn`, etc. But the entities would be the `BankAccount` themselves, with the current balance, owner, etc.
@@ -13,7 +12,7 @@ Under the hood, Booster stores snapshots of the entities in order to reduce the 
 
 ## Creating entities
 
-The Bosoter CLI will help you to create new entities. You just need to run the following command and the CLI will generate all the boilerplate for you:
+The Booster CLI will help you to create new entities. You just need to run the following command and the CLI will generate all the boilerplate for you:
 
 <TerminalWindow>
 
@@ -27,7 +26,7 @@ This will generate a new file called `product.ts` in the `src/entities` director
 
 ## Declaring an entity
 
-To declare an entity in Booster, you must define a class decorated with the `@Entity` decorator. Inside of the class, you must define a constructor with all the fields you want to have in your entity. 
+To declare an entity in Booster, you must define a class decorated with the `@Entity` decorator. Inside of the class, you must define a constructor with all the fields you want to have in your entity.
 
 ```typescript title="src/entities/entity-name.ts"
 @Entity
@@ -38,7 +37,7 @@ export class EntityName {
 
 ## The reduce function
 
-In order to tell Booster how to reduce the events, you must define a static method decorated with the `@Reduces` decorator. This method will be called by the framework every time an event of the specified type is emitted. The reducer method must return a new entity instance with the current state of the entity. 
+In order to tell Booster how to reduce the events, you must define a static method decorated with the `@Reduces` decorator. This method will be called by the framework every time an event of the specified type is emitted. The reducer method must return a new entity instance with the current state of the entity.
 
 ```typescript title="src/entities/entity-name.ts"
 @Entity
@@ -61,7 +60,7 @@ The reducer method receives two parameters:
 
 ### Reducing multiple events
 
-You can define as many reducer methods as you want, each one for a different event type. For example, if you have a `Cart` entity, you could define a reducer for `ProductAdded` events and another one for `ProductRemoved` events. 
+You can define as many reducer methods as you want, each one for a different event type. For example, if you have a `Cart` entity, you could define a reducer for `ProductAdded` events and another one for `ProductRemoved` events.
 
 ```typescript title="src/entities/cart.ts"
 @Entity
@@ -86,7 +85,6 @@ export class Cart {
 It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
 :::
 
-
 There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**. This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished. This is how Booster guarantees that the entity state is consistent.
 
 ![reducer process gif](/img/reducer.gif)
@@ -99,8 +97,7 @@ This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eve
 
 ## Entity ID
 
-In order to identify each entity instance, you must define an `id` field on each entity. This field will be used by the framework to identify the entity instance. If the value of the `id` field matches the value returned by the [`entityID()` method](event#events-and-entities) of an Event, the framework will consider that the event belongs to that entity instance. 
-
+In order to identify each entity instance, you must define an `id` field on each entity. This field will be used by the framework to identify the entity instance. If the value of the `id` field matches the value returned by the [`entityID()` method](event#events-and-entities) of an Event, the framework will consider that the event belongs to that entity instance.
 
 ```typescript title="src/entities/entity-name.ts"
 @Entity
@@ -122,7 +119,6 @@ export class EntityName {
 :::tip
 We recommend you to use the `UUID` type for the `id` field. You can generate a new `UUID` value by calling the `UUID.generate()` method already provided by the framework.
 :::
-
 
 ## Entities naming convention
 
@@ -149,5 +145,3 @@ Entities live within the entities directory of the project source: `<project-roo
 │   ├── index.ts
 │   └── read-models
 ```
-
-
