@@ -34,7 +34,8 @@ export class AppErrorHandler {
     error: Error,
     eventInstance: EventInterface
   ): Promise<Error | undefined> {
-    if (eventInstance?.entityID() === dispatchEventErrorCartId) {
+    const getEntityID = eventInstance?.entityID ?? (() => '')
+    if (getEntityID() === dispatchEventErrorCartId) {
       return new Error(error.message + '-onDispatchEventHandlerError')
     }
     return error
@@ -45,7 +46,8 @@ export class AppErrorHandler {
     eventInstance: EventInterface,
     snapshotInstance: EntityInterface | null
   ): Promise<Error | undefined> {
-    if (eventInstance?.entityID() === reducerErrorCartId) {
+    const getEntityID = eventInstance?.entityID ?? (() => '')
+    if (getEntityID() === reducerErrorCartId) {
       return new Error(error.message + '-onReducerError')
     }
     return error

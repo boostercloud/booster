@@ -13,6 +13,7 @@ import {
   EntityInterface,
   DataMigrationMetadata,
   TokenVerifier,
+  NotificationMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -52,6 +53,10 @@ export class BoosterConfig {
 
   public readonly functionRelativePath: string = path.join('..', this.codeRelativePath, 'index.js')
   public readonly events: Record<EventName, EventMetadata> = {}
+  public readonly notifications: Record<EventName, NotificationMetadata> = {}
+  public readonly partitionKeys: Record<EventName, string> = {}
+  public readonly topicToEvent: Record<string, EventName> = {}
+  public readonly eventToTopic: Record<EventName, string> = {}
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}

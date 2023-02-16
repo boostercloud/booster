@@ -29,11 +29,16 @@ class SomeEvent {
   }
 }
 
+class SomeNotification {
+  public constructor() {}
+}
+
 class AnEventHandler {
   public static async handle(event: SomeEvent, register: Register): Promise<void> {
     event.getPrefixedId('prefix')
   }
 }
+
 const someEvent: EventEnvelope = {
   version: 1,
   kind: 'event',
@@ -47,7 +52,19 @@ const someEvent: EventEnvelope = {
     id: '42',
   },
   requestID: '123',
-  typeName: 'SomeEvent',
+  typeName: SomeEvent.name,
+  createdAt: 'an uncertain future',
+}
+
+const someNotification: EventEnvelope = {
+  version: 1,
+  kind: 'event',
+  superKind: 'domain',
+  entityID: 'default',
+  entityTypeName: 'defaultTopic',
+  value: {},
+  requestID: '123',
+  typeName: SomeNotification.name,
   createdAt: 'an uncertain future',
 }
 
@@ -91,6 +108,7 @@ describe('BoosterEventDispatcher', () => {
   const config = new BoosterConfig('test')
   config.provider = {} as ProviderLibrary
   config.events[SomeEvent.name] = { class: SomeEvent }
+  config.notifications[SomeNotification.name] = { class: SomeNotification }
 
   context('with a configured provider', () => {
     describe('the `dispatch` method', () => {
@@ -147,6 +165,25 @@ describe('BoosterEventDispatcher', () => {
           [someEvent],
           config
         )
+      })
+
+      it("doesn't call snapshotAndUpdateReadModels if the entity name is in config.topicToEvent", async () => {
+        const stubEventStore = createStubInstance(EventStore)
+        const stubReadModelStore = createStubInstance(ReadModelStore)
+
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
+        replace(boosterEventDispatcher, 'dispatchEntityEventsToEventHandlers', fake())
+
+        const overriddenConfig = { ...config }
+        overriddenConfig.topicToEvent = { [someEvent.entityTypeName]: 'SomeEvent' }
+
+        const callback = boosterEventDispatcher.eventProcessor(stubEventStore, stubReadModelStore)
+
+        await callback(someEvent.entityTypeName, someEvent.entityID, [someEvent], overriddenConfig)
+        overriddenConfig.topicToEvent = {}
+
+        expect(boosterEventDispatcher.snapshotAndUpdateReadModels).not.to.have.been.called
       })
     })
 
@@ -247,6 +284,22 @@ describe('BoosterEventDispatcher', () => {
 
         expect(fakeHandler1).to.have.been.calledOnceWith(anEventInstance)
         expect(fakeHandler2).to.have.been.calledOnceWith(anEventInstance)
+      })
+
+      it('calls all the handlers, even if the event is stored in the notifications field instead of the events one', async () => {
+        const fakeHandler1 = fake()
+        const fakeHandler2 = fake()
+        config.eventHandlers[SomeNotification.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someNotification], config)
+
+        const aNotificationInstance = new SomeNotification()
+
+        expect(fakeHandler1).to.have.been.calledOnceWith(aNotificationInstance)
+        expect(fakeHandler2).to.have.been.calledOnceWith(aNotificationInstance)
       })
 
       it('calls the register handler for all the published events', async () => {
