@@ -2,7 +2,7 @@ import { gql } from '@apollo/client'
 import { ApolloService } from './apollo-service'
 
 const BOOSTER_HTTP_URI = 'https://7zhwv1f1d2.execute-api.us-east-1.amazonaws.com/production/graphql'
-const BOOSTER_WS_URI = 'wss://7zhwv1f1d2.execute-api.us-east-1.amazonaws.com/production/graphql'
+const BOOSTER_WS_URI = 'wss://gg4mj79dn4.execute-api.us-east-1.amazonaws.com/production/'
 
 type SubscribeFn = (chunk: string) => void
 
