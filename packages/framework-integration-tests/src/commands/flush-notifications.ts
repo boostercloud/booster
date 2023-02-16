@@ -17,20 +17,23 @@ export class FlushNotifications {
     register.events(...previousEvents)
 
     await register.flush()
-    const previousCart = await FlushNotifications.getEntity(command.cartId)
+    const previousCart = await FlushNotifications.getCart(command.cartId)
 
     register.events(...afterEvents)
-    const afterCart = await FlushNotifications.getEntity(command.cartId)
+    const afterCart = await FlushNotifications.getCart(command.cartId)
     return [previousCart, afterCart]
   }
 
-  private static async getEntity(cartId: UUID, retries = 0): Promise<Cart> {
-    const cart = await Booster.entity(Cart, cartId)
-    if (cart || retries >= 10) {
-      return cart as Cart
+  private static async getCart(cartId: UUID, maxRetries = 10): Promise<Cart> {
+    let cart: Cart | undefined = undefined
+    do {
+      cart = await new Promise((resolve) =>
+        setTimeout(() => resolve(Booster.entity(Cart, cartId)), 1000 * (10 - maxRetries))
+      )
+    } while (!cart && maxRetries-- > 0)
+    if (!cart) {
+      throw new Error('Could not get the cart')
     }
-    return new Promise((resolve) => {
-      setTimeout(async () => resolve(await FlushNotifications.getEntity(cartId, retries + 1)), 1000)
-    })
+    return cart
   }
 }
