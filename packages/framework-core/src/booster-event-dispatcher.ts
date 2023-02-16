@@ -12,11 +12,12 @@ import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { createInstance, Promises, getLogger } from '@boostercloud/framework-common-helpers'
+import { NotificationInterface } from 'framework-types/dist'
 
 export class BoosterEventDispatcher {
   /**
    * Entry point to dispatch events coming from the cloud provider.
-   * @param rawEvents List of RAW events from the cloud provider
+   * @param rawEvents List of raw events from the cloud provider
    * @param config
    * @param logger
    */
@@ -38,15 +39,17 @@ export class BoosterEventDispatcher {
 
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
-      await BoosterEventDispatcher.snapshotAndUpdateReadModels(
-        config,
-        entityName,
-        entityID,
-        eventEnvelopes,
-        eventStore,
-        readModelStore
-      )
+      if (!(entityName in config.topicToEvent)) {
+        // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
+        await BoosterEventDispatcher.snapshotAndUpdateReadModels(
+          config,
+          entityName,
+          entityID,
+          eventEnvelopes,
+          eventStore,
+          readModelStore
+        )
+      }
       await BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config)
     }
   }
@@ -79,7 +82,7 @@ export class BoosterEventDispatcher {
   }
 
   private static async dispatchEntityEventsToEventHandlers(
-    entityEventEnvelopes: Array<EventEnvelope>,
+    entityEventEnvelopes: Array<EventEnvelope | NotificationInterface>,
     config: BoosterConfig
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher.dispatchEntityEventsToEventHandlers')
@@ -89,7 +92,7 @@ export class BoosterEventDispatcher {
         logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
         continue
       }
-      const eventClass = config.events[eventEnvelope.typeName]
+      const eventClass = config.events[eventEnvelope.typeName] ?? config.notifications[eventEnvelope.typeName]
       await Promises.allSettledAndFulfilled(
         eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
           const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
