@@ -1,0 +1,107 @@
+.bc-layout {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  background-color: #F5F5F5;
+  padding-bottom: 12rem;
+}
+
+.bc-layout > * {
+  transition: all;
+  transition-duration: 0.5s;
+}
+
+.bc-hero {
+  width: 14rem;
+  margin-top: 3rem;
+}
+
+.bc-searchbar { 
+  background-color: white;
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  position: relative;
+  border-radius: 50px;
+  width: 48rem;
+  max-width: 75%;
+}
+
+.bc-input {
+  outline: none;
+  border: none;
+  flex: 1;
+}
+
+.bc-input:disabled {
+  background-color: white;
+}
+
+.bc-chat {
+  background-color: white;
+  width: 56rem;
+  max-width: 80%;
+  height: fit-content;
+  border-radius: 1rem;
+  padding: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.bc-chat:first-child {
+  margin-top: var(--ifm-paragraph-margin-bottom)
+}
+
+.--loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 24rem;
+}
+
+.bc-loader {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+  margin: 15px auto;
+  position: relative;
+  color: #2A27E2;
+  box-sizing: border-box;
+  animation: animloader 1s linear infinite alternate;
+}
+
+@keyframes animloader {
+  0% {
+    box-shadow: -38px -12px ,  -14px 0,  14px 0, 38px 0;
+  }
+  33% {
+    box-shadow: -38px 0px, -14px -12px,  14px 0, 38px 0;
+  }
+  66% {
+    box-shadow: -38px 0px , -14px 0, 14px -12px, 38px 0;
+  }
+  100% {
+    box-shadow: -38px 0 , -14px 0, 14px 0 , 38px -12px;
+  }
+}
+
+.discord-btn {
+  background-color: #7289DA;
+  color: white;
+  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: none;
+
+}
+
+.discord-btn:hover {
+  background-color: #5F73BC;
+}
