@@ -19,11 +19,13 @@ export default function BoosterChat(): JSX.Element {
     setLoading(true)
     setResponse('')
     ChatSerivce.answerBoosterQuestion(query, handleResponseUpdated)
-      .catch((err) => {
-        console.error('Error while answering question:', err)
+      .catch((error) => {
         setResponse(NO_RESPONSE)
+        console.error(error)
       })
-      .finally(() => setLoading(false))
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   const handleKeyDown = (event) => {
