@@ -57,14 +57,18 @@ describe('notifications', async () => {
           query: gql`
             query ListCartReadModels($filter: ListCartReadModelFilter) {
               ListCartReadModels(filter: $filter) {
-                checks
+                items {
+                  checks
+                }
               }
             }
           `,
         })
       },
       (result) => {
-        return result?.data?.ListCartReadModels?.checks !== 0
+        const isDefined = result?.data?.ListCartReadModels?.items?.[0]?.checks !== undefined
+        const notZero = result?.data?.ListCartReadModels?.items?.[0]?.checks !== 0
+        return isDefined && notZero
       }
     )
 

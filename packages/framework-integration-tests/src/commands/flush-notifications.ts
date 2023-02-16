@@ -10,9 +10,9 @@ export class FlushNotifications {
   public constructor(readonly cartId: UUID, readonly previousProducts: number, readonly afterProducts: number) {}
 
   public static async handle(command: FlushNotifications, register: Register): Promise<Array<Cart>> {
-    const previousEvents = new Array(command.previousProducts).map(() => new CartAbandoned(command.cartId.toString()))
+    const previousEvents = Array(command.previousProducts).fill(new CartAbandoned(command.cartId.toString()))
 
-    const afterEvents = new Array(command.afterProducts).map(() => new CartAbandoned(command.cartId.toString()))
+    const afterEvents = Array(command.afterProducts).fill(new CartAbandoned(command.cartId.toString()))
 
     console.log('REGISTERING PREVIOUS EVENTS', previousEvents)
     register.events(...previousEvents)

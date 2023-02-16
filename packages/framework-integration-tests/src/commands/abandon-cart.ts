@@ -13,6 +13,6 @@ export class AbandonCart {
   public constructor(readonly cartId: UUID) {}
 
   public static async handle(command: AbandonCart, register: Register): Promise<void> {
-    register.events(new CartAbandoned('a'))
+    register.events(new CartAbandoned(command.cartId.toString()))
   }
 }
