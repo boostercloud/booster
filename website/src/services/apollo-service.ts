@@ -1,7 +1,7 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, NormalizedCacheObject, split } from '@apollo/client'
-import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
+import { WebSocketLink } from '@apollo/client/link/ws'
 import { getMainDefinition } from '@apollo/client/utilities'
-import { createClient } from 'graphql-ws'
+import { SubscriptionClient } from 'subscriptions-transport-ws'
 
 export class ApolloService {
   static initClient(httpUri: string, wsUri: string): ApolloClient<NormalizedCacheObject> {
@@ -9,9 +9,9 @@ export class ApolloService {
       uri: httpUri,
     })
 
-    const wsLink = new GraphQLWsLink(
-      createClient({
-        url: wsUri,
+    const wsLink = new WebSocketLink(
+      new SubscriptionClient(wsUri, {
+        reconnect: true,
       })
     )
 

@@ -47,8 +47,6 @@ export class ChatSerivce {
         },
       }).subscribe(
         (res) => {
-          console.log('answer', res)
-
           const { answer, status } = res.data.AnswerReadModel
           subscribeFn(answer)
 
