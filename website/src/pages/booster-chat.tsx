@@ -1,3 +1,5 @@
+import useBaseUrl from '@docusaurus/useBaseUrl'
+import SearchIcon from '@site/static/img/search-icon.svg'
 import Layout from '@theme/Layout'
 import React, { useState } from 'react'
 import { ChatResponse } from '../components/booster-chat/ChatResponse'
@@ -36,10 +38,10 @@ export default function BoosterChat(): JSX.Element {
 
   return (
     <Layout wrapperClassName="bc-layout">
-      <img className="bc-hero" src="img/booster-logo.png" alt="Booster Logo" />
+      <img className="bc-hero" src={useBaseUrl('/img/booster-logo.png')} alt="Booster Logo" />
       <CoolTitle hidden={interacted} />
       <div className="bc-searchbar">
-        <img src="img/search-icon.svg" alt="" />
+        <SearchIcon />
         <input
           placeholder="What is Booster?"
           className="bc-input"
