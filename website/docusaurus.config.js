@@ -71,11 +71,17 @@ const config = {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
           position: 'right',
+          customProps: {
+            trackingEvent: 'UXDJRQQB',
+          },
         },
         {
           href: 'https://discord.gg/bDY8MKx',
           label: 'Discord',
           position: 'right',
+          customProps: {
+            trackingEvent: 'D38YB2Q1',
+          },
         },
       ],
     },
