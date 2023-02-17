@@ -23,6 +23,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.14
 
       # If this was triggered by a /integration command, check out merge commit
       - name: Fork based /integration checkout
