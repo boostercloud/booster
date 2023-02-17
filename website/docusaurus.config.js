@@ -64,11 +64,6 @@ const config = {
           label: 'Docs',
         },
         {
-          to: 'booster-chat',
-          position: 'left',
-          label: 'BeneAI',
-        },
-        {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
           position: 'right',
