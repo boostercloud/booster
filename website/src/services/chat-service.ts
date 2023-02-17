@@ -18,6 +18,15 @@ export class ChatSerivce {
     }
   }
 
+  static async _answerBoosterQuestion(question: string, subscribeFn: SubscribeFn): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      setTimeout(() => {
+        subscribeFn('Response')
+        resolve()
+      }, 2000)
+    })
+  }
+
   private static sendBoosterQuestion(question: string) {
     return this.ApolloClient.mutate({
       mutation: gql`
@@ -47,6 +56,8 @@ export class ChatSerivce {
         },
       }).subscribe(
         (res) => {
+          console.log({ res })
+
           const { answer, status } = res.data.AnswerReadModel
           subscribeFn(answer)
 
