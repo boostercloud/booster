@@ -62,7 +62,7 @@ export const CoolTitle: FC<CoolTitleProps> = ({ hidden }) => {
   }, [cursor])
 
   return (
-    <div style={{ height: hidden ? 0 : '20px', overflow: 'hidden' }} className="bc-title">
+    <div style={{ height: hidden ? 0 : '25px', overflow: 'hidden' }} className="bc-title">
       <h2 style={{ margin: 0, fontSize: 18, fontStyle: 'italic' }}>
         {title}
         <span className="bc-writing-cursor"></span>
