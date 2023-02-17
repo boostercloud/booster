@@ -13,7 +13,7 @@ interface CoolTitleProps {
 
 export const CoolTitle: FC<CoolTitleProps> = ({ hidden }) => {
   const AWESOME_TITLES = [
-    'Hi! I am Booster assistant, the Booster assistant',
+    'Hi! I am Booster assistant, nice to meet you!',
     'Ask me anything about Booster',
     'I am here to help you :)',
   ]
