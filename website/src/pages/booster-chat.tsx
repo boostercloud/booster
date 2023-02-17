@@ -18,7 +18,7 @@ export default function BoosterChat(): JSX.Element {
   const handleSearch = async (query: string) => {
     setLoading(true)
     setResponse('')
-    ChatSerivce.answerBoosterQuestion(query, handleResponseUpdated)
+    ChatSerivce.answerBoosterQuestionWithVercel(query, handleResponseUpdated)
       .catch((error) => {
         setResponse(NO_RESPONSE)
         console.error(error)
