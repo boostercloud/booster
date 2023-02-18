@@ -6,7 +6,7 @@ describe('selectedProvider', (): void => {
     expect(Provider.AWS).to.be.equal('@boostercloud/framework-provider-aws (AWS)')
   })
   it('get selected provider: Azure', async () => {
-    expect(Provider.AZURE).to.be.equal('@boostercloud/framework-provider-azure (Azure) [Experimental]')
+    expect(Provider.AZURE).to.be.equal('@boostercloud/framework-provider-azure (Azure)')
   })
   it('get selected provider: Kubernetes', async () => {
     expect(Provider.KUBERNETES).to.be.equal('@boostercloud/framework-provider-kubernetes (Kubernetes) [Experimental]')

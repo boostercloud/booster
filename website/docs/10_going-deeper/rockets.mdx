@@ -4,7 +4,7 @@ import DocCardList from '@theme/DocCardList'
 
 You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
 
-1. Extend your infrastructure (Currently supported in AWS, and under experimental support in Azure and Local): You can write a rocket that adds provider resources to your application stack.
+1. Extend your infrastructure: You can write a rocket that adds provider resources to your application stack.
 2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, which combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
 3. Deploy and init hooks (Not yet implemented): Run custom scripts before or after deployment, or before a Booster application is loaded.
 
@@ -14,11 +14,6 @@ This extension mechanism is very new, but we're planning to port most of the fun
 - Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so by providing functionality like rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
 
 ### Create your own Rocket
-
-:::note
-Currently Rockets work in AWS.
-In Azure and Local, Rockets are under experimental support. We are working on porting them to other providers.
-:::
 
 A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are shortly.
 
