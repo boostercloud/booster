@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  AnyClass,
   BoosterConfig,
+  FilterFor,
   GraphQLOperation,
   InvalidParameterError,
   NotFoundError,
@@ -8,9 +10,10 @@ import {
   ReadModelListResult,
   ReadModelRequestEnvelope,
   ReadOnlyNonEmptyArray,
+  SortFor,
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
-import { getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstances, getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
@@ -57,16 +60,43 @@ export class BoosterReadModelsReader {
       readModelMetadata.before,
       readModelRequest.currentUser
     )
+    return await this.readModelSearch(
+      readModelMetadata.class,
+      readModelTransformedRequest.filters,
+      readModelTransformedRequest.sortBy,
+      readModelTransformedRequest.limit,
+      readModelTransformedRequest.afterCursor,
+      readModelTransformedRequest.paginatedVersion
+    )
+  }
 
-    const readModelName = readModelMetadata.class.name
-    const readModels = await Booster.readModel(readModelMetadata.class)
-      .filter(readModelTransformedRequest.filters)
-      .sortBy(readModelTransformedRequest.sortBy)
-      .limit(readModelTransformedRequest.limit)
-      .afterCursor(readModelTransformedRequest.afterCursor)
-      .paginatedVersion(readModelTransformedRequest.paginatedVersion)
-      .search()
+  public async readModelSearch<TReadModel extends ReadModelInterface>(
+    readModelClass: AnyClass,
+    filters: FilterFor<unknown>,
+    sort?: SortFor<unknown>,
+    limit?: number,
+    afterCursor?: any,
+    paginatedVersion?: boolean
+  ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
+    const readModelName = readModelClass.name
+    const searchResult = await this.config.provider.readModels.search<TReadModel>(
+      this.config,
+      readModelName,
+      filters ?? {},
+      sort ?? {},
+      limit,
+      afterCursor,
+      paginatedVersion ?? false
+    )
 
+    const readModels = this.createReadModelInstances(searchResult, readModelClass)
+    return this.migrateReadModels(readModels, readModelName)
+  }
+
+  private async migrateReadModels<TReadModel extends ReadModelInterface>(
+    readModels: Array<TReadModel> | ReadModelListResult<TReadModel>,
+    readModelName: string
+  ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
     const readModelSchemaMigrator = new ReadModelSchemaMigrator(this.config)
     if (Array.isArray(readModels)) {
       return Promise.all(readModels.map((readModel) => readModelSchemaMigrator.migrate(readModel, readModelName)))
@@ -75,6 +105,19 @@ export class BoosterReadModelsReader {
       readModels.items.map((readModel) => readModelSchemaMigrator.migrate(readModel, readModelName))
     )
     return readModels
+  }
+
+  private createReadModelInstances<TReadModel extends ReadModelInterface>(
+    searchResult: Array<TReadModel> | ReadModelListResult<TReadModel>,
+    readModelClass: AnyClass
+  ): Array<TReadModel> | ReadModelListResult<TReadModel> {
+    if (Array.isArray(searchResult)) {
+      return createInstances(readModelClass, searchResult)
+    }
+    return {
+      ...searchResult,
+      items: createInstances(readModelClass, searchResult.items),
+    }
   }
 
   public async subscribe(
