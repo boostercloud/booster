@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 13 Feb 2023 13:56:07 GMT and should not be manually modified.
+This log was last generated on Sat, 18 Feb 2023 21:05:28 GMT and should not be manually modified.
+
+## 1.5.1
+Sat, 18 Feb 2023 21:05:28 GMT
+
+### Patches
+
+- migrate readmodels on api search
 
 ## 1.5.0
 Mon, 13 Feb 2023 13:56:07 GMT
