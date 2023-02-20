@@ -5,7 +5,9 @@ import Tabs from '@theme/Tabs'
 
 This package is a configurable rocket to add a storage API to your Booster applications.
 
-[Github Repo](https://github.com/boostercloud/rocket-file-uploads)
+:::info
+[GitHub Repo](https://github.com/boostercloud/rocket-file-uploads)
+:::
 
 ## Supported Providers
 - Azure Provider
@@ -26,7 +28,7 @@ This rocket also provides a Booster Event each time a file is uploaded.
 
 ## Usage
 
-<Tabs groupId="dependencies-example">
+<Tabs groupId="providers-usage">
 <TabItem value="azure-provider" label="Azure Provider" default>
 
 Install needed dependency packages:
@@ -75,8 +77,9 @@ Available parameters are:
 - **containerName**: Directories container.
 - **directories**: A list of folders where the files will be stored.
 
-```text
+---
 The structure created will be:
+```text
 ├── storageName
 │   ├── containerName
 │   │   ├── directory
@@ -240,6 +243,45 @@ Response:
 ```
 
 </details>
+
+<details>
+    <summary>Delete File</summary>
+    Currently, the option to delete a file is only available on AWS. If this is a feature you were looking for, please let us know on Discord. Alternatively, you can implement this feature and submit a pull request on GitHub for this Rocket!
+</details>
+
+## Azure Roles
+:::info
+Starting at version **0.31.0** this Rocket use Managed Identities instead of Connection Strings. Please, check that you have the required permissions to assign roles https://learn.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-managed-identity#prerequisites
+:::
+
+For uploading files to Azure you need the Storage Blob Data Contributor role. This can be assigned to a user using the portal or with the next scripts:
+
+First, check if you have the correct permissions:
+```bash
+ACCOUNT_NAME="<STORAGE ACCOUNT NAME>"
+CONTAINER_NAME="<CONTAINER NAME>"
+
+# use this to test if you have the correct permissions
+az storage blob exists --account-name $ACCOUNT_NAME `
+                        --container-name $CONTAINER_NAME `
+                        --name blob1.txt --auth-mode login
+```
+
+If you don't have it, then run this script as admin:
+
+```bash
+ACCOUNT_NAME="<STORAGE ACCOUNT NAME>"
+CONTAINER_NAME="<CONTAINER NAME>"
+
+OBJECT_ID=$(az ad user list --query "[?mailNickname=='<YOUR MAIL NICK NAME>'].objectId" -o tsv)
+STORAGE_ID=$(az storage account show -n $ACCOUNT_NAME --query id -o tsv)
+
+az role assignment create \
+    --role "Storage Blob Data Contributor" \
+    --assignee $OBJECT_ID \
+    --scope "$STORAGE_ID/blobServices/default/containers/$CONTAINER_NAME"
+```
+
 </TabItem>
 <TabItem value="aws-provider" label="AWS Provider" default>
 
@@ -287,8 +329,9 @@ Available parameters are:
 - **storageName**: Name of the storage repository.
 - **directories**: A list of folders where the files will be stored.
 
-```text
+---
 The structure created will be:
+```text
 ├── storageName
 │   ├── directory
 ```
@@ -463,6 +506,56 @@ Response:
 
 </details>
 
+<details>
+    <summary>Delete File</summary>
+
+Create a command in your application and call the `deleteFile` method on the `FileHandler` class with the directory and file name you want to delete.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/delete-file.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+import { ListItem } from '@boostercloud/rocket-file-uploads-types'
+
+@Command({
+  authorize: 'all',
+})
+export class DeleteFile {
+  public constructor(readonly directory: string, readonly fileName: string, readonly storageName?: string) {}
+
+  public static async handle(command: DeleteFile, register: Register): Promise<boolean> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.deleteFile(command.directory, command.fileName)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  DeleteFile(input: {
+    storageName: "clientst",
+    directory: "client1",
+    fileName: "myfile.txt"
+    }
+  )
+}
+```
+
+Response:
+```json
+{
+  "data": {
+    "DeleteFile": true
+  }
+}
+```
+
+</details>
+
 </TabItem>
 <TabItem value="local-provider" label="Local Provider" default>
 
@@ -511,8 +604,9 @@ Available parameters are:
 - **containerName**: Directories container.
 - **directories**: A list of folders where the files will be stored.
 
-```text
+---
 The structure created will be:
+```text
 ├── storageName
 │   ├── containerName
 │   │   ├── directory
@@ -671,5 +765,89 @@ Response:
 ```
 
 </details>
+
+<details>
+    <summary>Delete File</summary>
+    Currently, the option to delete a file is only available on AWS. If this is a feature you were looking for, please let us know on Discord. Alternatively, you can implement this feature and submit a pull request on GitHub for this Rocket!
+</details>
+
+## Security
+Local Provider doesn't check paths. You should check that the directory and files passed as paratemers are valid.
+
 </TabItem>
 </Tabs>
+
+---
+
+## Events
+
+For each uploaded file a new event will be automatically generated and properly reduced on the entity `UploadedFileEntity`.
+
+<Tabs groupId="providers-usage">
+<TabItem value="azure-and-aws-provider" label="Azure & AWS Provider" default>
+
+The event will look like this:
+
+```typescript
+{
+  "version": 1,
+  "kind": "snapshot",
+  "superKind": "domain",
+  "requestID": "xxx",
+  "entityID": "xxxx",
+  "entityTypeName": "UploadedFileEntity",
+  "typeName": "UploadedFileEntity",
+  "value": {
+    "id": "xxx",
+    "metadata": {
+      // A bunch of fields (depending on Azure or AWS)
+    }
+  },
+  "createdAt": "2022-10-26T10:23:36.562Z",
+  "snapshottedEventCreatedAt": "2022-10-26T10:23:32.34Z",
+  "entityTypeName_entityID_kind": "UploadedFileEntity-xxx-b842-x-8975-xx-snapshot",
+  "id": "x-x-x-x-x",
+  "_rid": "x==",
+  "_self": "dbs/x==/colls/x=/docs/x==/",
+  "_etag": "\"x-x-0500-0000-x\"",
+  "_attachments": "attachments/",
+  "_ts": 123456
+}
+```
+
+</TabItem>
+
+<TabItem value="local-provider" label="Local Provider" default>
+
+The event will look like this:
+
+```typescript
+{
+  "version": 1,
+  "kind": "snapshot",
+  "superKind": "domain",
+  "requestID": "x",
+  "entityID": "x",
+  "entityTypeName": "UploadedFileEntity",
+  "typeName": "UploadedFileEntity",
+  "value": {
+    "id": "x",
+    "metadata": {
+      "uri": "http://localhost:3000/clientst/rocketfiles/client1/myfile.txt",
+      "name": "client1/myfile.txt"
+    }
+  },
+  "createdAt": "2022-10-26T10:35:18.967Z",
+  "snapshottedEventCreatedAt": "2022-10-26T10:35:18.958Z",
+  "_id": "lMolccTNJVojXiLz"
+}
+```
+
+</TabItem>
+</Tabs>
+
+## TODOs
+- Add file deletion to Azure and Local (only supported in AWS at the moment).
+- Optional storage deletion when unmounting the stack.
+- Optional events, in case you don't want to store that information in the events-store.
+- When deleting a file, save a deletion event in the events-store. Only uploads are stored at the moment.

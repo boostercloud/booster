@@ -53,31 +53,30 @@ const sidebars = {
       type: 'category',
       label: 'Going deeper with Booster',
       link: {
-        type: 'generated-index',
+        type: 'generated-index'
       },
       items: [
-        'going-deep/environment-configuration',
-        'going-deep/infrastructure-providers',
-        'going-deep/framework-packages',
-        'going-deep/testing',
-        'going-deep/data-migrations',
-        'going-deep/custom-providers',
+        'going-deeper/environment-configuration',
+        'going-deeper/infrastructure-providers',
+        'going-deeper/framework-packages',
+        'going-deeper/testing',
+        'going-deeper/data-migrations',
+        'going-deeper/custom-providers',
         {
           type: 'category',
           label: 'Extending Booster with Rockets!',
           link: {
             type: 'doc',
-            id: 'going-deep/rockets/rockets',
+            id: 'going-deeper/rockets'
           },
           items: [
-            'going-deep/rockets/rocket-authentication',
-            'going-deep/rockets/rocket-file-uploads',
-            'going-deep/rockets/rocket-backup-booster',
-            'going-deep/rockets/rocket-static-sites',
-            'going-deep/rockets/rocket-webhook',
+            'going-deeper/rockets/rocket-file-uploads',
+            'going-deeper/rockets/rocket-backup-booster',
+            'going-deeper/rockets/rocket-static-sites',
+            'going-deeper/rockets/rocket-webhook',
           ]
         },
-        'going-deep/custom-templates'
+        'going-deeper/custom-templates',
       ],
     },
     'frequently-asked-questions',
