@@ -1,0 +1,675 @@
+import TabItem from '@theme/TabItem'
+import Tabs from '@theme/Tabs'
+
+# File Uploads Rocket
+
+This package is a configurable rocket to add a storage API to your Booster applications.
+
+[Github Repo](https://github.com/boostercloud/rocket-file-uploads)
+
+## Supported Providers
+- Azure Provider
+- AWS Provider
+- Local Provider
+
+## Overview
+This rocket provides some methods to access files stores in your cloud provider:
+
+- **presignedPut**: Returns a presigned put url and the necessary form params. With this url files can be uploaded directly to your provider.
+- **presignedGet**:  Returns a presigned get url to download a file. With this url files can be downloaded directly from your provider.
+- **list**: Returns a list of files stored in the provider.
+- **deleteFile**: Removes a file from a directory (only supported in AWS at the moment).
+
+These methods may be used from a Command in your project secured via JWT Token.
+This rocket also provides a Booster Event each time a file is uploaded.
+
+
+## Usage
+
+<Tabs groupId="dependencies-example">
+<TabItem value="azure-provider" label="Azure Provider" default>
+
+Install needed dependency packages:
+```bash
+npm install --save @boostercloud/rocket-file-uploads-core @boostercloud/rocket-file-uploads-types
+npm install --save @boostercloud/rocket-file-uploads-azure
+```
+
+Also, you will need a devDependency in your project:
+```bash
+npm install --save-dev @boostercloud/rocket-file-uploads-azure-infrastructure
+```
+
+In your Booster config file, configure your BoosterRocketFiles:
+
+```typescript title="src/config/config.ts"
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterRocketFiles } from '@boostercloud/rocket-file-uploads-core'
+import { RocketFilesUserConfiguration } from '@boostercloud/rocket-file-uploads-types'
+
+const rocketFilesConfigurationDefault: RocketFilesUserConfiguration = {
+  storageName: 'STORAGE_NAME',
+  containerName: 'CONTAINER_NAME',
+  directories: ['DIRECTORY_1', 'DIRECTORY_2'],
+}
+
+const rocketFilesConfigurationCms: RocketFilesUserConfiguration = {
+  storageName: 'cmsst',
+  containerName: 'rocketfiles',
+  directories: ['cms1', 'cms2'],
+}
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'TEST_APP_NAME'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+  config.rockets = [
+    new BoosterRocketFiles(config, [rocketFilesConfigurationDefault, rocketFilesConfigurationCms]).rocketForAzure(),
+  ]
+})
+
+```
+:::info
+Available parameters are:
+- **storageName**: Name of the storage repository.
+- **containerName**: Directories container.
+- **directories**: A list of folders where the files will be stored.
+
+```text
+The structure created will be:
+├── storageName
+│   ├── containerName
+│   │   ├── directory
+```
+
+**NOTE:** Azure Provider will use `storageName` as the Storage Account Name.
+:::
+
+
+## Rocket Methods Usage
+
+<details>
+    <summary>Presigned Put</summary>
+
+Create a command in your application and call the `presignedPut` method on the `FileHandler` class with the directory and filename you want to upload on the storage.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-put.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadPut {
+  public constructor(readonly directory: string, readonly fileName: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadPut, register: Register): Promise<string> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.presignedPut(command.directory, command.fileName)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadPut(input: {
+    storageName: "clientst",
+    directory: "client1",
+    fileName: "myfile.txt"
+    }
+  )
+}
+```
+
+Azure Response:
+```json
+{
+  "data": {
+    "FileUploadPut": "https://clientst.blob.core.windows.net/rocketfiles/client1/myfile.txt?<SAS>"
+  }
+}
+```
+</details>
+<details>
+    <summary>Presigned Get</summary>
+
+Create a command in your application and call the `presignedGet` method on the `FileHandler` class with the directory and filename you want to get on the storage.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-get.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadGet {
+  public constructor(readonly directory: string, readonly fileName: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadGet, register: Register): Promise<string> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.presignedGet(command.directory, command.fileName)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadGet(input: {
+    storageName: "clientst",
+    directory: "client1",
+    fileName: "myfile.txt"
+  }
+  )
+}
+```
+
+Azure Response:
+```json
+{
+  "data": {
+    "FileUploadGet": "https://clientst.blob.core.windows.net/rocketfiles/folder01%2Fmyfile.txt?<SAS>"
+  }
+}
+```
+</details>
+<details>
+    <summary>List</summary>
+
+Create a command in your application and call the `list` method on the `FileHandler` class with the directory you want to get the info and return the formatted results.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-list.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+import { ListItem } from '@boostercloud/rocket-file-uploads-types'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadList {
+  public constructor(readonly directory: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadList, register: Register): Promise<Array<ListItem>> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.list(command.directory)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadList(input: {
+    storageName: "clientst",
+    directory: "client1"
+    }
+  )
+}
+```
+
+Response:
+```json
+{
+  "data": {
+    "FileUploadList": [
+      {
+        "name": "client1/myfile.txt",
+        "properties": {
+          "createdOn": "2022-10-26T05:40:47.000Z",
+          "lastModified": "2022-10-26T05:40:47.000Z",
+          "contentLength": 6,
+          "contentType": "text/plain"
+        }
+      }
+    ]
+  }
+}
+```
+
+</details>
+</TabItem>
+<TabItem value="aws-provider" label="AWS Provider" default>
+
+Install needed dependency packages:
+```bash
+npm install --save @boostercloud/rocket-file-uploads-core @boostercloud/rocket-file-uploads-types
+npm install --save @boostercloud/rocket-file-uploads-aws
+```
+Also, you will need a devDependency in your project:
+```bash
+npm install --save-dev @boostercloud/rocket-file-uploads-aws-infrastructure
+```
+
+In your Booster config file, configure your BoosterRocketFiles:
+
+```typescript title="src/config/config.ts"
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterRocketFiles } from '@boostercloud/rocket-file-uploads-core'
+import { RocketFilesUserConfiguration } from '@boostercloud/rocket-file-uploads-types'
+
+const rocketFilesConfigurationDefault: RocketFilesUserConfiguration = {
+  storageName: 'STORAGE_NAME',
+  containerName: '', // Not used in AWS, you can just pass an empty string
+  directories: ['DIRECTORY_1', 'DIRECTORY_2'],
+}
+
+const rocketFilesConfigurationCms: RocketFilesUserConfiguration = {
+  storageName: 'cmsst',
+  containerName: '', // Not used in AWS, you can just pass an empty string
+  directories: ['cms1', 'cms2'],
+}
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'TEST_APP_NAME'
+  config.providerPackage = '@boostercloud/framework-provider-aws'
+  config.rockets = [
+    new BoosterRocketFiles(config, [rocketFilesConfigurationDefault, rocketFilesConfigurationCms]).rocketForAWS(),
+  ]
+})
+```
+
+:::info
+Available parameters are:
+- **storageName**: Name of the storage repository.
+- **directories**: A list of folders where the files will be stored.
+
+```text
+The structure created will be:
+├── storageName
+│   ├── directory
+```
+:::
+
+## Rocket Methods Usage
+
+<details>
+    <summary>Presigned Put</summary>
+
+Create a command in your application and call the `presignedPut` method on the `FileHandler` class with the directory and filename you want to upload on the storage.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-put.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadPut {
+  public constructor(readonly directory: string, readonly fileName: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadPut, register: Register): Promise<PresignedPostResponse> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.presignedPut(command.directory, command.fileName) as Promise<PresignedPostResponse>
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadPut(input: { 
+    directory: "files", 
+    fileName: "lol.jpg"
+  }) {
+    url
+    fields
+  }
+}
+```
+
+AWS Response:
+```json
+{
+  "data": {
+    "FileUploadPut": {
+      "url": "https://s3.eu-west-1.amazonaws.com/myappstorage",
+      "fields": {
+        "Key": "files/lol.jpg",
+        "bucket": "myappstorage",
+        "X-Amz-Algorithm": "AWS4-HMAC-SHA256",
+        "X-Amz-Credential": "blablabla.../eu-west-1/s3/aws4_request",
+        "X-Amz-Date": "20230207T142138Z",
+        "X-Amz-Security-Token": "IQoJb3JpZ2... blablabla",
+        "Policy": "eyJleHBpcmF0a... blablabla",
+        "X-Amz-Signature": "60511... blablabla"
+      }
+    }
+  }
+}
+```
+</details>
+<details>
+    <summary>Presigned Get</summary>
+
+Create a command in your application and call the `presignedGet` method on the `FileHandler` class with the directory and filename you want to get on the storage.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-get.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadGet {
+  public constructor(readonly directory: string, readonly fileName: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadGet, register: Register): Promise<string> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.presignedGet(command.directory, command.fileName)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadGet(input: {
+    storageName: "clientst",
+    directory: "client1",
+    fileName: "myfile.txt"
+  }
+  )
+}
+```
+
+AWS Response:
+```json
+{
+  "data": {
+    "FileUploadGet": "https://myappstorage.s3.eu-west-1.amazonaws.com/client1/myfile.txt?<presigned_params>"
+  }
+}
+```
+</details>
+
+<details>
+    <summary>List</summary>
+
+Create a command in your application and call the `list` method on the `FileHandler` class with the directory you want to get the info and return the formatted results.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-list.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+import { ListItem } from '@boostercloud/rocket-file-uploads-types'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadList {
+  public constructor(readonly directory: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadList, register: Register): Promise<Array<ListItem>> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.list(command.directory)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadList(input: {
+    storageName: "clientst",
+    directory: "client1"
+    }
+  )
+}
+```
+
+Response:
+```json
+{
+  "data": {
+    "FileUploadList": [
+      {
+        "name": "client1/myfile.txt",
+        "properties": {
+          "createdOn": "2022-10-26T05:40:47.000Z",
+          "lastModified": "2022-10-26T05:40:47.000Z",
+          "contentLength": 6,
+          "contentType": "text/plain"
+        }
+      }
+    ]
+  }
+}
+```
+
+</details>
+
+</TabItem>
+<TabItem value="local-provider" label="Local Provider" default>
+
+Install needed dependency packages:
+```bash
+npm install --save @boostercloud/rocket-file-uploads-core @boostercloud/rocket-file-uploads-types
+npm install --save @boostercloud/rocket-file-uploads-local
+```
+Also, you will need a devDependency in your project:
+```
+npm install --save-dev @boostercloud/rocket-file-uploads-local-infrastructure
+```
+
+In your Booster config file, configure your BoosterRocketFiles:
+
+```typescript title="src/config/config.ts"
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterRocketFiles } from '@boostercloud/rocket-file-uploads-core'
+import { RocketFilesUserConfiguration } from '@boostercloud/rocket-file-uploads-types'
+
+const rocketFilesConfigurationDefault: RocketFilesUserConfiguration = {
+  storageName: 'STORAGE_NAME',
+  containerName: 'CONTAINER_NAME',
+  directories: ['DIRECTORY_1', 'DIRECTORY_2'],
+}
+
+const rocketFilesConfigurationCms: RocketFilesUserConfiguration = {
+  storageName: 'cmsst',
+  containerName: 'rocketfiles',
+  directories: ['cms1', 'cms2'],
+}
+
+Booster.configure('local', (config: BoosterConfig): void => {
+  config.appName = 'TEST_APP_NAME'
+  config.providerPackage = '@boostercloud/framework-provider-local'
+  config.rockets = [
+    new BoosterRocketFiles(config, [rocketFilesConfigurationDefault, rocketFilesConfigurationCms]).rocketForLocal(),
+  ]
+})
+```
+
+:::info
+Available parameters are:
+- **storageName**: Name of the storage repository.
+- **containerName**: Directories container.
+- **directories**: A list of folders where the files will be stored.
+
+```text
+The structure created will be:
+├── storageName
+│   ├── containerName
+│   │   ├── directory
+```
+
+**NOTE:** Local Provider will use `storageName` as the root folder name.
+:::
+
+## Rocket Methods Usage
+
+<details>
+    <summary>Presigned Put</summary>
+Create a command in your application and call the `presignedPut` method on the `FileHandler` class with the directory and filename you want to upload on the storage.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-put.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadPut {
+  public constructor(readonly directory: string, readonly fileName: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadPut, register: Register): Promise<string> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.presignedPut(command.directory, command.fileName)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadPut(input: {
+    storageName: "clientst",
+    directory: "client1",
+    fileName: "myfile.txt"
+    }
+  )
+}
+```
+
+Response:
+```json
+{
+  "data": {
+    "FileUploadPut": "http://localhost:3000/clientst/rocketfiles/client1/myfile.txt"
+  }
+}
+```
+</details>
+<details>
+    <summary>Presigned Get</summary>
+
+Create a command in your application and call the `presignedGet` method on the `FileHandler` class with the directory and filename you want to get on the storage.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-get.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadGet {
+  public constructor(readonly directory: string, readonly fileName: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadGet, register: Register): Promise<string> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.presignedGet(command.directory, command.fileName)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadGet(input: {
+    storageName: "clientst",
+    directory: "client1",
+    fileName: "myfile.txt"
+  }
+  )
+}
+```
+
+Response:
+```json
+{
+  "data": {
+    "FileUploadGet": "http://localhost:3000/clientst/rocketfiles/client1/myfile.txt"
+  }
+}
+```
+</details>
+<details>
+    <summary>List</summary>
+
+Create a command in your application and call the `list` method on the `FileHandler` class with the directory you want to get the info and return the formatted results.
+
+The storageName parameter is optional. It will use the first storage if undefined.
+
+```typescript title="src/commands/file-upload-list.ts"
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { FileHandler } from '@boostercloud/rocket-file-uploads-core'
+import { ListItem } from '@boostercloud/rocket-file-uploads-types'
+
+@Command({
+  authorize: 'all',
+})
+export class FileUploadList {
+  public constructor(readonly directory: string, readonly storageName?: string) {}
+
+  public static async handle(command: FileUploadList, register: Register): Promise<Array<ListItem>> {
+    const boosterConfig = Booster.config
+    const fileHandler = new FileHandler(boosterConfig, command.storageName)
+    return await fileHandler.list(command.directory)
+  }
+}
+```
+
+GraphQL Mutation:
+```json
+mutation {
+  FileUploadList(input: {
+    storageName: "clientst",
+    directory: "client1"
+    }
+  )
+}
+```
+
+Response:
+```json
+{
+  "data": {
+    "FileUploadList": [
+      {
+        "name": "client1/myfile.txt",
+        "properties": {
+          "lastModified": "2022-10-26T10:35:18.905Z"
+        }
+      }
+    ]
+  }
+}
+```
+
+</details>
+</TabItem>
+</Tabs>

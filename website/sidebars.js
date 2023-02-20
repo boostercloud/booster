@@ -62,8 +62,22 @@ const sidebars = {
         'going-deep/testing',
         'going-deep/data-migrations',
         'going-deep/custom-providers',
-        'going-deep/rockets',
-        'going-deep/custom-templates',
+        {
+          type: 'category',
+          label: 'Extending Booster with Rockets!',
+          link: {
+            type: 'doc',
+            id: 'going-deep/rockets/rockets',
+          },
+          items: [
+            'going-deep/rockets/rocket-authentication',
+            'going-deep/rockets/rocket-file-uploads',
+            'going-deep/rockets/rocket-backup-booster',
+            'going-deep/rockets/rocket-static-sites',
+            'going-deep/rockets/rocket-webhook',
+          ]
+        },
+        'going-deep/custom-templates'
       ],
     },
     'frequently-asked-questions',
