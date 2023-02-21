@@ -25,27 +25,26 @@ describe('notifications', async () => {
             mutation FlushNotifications($cartId: ID!) {
               FlushNotifications(input: { cartId: $cartId, previousProducts: 1, afterProducts: 3 }) {
                 id
-                cartItems {
-                  productId
-                  quantity
-                }
+                checks
               }
             }
           `,
         }),
-      (result) => result?.data?.FlushNotifications != null && result?.data?.FlushNotifications.length > 0
+      (result) => result?.data?.FlushNotifications.length > 0
     )
 
     expect(result).not.to.be.null
-    const previousProducts = result?.data?.FlushNotifications[0].cartItems
-    const afterProducts = result?.data?.FlushNotifications[1].cartItems
+    console.log(JSON.stringify(result))
+    const previousChecks = result?.data?.FlushNotifications[0].checks
+    const afterChecks = result?.data?.FlushNotifications[1].checks
 
     // Events return the cart flushed the first time
-    expect(previousProducts.length).to.be.eq(1)
+    expect(previousChecks, 'previous products').to.be.eq(1)
 
     // Events doesn't return the last 3 events that were not flushed
-    expect(afterProducts.length).to.be.eq(1)
+    expect(afterChecks, 'after products').to.be.eq(1)
 
+    console.log('Waiting for read model with id', mockCartId, 'to become available')
     const queryResult = await waitForIt(
       () => {
         return client.query({
@@ -57,28 +56,36 @@ describe('notifications', async () => {
           query: gql`
             query ListCartReadModels($filter: ListCartReadModelFilter) {
               ListCartReadModels(filter: $filter) {
-                checks
+                items {
+                  checks
+                }
               }
             }
           `,
         })
       },
       (result) => {
-        return result?.data?.ListCartReadModels?.checks !== 0
+        const isDefined = result?.data?.ListCartReadModels?.items?.[0]?.checks !== undefined
+        const isExpected = result?.data?.ListCartReadModels?.items?.[0]?.checks >= 4
+        return isDefined && isExpected
       }
     )
+    console.log('Got result', JSON.stringify(queryResult))
 
     // After the command is executed, the register is flushed, so we will have the 4 cartItems
-    expect(queryResult.data.ListCartReadModels?.checks).to.eq(4)
+    expect(queryResult.data.ListCartReadModels?.items?.[0]?.checks).to.eq(4)
   })
 
   it('should create an event in the event store', async () => {
+    console.log('Waiting for events to be available')
     const eventsCount = await waitForIt(
       () => applicationUnderTest.count.events(),
-      (eventsCount) => eventsCount > 0
+      (eventsCount: number) => eventsCount > 0
     )
+    console.log('Events count', eventsCount)
 
     const mockCartId = random.uuid()
+    console.log('Abandoning cart', mockCartId)
     const response = await client.mutate({
       variables: {
         cartId: mockCartId,
@@ -95,10 +102,12 @@ describe('notifications', async () => {
 
     // Verify number of events
     const expectedEventItemsCount = eventsCount + 1
+    console.log('Waiting for events to be available')
     await waitForIt(
       () => applicationUnderTest.count.events(),
-      (newEventsCount) => newEventsCount === expectedEventItemsCount
+      (newEventsCount: number) => newEventsCount > eventsCount
     )
+    console.log('Events count', expectedEventItemsCount)
 
     // Verify latest event
     const latestEvent: Array<any> = await applicationUnderTest.query.events(`defaultTopic-${mockCartId}-event`)

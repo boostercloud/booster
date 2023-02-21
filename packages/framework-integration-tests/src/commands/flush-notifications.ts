@@ -10,27 +10,42 @@ export class FlushNotifications {
   public constructor(readonly cartId: UUID, readonly previousProducts: number, readonly afterProducts: number) {}
 
   public static async handle(command: FlushNotifications, register: Register): Promise<Array<Cart>> {
-    const previousEvents = new Array(command.previousProducts).map(() => new CartAbandoned(command.cartId.toString()))
+    const previousEvents = []
+    for (let i = 0; i < command.previousProducts; i++) {
+      previousEvents.push(new CartAbandoned(command.cartId.toString()))
+    }
 
-    const afterEvents = new Array(command.afterProducts).map(() => new CartAbandoned(command.cartId.toString()))
+    const afterEvents = []
+    for (let i = 0; i < command.afterProducts; i++) {
+      afterEvents.push(new CartAbandoned(command.cartId.toString()))
+    }
 
+    console.log('REGISTERING PREVIOUS EVENTS', previousEvents)
     register.events(...previousEvents)
 
     await register.flush()
-    const previousCart = await FlushNotifications.getEntity(command.cartId)
+    console.log('GETTING CART')
+    const previousCart = await FlushNotifications.getCart(command.cartId)
 
+    console.log('REGISTERING AFTER EVENTS', afterEvents)
     register.events(...afterEvents)
-    const afterCart = await FlushNotifications.getEntity(command.cartId)
+
+    console.log('GETTING SECOND CART')
+    const afterCart = await FlushNotifications.getCart(command.cartId)
     return [previousCart, afterCart]
   }
 
-  private static async getEntity(cartId: UUID, retries = 0): Promise<Cart> {
-    const cart = await Booster.entity(Cart, cartId)
-    if (cart || retries >= 10) {
-      return cart as Cart
+  private static async getCart(cartId: UUID): Promise<Cart> {
+    let maxRetries = 10
+    let cart: Cart | undefined = undefined
+    do {
+      cart = await new Promise((resolve) =>
+        setTimeout(() => resolve(Booster.entity(Cart, cartId)), 1000 * (10 - maxRetries))
+      )
+    } while (!cart && maxRetries-- > 0)
+    if (!cart) {
+      throw new Error('Could not get the cart')
     }
-    return new Promise((resolve) => {
-      setTimeout(async () => resolve(await FlushNotifications.getEntity(cartId, retries + 1)), 1000)
-    })
+    return cart
   }
 }
