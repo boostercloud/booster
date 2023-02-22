@@ -21,13 +21,11 @@ export class EventStore {
 
   /**
    * Will fetch the latest snapshot for an entity by applying a reduction
-   * since the time of creation of the last snapshot, UNLESS `pendingEnvelopes`
-   * are passed, in that case, it won't load the events, but rather it will
-   * proceed with the creation of the new snapshot by considering `pendingEnvelopes`
-   * as the latest events.
+   * since the time of creation of the last snapshot or from the origin of time
+   * if no snapshot is found.
    *
-   * Also, in order to make next calls faster, this method stores the calculated
-   * snapshot.
+   * Also, in order to make next calls faster, this method caches the newly calculated
+   * snapshot storing it at the end of the process.
    */
   public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
@@ -50,19 +48,19 @@ export class EventStore {
         }
       }
 
-      if (newEntitySnapshot?.entityID !== entityID) {
+      if (!newEntitySnapshot) {
+        logger.debug('No snapshot was found or reduced, returning')
+
+        return newEntitySnapshot
+      }
+
+      if (newEntitySnapshot.entityID !== entityID) {
         logger.debug(
           `Migrated entity ${entityName} with previous ID ${entityID} to ${newEntitySnapshot?.typeName} with the new ID ${newEntitySnapshot?.entityID}`,
           newEntitySnapshot
         )
       } else {
         logger.debug(`Reduced new snapshot for entity ${entityName} with ID ${entityID}: `, newEntitySnapshot)
-      }
-
-      if (!newEntitySnapshot) {
-        logger.debug('No snapshot was fetched, returning')
-
-        return newEntitySnapshot
       }
 
       return await this.storeSnapshot(newEntitySnapshot)

@@ -42,7 +42,7 @@ export class BoosterEventDispatcher {
    */
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      await Promise.allSettled([
+      await Promises.allSettledAndFulfilled([
         await BoosterEventDispatcher.snapshotAndUpdateReadModels(
           config,
           entityName,
