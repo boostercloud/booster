@@ -1,23 +1,38 @@
-import { Effect, tag } from '@boostercloud/framework-types/dist/effect'
+export abstract class PackageManager {
+  /**
+   * Get the project root to be used by the package manager.
+   */
+  abstract getProjectRoot(): Promise<string>
 
-export type PackageManagerError = InstallDependenciesError | RunScriptError
+  /**
+   * Set the project root to be used by the package manager.
+   */
+  abstract setProjectRoot(projectRoot: string): Promise<void>
 
-export class InstallDependenciesError {
-  readonly _tag = 'InstallDependenciesError'
-  constructor(readonly error: Error) {}
+  /**
+   * Run a script from the project's package.json
+   */
+  abstract runScript(scriptName: string, args: ReadonlyArray<string>): Promise<string>
+
+  /**
+   * Install the dependencies of the project in production mode.
+   * This means that devDependencies will not be installed, and workspace packages will be
+   * denormalized. This is done before deploying a project.
+   */
+  abstract installProductionDependencies(): Promise<void>
+
+  /**
+   * Install all the dependencies of the project.
+   */
+  abstract installAllDependencies(): Promise<void>
+
+  /**
+   * Build the project.
+   */
+  abstract build(args: ReadonlyArray<string>): Promise<string>
+
+  /**
+   * Returns the name of the lockfile used by the package manager.
+   */
+  abstract getLockfileName(): string
 }
-
-export class RunScriptError {
-  readonly _tag = 'RunScriptError'
-  constructor(readonly error: Error) {}
-}
-
-export interface PackageManagerService {
-  readonly setProjectRoot: (projectRoot: string) => Effect<unknown, never, void>
-  readonly installProductionDependencies: () => Effect<unknown, InstallDependenciesError, void>
-  readonly installAllDependencies: () => Effect<unknown, InstallDependenciesError, void>
-  readonly runScript: (scriptName: string, args: ReadonlyArray<string>) => Effect<unknown, RunScriptError, string>
-  readonly build: (args: ReadonlyArray<string>) => Effect<unknown, RunScriptError, string>
-}
-
-export const PackageManagerService = tag<PackageManagerService>()

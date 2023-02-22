@@ -5,7 +5,7 @@ import {
   cleanDeploymentSandbox,
   compileProjectAndLoadConfig,
   createDeploymentSandbox,
-} from '../services/config-service'
+} from '../services/user-project/config'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
@@ -57,4 +57,10 @@ export default class Deploy extends BaseCommand {
 
     return super.catch(fullError)
   }
+}
+
+class RunDeploy {
+  constructor() {}
+
+  public async run(): Promise<void> {}
 }

@@ -33,8 +33,7 @@
     "mustache": "4.1.0",
     "node-fetch": "^2.6.7",
     "semver": "^7.3.5",
-    "tslib": "^2.4.0",
-    "@effect-ts/core": "^0.60.4"
+    "tslib": "^2.4.0"
   },
   "scripts": {
     "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",

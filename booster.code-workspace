@@ -65,5 +65,7 @@
       "path": "tools/eslint-config"
     }
   ],
-  "settings": {}
+  "settings": {
+    "cSpell.words": ["dangerize", "denormalized", "mellancholize", "mocharc", "rushx"]
+  }
 }

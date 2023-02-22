@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 export enum Level {
   debug = 0,
   info = 1,
@@ -5,13 +7,36 @@ export enum Level {
   error = 3,
 }
 
-export interface Logger {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  debug(message?: any, ...optionalParams: any[]): void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  info(message?: any, ...optionalParams: any[]): void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  warn(message?: any, ...optionalParams: any[]): void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  error(message?: any, ...optionalParams: any[]): void
+export type LevelString = keyof typeof Level
+
+/**
+ * Logger interface
+ *
+ * Implementations must handle serialization of the message and optionalParams
+ * in the case that they are not strings.
+ */
+export abstract class Logger {
+  /**
+   * Log a debug message
+   */
+  abstract debug(message?: unknown, ...optionalParams: unknown[]): void
+
+  /**
+   * Log an info message
+   */
+  abstract info(message?: unknown, ...optionalParams: unknown[]): void
+
+  /**
+   * Log a warning message
+   */
+  abstract warn(message?: unknown, ...optionalParams: unknown[]): void
+
+  /**
+   * Log an error message
+   */
+  abstract error(message?: unknown, ...optionalParams: unknown[]): void
+}
+
+export type HasLogger = {
+  logger: Logger
 }

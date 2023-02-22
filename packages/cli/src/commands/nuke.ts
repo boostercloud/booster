@@ -1,7 +1,7 @@
 import { flags } from '@oclif/command'
 import BaseCommand from '../common/base-command'
 import { nukeCloudProviderResources } from '../services/provider-service'
-import { compileProjectAndLoadConfig } from '../services/config-service'
+import { compileProjectAndLoadConfig } from '../services/user-project/config'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'

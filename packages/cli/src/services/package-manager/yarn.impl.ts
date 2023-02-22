@@ -1,7 +1,18 @@
-import { PackageManagerService } from '.'
-import { Layer, orDie } from '@boostercloud/framework-types/dist/effect'
-import { makePackageManager } from './common'
+import { Process } from '../process'
+import { FileSystem } from '../file-system'
+import { SimplePackageManager } from './simple.impl'
+import { Logger } from '@boostercloud/framework-types'
 
-export const makeYarnPackageManager = makePackageManager('yarn')
+/**
+ * A simple implementation of the PackageManager interface that uses the
+ * Yarn CLI to manage packages.
+ */
+export class YarnPackageManager extends SimplePackageManager {
+  constructor(readonly logger: Logger, readonly process: Process, readonly fileSystem: FileSystem) {
+    super('yarn', logger, process, fileSystem)
+  }
 
-export const YarnPackageManager = Layer.fromEffect(PackageManagerService)(orDie(makeYarnPackageManager))
+  getLockfileName(): string {
+    return 'yarn.lock'
+  }
+}

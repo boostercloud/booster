@@ -7,11 +7,11 @@ import {
   joinParsers,
   parseEvent,
   parseName,
-} from '../../services/generator/target'
+} from '../../services/file-generator/target'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
-import { generate, template } from '../../services/generator'
+import { generate, template } from '../../services/file-generator'
 import * as path from 'path'
 import { classNameToFileName } from '../../common/filenames'
 

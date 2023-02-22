@@ -4,7 +4,7 @@ import {
   cleanDeploymentSandbox,
   compileProjectAndLoadConfig,
   createDeploymentSandbox,
-} from '../services/config-service'
+} from '../services/user-project/config'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'

@@ -9,8 +9,8 @@ import {
   parseName,
   parseFields,
   ImportDeclaration,
-} from '../../services/generator/target'
-import { generate, template } from '../../services/generator'
+} from '../../services/file-generator/target'
+import { generate, template } from '../../services/file-generator'
 import * as path from 'path'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 

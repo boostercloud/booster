@@ -1,6 +1,6 @@
 import { flags } from '@oclif/command'
 import BaseCommand from '../common/base-command'
-import { compileProject } from '../services/config-service'
+import { compileProject } from '../services/user-project/config'
 import { checkCurrentDirIsABoosterProject } from '../services/project-checker'
 import { Script } from '../common/script'
 import Brand from '../common/brand'

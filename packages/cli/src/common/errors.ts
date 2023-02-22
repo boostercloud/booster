@@ -1,5 +1,18 @@
+import { ErrorBase } from '../services/error-handler'
 import Brand from './brand'
-import { orDieWith } from '@boostercloud/framework-types/dist/effect'
+
+export type CliErrorName =
+  | 'FileSystemError'
+  | 'ProcessError'
+  | 'GeneratorError'
+  | 'PackageManagerError'
+  | 'ProjectConfigurationError'
+  | 'SandboxCreationError'
+  | 'NoEnvironmentSet'
+  | 'NoMatchingEnvironment'
+  | 'CloudProviderError'
+
+export class CliError extends ErrorBase<CliErrorName> {}
 
 /**
  * Builds an error extracting its message from the "stdout" and "stderr" properties if present
@@ -16,9 +29,3 @@ export const guardError = (prefix: string) =>
   orDieWith((err: Error) => {
     return new Error(Brand.dangerize(`[${err.name}] ${prefix}:`) + '\n' + err.message)
   })
-
-/**
- * Converts an unknown value to an Error. If it's not an error already, it will be stringified.
- */
-export const unknownToError = (reason: unknown) =>
-  reason instanceof Error ? reason : new Error(JSON.stringify(reason))

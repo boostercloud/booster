@@ -2,7 +2,7 @@ import * as Oclif from '@oclif/command'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { generate, template } from '../../services/generator'
+import { generate, template } from '../../services/file-generator'
 import {
   HasName,
   HasFields,
@@ -10,7 +10,7 @@ import {
   parseName,
   parseFields,
   ImportDeclaration,
-} from '../../services/generator/target'
+} from '../../services/file-generator/target'
 import * as path from 'path'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 

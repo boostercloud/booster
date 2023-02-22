@@ -11,9 +11,9 @@ import {
   ImportDeclaration,
   HasProjections,
   parseProjections,
-} from '../../services/generator/target'
+} from '../../services/file-generator/target'
 import * as path from 'path'
-import { generate, template } from '../../services/generator'
+import { generate, template } from '../../services/file-generator'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 

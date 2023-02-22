@@ -1,6 +1,6 @@
 import * as Oclif from '@oclif/command'
 import BaseCommand from '../../common/base-command'
-import { HasName, HasReaction, joinParsers, parseName, parseReaction } from '../../services/generator/target'
+import { HasName, HasReaction, joinParsers, parseName, parseReaction } from '../../services/file-generator/target'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
