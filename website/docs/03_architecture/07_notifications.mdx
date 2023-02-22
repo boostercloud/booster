@@ -1,0 +1,70 @@
+---
+description: Documentation for defining notifications in the Booster Cloud framework using the @Notification and @partitionKey decorators.
+---
+
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
+# Notifications
+
+Notifications are an important concept in event-driven architecture, and they play a crucial role in informing interested parties about certain events that take place within an application.
+
+## Declaring a notification
+
+In Booster, notifications are defined as classes decorated with the `@Notification` decorator. Here's a minimal example to illustrate this:
+
+<TerminalWindow>
+
+```typescript title="src/notifications/cart-abandoned.ts"
+import { Notification } from '@boostercloud/framework-core'
+
+@Notification()
+export class CartAbandoned {}
+```
+
+</TerminalWindow>
+
+As you can see, to define a notification you simply need to import the `@Notification` decorator from the @boostercloud/framework-core library and use it to decorate a class. In this case, the class `CartAbandoned` represents a notification that informs interested parties that a cart has been abandoned.
+
+## Separating by topic
+
+By default, all notifications in the application will be sent to the same topic called `defaultTopic`. To configure this, you can specify a different topic name in the `@Notification` decorator:
+
+<TerminalWindow>
+
+```typescript title="src/notifications/cart-abandoned-topic.ts"
+import { Notification } from '@boostercloud/framework-core'
+
+@Notification({ topic: 'cart-abandoned' })
+export class CartAbandoned {}
+```
+
+</TerminalWindow>
+
+In this example, the `CartAbandoned` notification will be sent to the `cart-abandoned` topic, instead of the default topic.
+
+## Separating by partition key
+
+By default, all the notifications in the application will share a partition key called `default`. This means that, by default, all the notifications in the application will be processed in order, which may not be as performant.
+
+To change this, you can use the @partitionKey decorator to specify a field that will be used as a partition key for each notification:
+
+<TerminalWindow>
+
+```typescript title="src/notifications/cart-abandoned-partition-key.ts"
+import { Notification, partitionKey } from '@boostercloud/framework-core'
+
+@Notification({ topic: 'cart-abandoned' })
+export class CartAbandoned {
+  public constructor(@partitionKey readonly key: string) {}
+}
+```
+
+</TerminalWindow>
+
+In this example, each `CartAbandoned` notification will have its own partition key, which is specified in the constructor as the field `key`, it can be called in any way you want. This will allow for parallel processing of notifications, making the system more performant.
+
+## Reacting to notifications
+
+Just like events, notifications can be handled by event handlers in order to trigger other processes. Event handlers are responsible for listening to events and notifications, and then performing specific actions in response to them.
+
+In conclusion, defining notifications in the Booster Cloud framework is a simple and straightforward process that can be done using the `@Notification` and `@partitionKey` decorators.

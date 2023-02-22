@@ -20,7 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "dependencies": {
-    "@boostercloud/eslint-config": "workspace:^1.0.0",
+    "@boostercloud/eslint-config": "workspace:^1.5.1",
     "@boostercloud/framework-common-helpers": "workspace:^1.5.1",
     "@kubernetes/client-node": "^0.17.0",
     "archiver": "5.3.0",
