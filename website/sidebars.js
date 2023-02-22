@@ -26,6 +26,7 @@ const sidebars = {
         'architecture/event-handler',
         'architecture/entity',
         'architecture/read-model',
+        'architecture/notifications',
       ],
     },
     {
@@ -35,12 +36,7 @@ const sidebars = {
       link: {
         type: 'generated-index',
       },
-      items: [
-        'features/event-stream',
-        'features/schedule-actions',
-        'features/logging',
-        'features/error-handling'
-      ],
+      items: ['features/event-stream', 'features/schedule-actions', 'features/logging', 'features/error-handling'],
     },
     {
       type: 'category',
@@ -67,7 +63,7 @@ const sidebars = {
         'going-deep/data-migrations',
         'going-deep/custom-providers',
         'going-deep/rockets',
-        'going-deep/custom-templates'
+        'going-deep/custom-templates',
       ],
     },
     'frequently-asked-questions',
