@@ -77,12 +77,12 @@ describe('the `Searcher` class', () => {
       it('calls to the `finderByKeyFunction` with the right parameters', async () => {
         // With a unique primary key
         await searcher.findById('42')
-        expect(finderByKeyFunction).to.have.been.calledWith('SomeModel', '42')
+        expect(finderByKeyFunction).to.have.been.calledWith(SomeModel, '42')
 
         // With a compound primary key (sequenced read models)
         const sequenceKey: SequenceKey = { name: 'timestamp', value: '1' }
         await searcher.findById('43', sequenceKey)
-        expect(finderByKeyFunction).to.have.been.calledWith('SomeModel', '43', sequenceKey)
+        expect(finderByKeyFunction).to.have.been.calledWith(SomeModel, '43', sequenceKey)
       })
     })
 
@@ -91,7 +91,7 @@ describe('the `Searcher` class', () => {
         const filters = { someField: { gt: '200' } }
         const result = await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).searchOne()
 
-        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, {}, 1, '30', false)
+        expect(searcherFunction).to.have.been.calledWith(SomeModel, filters, {}, 1, '30', false)
         expect(result).not.to.be.an('Array')
       })
     })
@@ -101,7 +101,7 @@ describe('the `Searcher` class', () => {
         const filters = { someField: { gt: '200' }, field: { otherField: { isDefined: true } } } as FilterFor<any>
         await searcher.filter(filters).afterCursor('30').limit(50).paginatedVersion(true).search()
 
-        expect(searcherFunction).to.have.been.calledWithMatch('SomeModel', filters, {}, 50, '30', true)
+        expect(searcherFunction).to.have.been.calledWith(SomeModel, filters, {}, 50, '30', true)
       })
     })
   })

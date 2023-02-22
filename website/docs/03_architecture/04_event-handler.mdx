@@ -1,17 +1,16 @@
 ---
-description: Learn how to react to events and trigger side effects in Booster by defining event handlers. 
+description: Learn how to react to events and trigger side effects in Booster by defining event handlers.
 ---
 
 import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
 
-
 # Event handler
 
-An event handler is a class that reacts to events. They are commonly used to trigger side effects in case of a new event. For instance, if a new event is registered in the system, an event handler could send an email to the user. 
+An event handler is a class that reacts to events. They are commonly used to trigger side effects in case of a new event. For instance, if a new event is registered in the system, an event handler could send an email to the user.
 
 ## Creating an event handler
 
-The Bosoter CLI will help you to create new event handlers. You just need to run the following command and the CLI will generate all the boilerplate for you:
+The Booster CLI will help you to create new event handlers. You just need to run the following command and the CLI will generate all the boilerplate for you:
 
 <TerminalWindow>
 
@@ -31,7 +30,6 @@ In Booster, event handlers are classes decorated with the `@EventHandler` decora
 // highlight-next-line
 @EventHandler(StockMoved)
 export class HandleAvailability {
-
   // highlight-start
   public static async handle(event: StockMoved): Promise<void> {
     // Do something here
@@ -49,6 +47,7 @@ Event handlers can be easily created using the Booster CLI command `boost new:ev
 ```typescript
 boost new:event-handler HandleAvailability --event StockMoved
 ```
+
 </TerminalWindow>
 
 Once the creation is completed, there will be a new file in the event handlers directory `<project-root>/src/event-handlers/handle-availability.ts`.
@@ -67,7 +66,7 @@ Once the creation is completed, there will be a new file in the event handlers d
 
 ## Registering events from an event handler
 
-Event handlers can also register new events. This is useful when you want to trigger a new event after a certain condition is met. For example, if you want to send an email to the user when a product is out of stock. 
+Event handlers can also register new events. This is useful when you want to trigger a new event after a certain condition is met. For example, if you want to send an email to the user when a product is out of stock.
 
 In order to register new events, Booster injects the `register` instance in the `handle` method as a second parameter. This `register` instance has a `events(...)` method that allows you to store any side effect events, you can specify as many as you need separated by commas as arguments of the function.
 

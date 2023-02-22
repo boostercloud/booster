@@ -63,7 +63,7 @@ export class Cart {
 
   @Reduces(CartChecked)
   public static checkCart(event: CartChecked, currentCart: Cart): Cart {
-    if (currentCart == null) {
+    if (!currentCart) {
       currentCart = new Cart(event.cartId, [])
     }
 

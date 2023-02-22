@@ -1,7 +1,13 @@
-import { EventInterface, EventHandlerInterface, Class, BoosterConfig } from '@boostercloud/framework-types'
+import {
+  EventInterface,
+  EventHandlerInterface,
+  Class,
+  BoosterConfig,
+  NotificationInterface,
+} from '@boostercloud/framework-types'
 import { Booster } from '../booster'
 
-export function EventHandler<TEvent extends EventInterface>(
+export function EventHandler<TEvent extends EventInterface | NotificationInterface>(
   event: Class<TEvent>
 ): <TEventHandler extends EventHandlerInterface>(eventHandlerClass: TEventHandler) => void {
   return (eventHandlerClass) => registerEventHandler(event.name, eventHandlerClass)

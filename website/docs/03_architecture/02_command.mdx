@@ -2,11 +2,11 @@ import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
 
 # Command
 
-Commands are any action a user performs on your application. For example, `RemoveItemFromCart`, `RatePhoto` or `AddCommentToPost`. They express the intention of an user, and they are the main interaction mechanism of your application. They are a similar to the concept of a  **request on a REST API**. Command issuers can also send data on a command as parameters. 
+Commands are any action a user performs on your application. For example, `RemoveItemFromCart`, `RatePhoto` or `AddCommentToPost`. They express the intention of an user, and they are the main interaction mechanism of your application. They are a similar to the concept of a **request on a REST API**. Command issuers can also send data on a command as parameters.
 
 ## Creating a command
 
-The Bosoter CLI will help you to create new commands. You just need to run the following command and the CLI will generate all the boilerplate for you:
+The Booster CLI will help you to create new commands. You just need to run the following command and the CLI will generate all the boilerplate for you:
 
 <TerminalWindow>
 
@@ -58,7 +58,7 @@ Each command class must have a method called `handle`. This function is the comm
 
 ### Registering events
 
-Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events. 
+Within the command handler execution, it is possible to register domain events. The command handler function receives the `register` argument, so within the handler, it is possible to call `register.events(...)` with a list of events.
 
 ```typescript title="src/commands/create-product.ts"
 @Command()
@@ -76,7 +76,7 @@ For more details about events and the register parameter, see the [`Events`](/ar
 
 ### Returning a value
 
-The command handler function can return a value. This value will be the response of the GraphQL mutation. By default, the command handler function expects you to return a  `void` as a return type. Since GrahpQL does not have a `void` type, the command handler function returns `true` when called through the GraphQL. This is because the GraphQL specification requires a response, and `true` is the most appropriate value to represent a successful execution with no return value.
+The command handler function can return a value. This value will be the response of the GraphQL mutation. By default, the command handler function expects you to return a `void` as a return type. Since GrahpQL does not have a `void` type, the command handler function returns `true` when called through the GraphQL. This is because the GraphQL specification requires a response, and `true` is the most appropriate value to represent a successful execution with no return value.
 
 If you want to return a value, you can change the return type of the handler function. For example, if you want to return a `string`:
 
@@ -123,15 +123,13 @@ export class CreateProduct {
 ```
 
 You'll get something like this response:
-  
+
 ```json
 {
   "errors": [
     {
       "message": "price must be below 10, and it was 19.99",
-      "path": [
-        "CreateProduct"
-      ]
+      "path": ["CreateProduct"]
     }
   ]
 }
@@ -197,11 +195,9 @@ export class MoveStock {
 }
 ```
 
-
-
 ## Authorizing a command
 
-Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. All commands are protected by default, which means that no one can submit them. In order to allow users to submit a command, you must explicitly authorize them. You can use the `authorize` field of the `@Command` decorator to specify the authorization rule. 
+Commands are part of the public API of a Booster application, so you can define who is authorized to submit them. All commands are protected by default, which means that no one can submit them. In order to allow users to submit a command, you must explicitly authorize them. You can use the `authorize` field of the `@Command` decorator to specify the authorization rule.
 
 ```typescript title="src/commands/create-product.ts"
 @Command({

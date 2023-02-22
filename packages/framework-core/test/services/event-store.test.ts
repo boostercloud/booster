@@ -115,12 +115,13 @@ describe('EventStore', () => {
     typeName: string,
     timestamp: Date = new Date()
   ): EventEnvelope {
+    const getEntityID = event.entityID ?? (() => '')
     const createdAt = timestamp.toISOString()
     return {
       version: 1,
       kind: 'event',
       superKind: 'domain',
-      entityID: event.entityID(),
+      entityID: getEntityID(),
       entityTypeName: AnEntity.name,
       value: event,
       requestID: 'whatever',

@@ -59,6 +59,10 @@
     {
       "name": "📦 @boostercloud/metadata-booster",
       "path": "packages/metadata-booster"
+    },
+    {
+      "name": "⚙️ @boostercloud/eslint-config",
+      "path": "tools/eslint-config"
     }
   ],
   "settings": {}

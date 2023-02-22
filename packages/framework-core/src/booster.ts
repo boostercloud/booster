@@ -1,19 +1,18 @@
-import { createInstance, createInstances } from '@boostercloud/framework-common-helpers'
+import { createInstance } from '@boostercloud/framework-common-helpers'
 import {
+  AnyClass,
   BoosterConfig,
   Class,
   EntityInterface,
   EventSearchParameters,
   EventSearchResponse,
-  FilterFor,
-  PaginatedEntitiesIdsResult,
   FinderByKeyFunction,
+  PaginatedEntitiesIdsResult,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
   Searcher,
   SearcherFunction,
   SequenceKey,
-  SortFor,
   UUID,
 } from '@boostercloud/framework-types'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
@@ -29,6 +28,7 @@ import { BoosterDataMigrationStarted } from './core-concepts/data-migration/even
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
 import { BoosterAuthorizer } from './booster-authorizer'
+import { BoosterReadModelsReader } from './booster-read-models-reader'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -41,6 +41,7 @@ import { BoosterAuthorizer } from './booster-authorizer'
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
   public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+
   /**
    * Avoid creating instances of this class
    */
@@ -84,45 +85,21 @@ export class Booster {
   public static readModel<TReadModel extends ReadModelInterface>(
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
-    const searchFunction: SearcherFunction<TReadModel> = async (
-      readModelName: string,
-      filters: FilterFor<unknown>,
-      sort?: SortFor<unknown>,
-      limit?: number,
-      afterCursor?: any,
-      paginatedVersion?: boolean
-    ) => {
-      const searchResult = await this.config.provider.readModels.search(
-        this.config,
-        readModelName,
-        filters,
-        sort,
-        limit,
-        afterCursor,
-        paginatedVersion
-      )
-
-      if (!Array.isArray(searchResult)) {
-        return {
-          ...searchResult,
-          items: createInstances(readModelClass, searchResult.items),
-        }
-      }
-      return createInstances(readModelClass, searchResult)
-    }
-
     const finderByIdFunction: FinderByKeyFunction<TReadModel> = async (
-      readModelName: string,
+      readModelClass: AnyClass,
       id: UUID,
       sequenceKey?: SequenceKey
     ) => {
-      const readModels = await this.config.provider.readModels.fetch(this.config, readModelName, id, sequenceKey)
+      const readModels = await this.config.provider.readModels.fetch(this.config, readModelClass.name, id, sequenceKey)
       if (sequenceKey) {
         return readModels as ReadOnlyNonEmptyArray<TReadModel>
       }
       return readModels[0] as TReadModel
     }
-    return new Searcher(readModelClass, searchFunction, finderByIdFunction)
+    const boosterReadModelsReader = new BoosterReadModelsReader(this.config)
+    const searcherFunction: SearcherFunction<TReadModel> =
+      boosterReadModelsReader.readModelSearch.bind(boosterReadModelsReader)
+    return new Searcher(readModelClass, searcherFunction, finderByIdFunction)
   }
 
   public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {
