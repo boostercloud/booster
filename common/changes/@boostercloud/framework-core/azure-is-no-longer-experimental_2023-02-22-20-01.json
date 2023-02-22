@@ -2,8 +2,8 @@
   "changes": [
     {
       "packageName": "@boostercloud/framework-core",
-      "comment": "",
-      "type": "none"
+      "comment": "Removed the experimental tag from Azure provider mentions in the documentation and CLI",
+      "type": "patch"
     }
   ],
   "packageName": "@boostercloud/framework-core"
