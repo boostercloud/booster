@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 23 Feb 2023 13:15:35 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Feb 2023 18:55:04 GMT and should not be manually modified.
+
+## 1.6.2
+Thu, 23 Feb 2023 18:55:04 GMT
+
+### Patches
+
+- Documented the register object and made the `flusher` property private, as it should not be accessed by end users.
 
 ## 1.6.1
 Thu, 23 Feb 2023 13:15:35 GMT
