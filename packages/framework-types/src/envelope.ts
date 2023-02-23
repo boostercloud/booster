@@ -162,17 +162,24 @@ export interface ConnectionDataEnvelope {
 }
 
 export interface UserEnvelope {
+  /** An optional identifier of the user */
   id?: string
+  /** The unique username of the current user */
   username: string
+  /** The list of role names assigned to this user */
   roles: Array<string>
+  /** An object containing the claims included in the body of the JWT token */
   claims: Record<string, unknown>
+  /** An object containing the headers of the JWT token for further verification */
   header?: Record<string, unknown>
 }
 
 export interface ContextEnvelope {
+  /** Decoded request header and body */
   request: {
     headers: unknown
     body: unknown
   }
+  /** Provider-dependent raw request context object */
   rawContext: unknown
 }

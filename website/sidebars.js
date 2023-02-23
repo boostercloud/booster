@@ -57,10 +57,12 @@ const sidebars = {
       },
       items: [
         'going-deeper/environment-configuration',
+        {
+          type: 'doc', 
+          label: 'The Register object',
+          id: 'going-deeper/register',
+        },
         'going-deeper/infrastructure-providers',
-        'going-deeper/framework-packages',
-        'going-deeper/testing',
-        'going-deeper/data-migrations',
         'going-deeper/custom-providers',
         {
           type: 'category',
@@ -76,7 +78,10 @@ const sidebars = {
             'going-deeper/rockets/rocket-webhook',
           ]
         },
+        'going-deeper/testing',
+        'going-deeper/data-migrations',
         'going-deeper/custom-templates',
+        'going-deeper/framework-packages',
       ],
     },
     'frequently-asked-questions',
