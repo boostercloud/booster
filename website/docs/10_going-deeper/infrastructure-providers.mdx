@@ -4,12 +4,12 @@ import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
 
 The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
-Currently, the Booster framework provides a fully working provider package:
+Currently, the Booster framework provides two fully working provider packages:
 
 - **framework-provider-aws-\***
 - **framework-provider-azure-\***
 
-Other providers packages are currently under experimental support. Some of the features might be missing:
+It also exists an experimental implementation for Kubernetes. Feel free to try it, but some features will be missing and the resources used are not designed for production:
 
 - **framework-provider-kubernetes-\***
 
@@ -206,7 +206,7 @@ Now just let the magic happen, Booster will create everything for you and give y
 
 ### Azure synth command
 
-Azure provider implement the experimental **Booster** `synth` command. This command will generate [Terrafom](https://www.terraform.io/) templates from your code. It will also generate needed files to deploy your Booster application using [cdktf](https://learn.hashicorp.com/tutorials/terraform/cdktf).
+Azure provider implements the experimental **Booster** `synth` command. This command will generate [Terrafom](https://www.terraform.io/) templates from your code. It will also generate needed files to deploy your Booster application using [cdktf](https://learn.hashicorp.com/tutorials/terraform/cdktf).
 
 Running `synth` command, for example `boost synth -e production` will generate following files:
 

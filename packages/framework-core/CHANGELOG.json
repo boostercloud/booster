@@ -2,6 +2,62 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "1.6.2",
+      "tag": "@boostercloud/framework-core_v1.6.2",
+      "date": "Thu, 23 Feb 2023 18:55:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Documented the register object and made the `flusher` property private, as it should not be accessed by end users.",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "1e6176980917fc7124484039fe4ee45fb991aefa"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.6.1` to `^1.6.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.6.1` to `^1.6.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.6.1` to `^1.6.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^1.6.1` to `^1.6.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.6.1",
+      "tag": "@boostercloud/framework-core_v1.6.1",
+      "date": "Thu, 23 Feb 2023 13:15:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Removed the experimental tag from Azure provider mentions in the documentation and CLI",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "cbb56421e8bb89a058b8396db69ecd4e18e16460"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.6.0` to `^1.6.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.6.0` to `^1.6.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.6.0` to `^1.6.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^1.6.0` to `^1.6.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.6.0",
       "tag": "@boostercloud/framework-core_v1.6.0",
       "date": "Wed, 22 Feb 2023 12:12:00 GMT",
