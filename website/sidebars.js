@@ -1,6 +1,7 @@
 // @ts-check
 
 /** @type {import('@docusaurus/plugin-content-docs').SidebarsConfig} */
+
 const sidebars = {
   docs: [
     'introduction',
@@ -10,7 +11,17 @@ const sidebars = {
       link: {
         type: 'generated-index',
       },
-      items: ['getting-started/installation', 'getting-started/coding'],
+      items: [
+        {
+          type: 'doc',
+          id: 'getting-started/installation',
+          label: 'Installation',
+          customProps: {
+            trackingEvent: 'HRYKQRPN',
+          }
+        },
+        'getting-started/coding'
+      ],
     },
     {
       type: 'category',
