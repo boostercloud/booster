@@ -8,7 +8,7 @@ Migrations are a mechanism for updating or transforming the schemas of events an
 
 * **Schema migrations** are used to incrementally upgrade an event or entity from a past version to the next. They are applied lazily, meaning that they are performed on-the-fly whenever an event or entity is loaded. This allows you to make changes to your data model without having to manually update all existing artifacts, and makes it possible to apply changes without running lenghty migration processes.
 
-* **Data migrations**, on the other hand, behave as background processes that can actively change the existing values in the database for existing entities and read models. They are particularly useful for data migrations that cannot be performed automatically with schema migrations, or for updating existing read models after a schema change.
+* **Data migrations**, on the other hand, behave as background processes that can actively change the existing values in the database for existing entities and read models. They are particularly useful for data migrations that cannot be performed automatically with schema migrations, or for updating existing read models after a schema change. **Note that Data migrations are only available in the Azure provider at the moment.**
 
 Together, schema and data migrations provide a flexible and powerful toolset for managing the evolution of your data model over time.
 
@@ -106,7 +106,9 @@ Data migrations are not run automatically, you need to invoke the `BoosterDataMi
 
 Take into account that, depending on your cloud provider implementation, data migrations are executed in the context of a lambda or function app, so it's advisable to design these functions in a way that allow to re-run them in case of failures (i.e. lambda timeouts). In order to tell Booster that your migration has been applied successfully, at the end of each `DataMigration.start` method, you must emit a `BoosterDataMigrationFinished` event manually.
 
-Inside your `@DataMigration` classes, you can use the `Booster.migrateEntity` method to update the data for a specific entity. This method takes the old entity name, the old entity ID, and the new entity data as arguments. It will also generate an internal `BoosterEntityMigrated` event before performing the migration.
+Inside your `@DataMigration` classes, you can use the `BoosterDataMigrations.migrateEntity` method to update the data for a specific entity. This method takes the old entity name, the old entity ID, and the new entity data as arguments. It will also generate an internal `BoosterEntityMigrated` event before performing the migration.
+
+**Note that Data migrations are only available in the Azure provider at the moment.**
 
 Here is an example of how you might use the `@DataMigration` decorator and the `Booster.migrateEntity` method to update the quantity of the first item in a cart:
 
@@ -129,7 +131,7 @@ export class CartIdDataMigrateV2 {
         carts.map(async (cart) => {
           cart.cartItems[0].quantity = 100
           const newCart = new Cart(cart.id, cart.cartItems, cart.shippingAddress, cart.checks)
-          await Booster.migrateEntity('Cart', validCart.id, newCart)
+          await BoosterDataMigrations.migrateEntity('Cart', validCart.id, newCart)
           return validCart.id
       })
     )
