@@ -16,8 +16,12 @@ export class AzureTestHelper {
     readonly queries: AzureQueries
   ) {}
 
+  public static async checkResourceGroup(applicationName: string, environmentName: string): Promise<ResourceGroup> {
+    return getResourceGroup(applicationName, environmentName)
+  }
+
   public static async build(appName: string, environmentName: string): Promise<AzureTestHelper> {
-    const resourceGroup = await getResourceGroup(appName, environmentName)
+    const resourceGroup = await this.checkResourceGroup(appName, environmentName)
     this.ensureAzureConfiguration()
     const cosmosConnectionString = await this.getCosmosConnection(appName, environmentName)
 
