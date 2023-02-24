@@ -48,6 +48,10 @@ const config = {
   ],
 
   themeConfig: {
+    fathomAnalytics: {
+      siteId: 'LHRTIPFZ',
+      customDomain: 'https://tools.eventsource.cloud',
+    },
     colorMode: {
       defaultMode: 'light',
       disableSwitch: true,
@@ -68,11 +72,17 @@ const config = {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
           position: 'right',
+          customProps: {
+            trackingEvent: 'UXDJRQQB',
+          },
         },
         {
           href: 'https://discord.gg/bDY8MKx',
           label: 'Discord',
           position: 'right',
+          customProps: {
+            trackingEvent: 'D38YB2Q1',
+          },
         },
       ],
     },
@@ -166,6 +176,7 @@ const config = {
         },
       }
     },
+    require.resolve('docusaurus-plugin-fathom')
   ],
 }
 
