@@ -16,12 +16,8 @@ export class AzureTestHelper {
     readonly queries: AzureQueries
   ) {}
 
-  public static async checkResourceGroup(applicationName: string, environmentName: string): Promise<ResourceGroup> {
-    return getResourceGroup(applicationName, environmentName)
-  }
-
   public static async build(appName: string, environmentName: string): Promise<AzureTestHelper> {
-    const resourceGroup = await this.checkResourceGroup(appName, environmentName)
+    const resourceGroup = await getResourceGroup(appName, environmentName)
     this.ensureAzureConfiguration()
     const cosmosConnectionString = await this.getCosmosConnection(appName, environmentName)
 
@@ -38,7 +34,13 @@ export class AzureTestHelper {
   public static ensureAzureConfiguration(): void {
     console.log('Checking Azure configuration...')
     if (!configuration.appId || !configuration.tenantId || !configuration.secret || !configuration.subscriptionId) {
-      throw new Error('Azure credentials were not properly loaded and are required to run the integration tests.')
+      throw new Error(
+        'Azure credentials were not properly loaded and are required to run the integration tests' +
+          `\nappId = ${configuration.appId}` +
+          `\ntenantId = ${configuration.tenantId}` +
+          `\nsecret = ${configuration.secret}` +
+          `\nsubscriptionId = ${configuration.subscriptionId}`
+      )
     }
     if (!configuration.region) {
       throw new Error('Azure region was not properly loaded and is required to run the integration tests. ')

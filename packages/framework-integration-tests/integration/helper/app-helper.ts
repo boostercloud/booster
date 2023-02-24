@@ -34,7 +34,7 @@ export async function setEnv(): Promise<void> {
     // to build a unique suffix for the application name in AWS to avoid collisions
     // between tests from different branches.
     const { stdout } = await exec('git rev-parse HEAD')
-    process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 6)
+    process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 7)
     console.log('setting BOOSTER_APP_SUFFIX=' + process.env.BOOSTER_APP_SUFFIX)
   }
 }
