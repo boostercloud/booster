@@ -107,11 +107,12 @@ describe('EventStore', () => {
     typeName: string,
     timestamp?: string
   ): EventEnvelope {
+    const getEntityID = event.entityID ?? (() => '')
     return {
       version: 1,
       kind: 'event',
       superKind: 'domain',
-      entityID: event.entityID(),
+      entityID: getEntityID(),
       entityTypeName: AnEntity.name,
       value: event,
       requestID: 'whatever',

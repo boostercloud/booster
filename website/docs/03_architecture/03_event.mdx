@@ -1,13 +1,12 @@
 import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
 
-
 # Event
 
 An event is a fact of something that has happened in your application. Every action that takes place on your application should be stored as an event. They are stored in a single collection, forming a set of **immutable records of facts** that contain the whole story of your application. This collection of events is commonly known as the **Event Store**.
 
 ## Creating an event
 
-The Bosoter CLI will help you to create new events. You just need to run the following command and the CLI will generate all the boilerplate for you:
+The Booster CLI will help you to create new events. You just need to run the following command and the CLI will generate all the boilerplate for you:
 
 <TerminalWindow>
 
@@ -52,7 +51,7 @@ export class CartPaid {
 ```
 
 :::tip
-If your domain requires a ***Singleton*** entity, where there's only one instance of that entity in your whole application, you can return a constant value.
+If your domain requires a **_Singleton_** entity, where there's only one instance of that entity in your whole application, you can return a constant value.
 :::
 
 :::caution

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
 import { SequenceKey, UUID } from './concepts'
 import { ReadModelListResult } from './envelope'
-import { Class, ReadOnlyNonEmptyArray } from './typelevel'
+import { AnyClass, Class, ReadOnlyNonEmptyArray } from './typelevel'
 
 export type SearcherFunction<TObject> = (
-  className: string,
+  objectClass: AnyClass,
   filters: FilterFor<TObject>,
   sortBy: SortFor<TObject>,
   limit?: number,
@@ -13,7 +13,7 @@ export type SearcherFunction<TObject> = (
 ) => Promise<Array<TObject> | ReadModelListResult<TObject>>
 
 export type FinderByKeyFunction<TObject> = (
-  className: string,
+  objectClass: AnyClass,
   id: UUID,
   sequenceKey?: SequenceKey
 ) => Promise<TObject | ReadOnlyNonEmptyArray<TObject>>
@@ -84,14 +84,17 @@ export class Searcher<TObject> {
     return this
   }
 
+  /**
+   * @deprecated Use searchOnce instead
+   */
   public async findById(id: UUID, sequenceKey?: SequenceKey): Promise<TObject | ReadOnlyNonEmptyArray<TObject>> {
-    return this.finderByKeyFunction(this.objectClass.name, id, sequenceKey)
+    return this.finderByKeyFunction(this.objectClass, id, sequenceKey)
   }
 
   public async searchOne(): Promise<TObject> {
     // TODO: If there is only an ID filter with one value, this should call to `findById`
     const searchResult = await this.searcherFunction(
-      this.objectClass.name,
+      this.objectClass,
       this.filters,
       this._sortByList,
       1, // Forces limit 1
@@ -106,7 +109,7 @@ export class Searcher<TObject> {
    */
   public async search(): Promise<Array<TObject> | ReadModelListResult<TObject>> {
     return this.searcherFunction(
-      this.objectClass.name,
+      this.objectClass,
       this.filters,
       this._sortByList,
       this._limit,

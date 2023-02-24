@@ -1,6 +1,34 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 13 Feb 2023 13:56:07 GMT and should not be manually modified.
+This log was last generated on Thu, 23 Feb 2023 18:55:04 GMT and should not be manually modified.
+
+## 1.6.2
+Thu, 23 Feb 2023 18:55:04 GMT
+
+### Patches
+
+- Documented the register object and made the `flusher` property private, as it should not be accessed by end users.
+
+## 1.6.1
+Thu, 23 Feb 2023 13:15:35 GMT
+
+### Patches
+
+- Removed the experimental tag from Azure provider mentions in the documentation and CLI
+
+## 1.6.0
+Wed, 22 Feb 2023 12:12:00 GMT
+
+### Minor changes
+
+- Add Notification events
+
+## 1.5.1
+Sat, 18 Feb 2023 21:05:28 GMT
+
+### Patches
+
+- migrate readmodels on api search
 
 ## 1.5.0
 Mon, 13 Feb 2023 13:56:07 GMT
