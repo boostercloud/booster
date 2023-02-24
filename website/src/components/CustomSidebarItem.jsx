@@ -2,7 +2,9 @@ import React from 'react';
 
 function CustomSidebarItem({ item }) {
   const handleClick = () => {
-    console.log('CustomSidebarItem clicked:', item.label);
+    if (customProps && customProps.trackingEvent) {
+      fathom.trackGoal(customProps.trackingEvent, 0);
+    }
   };
 
   return (
