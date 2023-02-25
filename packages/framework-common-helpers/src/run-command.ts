@@ -1,20 +1,42 @@
-import { exec, ChildProcessPromise, PromiseResult } from 'child-process-promise'
+import { spawn, ChildProcessWithoutNullStreams } from 'child_process'
 
-export function runCommand(
-  path: string,
-  command: string,
-  ignoreLogs = false
-): ChildProcessPromise<PromiseResult<string>> {
-  const subprocess = exec(command, {
+function spawnCommand(path: string, command: string): ChildProcessWithoutNullStreams {
+  // Split the command into an array of arguments
+  const args = command.split(' ')
+
+  // Use the first argument as the command name
+  const subprocess = spawn(args[0], args.slice(1), {
     cwd: path,
-    maxBuffer: 1024 * 1024 * 1024,
+    stdio: 'pipe',
   })
 
-  if (!ignoreLogs && subprocess.childProcess && process) {
-    // Redirect process chatter to make it look like it's doing something
-    subprocess.childProcess?.stdout?.pipe(process.stdout)
-    subprocess.childProcess?.stderr?.pipe(process.stderr)
-  }
-
   return subprocess
+}
+
+export function runCommand(path: string, command: string, ignoreLogs = false): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const subprocess = spawnCommand(path, command)
+    let stdout = ''
+    let stderr = ''
+
+    if (subprocess) {
+      subprocess.stdout.on('data', (data) => {
+        if (!ignoreLogs) console.log(data.toString())
+        stdout += data.toString()
+      })
+
+      subprocess.stderr.on('data', (data) => {
+        if (!ignoreLogs) console.error(data.toString())
+        stderr += data.toString()
+      })
+
+      subprocess.on('close', (code) => {
+        if (code === 0) {
+          resolve(stdout)
+        } else {
+          reject(stderr)
+        }
+      })
+    }
+  })
 }

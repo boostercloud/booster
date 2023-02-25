@@ -19,7 +19,7 @@ before(async () => {
   await overrideWithBoosterLocalDependencies(sandboxPath)
 
   console.log('installing dependencies...')
-  await runCommand(sandboxPath, 'npm install --production --no-bin-links --no-optional')
+  await runCommand(sandboxPath, 'npm install --omit=dev --omit=optional --no-bin-links')
 
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start(sandboxPath, 'local')

@@ -8,20 +8,20 @@ const azCommand = 'az'
 export async function getResourceGroup(appName: string, environmentName: string): Promise<ResourceGroup> {
   const resourceGroupName = createResourceGroupName(appName, environmentName)
   console.log(`Get resource group ${resourceGroupName}`)
-  const command = await runCommand('.', `${azCommand} group show --name ${resourceGroupName}`, true)
-  if (command?.stdout.includes('could not be found')) {
+  const commandOutput = await runCommand('.', `${azCommand} group show --name ${resourceGroupName}`, true)
+  if (commandOutput.includes('could not be found')) {
     return Promise.reject(`Resource Group for application ${appName} does not exist`)
   }
-  console.log(`Command success ${command.stdout}`)
-  return JSON.parse(command?.stdout)
+  console.log(`Command success ${commandOutput}`)
+  return JSON.parse(commandOutput)
 }
 
 export async function showResourcesInResourceGroup(resourceGroupName: string): Promise<[Resource]> {
-  const command = await runCommand('.', `${azCommand} resource list --resource-group ${resourceGroupName}`, true)
-  if (command?.stdout.includes('could not be found')) {
+  const commandOutput = await runCommand('.', `${azCommand} resource list --resource-group ${resourceGroupName}`, true)
+  if (commandOutput.includes('could not be found')) {
     return Promise.reject(`Resource Group ${resourceGroupName} does not exist`)
   }
-  return JSON.parse(command?.stdout)
+  return JSON.parse(commandOutput)
 }
 
 export async function showResourceInfo(
@@ -29,15 +29,15 @@ export async function showResourceInfo(
   resourceName: string,
   resourceType: string
 ): Promise<Resource> {
-  const command = await runCommand(
+  const commandOutput = await runCommand(
     '.',
     `${azCommand} resource show --resource-group ${resourceGroupName} --name ${resourceName} --resource-type ${resourceType}`,
     true
   )
-  if (command?.stdout.includes('could not be found')) {
+  if (commandOutput.includes('could not be found')) {
     return Promise.reject(`Resource ${resourceName} does not exist`)
   }
-  return JSON.parse(command?.stdout)
+  return JSON.parse(commandOutput)
 }
 
 export async function getCosmosConnectionStrings(
@@ -45,13 +45,13 @@ export async function getCosmosConnectionStrings(
   environmentName: string
 ): Promise<{ [key: string]: any }> {
   const resourceGroupName = createResourceGroupName(appName, environmentName)
-  const command = await runCommand(
+  const commandOutput = await runCommand(
     '.',
     `${azCommand} cosmosdb list-connection-strings --resource-group ${resourceGroupName} --name ${resourceGroupName}cdba`,
     true
   )
-  if (command?.stdout.includes('could not be found')) {
+  if (commandOutput.includes('could not be found')) {
     return Promise.reject(`Resource ${resourceGroupName} does not exist`)
   }
-  return JSON.parse(command?.stdout)
+  return JSON.parse(commandOutput)
 }

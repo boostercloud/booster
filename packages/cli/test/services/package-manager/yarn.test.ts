@@ -106,7 +106,7 @@ describe('PackageManager - Yarn Implementation', () => {
       onError: guardError('An error ocurred'),
     })
 
-    expect(TestProcess.fakes.exec).to.have.been.calledWith('yarn install --production --no-bin-links --no-optional')
+    expect(TestProcess.fakes.exec).to.have.been.calledWith('yarn install --omit=dev --omit=optional --no-bin-links')
   })
 
   it('can install all dependencies', async () => {
