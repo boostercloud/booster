@@ -1,5 +1,6 @@
 import * as path from 'path'
-import { runCommand } from '@boostercloud/framework-common-helpers'
+import { runCommand, runCommandAsync } from '@boostercloud/framework-common-helpers'
+import { ChildProcessWithoutNullStreams } from 'child_process'
 
 // Path to the CLI binary compiled for this project
 const cliBinaryPath = path.join(__dirname, '..', '..', 'node_modules', '.bin', 'boost')
@@ -15,6 +16,6 @@ export async function nuke(projectPath: string, environmentName = 'production'):
   await runCommand(projectPath, `${cliBinaryPath} nuke --verbose -e ${environmentName} --force`)
 }
 
-export async function start(path: string, environmentName = 'local'): Promise<void> {
-  await runCommand(path, `${cliBinaryPath} start --verbose -e ${environmentName}`)
+export function start(path: string, environmentName = 'local'): ChildProcessWithoutNullStreams {
+  return runCommandAsync(path, `${cliBinaryPath} start --verbose -e ${environmentName}`)
 }
