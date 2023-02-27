@@ -2,7 +2,6 @@
 import {
   BoosterConfig,
   ReadModelInterface,
-  EventEnvelope,
   ProjectionMetadata,
   UUID,
   EntityInterface,
@@ -10,6 +9,7 @@ import {
   OptimisticConcurrencyUnexpectedVersionError,
   SequenceKey,
   ProjectionGlobalError,
+  EntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError, createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
@@ -18,7 +18,7 @@ import { ReadModelSchemaMigrator } from '../read-model-schema-migrator'
 export class ReadModelStore {
   public constructor(readonly config: BoosterConfig) {}
 
-  public async project(entitySnapshotEnvelope: EventEnvelope): Promise<void> {
+  public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope): Promise<void> {
     const logger = getLogger(this.config, 'ReadModelStore#project')
     const projections = this.config.projections[entitySnapshotEnvelope.entityTypeName]
     if (!projections) {

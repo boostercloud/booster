@@ -5,7 +5,7 @@ import { createStubInstance, fake, restore, match, stub, SinonStubbedInstance } 
 import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import { eventsStoreAttributes } from '../../src/constants'
-import { partitionKeyForEvent } from '../../src/library/partition-keys'
+import { partitionKeyForEvent, partitionKeyForSnapshot } from '../../src/library/partition-keys'
 import { Context } from '@azure/functions'
 import { random } from 'faker'
 import {
@@ -109,7 +109,7 @@ describe('Events adapter', () => {
           parameters: [
             {
               name: '@partitionKey',
-              value: partitionKeyForEvent(mockEntityName, mockEntityId, 'snapshot'),
+              value: partitionKeyForSnapshot(mockEntityName, mockEntityId),
             },
           ],
         })
@@ -134,8 +134,7 @@ describe('Events adapter', () => {
           ...mockEvents[0],
           [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
             mockEvents[0].entityTypeName,
-            mockEvents[0].entityID,
-            mockEvents[0].kind
+            mockEvents[0].entityID
           ),
           [eventsStoreAttributes.sortKey]: match.defined,
         })

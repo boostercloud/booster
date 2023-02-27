@@ -4,7 +4,7 @@ import {
   CommandEnvelope,
   CommandHandlerGlobalError,
   EntityInterface,
-  EventEnvelope,
+  EntitySnapshotEnvelope,
   EventHandlerGlobalError,
   EventInterface,
   GlobalErrorContainer,
@@ -179,12 +179,15 @@ describe('BoosterGlobalErrorDispatcher', () => {
   it('should dispatch SnapshotPersistHandlerGlobalError', async () => {
     @GlobalErrorHandler()
     class ErrorHandler {
-      public static async onSnapshotPersistError(error: Error, snapshot: EventEnvelope): Promise<Error | undefined> {
+      public static async onSnapshotPersistError(
+        error: Error,
+        snapshot: EntitySnapshotEnvelope
+      ): Promise<Error | undefined> {
         return new Error(`${error}.onSnapshotPersistError`)
       }
     }
-    const mockEvent = {} as EventEnvelope
-    const snapshotPersistHandlerGlobalError = new SnapshotPersistHandlerGlobalError(mockEvent, baseError)
+    const mockSnapshot = {} as EntitySnapshotEnvelope
+    const snapshotPersistHandlerGlobalError = new SnapshotPersistHandlerGlobalError(mockSnapshot, baseError)
     config.globalErrorsHandler = { class: ErrorHandler } as GlobalErrorHandlerMetadata
     const errorDispatcher = new BoosterGlobalErrorDispatcher(config)
     const result = await errorDispatcher.dispatch(snapshotPersistHandlerGlobalError)

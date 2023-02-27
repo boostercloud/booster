@@ -1,9 +1,9 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import * as fs from 'fs'
-import archiver from 'archiver'
+import * as archiver from 'archiver'
 import * as os from 'os'
-import FormData from 'form-data'
+import * as FormData from 'form-data'
 import { IncomingMessage } from 'http'
 import * as path from 'path'
 

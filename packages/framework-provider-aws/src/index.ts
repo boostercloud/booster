@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ProviderInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
-import { requestFailed, requestSucceeded } from './library/api-gateway-io'
+import { ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
 
 /**
  * `Provider` is a function that accepts a list of rocket names and returns an
@@ -10,59 +9,17 @@ import { requestFailed, requestSucceeded } from './library/api-gateway-io'
  */
 export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
   try {
+    /**
+     * We try to load the AWS SDK dynamically here because it is not included in the
+     * production dependencies. Notice that this package is always present in AWS Lambda
+     * environments and is not needed in any other environment.
+     */
     require('aws-sdk')
     const { Provider } = require('./setup')
     return Provider(rockets)
   } catch (e) {
-    return {
-      // ProviderEventsLibrary
-      events: {
-        rawToEnvelopes: undefined as any,
-        forEntitySince: undefined as any,
-        latestEntitySnapshot: undefined as any,
-        store: undefined as any,
-        search: undefined as any,
-        searchEntitiesIDs: undefined as any,
-      },
-      // ProviderReadModelsLibrary
-      readModels: {
-        rawToEnvelopes: undefined as any,
-        fetch: undefined as any,
-        search: undefined as any,
-        store: undefined as any,
-        delete: undefined as any,
-        subscribe: undefined as any,
-        fetchSubscriptions: undefined as any,
-        deleteSubscription: undefined as any,
-        deleteAllSubscriptions: undefined as any,
-      },
-      // ProviderGraphQLLibrary
-      graphQL: {
-        rawToEnvelope: undefined as any,
-        handleResult: undefined as any,
-      },
-      // ProviderAPIHandling
-      api: {
-        requestSucceeded,
-        requestFailed,
-      },
-      connections: {
-        storeData: undefined as any,
-        fetchData: undefined as any,
-        deleteData: undefined as any,
-        sendMessage: undefined as any,
-      },
-      // ScheduledCommandsLibrary
-      scheduled: {
-        rawToEnvelope: undefined as any,
-      },
-      rockets: {
-        rawToEnvelopes: undefined as any,
-      },
-      // ProviderInfrastructureGetter
-      infrastructure: () =>
-        require(require('../package.json').name + '-infrastructure').Infrastructure as ProviderInfrastructure,
-    }
+    // This only happens when running the project from an environment where the dependency is not needed
+    return {} as ProviderLibrary
   }
 }
 

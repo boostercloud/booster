@@ -1,5 +1,5 @@
 import { AnyClass } from '../typelevel'
-import { CommandEnvelope, EventEnvelope } from '../envelope'
+import { CommandEnvelope, NonPersistedEntitySnapshotEnvelope } from '../envelope'
 import { EventInterface } from './event'
 import { ReadModelInterface } from './read-model'
 import { EntityInterface } from './entity'
@@ -18,7 +18,7 @@ export interface GlobalErrorHandlerInterface extends AnyClass {
     entity: EntityInterface,
     readModel: ReadModelInterface | undefined
   ): Promise<Error | undefined>
-  onSnapshotPersistError?(error: Error, snapshot: EventEnvelope): Promise<Error | undefined>
+  onSnapshotPersistError?(error: Error, snapshot: NonPersistedEntitySnapshotEnvelope): Promise<Error | undefined>
   onError?(error: Error | undefined): Promise<Error | undefined>
 }
 

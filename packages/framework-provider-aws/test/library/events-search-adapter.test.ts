@@ -8,6 +8,7 @@ import {
   EventParametersFilterByType,
   EventSearchParameters,
   EventSearchResponse,
+  NonPersistedEventEnvelope,
 } from '@boostercloud/framework-types'
 import { random, date } from 'faker'
 import { DynamoDB } from 'aws-sdk'
@@ -15,7 +16,8 @@ import { searchEvents } from '../../src/library/events-searcher-adapter'
 import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import rewire = require('rewire')
+
+const rewire = require('rewire')
 
 describe('Events searcher adapter', () => {
   const config: BoosterConfig = new BoosterConfig('test')
@@ -259,7 +261,7 @@ describe('Events searcher adapter', () => {
       const occurredThirdDate = date.recent(),
         occurredSecondDate = date.recent(10, occurredThirdDate),
         occurredFirstDate = date.recent(10, occurredSecondDate)
-      const unsortedResult: Array<EventEnvelope> = [
+      const unsortedResult: Array<NonPersistedEventEnvelope> = [
         buildEventEnvelope(occurredThirdID, occurredThirdDate.toISOString()),
         buildEventEnvelope(occurredFirstID, occurredFirstDate.toISOString()),
         buildEventEnvelope(occurredSecondID, occurredSecondDate.toISOString()),

@@ -2,7 +2,10 @@ import { ReadModelInterface, SequenceKey, UUID } from './concepts'
 import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
+  EntitySnapshotEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
   EventEnvelope,
+  NonPersistedEventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
@@ -65,7 +68,11 @@ export interface ProviderEventsLibrary {
    * @param entityID - The ID of the entity
    * @returns A promise that resolves to the latest EventEnvelope for the entity, or null if none exist
    */
-  latestEntitySnapshot(config: BoosterConfig, entityTypeName: string, entityID: UUID): Promise<EventEnvelope | null>
+  latestEntitySnapshot(
+    config: BoosterConfig,
+    entityTypeName: string,
+    entityID: UUID
+  ): Promise<EntitySnapshotEnvelope | undefined>
 
   /**
    * Searches for events based on specific parameters
@@ -95,11 +102,23 @@ export interface ProviderEventsLibrary {
   /**
    * Streams an event to the corresponding event handler
    *
-   * @param eventEnvelopes - The array of EventEnvelope objects to store
+   * @param eventEnvelopes - The array of `NonPersistedEventEnvelope` objects to store
    * @param config - The Booster configuration object
-   * @returns A promise that resolves when the events have been stored
+   * @returns A promise that resolves with the list of `EventEnvelope`s when the events have been stored
    */
-  store(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<void>
+  store(eventEnvelopes: Array<NonPersistedEventEnvelope>, config: BoosterConfig): Promise<Array<EventEnvelope>>
+
+  /**
+   * Stores a snapshot of an entity
+   *
+   * @param snapshotEnvelope - The `NonPersistedEntitySnapshotEnvelope` object to store
+   * @param config - The Booster configuration object
+   * @returns A promise that resolves with the `EntitySnapshotEnvelope` when the snapshot has been stored
+   */
+  storeSnapshot(
+    snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
+    config: BoosterConfig
+  ): Promise<EntitySnapshotEnvelope>
 }
 
 export interface ProviderReadModelsLibrary {
@@ -178,7 +197,7 @@ export interface ProviderReadModelsLibrary {
    * @param readModel - The read model to be deleted (optional).
    * @returns A promise that resolves to any value.
    */
-  delete(config: BoosterConfig, readModelName: string, readModel: ReadModelInterface | undefined): Promise<any>
+  delete(config: BoosterConfig, readModelName: string, readModel: ReadModelInterface | undefined): Promise<unknown>
 
   /**
    * Subscribes to a stream of events.

@@ -94,7 +94,6 @@ describe('the `RegisterHandler` class', () => {
     expect(config.provider.events.store).to.have.been.calledWithMatch(
       [
         {
-          createdAt: 'just the right time',
           currentUser: undefined,
           entityID: '42',
           entityTypeName: 'SomeEntity',
@@ -106,7 +105,6 @@ describe('the `RegisterHandler` class', () => {
           version: 1,
         },
         {
-          createdAt: 'just the right time',
           currentUser: undefined,
           entityID: '42',
           entityTypeName: 'SomeEntity',
@@ -135,7 +133,6 @@ describe('the `RegisterHandler` class', () => {
     }
     const register = new Register('1234', {} as any, RegisterHandler.flush, user)
     const event = new SomeEvent('a')
-    replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
 
     const registerHandler = RegisterHandler as any
     expect(registerHandler.wrapEvent(config, event, register)).to.deep.equal({
@@ -146,7 +143,6 @@ describe('the `RegisterHandler` class', () => {
       requestID: '1234',
       entityTypeName: 'SomeEntity',
       value: event,
-      createdAt: 'right here, right now!',
       currentUser: user,
       typeName: 'SomeEvent',
     })
@@ -166,7 +162,6 @@ describe('the `RegisterHandler` class', () => {
 
     const register = new Register('1234', {} as any, RegisterHandler.flush, user)
     const notification = new SomeNotification()
-    replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
 
     const registerHandler = RegisterHandler as any
     expect(registerHandler.wrapEvent(config, notification, register)).to.deep.equal({
@@ -177,7 +172,6 @@ describe('the `RegisterHandler` class', () => {
       requestID: '1234',
       entityTypeName: 'defaultTopic',
       value: notification,
-      createdAt: 'right here, right now!',
       currentUser: user,
       typeName: SomeNotification.name,
     })
@@ -197,7 +191,6 @@ describe('the `RegisterHandler` class', () => {
     const register = new Register('1234', {}, RegisterHandler.flush, user)
     const someEntity = new SomeEntity('42')
     const event = new BoosterEntityMigrated('oldEntity', 'oldEntityId', 'newEntityName', someEntity)
-    replace(Date.prototype, 'toISOString', fake.returns('right here, right now!'))
 
     const registerHandler = RegisterHandler as any
     expect(registerHandler.wrapEvent(config, event, register)).to.deep.equal({
@@ -208,7 +201,6 @@ describe('the `RegisterHandler` class', () => {
       entityID: 'oldEntityId',
       requestID: '1234',
       value: event,
-      createdAt: 'right here, right now!',
       currentUser: user,
       typeName: 'BoosterEntityMigrated',
     })

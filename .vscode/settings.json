@@ -13,5 +13,7 @@
     "source.fixAll.eslint": false
   },
   "monorepoWorkspace.includeRoot": false,
-  "cSpell.words": ["codeql", "codesee"]
+  "cSpell.words": ["codeql", "codesee"],
+  "mochaExplorer.files": "packages/**test/**/*.test.ts",
+  "mochaExplorer.require": "ts-node/register"
 }

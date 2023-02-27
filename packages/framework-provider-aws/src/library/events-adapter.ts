@@ -3,12 +3,15 @@ import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
 import {
   BoosterConfig,
   EventEnvelope,
+  EntitySnapshotEnvelope,
   OptimisticConcurrencyUnexpectedVersionError,
   UUID,
+  NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../constants'
-import { partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
+import { partitionKeyForEntitySnapshot, partitionKeyForEvent, partitionKeyForIndexByEntity } from './keys-helper'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { getLogger, retryIfError } from '@boostercloud/framework-common-helpers'
 
@@ -31,7 +34,7 @@ export async function readEntityEventsSince(
   entityID: UUID,
   since?: string
 ): Promise<Array<EventEnvelope>> {
-  const logger = getLogger(config, 'ReadModelStore#readEntityEventsSince')
+  const logger = getLogger(config, 'EventsAdapter#readEntityEventsSince')
   const fromTime = since ? since : originOfTime
   const result = await dynamoDB
     .query({
@@ -57,15 +60,15 @@ export async function readEntityLatestSnapshot(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
-  const logger = getLogger(config, 'ReadModelStore#readEntityLatestSnapshot')
+): Promise<EntitySnapshotEnvelope | undefined> {
+  const logger = getLogger(config, 'EventsAdapter#readEntityLatestSnapshot')
   const result = await dynamoDB
     .query({
       TableName: config.resourceNames.eventsStore,
       ConsistentRead: true,
       KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
       ExpressionAttributeValues: {
-        ':partitionKey': partitionKeyForEvent(entityTypeName, entityID, 'snapshot'),
+        ':partitionKey': partitionKeyForEntitySnapshot(entityTypeName, entityID),
       },
       ScanIndexForward: false, // Descending order (newer timestamps first),
       Limit: 1,
@@ -78,39 +81,56 @@ export async function readEntityLatestSnapshot(
       `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
       snapshot
     )
-    return snapshot as EventEnvelope
+    return snapshot as EntitySnapshotEnvelope
   } else {
     logger.debug(
       `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
-    return null
+    return undefined
   }
 }
 
 export async function storeEvents(
   dynamoDB: DynamoDB.DocumentClient,
-  eventEnvelopes: Array<EventEnvelope>,
+  eventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
-): Promise<void> {
-  const logger = getLogger(config, 'ReadModelStore#storeEvents')
-  logger.debug('[EventsAdapter#storeEvents] Storing the following event envelopes:', eventEnvelopes)
-  // const putRequests = []
+): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'EventsAdapter#storeEvents')
+  logger.debug('Storing the following event envelopes:', eventEnvelopes)
+  const persistedEvents = []
   for (const eventEnvelope of eventEnvelopes) {
-    await retryIfError(() => persistEvent(dynamoDB, config, eventEnvelope), OptimisticConcurrencyUnexpectedVersionError)
+    const persistedEvent = await retryIfError(
+      () => persistEvent(dynamoDB, config, eventEnvelope),
+      OptimisticConcurrencyUnexpectedVersionError
+    )
+    persistedEvents.push(persistedEvent)
   }
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
+  logger.debug('EventEnvelopes stored')
+  return persistedEvents
 }
 
-async function persistEvent(
+export async function storeSnapshot(
   dynamoDB: DynamoDB.DocumentClient,
-  config: BoosterConfig,
-  eventEnvelope: EventEnvelope
-): Promise<void> {
+  snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
+  config: BoosterConfig
+): Promise<EntitySnapshotEnvelope> {
   try {
-    const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID, eventEnvelope.kind)
-    // Generate a new timestamp as sorting key on every try until we can persist the event.
-    // This way we guarantee ordering even with events that are stored in the same millisecond
-    const sortKey = new Date().toISOString()
+    const logger = getLogger(config, 'EventsAdapter#storeSnapshot')
+    logger.debug('Storing the following snapshot:', snapshotEnvelope)
+
+    const partitionKey = partitionKeyForEntitySnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
+    /**
+     * The sort key of the snapshot matches the sort key of the last event that generated it.
+     * Entity snapshots can be potentially created by competing processes, and this way
+     * of storing the data makes snapshot creation an idempotent operation, allowing us to
+     * aggressively cache snapshots. If the snapshot already exists, it will be silently overwritten.
+     */
+    const sortKey = snapshotEnvelope.snapshottedEventCreatedAt
+    const persistableSnapshot = {
+      ...snapshotEnvelope,
+      createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+      persistedAt: new Date().toISOString(),
+    }
     await dynamoDB
       .put({
         TableName: config.resourceNames.eventsStore,
@@ -120,9 +140,51 @@ async function persistEvent(
           ':sortKey': sortKey,
         },
         Item: {
-          ...eventEnvelope,
+          ...persistableSnapshot,
           [eventsStoreAttributes.partitionKey]: partitionKey,
           [eventsStoreAttributes.sortKey]: sortKey,
+          [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
+            snapshotEnvelope.entityTypeName,
+            snapshotEnvelope.kind
+          ),
+        },
+      })
+      .promise()
+    return persistableSnapshot
+  } catch (e) {
+    const error = e as Error
+    if (error.name == 'ConditionalCheckFailedException') {
+      throw new OptimisticConcurrencyUnexpectedVersionError(error.message)
+    }
+    throw e
+  }
+}
+
+async function persistEvent(
+  dynamoDB: DynamoDB.DocumentClient,
+  config: BoosterConfig,
+  eventEnvelope: NonPersistedEventEnvelope
+): Promise<EventEnvelope> {
+  try {
+    const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID)
+    // Generate a new timestamp as sorting key on every try until we can persist the event.
+    // This way we guarantee ordering even with events that are stored in the same millisecond
+    const persistableEvent: EventEnvelope = {
+      ...eventEnvelope,
+      createdAt: new Date().toISOString(),
+    }
+    await dynamoDB
+      .put({
+        TableName: config.resourceNames.eventsStore,
+        ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
+        ExpressionAttributeValues: {
+          ':partitionKey': partitionKey,
+          ':sortKey': persistableEvent.createdAt,
+        },
+        Item: {
+          ...eventEnvelope,
+          [eventsStoreAttributes.partitionKey]: partitionKey,
+          [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
           [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
             eventEnvelope.entityTypeName,
             eventEnvelope.kind
@@ -130,6 +192,7 @@ async function persistEvent(
         },
       })
       .promise()
+    return persistableEvent
   } catch (e) {
     const error = e as Error
     if (error.name == 'ConditionalCheckFailedException') {
