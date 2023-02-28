@@ -38,8 +38,6 @@ export default function BoosterChat(): JSX.Element {
 
   return (
     <Layout wrapperClassName="bc-layout">
-      <img className="bc-hero" src={useBaseUrl('/img/booster-logo.png')} alt="Booster Logo" />
-      <CoolTitle hidden={interacted} />
       <div className="bc-searchbar">
         <SearchIcon />
         <input
