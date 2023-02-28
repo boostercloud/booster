@@ -7,10 +7,11 @@ import {
   EntityInterface,
   EventInterface,
   InvalidVersionError,
+  EntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
-type SchemaMigrableEnvelope = CommandEnvelope | EventEnvelope
+type SchemaMigrableEnvelope = CommandEnvelope | EventEnvelope | EntitySnapshotEnvelope
 type SchemaMigrableValue = CommandInterface | EventInterface | EntityInterface
 
 export class SchemaMigrator {

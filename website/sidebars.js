@@ -47,7 +47,12 @@ const sidebars = {
       link: {
         type: 'generated-index',
       },
-      items: ['features/event-stream', 'features/schedule-actions', 'features/logging', 'features/error-handling'],
+      items: [
+        'features/event-stream',
+        'features/schedule-actions',
+        'features/logging',
+        'features/error-handling'
+      ],
     },
     {
       type: 'category',

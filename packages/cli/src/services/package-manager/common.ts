@@ -89,7 +89,7 @@ export const makePackageManager = (packageManagerCommand: string) =>
         ),
       installProductionDependencies: () =>
         pipe(
-          run('install', null, ['--production', '--no-bin-links', '--no-optional']),
+          run('install', null, ['--omit=dev', '--omit=optional', '--no-bin-links']),
           mapError((error) => new InstallDependenciesError(error.error))
         ),
       installAllDependencies: () =>

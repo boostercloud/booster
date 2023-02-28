@@ -1,6 +1,5 @@
 import * as path from 'path'
 import { exec } from 'child-process-promise'
-import * as chai from 'chai'
 import {
   createFolder,
   dirContents,
@@ -11,14 +10,11 @@ import {
 } from '../../helper/file-helper'
 import { ChildProcess } from 'child_process'
 import { overrideWithBoosterLocalDependencies } from '../../helper/deps-helper'
+import { expect } from '../../helper/expect'
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../../package.json').version
 
-chai.use(require('sinon-chai'))
-chai.use(require('chai-as-promised'))
-
-const expect = chai.expect
 
 const TEST_TIMEOUT = 80000
 const DESCRIPTION = 'cart-demo'
@@ -312,7 +308,7 @@ describe('Project', () => {
           // Rewrite dependencies to use local versions
           await overrideWithBoosterLocalDependencies(fullProjectPath)
           // Install those dependencies
-          await exec('npm install --production --no-bin-links --no-optional', { cwd: fullProjectPath })
+          await exec('npm install --omit=dev --omit=optional --no-bin-links', { cwd: fullProjectPath })
 
           await expect(exec('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })

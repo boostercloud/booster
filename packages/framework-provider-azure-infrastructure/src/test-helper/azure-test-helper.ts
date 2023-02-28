@@ -38,7 +38,13 @@ export class AzureTestHelper {
   public static ensureAzureConfiguration(): void {
     console.log('Checking Azure configuration...')
     if (!configuration.appId || !configuration.tenantId || !configuration.secret || !configuration.subscriptionId) {
-      throw new Error('Azure credentials were not properly loaded and are required to run the integration tests.')
+      throw new Error(
+        'Azure credentials were not properly loaded and are required to run the integration tests' +
+          `\nappId = ${configuration.appId}` +
+          `\ntenantId = ${configuration.tenantId}` +
+          `\nsecret = ${configuration.secret}` +
+          `\nsubscriptionId = ${configuration.subscriptionId}`
+      )
     }
     if (!configuration.region) {
       throw new Error('Azure region was not properly loaded and is required to run the integration tests. ')

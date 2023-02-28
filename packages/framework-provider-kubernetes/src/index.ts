@@ -33,6 +33,7 @@ export const Provider = (): ProviderLibrary => ({
   events: {
     rawToEnvelopes: EventsAdapter.rawToEnvelopes,
     store: EventsAdapter.store.bind(null, eventRegistry, userApp),
+    storeSnapshot: EventsAdapter.storeSnapshot.bind(null, eventRegistry),
     forEntitySince: EventsAdapter.forEntitySince.bind(null, eventRegistry),
     latestEntitySnapshot: EventsAdapter.latestEntitySnapshot.bind(null, eventRegistry),
     search: EventsAdapter.search.bind(null, eventRegistry),

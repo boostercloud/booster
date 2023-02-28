@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 23 Feb 2023 18:55:04 GMT and should not be manually modified.
+This log was last generated on Mon, 27 Feb 2023 23:02:14 GMT and should not be manually modified.
+
+## 1.7.0
+Mon, 27 Feb 2023 23:02:14 GMT
+
+### Minor changes
+
+- Implented a lazy entity snapshot system that caches the entities when they're read instead of every time an event is registered in the event store. It also solves a bug that was missing events during reducers if a reducer trew an error.
 
 ## 1.6.2
 Thu, 23 Feb 2023 18:55:04 GMT

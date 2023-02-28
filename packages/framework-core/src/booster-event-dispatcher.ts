@@ -37,20 +37,24 @@ export class BoosterEventDispatcher {
     }
   }
 
+  /**
+   * Builds a function that will be called once for each entity from the `RawEventsParser.streamPerEntityEvents` method
+   * after the page of events is grouped by entity.
+   */
   private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
+      const eventEnvelopesProcessors = [
+        BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config),
+      ]
+
+      // Read models are not updated for notification events (events that are not related to an entity but a topic)
       if (!(entityName in config.topicToEvent)) {
-        // TODO: Separate into two independent processes the snapshotting/read-model generation process from the event handling process`
-        await BoosterEventDispatcher.snapshotAndUpdateReadModels(
-          config,
-          entityName,
-          entityID,
-          eventEnvelopes,
-          eventStore,
-          readModelStore
+        eventEnvelopesProcessors.push(
+          BoosterEventDispatcher.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
         )
       }
-      await BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config)
+
+      await Promises.allSettledAndFulfilled(eventEnvelopesProcessors)
     }
   }
 
@@ -58,27 +62,22 @@ export class BoosterEventDispatcher {
     config: BoosterConfig,
     entityName: string,
     entityID: UUID,
-    envelopes: Array<EventEnvelope>,
     eventStore: EventStore,
     readModelStore: ReadModelStore
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#snapshotAndUpdateReadModels')
-    const snapshotsForIndependentEntities = await eventStore.calculateAndStoreEntitySnapshot(
-      entityName,
-      entityID,
-      envelopes
-    )
-    if (snapshotsForIndependentEntities.length === 0) {
-      logger.debug('No new snapshots generated, skipping read models projection')
+    let entitySnapshot = undefined
+    try {
+      entitySnapshot = await eventStore.fetchEntitySnapshot(entityName, entityID)
+    } catch (e) {
+      logger.error('Error while fetching or reducing entity snapshot:', e)
+    }
+    if (!entitySnapshot) {
+      logger.debug('No new snapshot generated, skipping read models projection')
       return
     }
-
-    logger.debug('Snapshot(s) calculated and started read models projection:', snapshotsForIndependentEntities)
-
-    const projectedPromises = snapshotsForIndependentEntities.map((entitySnapshot) =>
-      readModelStore.project(entitySnapshot)
-    )
-    await Promises.allSettledAndFulfilled(projectedPromises)
+    logger.debug('Snapshot loaded and started read models projection:', entitySnapshot)
+    await readModelStore.project(entitySnapshot)
   }
 
   private static async dispatchEntityEventsToEventHandlers(

@@ -256,19 +256,7 @@ Finally, **always use exact numbers for dependency versions**. This means that i
 
 ### Running unit tests
 
-Unit tests are executed when you type `rush test`. If you want to run the unit tests for an especific package, you should move to the corresponding folder and run one of the following commands:
-
-- `rushx test:cli -v`: Run unit tests for the `cli` package.
-- `rushx test:core -v`: Run unit tests for the `framework-core` package.
-- `rushx test:provider-aws -v`: Run unit tests for the `framework-provider-aws` package.
-- `rushx test:provider-aws-infrastructure -v`: Run unit tests for the `framework-provider-aws-infrastructure` package.
-- `rushx test:provider-azure -v`: Run unit tests for the `framework-provider-azure` package.
-- `rushx test:provider-azure-infrastructure -v`: Run unit tests for the `framework-provider-azure-infrastructure` package.
-- `rushx test:provider-kubernetes -v`: Run unit tests for the `framework-provider-kubernetes` package.
-- `rushx test:provider-kubernetes-infrastructure -v`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
-- `rushx test:provider-local -v`: Run unit tests for the `framework-provider-local` package.
-- `rushx test:provider-local-infrastructure -v`: Run unit tests for the `framework-provider-local-infrastructure` package.
-- `rushx test:types -v`: Run unit tests for the `framework-types` package.
+Unit tests are executed when you type `rush test`. If you want to run the unit tests for a specific package, you should move to the corresponding package folder and run `rushx test` there.
 
 ### Running integration tests
 
