@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Implemented unit tests for local scheduled commands",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

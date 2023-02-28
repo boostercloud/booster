@@ -9,13 +9,16 @@ interface ScheduledCommandInfo {
 export function configureScheduler(config: BoosterConfig, userProject: any): void {
   const triggerScheduleCommand = userProject['boosterTriggerScheduledCommand']
 
-  const isEmpty = (obj: {}) => {
+  const isEmpty = (obj: object) => {
     return Object.keys(obj).length === 0
   }
 
   Object.keys(config.scheduledCommandHandlers)
     .map((scheduledCommandName) => buildScheduledCommandInfo(config, scheduledCommandName))
-    .filter((scheduledCommandInfo) => scheduledCommandInfo.metadata.scheduledOn && !isEmpty(scheduledCommandInfo.metadata.scheduledOn))
+    .filter(
+      (scheduledCommandInfo) =>
+        scheduledCommandInfo.metadata.scheduledOn && !isEmpty(scheduledCommandInfo.metadata.scheduledOn)
+    )
     .forEach((scheduledCommandInfo) => {
       scheduler.scheduleJob(scheduledCommandInfo.name, createCronExpression(scheduledCommandInfo.metadata), () => {
         triggerScheduleCommand({ typeName: scheduledCommandInfo.name })
