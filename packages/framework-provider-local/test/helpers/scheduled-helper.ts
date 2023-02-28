@@ -6,6 +6,6 @@ interface LocalScheduleCommandEnvelope {
 
 export function createMockLocalScheduleCommandEnvelope(): Partial<LocalScheduleCommandEnvelope> {
   return {
-    typeName: random.word()
+    typeName: random.word(),
   }
 }
