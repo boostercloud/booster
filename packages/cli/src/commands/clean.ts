@@ -1,41 +1,27 @@
-import { flags } from '@oclif/command'
-import BaseCommand from '../common/base-command'
-import { cleanProject } from '../services/user-project/config'
-import { checkCurrentDirIsABoosterProject } from '../services/project-checker'
-import { Script } from '../common/script'
+import { CliCommand, BaseCommand } from '../common/base-command'
 import Brand from '../common/brand'
+import { Logger } from '@boostercloud/framework-types'
+import { UserProject } from 'cli/src/services/user-project'
+import { PackageManager } from 'cli/src/services/package-manager'
 
-const runTasks = async (clean: (ctx: string) => Promise<void>): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('clean')} 🚀`, Promise.resolve(process.cwd()))
-    .step('Checking project structure', checkCurrentDirIsABoosterProject)
-    .step('Cleaning project', clean)
-    .info('Clean complete!')
-    .done()
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly packageManager: PackageManager, readonly userProject: UserProject) {}
 
-export default class Clean extends BaseCommand {
+  async run(): Promise<void> {
+    this.logger.info(`boost ${Brand.dangerize('clean')} 🚀`)
+    await this.logger.logProcess('Cleaning project', async () => {
+      await this.userProject.performChecks()
+      await this.packageManager.runScript('clean', [])
+    })
+    this.logger.info('Clean complete!')
+  }
+}
+
+export default class Clean extends BaseCommand<typeof Clean> {
   public static description = 'Clean the current application as configured in your `index.ts` file.'
 
-  public static flags = {
-    help: flags.help({ char: 'h' }),
-    verbose: flags.boolean({
-      description: 'display full error messages',
-      default: false,
-    }),
-  }
-
   public async run(): Promise<void> {
-    await runTasks((ctx: string) => cleanProject(process.cwd()))
-  }
-
-  async catch(fullError: Error) {
-    const {
-      flags: { verbose },
-    } = this.parse(Clean)
-
-    if (verbose) {
-      console.error(fullError.message)
-    }
-
-    return super.catch(fullError)
+    await this.runImplementation(Implementation)
   }
 }

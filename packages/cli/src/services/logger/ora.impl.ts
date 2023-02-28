@@ -7,32 +7,48 @@ import { LevelString, Level, Logger } from '@boostercloud/framework-types'
 export class OraLogger implements Logger {
   private oraLogger = ora({ stream: process.stdout })
 
-  public constructor(readonly logLevel: Level = Level.info) {
+  constructor(readonly logLevel: Level = Level.info) {
     const envLevel = process.env.BOOSTER_LOG_LEVEL
     if (envLevel && Object.keys(Level).includes(envLevel)) {
       this.logLevel = Level[envLevel as LevelString]
     }
   }
 
-  public debug(data: unknown, ...optionalParams: unknown[]): void {
+  logProcess<T>(message: string, process: () => T): T {
+    try {
+      this.oraLogger.start(message)
+      const result = process()
+      this.oraLogger.succeed(message)
+      return result
+    } catch (e) {
+      this.oraLogger.fail(message)
+      throw e
+    }
+  }
+
+  debug(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.debug) return
     const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
-    this.oraLogger.warn(message)
+    console.debug(message)
   }
 
-  public info(data: unknown, ...optionalParams: unknown[]): void {
+  info(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.info) return
     const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
-    this.oraLogger.info(message)
+    if (this.oraLogger.isSpinning) {
+      this.oraLogger.text = message
+    } else {
+      this.oraLogger.info(message)
+    }
   }
 
-  public warn(data: unknown, ...optionalParams: unknown[]): void {
+  warn(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.warn) return
     const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
     this.oraLogger.warn(message)
   }
 
-  public error(data: unknown, ...optionalParams: unknown[]): void {
+  error(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.error) return
     const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
     this.oraLogger.fail(message)

@@ -64,6 +64,11 @@ export abstract class UserProject {
   abstract removeSandbox(): Promise<void>
 
   /**
+   * Runs a function in the sandbox project
+   */
+  abstract inSandboxRun(callback: () => Promise<void>): Promise<void>
+
+  /**
    * Compiles the project
    */
   abstract compile(): Promise<void>

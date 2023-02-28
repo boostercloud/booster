@@ -5,11 +5,16 @@ import { CliError } from '../../common/errors'
 import { Component } from '../../common/component'
 import { Logger } from '@boostercloud/framework-types'
 
-@Component
+@Component({ throws: CliError })
 export class RushPackageManager implements PackageManager {
   private _projectRoot?: string
 
   constructor(readonly logger: Logger, readonly process: Process, readonly fileSystem: FileSystem) {}
+
+  async catch(e: unknown): Promise<CliError> {
+    if (e instanceof CliError) return e
+    return new CliError('PackageManagerError', 'An unknown error occurred', e)
+  }
 
   getLockfileName(): string {
     return 'common/config/rush/pnpm-lock.yaml'

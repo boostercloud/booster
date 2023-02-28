@@ -11,7 +11,6 @@ import {
 } from './types'
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-/* eslint-disable @typescript-eslint/generic-type-naming */
 
 export const parseName = (name: string): Promise<HasName> => Promise.resolve({ name })
 

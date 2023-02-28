@@ -1,8 +1,17 @@
 import { Component } from '../../common/component'
 import * as inquirer from 'inquirer'
+import { Logger } from '@boostercloud/framework-types'
+import { CliError } from 'cli/src/common/errors'
 
-@Component
+@Component({ throws: CliError })
 export class ConsoleUserInput {
+  constructor(readonly logger: Logger) {}
+
+  async catch(e: unknown): Promise<CliError> {
+    if (e instanceof CliError) return e
+    return new CliError('UserInputError', 'An unknown error occurred', e)
+  }
+
   public async defaultString(message: string, defaultValue?: string): Promise<string> {
     if (defaultValue) return this.removeQuotes(defaultValue)
     const { value } = await inquirer.prompt([{ name: 'value', type: 'input', message }])

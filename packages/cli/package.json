@@ -22,7 +22,6 @@
     "chalk": "^2.4.2",
     "child-process-promise": "^2.2.1",
     "execa": "^2.0.3",
-    "fp-ts": "^2.11.0",
     "fs-extra": "^8.1.0",
     "inflected": "2.1.0",
     "inquirer": "^7.0.0",
@@ -32,7 +31,8 @@
     "tslib": "^2.4.0",
     "semver": "^7.3.5",
     "winston": "~3.8.2",
-    "diod": "~2.0.0"
+    "diod": "~2.0.0",
+    "ts-pattern": "~4.2.1"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.7.0",

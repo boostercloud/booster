@@ -35,6 +35,12 @@ export abstract class Logger {
    * Log an error message
    */
   abstract error(message?: unknown, ...optionalParams: unknown[]): void
+
+  /**
+   * Logs the start and the end of a function call, logging the
+   * outcome of the function
+   */
+  abstract logProcess<T>(message: string, process: () => T): T
 }
 
 export type HasLogger = {

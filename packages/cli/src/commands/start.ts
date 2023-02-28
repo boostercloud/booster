@@ -1,59 +1,44 @@
 import { flags } from '@oclif/command'
-import BaseCommand from '../common/base-command'
-import { startProvider } from '../services/provider-service'
-import { compileProjectAndLoadConfig } from '../services/user-project/config'
-import { BoosterConfig } from '@boostercloud/framework-types'
-import { Script } from '../common/script'
+import { BaseCommand, CliCommand, Flags } from '../common/base-command'
+import { Logger } from '@boostercloud/framework-types'
 import Brand from '../common/brand'
-import { logger } from '../services/logger'
-import { currentEnvironment, initializeEnvironment } from '../services/environment'
+import { UserProject } from 'cli/src/services/user-project'
+import { CloudProvider } from 'cli/src/services/cloud-provider'
 
-const runTasks = async (
-  port: number,
-  loader: Promise<BoosterConfig>,
-  runner: (config: BoosterConfig) => Promise<void>
-): Promise<void> =>
-  Script.init(`boost ${Brand.canarize('debug')} [${currentEnvironment()}] 🐛`, loader)
-    .step(`Starting debug server on port ${port}`, runner)
-    .done()
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly cloudProvider: CloudProvider) {}
 
-export default class Start extends BaseCommand {
-  public static description = 'Start local debug server.'
+  async run(flags: Flags<typeof Start>) {
+    const port = parseInt(flags.port ?? '', 10) || 3000
+    this.logger.info('Ensuring environment is properly set')
+    if (flags.environment) {
+      await this.userProject.overrideEnvironment(flags.environment)
+    }
+    const currentEnvironment = this.userProject.getEnvironment()
+    this.logger.info(`boost ${Brand.dangerize('start')} [${currentEnvironment}] 🚀`)
+    await this.logger.logProcess(`Starting project on port ${flags.port}`, async () => {
+      await this.cloudProvider.start(port)
+    })
+  }
+}
+
+export default class Start extends BaseCommand<typeof Start> {
+  public static description = 'Start a provider on a specific port'
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
     port: flags.integer({
       char: 'p',
-      description: 'port to run the local runtime on',
+      description: 'port to start the provider on',
       default: 3000,
     }),
     environment: flags.string({
       char: 'e',
       description: 'environment configuration to run',
     }),
-    verbose: flags.boolean({
-      description: 'display full error messages',
-      default: false,
-    }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Start)
-
-    if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))
-    }
-  }
-
-  async catch(fullError: Error) {
-    const {
-      flags: { verbose },
-    } = this.parse(Start)
-
-    if (verbose) {
-      console.error(fullError.message)
-    }
-
-    return super.catch(fullError)
+    await this.runImplementation(Implementation)
   }
 }

@@ -1,15 +1,22 @@
 import { CliError } from '../../common/errors'
-import { ProviderInfrastructure } from '@boostercloud/framework-types'
+import { Logger, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { CloudProvider } from '.'
 import { UserProject } from '../user-project'
+import { Component } from '../../common/component'
 
 /**
  * Generic cloud provider implementation.
  * Uses the cloud provider that is currently
  * configured in the users project.
  */
+@Component({ throws: CliError })
 export class GenericCloudProvider implements CloudProvider {
-  constructor(readonly userProject: UserProject) {}
+  constructor(readonly logger: Logger, readonly userProject: UserProject) {}
+
+  async catch(e: unknown): Promise<CliError> {
+    if (e instanceof CliError) return e
+    return new CliError('CloudProviderError', 'An unknown error occurred', e)
+  }
 
   async deploy(): Promise<void> {
     const config = await this.userProject.loadConfig()
@@ -48,7 +55,7 @@ export class GenericCloudProvider implements CloudProvider {
         `Attempted to perform the '${methodName}' operation with a provider that does not support this feature, please check your environment configuration.`
       )
     }
-    return method
+    return method as NonNullable<ProviderInfrastructure[TMethodName]>
   }
 
   async assertNameIsCorrect(name: string): Promise<void> {

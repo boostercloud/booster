@@ -16,12 +16,24 @@ export function getLogger(config: BoosterConfig, location?: string, overridenLog
   const prefixedInfoFunction = info.bind(null, prefix)
   const prefixedWarnFunction = warn.bind(null, prefix)
   const prefixedErrFunction = error.bind(null, prefix)
+  const logProcess = <T>(message: string, process: () => T): T => {
+    prefixedInfoFunction(`${message} [START]`)
+    try {
+      const result = process()
+      prefixedInfoFunction(`${message} [SUCCESS]`)
+      return result
+    } catch (e) {
+      prefixedErrFunction(`${message} [ERROR]`)
+      throw e
+    }
+  }
 
   return {
     debug: config.logLevel <= Level.debug ? prefixedDebugFunction : noopLog,
     info: config.logLevel <= Level.info ? prefixedInfoFunction : noopLog,
     warn: config.logLevel <= Level.warn ? prefixedWarnFunction : noopLog,
     error: prefixedErrFunction,
+    logProcess,
   }
 }
 

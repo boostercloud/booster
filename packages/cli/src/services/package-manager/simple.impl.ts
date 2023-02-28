@@ -18,6 +18,11 @@ export abstract class SimplePackageManager implements PackageManager {
     readonly fileSystem: FileSystem
   ) {}
 
+  async catch(e: unknown): Promise<CliError> {
+    if (e instanceof CliError) return e
+    return new CliError('PackageManagerError', 'An unknown error occurred', e)
+  }
+
   getLockfileName(): string {
     return 'package-lock.json'
   }

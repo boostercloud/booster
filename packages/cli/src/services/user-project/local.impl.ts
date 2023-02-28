@@ -14,13 +14,14 @@ import { UserInput } from '../user-input'
 import Brand from '../../common/brand'
 import { CloudProvider } from '../cloud-provider'
 import { projectTemplates } from 'cli/src/templates/project'
-import { FileGenerator } from 'cli/src/services/file-generator'
+import { FileGenerator } from '../file-generator'
 
-@Component
+@Component({ throws: CliError })
 export class LocalUserProject implements UserProject {
   private _environment: string | undefined
   private _projectDir: string | undefined
   private _sandboxPath = '.deploy'
+  private _config: BoosterConfig | undefined
 
   constructor(
     readonly cliVersion: string,
@@ -33,6 +34,24 @@ export class LocalUserProject implements UserProject {
     readonly cloudProvider: CloudProvider,
     readonly fileGenerator: FileGenerator
   ) {}
+
+  async inSandboxRun(callback: () => Promise<void>): Promise<void> {
+    await this.createSandbox()
+    const cwd = await this.process.cwd()
+    this._projectDir = this._projectDir ?? cwd
+    const oldProjectDir = this._projectDir
+    this._projectDir = path.join(this._projectDir, this._sandboxPath)
+    await this.process.chdir(this._projectDir)
+    await callback()
+    await this.process.chdir(oldProjectDir)
+    this._projectDir = oldProjectDir
+    await this.removeSandbox()
+  }
+
+  async catch(e: unknown): Promise<CliError> {
+    if (e instanceof CliError) return e
+    return new CliError('ProjectConfigurationError', 'An unknown error occurred', e)
+  }
 
   async create(projectName: string, config: ProjectCreationConfig): Promise<void> {
     // Check that the name is correct
@@ -122,7 +141,7 @@ export class LocalUserProject implements UserProject {
     }
     throw new CliError(
       'NoEnvironmentSet',
-      'No environment has been set. Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.'
+      'Use the flag `-e` or set the environment variable BOOSTER_ENV to set it before running this command. Example usage: `boost deploy -e <environment>`.'
     )
   }
 
@@ -133,6 +152,7 @@ export class LocalUserProject implements UserProject {
 
   async createSandbox(additionalAssets: ReadonlyArray<string> = []): Promise<void> {
     try {
+      const cwd = await this.process.cwd()
       this.logger.info('Creating sandbox...')
       await this.removeSandbox()
 
@@ -159,6 +179,7 @@ export class LocalUserProject implements UserProject {
       this.logger.debug('Installing dependencies in production mode...')
       await this.packageManager.setProjectRoot(this._sandboxPath)
       await this.packageManager.installProductionDependencies()
+      await this.packageManager.setProjectRoot(this._projectDir ?? cwd)
     } catch (e) {
       throw new CliError('SandboxCreationError', 'Error creating the sandbox: ' + e.message)
     }
@@ -171,21 +192,24 @@ export class LocalUserProject implements UserProject {
 
   async compile(): Promise<void> {
     await this.performChecks()
+    this.logger.info('Compiling project')
     await this.packageManager.build([])
   }
 
   async loadConfig(): Promise<BoosterConfig> {
+    if (this._config) return this._config
     await this.compile()
     const projectDir = await this.getAbsoluteProjectDir()
     const projectIndexPath = path.join(projectDir, 'dist', 'index.js')
     const currentEnv = await this.getEnvironment()
     const { Booster: app } = await this.dynamicImporter.import<{ Booster: BoosterApp }>(projectIndexPath)
-    return new Promise((resolve) =>
+    this._config = await new Promise((resolve) =>
       app.configureCurrentEnv((config) => {
         checkEnvironmentWasConfigured(app, currentEnv)
         resolve(config)
       })
     )
+    return this._config as BoosterConfig
   }
 
   async lookupResource<TInfo>({
@@ -201,6 +225,7 @@ export class LocalUserProject implements UserProject {
   }
 
   async performChecks(): Promise<void> {
+    this.logger.info('Checking project structure')
     if (!this._projectDir) {
       this._projectDir = await this.process.cwd()
     }

@@ -1,5 +1,13 @@
-import { TemplateType } from '../stub-publisher'
 import { Target } from './target'
+
+export type TemplateType =
+  | 'command'
+  | 'entity'
+  | 'event'
+  | 'event-handler'
+  | 'read-model'
+  | 'scheduled-command'
+  | 'type'
 
 export abstract class FileGenerator {
   /**
@@ -11,4 +19,9 @@ export abstract class FileGenerator {
    * Returns the content of a template
    */
   abstract template(name: TemplateType): Promise<string>
+
+  /**
+   * Copies stubs to the user project
+   */
+  abstract copyStubs(): Promise<void>
 }

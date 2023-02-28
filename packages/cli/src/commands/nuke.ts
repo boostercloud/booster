@@ -1,47 +1,49 @@
 import { flags } from '@oclif/command'
-import BaseCommand from '../common/base-command'
-import { nukeCloudProviderResources } from '../services/provider-service'
-import { compileProjectAndLoadConfig } from '../services/user-project/config'
-import { BoosterConfig } from '@boostercloud/framework-types'
-import { Script } from '../common/script'
+import { BaseCommand, CliCommand, Flags } from '../common/base-command'
+import { Logger } from '@boostercloud/framework-types'
 import Brand from '../common/brand'
-import Prompter from '../services/user-prompt'
-import { logger } from '../services/logger'
-import { currentEnvironment, initializeEnvironment } from '../services/environment'
+import { UserInput } from 'cli/src/services/user-input'
+import { UserProject } from 'cli/src/services/user-project'
+import { CloudProvider } from 'cli/src/services/cloud-provider'
 
-const runTasks = async (
-  compileAndLoad: Promise<BoosterConfig>,
-  nuke: (config: BoosterConfig) => Promise<void>
-): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('nuke')} [${currentEnvironment()}] 🧨`, compileAndLoad)
-    .step('Removing', (config) => nuke(config))
-    .info('Removal complete!')
-    .done()
+@CliCommand()
+class Implementation {
+  constructor(
+    readonly logger: Logger,
+    readonly userInput: UserInput,
+    readonly userProject: UserProject,
+    readonly cloudProvider: CloudProvider
+  ) {}
 
-async function askToConfirmRemoval(
-  prompter: Prompter,
-  force: boolean,
-  config: Promise<BoosterConfig>
-): Promise<BoosterConfig> {
-  if (force) return config
-  const configuration = await config
-  const appName = await prompter.defaultOrPrompt(
-    null,
-    'Please, enter the app name to confirm deletion of all resources:'
-  )
-  if (appName == configuration.appName) {
-    return configuration
-  } else {
-    throw new Error('Wrong app name, stopping nuke!')
+  async run(flags: Flags<typeof Nuke>): Promise<void> {
+    this.logger.info('Ensuring environment is properly set')
+    if (flags.environment) {
+      await this.userProject.overrideEnvironment(flags.environment)
+    }
+    const currentEnvironment = await this.userProject.getEnvironment()
+    this.logger.info(`boost ${Brand.dangerize('nuke')} [${currentEnvironment}] 🧨`)
+    const config = await this.userProject.loadConfig()
+
+    if (!flags.force) {
+      this.logger.info('This command will remove all the resources used by your application.')
+      this.logger.info('You can use the --force flag to skip this confirmation.')
+      const appName = await this.userInput.defaultString(
+        'Please, enter the app name to confirm deletion of all resources:'
+      )
+      if (appName != config.appName) {
+        throw new Error('Wrong app name, stopping nuke!')
+      }
+    }
+
+    await this.cloudProvider.nuke()
   }
 }
 
-export default class Nuke extends BaseCommand {
+export default class Nuke extends BaseCommand<typeof Nuke> {
   public static description =
     'Remove all resources used by the current application as configured in your `index.ts` file.'
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
     environment: flags.string({
       char: 'e',
       description: 'environment configuration to run',
@@ -51,32 +53,9 @@ export default class Nuke extends BaseCommand {
       description:
         'Run nuke without asking for confirmation. Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.',
     }),
-    verbose: flags.boolean({
-      description: 'display full error messages',
-      default: false,
-    }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Nuke)
-
-    if (initializeEnvironment(logger, flags.environment)) {
-      await runTasks(
-        askToConfirmRemoval(new Prompter(), flags.force, compileProjectAndLoadConfig(process.cwd())),
-        nukeCloudProviderResources
-      )
-    }
-  }
-
-  async catch(fullError: Error) {
-    const {
-      flags: { verbose },
-    } = this.parse(Nuke)
-
-    if (verbose) {
-      console.error(fullError.message)
-    }
-
-    return super.catch(fullError)
+    await this.runImplementation(Implementation)
   }
 }

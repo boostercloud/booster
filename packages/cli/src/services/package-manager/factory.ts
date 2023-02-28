@@ -14,7 +14,8 @@ export async function inferPackageManager(
   const process = container.get(Process)
   const fileSystem = container.get(FileSystem)
   const workingDir = await process.cwd()
-  const contents = await fileSystem.readDirectoryContents(workingDir)
+  const entries = await fileSystem.readDirectoryContents(workingDir)
+  const contents = entries.map((entry) => entry.name)
   if (contents.includes('.rush')) {
     return RushPackageManager
   } else if (contents.includes('pnpm-lock.yaml')) {

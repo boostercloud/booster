@@ -1,5 +1,6 @@
 import { FileSystem } from '.'
 import * as fs from 'fs'
+import * as fsExtra from 'fs-extra'
 import * as path from 'path'
 import { Component } from '../../common/component'
 import { Logger } from '@boostercloud/framework-types'
@@ -9,22 +10,32 @@ import { CliError } from '../../common/errors'
  * A simple implementation of the FileSystem interface that uses the Node.js
  * file system module.
  */
-@Component
+@Component({ throws: CliError })
 export class LocalFileSystem implements FileSystem {
   constructor(readonly logger: Logger) {}
 
+  async catch(e: unknown): Promise<CliError> {
+    if (e instanceof CliError) return e
+    return new CliError('FileSystemError', 'An unknown error occurred', e)
+  }
+
+  async outputFile(path: string, contents: string): Promise<void> {
+    const normalizedPath = path.normalize(path)
+    await fsExtra.outputFile(normalizedPath, contents)
+  }
+
   async exists(filePath: string): Promise<boolean> {
-    const fpath = path.normalize(filePath)
+    const normalizedPath = path.normalize(filePath)
     return fs.promises
-      .access(fpath, fs.constants.F_OK)
+      .access(normalizedPath, fs.constants.F_OK)
       .then(() => true)
       .catch(() => false)
   }
 
   async remove(path: string, options: { recursive?: boolean | undefined; force?: boolean | undefined }): Promise<void> {
-    const fpath = path.normalize(path)
+    const normalizedPath = path.normalize(path)
     try {
-      await fs.promises.rm(fpath, options)
+      await fs.promises.rm(normalizedPath, options)
     } catch (e) {
       throw new CliError('FileSystemError', `There were some issues removing the file ${path}: ${e}`, e)
     }
@@ -32,8 +43,8 @@ export class LocalFileSystem implements FileSystem {
 
   async makeDirectory(path: string, options: { recursive?: boolean | undefined }): Promise<void> {
     try {
-      const fpath = path.normalize(path)
-      await fs.promises.mkdir(fpath, options)
+      const normalizedPath = path.normalize(path)
+      await fs.promises.mkdir(normalizedPath, options)
     } catch (e) {
       throw new CliError('FileSystemError', `There were some issues creating the directory ${path}: ${e}`, e)
     }
@@ -50,10 +61,10 @@ export class LocalFileSystem implements FileSystem {
         await fs.promises.copyFile(sourcePath, destinationPath)
       } else {
         // If not, we create the directory and then copy all the files recursively
-        await fs.promises.mkdir(path.join(destinationPath), { recursive: true })
+        await this.makeDirectory(path.join(destinationPath), { recursive: true })
 
         // For that, we read the directory and then copy each entry
-        const entries = await fs.promises.readdir(sourcePath, { withFileTypes: true })
+        const entries = await this.readDirectoryContents(sourcePath)
         for (const entry of entries) {
           // We must join the source and destination paths with the entry name
           // to get the full path of the entry
@@ -67,9 +78,9 @@ export class LocalFileSystem implements FileSystem {
     }
   }
 
-  async readDirectoryContents(directoryPath: string): Promise<ReadonlyArray<string>> {
+  async readDirectoryContents(directoryPath: string): Promise<ReadonlyArray<fs.Dirent>> {
     try {
-      return await fs.promises.readdir(directoryPath)
+      return await fs.promises.readdir(directoryPath, { withFileTypes: true })
     } catch (error) {
       throw new CliError(
         'FileSystemError',

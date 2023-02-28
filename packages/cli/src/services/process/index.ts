@@ -23,4 +23,9 @@ export abstract class Process {
    * Set an environment variable
    */
   abstract setEnvironmentVariable(name: string, value: string): Promise<void>
+
+  /**
+   * Change to a directory
+   */
+  abstract chdir(path: string): Promise<void>
 }

@@ -5,6 +5,7 @@ import { Level, Logger } from '@boostercloud/framework-types'
 @LoggerComponent()
 export class FileLogger implements Logger {
   private logger: winston.Logger
+  private indentation = 0
 
   public constructor(readonly logLevel: Level = Level.info) {
     this.logger = winston.createLogger({
@@ -19,27 +20,51 @@ export class FileLogger implements Logger {
     })
   }
 
+  public logProcess<T>(message: string, process: () => T): T {
+    this.info(`${message} [START]`)
+    this.indentation += 2
+    try {
+      const result = process()
+      this.indentation -= 2
+      this.info(`${message} [SUCCESS]`)
+      return result
+    } catch (e) {
+      this.indentation -= 2
+      this.error(`${message} [ERROR]`)
+      throw e
+    }
+  }
+
   public debug(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.debug) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
-    this.logger.warn(message)
+    this.logger.debug(this.buildLogMessage(data, ...optionalParams))
   }
 
   public info(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.info) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
-    this.logger.info(message)
+    this.logger.info(this.buildLogMessage(data, ...optionalParams))
   }
 
   public warn(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.warn) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
-    this.logger.warn(message)
+    this.logger.warn(this.buildLogMessage(data, ...optionalParams))
   }
 
   public error(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.error) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
-    this.logger.error(message)
+    this.logger.error(this.buildLogMessage(data, ...optionalParams))
+  }
+
+  private buildLogMessage(data: unknown, ...optionalParams: unknown[]): string {
+    let message = ' '.repeat(this.indentation)
+    if (typeof data === 'string') {
+      message += data
+    } else {
+      message += JSON.stringify(data)
+    }
+    if (optionalParams.length > 0) {
+      message += '\n\t' + optionalParams.map((param) => JSON.stringify(param)).join('\n\t')
+    }
+    return message
   }
 }

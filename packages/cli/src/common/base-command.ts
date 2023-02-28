@@ -1,34 +1,39 @@
 import { Command, flags } from '@oclif/command'
-import { Input } from '@oclif/parser'
-import { ComponentContainer } from 'cli/src/common/component'
-import { CloudProvider } from 'cli/src/services/cloud-provider'
-import { GenericCloudProvider } from 'cli/src/services/cloud-provider/generic.impl'
-import { DynamicImporter } from 'cli/src/services/dynamic-importer'
-import { SimpleDynamicImporter } from 'cli/src/services/dynamic-importer/simple'
-import { ErrorHandler } from 'cli/src/services/error-handler'
-import { CliErrorHandler } from 'cli/src/services/error-handler/cli.impl'
-import { FileGenerator } from 'cli/src/services/file-generator'
-import { FileLogger } from 'cli/src/services/logger/file.impl'
-import { Container, ContainerBuilder } from 'diod'
-import { Level, Logger } from '@boostercloud/framework-types'
-import { LocalFileGenerator } from 'cli/src/services/file-generator/local'
-import { OraLogger } from 'cli/src/services/logger/ora.impl'
-import { FileSystem } from 'cli/src/services/file-system'
-import { LocalFileSystem } from 'cli/src/services/file-system/local.impl'
-import { inferPackageManager } from 'cli/src/services/package-manager/factory'
-import { PackageManager } from 'cli/src/services/package-manager'
-import { UserInput } from 'cli/src/services/user-input'
-import { ConsoleUserInput } from 'cli/src/services/user-input/console.impl'
-import { Process } from 'cli/src/services/process'
-import { LocalProcess } from 'cli/src/services/process/local.impl'
-import { UserProject } from 'cli/src/services/user-project'
-import { LocalUserProject } from 'cli/src/services/user-project/local.impl'
+import { CloudProvider } from '../services/cloud-provider'
+import { GenericCloudProvider } from '../services/cloud-provider/generic.impl'
+import { DynamicImporter } from '../services/dynamic-importer'
+import { SimpleDynamicImporter } from '../services/dynamic-importer/simple.impl'
+import { ErrorHandler } from '../services/error-handler'
+import { CliErrorHandler } from '../services/error-handler/cli.impl'
+import { FileGenerator } from '../services/file-generator'
+import { FileLogger } from '../services/logger/file.impl'
+import { ContainerBuilder } from 'diod'
+import { AnyClass, Class, Level, Logger } from '@boostercloud/framework-types'
+import { LocalFileGenerator } from '../services/file-generator/local'
+import { OraLogger } from '../services/logger/ora.impl'
+import { FileSystem } from '../services/file-system'
+import { LocalFileSystem } from '../services/file-system/local.impl'
+import { inferPackageManager } from '../services/package-manager/factory'
+import { PackageManager } from '../services/package-manager'
+import { UserInput } from '../services/user-input'
+import { ConsoleUserInput } from '../services/user-input/console.impl'
+import { Process } from '../services/process'
+import { LocalProcess } from '../services/process/local.impl'
+import { UserProject } from '../services/user-project'
+import { LocalUserProject } from '../services/user-project/local.impl'
+import { IBooleanFlag, IOptionFlag } from '@oclif/parser/lib/flags'
 
-export type BaseFlags = {
-  [key: string]: any
-} & {
-  [P in keyof typeof BaseCommand.baseFlags]: any
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type OclifToPrimitive<T> = T extends IBooleanFlag<any> ? boolean : T extends IOptionFlag<any> ? string : never
+
+export type Flags<T> = T extends { flags: unknown }
+  ? {
+      [P in keyof T['flags']]?: OclifToPrimitive<T['flags'][P]>
+    } &
+      {
+        [P in keyof typeof BaseCommand.baseFlags]?: OclifToPrimitive<typeof BaseCommand.baseFlags[P]>
+      }
+  : never
 
 export abstract class BaseCommand<T extends typeof Command> extends Command {
   static baseFlags = {
@@ -47,60 +52,80 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
     }),
   }
 
-  protected flags!: BaseFlags
+  protected flags!: Flags<T>
   protected logLevel!: Level
-  protected container!: Container
+  private containerBuilder!: ContainerBuilder
 
   public async init(): Promise<void> {
     await super.init()
     const { flags } = await this.parse(this.ctor)
     const levelString = this.flags.level as keyof typeof Level
     this.logLevel = Level[levelString]
-    this.flags = flags as BaseFlags
-    await this.buildContainer()
+    this.flags = flags as Flags<T>
+    await this.initBuilder()
   }
 
-  private async buildContainer(): Promise<void> {
-    const builder = new ContainerBuilder()
+  private async initBuilder(): Promise<void> {
+    this.containerBuilder = new ContainerBuilder()
 
     // We register the logger first as its the minimum required to run the rest of the services
     if (this.flags.verbose) {
       this.logLevel = Level.debug
     }
     if (this.flags.silent) {
-      builder.register(Logger).useFactory(() => new FileLogger(this.logLevel))
+      this.containerBuilder.register(Logger).useFactory(() => new FileLogger(this.logLevel))
     } else {
-      builder.register(Logger).useFactory(() => new OraLogger(this.logLevel))
+      this.containerBuilder.register(Logger).useFactory(() => new OraLogger(this.logLevel))
     }
 
     // Now we register filesystem and process in order to run the package manager factory
-    builder.register(FileSystem).use(LocalFileSystem)
-    builder.register(Process).use(LocalProcess)
+    this.containerBuilder.register(FileSystem).use(LocalFileSystem)
+    this.containerBuilder.register(Process).use(LocalProcess)
 
     // We build a container to run the package manager factory, this one will be discarded
-    const InferredPackageManager = await inferPackageManager(builder.build())
+    const InferredPackageManager = await inferPackageManager(this.containerBuilder.build())
 
     // We register the rest of the services
-    builder.register(PackageManager).use(InferredPackageManager)
-    builder.register(CloudProvider).use(GenericCloudProvider)
-    builder.register(DynamicImporter).use(SimpleDynamicImporter)
-    builder.register(ErrorHandler).use(CliErrorHandler)
-    builder.register(FileGenerator).use(LocalFileGenerator)
-    builder.register(UserInput).use(ConsoleUserInput)
-    builder.register(UserProject).use(LocalUserProject)
-
-    // This time we do save the container
-    this.container = builder.build()
+    this.containerBuilder.register(PackageManager).use(InferredPackageManager)
+    this.containerBuilder.register(CloudProvider).use(GenericCloudProvider)
+    this.containerBuilder.register(DynamicImporter).use(SimpleDynamicImporter)
+    this.containerBuilder.register(ErrorHandler).use(CliErrorHandler)
+    this.containerBuilder.register(FileGenerator).use(LocalFileGenerator)
+    this.containerBuilder.register(UserInput).use(ConsoleUserInput)
+    this.containerBuilder.register(UserProject).use(LocalUserProject)
   }
 
-  protected async catch(err: Error & { exitCode?: number }): Promise<any> {
+  protected async runImplementation(implementationClass: CliCommandImplementation<T>): Promise<void> {
+    this.containerBuilder.registerAndUse(implementationClass)
+    const container = this.containerBuilder.build()
+    const implementationInstance = container.get(implementationClass)
+    const errorHandlerInstance = container.get(ErrorHandler)
+    try {
+      await implementationInstance.run(this.flags)
+    } catch (error) {
+      await errorHandlerInstance.handleError(error)
+    }
+  }
+
+  protected async catch(err: Error & { exitCode?: number }): Promise<unknown> {
     // add any custom logic to handle errors from the command
     // or simply return the parent class error handling
     return super.catch(err)
   }
 
-  protected async finally(_: Error | undefined): Promise<any> {
+  protected async finally(_: Error | undefined): Promise<unknown> {
     // called after run and catch regardless of whether or not the command errored
     return super.finally(_)
+  }
+}
+
+type CliCommandImplementation<T> = Class<{
+  run: (flags: Flags<T>) => Promise<void>
+}>
+
+/** Decorator to ensure that the implementation class for a CLI command is runnable */
+export function CliCommand() {
+  return <T extends AnyClass>(target: T): T => {
+    return target
   }
 }

@@ -5,9 +5,14 @@ import * as process from 'process'
 import { Process } from '.'
 import { CliError } from '../../common/errors'
 
-@Component
+@Component({ throws: CliError })
 export class LocalProcess implements Process {
   constructor(readonly logger: Logger) {}
+
+  async catch(e: unknown): Promise<CliError> {
+    if (e instanceof CliError) return e
+    return new CliError('ProcessError', 'An unknown error occurred', e)
+  }
 
   async getEnvironmentVariable(name: string): Promise<string | undefined> {
     return process.env[name]?.trim()
@@ -47,5 +52,9 @@ ${stdout}
         error
       )
     }
+  }
+
+  async chdir(path: string): Promise<void> {
+    return process.chdir(path)
   }
 }
