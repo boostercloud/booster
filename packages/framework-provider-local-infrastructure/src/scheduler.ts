@@ -19,8 +19,15 @@ export function configureScheduler(config: BoosterConfig, userProject: any): voi
 }
 
 function createCronExpression(scheduledCommandMetadata: ScheduledCommandMetadata): string {
-  const { minute = '*', hour = '*', day = '*', month = '*', weekDay = '*' } = scheduledCommandMetadata.scheduledOn
-  return `${minute} ${hour} ${day} ${month} ${weekDay}`
+  const {
+    second = '*',
+    minute = '*',
+    hour = '*',
+    day = '*',
+    month = '*',
+    weekDay = '*',
+  } = scheduledCommandMetadata.scheduledOn
+  return `${second} ${minute} ${hour} ${day} ${month} ${weekDay}`
 }
 
 function buildScheduledCommandInfo(config: BoosterConfig, scheduledCommandName: string): ScheduledCommandInfo {

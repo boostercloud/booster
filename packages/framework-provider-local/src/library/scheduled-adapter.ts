@@ -1,7 +1,7 @@
 import { BoosterConfig, ScheduledCommandEnvelope, UUID } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
-interface LocalScheduleCommandEnvelope {
+export interface LocalScheduleCommandEnvelope {
   typeName: string
 }
 
