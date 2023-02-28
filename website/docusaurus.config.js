@@ -69,6 +69,11 @@ const config = {
           label: 'Docs',
         },
         {
+          type: 'custom-navbar-item', 
+          position: 'right',
+          content: 'AI Assistant 💬!'
+        },
+        {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
           position: 'right',
