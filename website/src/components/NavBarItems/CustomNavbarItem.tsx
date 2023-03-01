@@ -10,17 +10,24 @@ const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 // see https://github.com/facebook/docusaurus/issues/7227
 export default function CustomNavbarItem(props: { content: string }): JSX.Element | null {
   const [modalOpen, setModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState(null)
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
+  const [hasFinished, setHasFinished] = useState(false)
   const [interacted, setInteracted] = useState(false)
     
-  const handleResponseUpdated = (newResponseFragment) => {
-    setResponse((prev) => `${prev}${newResponseFragment}`)
+  const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
+    // if (searchQuery === question) {
+      setResponse((prev) => `${prev}${newResponseFragment}`)
+      setHasFinished(hasFinished)
+    // }
   }
 
   const handleSearch = async (query: string) => {
     setLoading(true)
     setResponse('')
+    setSearchQuery(query)
+    setHasFinished(false)
 
     ChatService.answerBoosterQuestion(query, handleResponseUpdated)
       .catch((error) => {
@@ -42,10 +49,10 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
   }
 
   const closeModal= () => {
+    setSearchQuery(null)
     setResponse(null)
     setLoading(null)
     setModalOpen(false)
-    controller.abort()
   }
 
   return (
@@ -86,7 +93,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
             disabled={loading}
           />
         </div>
-        <ChatResponse response={response} loading={loading} />
+        <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
       </Modal>
     </>
   )

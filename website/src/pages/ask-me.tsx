@@ -13,7 +13,7 @@ export default function BoosterChat(): JSX.Element {
   const [loading, setLoading] = useState(null)
   const [interacted, setInteracted] = useState(false)
 
-  const handleResponseUpdated = (newResponseFragment) => {
+  const handleResponseUpdated = (_question, newResponseFragment, _hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
   }
 

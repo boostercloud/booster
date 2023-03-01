@@ -1,4 +1,4 @@
-type SubscribeFn = (chunk: string) => void
+type SubscribeFn = (question: string, chunk: string, finished: boolean) => void
 
 export class ChatService {
   private static VercelEndpoint = 'https://booster-bot.vercel.app/api/answer'
@@ -30,14 +30,14 @@ export class ChatService {
       const { value, done: doneReading } = await reader.read()
       done = doneReading
       const chunkValue = decoder.decode(value)
-      callback(chunkValue)
+      callback(question, chunkValue, doneReading)
     }
   }
 
   static async _answerBoosterQuestion(question: string, subscribeFn: SubscribeFn): Promise<void> {
     return new Promise(async (resolve, reject) => {
       setTimeout(() => {
-        subscribeFn('Response')
+        subscribeFn(question, 'Response', true)
         resolve()
       }, 2000)
     })
