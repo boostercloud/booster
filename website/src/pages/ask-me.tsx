@@ -49,7 +49,7 @@ export default function BoosterChat(): JSX.Element {
           disabled={loading}
         />
       </div>
-      <ChatResponse response={response} loading={loading} />
+      <ChatResponse response={response} loading={loading} hasFinished={true}/>
     </Layout>
   )
 }

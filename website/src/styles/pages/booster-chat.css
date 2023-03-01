@@ -25,8 +25,7 @@
   padding: 1rem;
   position: relative;
   border-radius: 50px;
-  width: 48rem;
-  max-width: 75%;
+  width: 100%;
 }
 
 .bc-input {
@@ -48,7 +47,7 @@
   border: none;
   flex: 1;
   height: 100%;
-  width: 80%;
+  width: 100%;
 }
 
 .bc-chat {

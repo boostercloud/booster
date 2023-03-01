@@ -17,6 +17,9 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
   const [interacted, setInteracted] = useState(false)
     
   const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
+    // TODO: Find a way to stop receiving updates from the readable stream in
+    // `ChatService.answerBoosterQuestion()`
+    
     // if (searchQuery === question) {
       setResponse((prev) => `${prev}${newResponseFragment}`)
       setHasFinished(hasFinished)
@@ -78,7 +81,8 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
             maxWidth: '600px',
             padding: '2rem',
             borderRadius: '1rem',
-            maxHeight: '60%'
+            maxHeight: '60%',
+            minWidth: '35%'
           },
         }}
       >
@@ -91,6 +95,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
             onKeyDown={handleKeyDown}
             onFocus={() => setInteracted(true)}
             disabled={loading}
+            autoFocus
           />
         </div>
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
