@@ -21,7 +21,5 @@ class Implementation {
 export default class Clean extends BaseCommand<typeof Clean> {
   public static description = 'Clean the current application as configured in your `index.ts` file.'
 
-  public async run(): Promise<void> {
-    await this.runImplementation(Implementation)
-  }
+  implementation = Implementation
 }

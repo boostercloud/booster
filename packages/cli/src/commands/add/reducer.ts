@@ -1,12 +1,27 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
+import { BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import { HasName, HasReaction, joinParsers, parseName, parseReaction } from '../../services/file-generator/target'
-import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { generateReducers, getResourceSourceFile } from '../../services/method-generator'
+import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from 'framework-types/dist'
 
-export default class Reducer extends BaseCommand {
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject) {}
+
+  async run(flags: Flags<typeof Reducer>): Promise<void> {
+    const entity = flags.entity
+    const events = flags.event
+
+    this.logger.info(`boost ${Brand.energize('add:reducer')} 🚀`)
+    const templateInfo = await joinParsers(parseName(entity), parseReaction(events))
+
+    const reducerWord = events.length > 1 ? 'reducers' : 'reducer'
+    await this.logger.logProcess(`Generating ${reducerWord}`, () => generateReducerMethods(templateInfo))
+  }
+}
+export default class Reducer extends BaseCommand<typeof Reducer> {
   public static description = 'add new reducer to entity'
 
   static usage = 'reducer --entity Entity --event Event'
@@ -17,7 +32,6 @@ export default class Reducer extends BaseCommand {
   ]
 
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
     entity: Oclif.flags.string({
       description: 'an entity name',
       required: true,
@@ -32,26 +46,10 @@ export default class Reducer extends BaseCommand {
     }),
   }
 
-  public async run(): Promise<void> {
-    const { flags } = this.parse(Reducer)
-    const entity = flags.entity
-    const events = flags.event
-
-    return run(entity, events)
-  }
+  implementation = Implementation
 }
 
 type ReducerInfo = HasName & HasReaction
-
-/* eslint-disable @typescript-eslint/no-extra-parens */
-const pluralize = (word: string, count: number): string => (count === 1 ? word : `${word}s`)
-
-const run = async (rawEntity: string, rawEvents: string[]): Promise<void> =>
-  Script.init(`boost ${Brand.energize('add:reducer')} 🚧`, joinParsers(parseName(rawEntity), parseReaction(rawEvents)))
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step(`Generating ${pluralize('reducer', rawEvents.length)}`, generateReducerMethods)
-    .info(`${pluralize('Reducer', rawEvents.length)} generated!`)
-    .done()
 
 async function generateReducerMethods(info: ReducerInfo): Promise<void> {
   const entitySourceFile = getResourceSourceFile(info.name)

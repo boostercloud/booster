@@ -10,11 +10,9 @@ class Implementation {
   constructor(readonly logger: Logger, readonly userProject: UserProject, readonly cloudProvider: CloudProvider) {}
 
   async run(flags: Flags<typeof Start>) {
-    const port = parseInt(flags.port ?? '', 10) || 3000
+    const port = flags.port
     this.logger.info('Ensuring environment is properly set')
-    if (flags.environment) {
-      await this.userProject.overrideEnvironment(flags.environment)
-    }
+    await this.userProject.overrideEnvironment(flags.environment)
     const currentEnvironment = this.userProject.getEnvironment()
     this.logger.info(`boost ${Brand.dangerize('start')} [${currentEnvironment}] 🚀`)
     await this.logger.logProcess(`Starting project on port ${flags.port}`, async () => {
@@ -35,10 +33,9 @@ export default class Start extends BaseCommand<typeof Start> {
     environment: flags.string({
       char: 'e',
       description: 'environment configuration to run',
+      required: true,
     }),
   }
 
-  public async run(): Promise<void> {
-    await this.runImplementation(Implementation)
-  }
+  implementation = Implementation
 }

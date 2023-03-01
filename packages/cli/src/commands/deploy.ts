@@ -11,10 +11,8 @@ class Implementation {
 
   async run(flags: Flags<typeof Deploy>): Promise<void> {
     this.logger.info('Ensuring environment is properly set')
-    if (flags.environment) {
-      await this.userProject.overrideEnvironment(flags.environment)
-    }
-    const currentEnvironment = this.userProject.getEnvironment()
+    await this.userProject.overrideEnvironment(flags.environment)
+    const currentEnvironment = await this.userProject.getEnvironment()
     this.logger.info(`boost ${Brand.dangerize('deploy')} [${currentEnvironment}] 🚀`)
     await this.logger.logProcess('Deploying project', async () => {
       await this.userProject.performChecks()
@@ -30,10 +28,9 @@ export default class Deploy extends BaseCommand<typeof Deploy> {
     environment: flags.string({
       char: 'e',
       description: 'environment configuration to run',
+      required: true,
     }),
   }
 
-  public async run(): Promise<void> {
-    await this.runImplementation(Implementation)
-  }
+  implementation = Implementation
 }

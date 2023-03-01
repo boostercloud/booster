@@ -1,5 +1,5 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
+import { BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import {
   HasName,
   HasProjection,
@@ -7,13 +7,26 @@ import {
   parseName,
   parseProjectionField,
 } from '../../services/file-generator/target'
-import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { generateProjection, getResourceSourceFile } from '../../services/method-generator'
+import { Logger } from 'framework-types/dist'
+import { UserProject } from 'cli/src/services/user-project'
 
-export default class Projection extends BaseCommand {
-  public static description = 'add new projection to read model'
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject) {}
+
+  async run(flags: Flags<typeof Projection>): Promise<void> {
+    const readModelName = flags['read-model']
+    const projectionName = flags.entity
+    this.logger.info(`boost ${Brand.energize('add:projection')} 🚀`)
+    const templateInfo = await joinParsers(parseName(readModelName), parseProjectionField(projectionName))
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Generating projection', () => generateProjectionMethod(templateInfo))
+  }
+}
+export default class Projection extends BaseCommand<typeof Projection> {
+  public static description = 'add new projection to a read model class'
 
   static usage = 'projection --read-model ReadModel --entity Entity:id'
 
@@ -23,13 +36,13 @@ export default class Projection extends BaseCommand {
   ]
 
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
     'read-model': Oclif.flags.string({
       description: 'read-model name',
       required: true,
       multiple: false,
       dependsOn: ['entity'],
     }),
+
     entity: Oclif.flags.string({
       description: 'an entity name',
       required: true,
@@ -38,28 +51,10 @@ export default class Projection extends BaseCommand {
     }),
   }
 
-  public async run(): Promise<void> {
-    const { flags } = this.parse(Projection)
-    const readModel = flags['read-model']
-    const entity = flags.entity
-
-    return run(readModel, entity)
-  }
+  implementation = Implementation
 }
 
-type ProjectionInfo = HasName & HasProjection
-
-const run = async (rawReadModel: string, rawProjection: string): Promise<void> =>
-  Script.init(
-    `boost ${Brand.energize('add:projection')} 🚧`,
-    joinParsers(parseName(rawReadModel), parseProjectionField(rawProjection))
-  )
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Generating projection', generateProjectionMethod)
-    .info('Projection generated!')
-    .done()
-
-async function generateProjectionMethod(info: ProjectionInfo): Promise<void> {
+async function generateProjectionMethod(info: HasName & HasProjection): Promise<void> {
   const readModelSourceFile = getResourceSourceFile(info.name)
   const readModelClass = readModelSourceFile.getClassOrThrow(info.name)
 

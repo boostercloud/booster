@@ -17,9 +17,7 @@ class Implementation {
 
   async run(flags: Flags<typeof Nuke>): Promise<void> {
     this.logger.info('Ensuring environment is properly set')
-    if (flags.environment) {
-      await this.userProject.overrideEnvironment(flags.environment)
-    }
+    await this.userProject.overrideEnvironment(flags.environment)
     const currentEnvironment = await this.userProject.getEnvironment()
     this.logger.info(`boost ${Brand.dangerize('nuke')} [${currentEnvironment}] 🧨`)
     const config = await this.userProject.loadConfig()
@@ -47,6 +45,7 @@ export default class Nuke extends BaseCommand<typeof Nuke> {
     environment: flags.string({
       char: 'e',
       description: 'environment configuration to run',
+      required: true,
     }),
     force: flags.boolean({
       char: 'f',
@@ -55,7 +54,5 @@ export default class Nuke extends BaseCommand<typeof Nuke> {
     }),
   }
 
-  public async run(): Promise<void> {
-    await this.runImplementation(Implementation)
-  }
+  implementation = Implementation
 }

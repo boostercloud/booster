@@ -24,11 +24,11 @@ import { LocalUserProject } from '../services/user-project/local.impl'
 import { IBooleanFlag, IOptionFlag } from '@oclif/parser/lib/flags'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type OclifToPrimitive<T> = T extends IBooleanFlag<any> ? boolean : T extends IOptionFlag<any> ? string : never
+type OclifToPrimitive<T> = T extends IBooleanFlag<any> ? boolean : T extends IOptionFlag<infer U> ? U : never
 
 export type Flags<T> = T extends { flags: unknown }
   ? {
-      [P in keyof T['flags']]?: OclifToPrimitive<T['flags'][P]>
+      [P in keyof T['flags']]: OclifToPrimitive<T['flags'][P]>
     } &
       {
         [P in keyof typeof BaseCommand.baseFlags]?: OclifToPrimitive<typeof BaseCommand.baseFlags[P]>
@@ -54,6 +54,7 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
 
   protected flags!: Flags<T>
   protected logLevel!: Level
+  abstract implementation: CliCommandImplementation<T>
   private containerBuilder!: ContainerBuilder
 
   public async init(): Promise<void> {
@@ -105,6 +106,10 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
     } catch (error) {
       await errorHandlerInstance.handleError(error)
     }
+  }
+
+  async run(): Promise<void> {
+    await this.runImplementation(this.implementation)
   }
 
   protected async catch(err: Error & { exitCode?: number }): Promise<unknown> {

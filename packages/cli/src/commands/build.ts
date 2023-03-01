@@ -17,7 +17,5 @@ class Implementation {
 export default class Build extends BaseCommand<typeof Build> {
   public static description = 'Build the current application as configured in your `index.ts` file.'
 
-  public async run(): Promise<void> {
-    await this.runImplementation(Implementation)
-  }
+  implementation = Implementation
 }
