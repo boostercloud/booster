@@ -1,6 +1,6 @@
 type SubscribeFn = (chunk: string) => void
 
-export class ChatSerivce {
+export class ChatService {
   private static VercelEndpoint = 'https://booster-bot.vercel.app/api/answer'
 
   static async answerBoosterQuestion(question: string, callback: SubscribeFn): Promise<string> {

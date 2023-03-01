@@ -4,7 +4,7 @@ import Layout from '@theme/Layout'
 import React, { useState } from 'react'
 import { ChatResponse } from '../components/BoosterChat/ChatResponse'
 import { CoolTitle } from '../components/BoosterChat/CoolTitle'
-import { ChatSerivce } from '../services/chat-service'
+import { ChatService } from '../services/chat-service'
 
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
@@ -20,7 +20,7 @@ export default function BoosterChat(): JSX.Element {
   const handleSearch = async (query: string) => {
     setLoading(true)
     setResponse('')
-    ChatSerivce.answerBoosterQuestion(query, handleResponseUpdated)
+    ChatService.answerBoosterQuestion(query, handleResponseUpdated)
       .catch((error) => {
         setResponse(NO_RESPONSE)
         console.error(error)

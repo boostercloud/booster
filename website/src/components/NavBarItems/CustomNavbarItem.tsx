@@ -1,7 +1,7 @@
 import SearchIcon from '@site/static/img/search-icon.svg'
 import React from 'react';
 import Modal from 'react-modal';
-import { ChatSerivce } from '@site/src/services/chat-service';
+import { ChatService } from '@site/src/services/chat-service';
 import { useState } from 'react';
 import { ChatResponse } from '../BoosterChat/ChatResponse';
 
@@ -9,11 +9,11 @@ const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
 // see https://github.com/facebook/docusaurus/issues/7227
 export default function CustomNavbarItem(props: { content: string }): JSX.Element | null {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false)
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
   const [interacted, setInteracted] = useState(false)
-
+    
   const handleResponseUpdated = (newResponseFragment) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
   }
@@ -21,7 +21,8 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
   const handleSearch = async (query: string) => {
     setLoading(true)
     setResponse('')
-    ChatSerivce.answerBoosterQuestion(query, handleResponseUpdated)
+
+    ChatService.answerBoosterQuestion(query, handleResponseUpdated)
       .catch((error) => {
         setResponse(NO_RESPONSE)
         console.error(error)
@@ -38,7 +39,14 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
   }
   const openModal = () => {
     setModalOpen(modalOpen => !modalOpen)
-  };
+  }
+
+  const closeModal= () => {
+    setResponse(null)
+    setLoading(null)
+    setModalOpen(false)
+    controller.abort()
+  }
 
   return (
     <>
@@ -47,7 +55,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
       </button>
       <Modal
         isOpen={modalOpen}
-        onRequestClose={() => setModalOpen(false)}
+        onRequestClose={closeModal}
         style={{
           overlay: {
             backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -62,7 +70,8 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
             transform: 'translate(-50%, -50%)',
             maxWidth: '600px',
             padding: '2rem',
-            borderRadius: '1rem'
+            borderRadius: '1rem',
+            maxHeight: '60%'
           },
         }}
       >
@@ -70,7 +79,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
           <SearchIcon />
           <input
             placeholder="What is Booster?"
-            className="bc-input"
+            className="bc-searchinput"
             type="text"
             onKeyDown={handleKeyDown}
             onFocus={() => setInteracted(true)}

@@ -39,16 +39,26 @@
   background-color: white;
 }
 
+.bc-searchinput {
+  background: transparent;
+  color: #1c1e21;
+  font: inherit;
+  font-size: 1.2em;
+  outline: none;
+  border: none;
+  flex: 1;
+  height: 100%;
+  width: 80%;
+}
+
 .bc-chat {
   background-color: white;
-  width: 56rem;
-  max-width: 80%;
   height: fit-content;
-  border-radius: 1rem;
   padding: 1rem;
   position: relative;
   display: flex;
   flex-direction: column;
+  overflow-y: 'scroll';
 }
 
 .bc-chat:first-child {
@@ -99,7 +109,6 @@
   cursor: pointer;
   transition: all 0.2s ease-in-out;
   border: none;
-
 }
 
 .discord-btn:hover {
@@ -107,7 +116,6 @@
 }
 
 .bc-chat-popup {
-  position: fixed;
   bottom: -200rem;
   padding: 20px 30px;
   display: flex;
