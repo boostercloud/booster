@@ -1,6 +1,5 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
-import { Script } from '../../common/script'
+import { Args, BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
 import {
   HasFields,
@@ -13,14 +12,14 @@ import {
   parseProjections,
 } from '../../services/file-generator/target'
 import * as path from 'path'
-import { generate, template } from '../../services/file-generator'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
+import { Logger } from 'framework-types/dist'
+import { FileGenerator } from 'cli/src/services/file-generator'
+import { UserProject } from 'cli/src/services/user-project'
 
-export default class ReadModel extends BaseCommand {
+export default class ReadModel extends BaseCommand<typeof ReadModel> {
   public static description = 'create a new read model'
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
       char: 'f',
       description: 'fields that this read model will contain',
@@ -35,68 +34,66 @@ export default class ReadModel extends BaseCommand {
 
   public static args = [{ name: 'readModelName' }]
 
-  public async run(): Promise<void> {
-    const { args, flags } = this.parse(ReadModel)
-
-    try {
-      const fields = flags.fields ?? []
-      const projections = flags.projects ?? []
-      if (!args.readModelName)
-        throw "You haven't provided a read model name, but it is required, run with --help for usage"
-      return run(args.readModelName, fields, projections)
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  implementation = Implementation
 }
 
-type ReadModelInfo = HasName & HasFields & HasProjections
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
 
-const run = async (name: string, rawFields: Array<string>, rawProjections: Array<string>): Promise<void> =>
-  Script.init(
-    `boost ${Brand.energize('new:read-model')} 🚧`,
-    joinParsers(parseName(name), parseFields(rawFields), parseProjections(rawProjections))
-  )
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Creating new read model', generateReadModel)
-    .info('Read model generated!')
-    .done()
-
-function generateImports(info: ReadModelInfo): Array<ImportDeclaration> {
-  const eventsImports: Array<ImportDeclaration> = info.projections.map((projection) => {
-    const fileName = classNameToFileName(projection.entityName)
-    return {
-      packagePath: `../entities/${fileName}`,
-      commaSeparatedComponents: projection.entityName,
+  public async run(flags: Flags<typeof ReadModel>, args: Args<typeof ReadModel>): Promise<void> {
+    const fields = flags.fields ?? []
+    const projections = flags.projects ?? []
+    const readModelName = args.readModelName
+    if (!readModelName) {
+      throw new Error("You haven't provided a read model name, but it is required, run with --help for usage")
     }
-  })
 
-  const coreComponents = ['ReadModel']
-  if (info.projections.length > 0) {
-    coreComponents.push('Projects')
+    const info = await joinParsers(parseName(readModelName), parseFields(fields), parseProjections(projections))
+
+    this.logger.info(`boost ${Brand.energize('new:read-model')} 🚧`)
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Generating read model', () => this.generateReadModel(info))
   }
 
-  return [
-    {
-      packagePath: '@boostercloud/framework-core',
-      commaSeparatedComponents: coreComponents.join(', '),
-    },
-    {
-      packagePath: '@boostercloud/framework-types',
-      commaSeparatedComponents: info.projections.length > 0 ? 'UUID, ProjectionResult' : 'UUID',
-    },
-    ...eventsImports,
-  ]
-}
+  private async generateReadModel(info: HasName & HasFields & HasProjections): Promise<void> {
+    const template = await this.fileGenerator.template('read-model')
+    await this.fileGenerator.generate({
+      name: info.name,
+      extension: '.ts',
+      placementDir: path.join('src', 'read-models'),
+      template,
+      info: {
+        imports: this.generateImports(info),
+        ...info,
+      },
+    })
+  }
 
-const generateReadModel = (info: ReadModelInfo): Promise<void> =>
-  generate({
-    name: info.name,
-    extension: '.ts',
-    placementDir: path.join('src', 'read-models'),
-    template: template('read-model'),
-    info: {
-      imports: generateImports(info),
-      ...info,
-    },
-  })
+  private generateImports(info: HasName & HasFields & HasProjections): Array<ImportDeclaration> {
+    const eventsImports: Array<ImportDeclaration> = info.projections.map((projection) => {
+      const fileName = classNameToFileName(projection.entityName)
+      return {
+        packagePath: `../entities/${fileName}`,
+        commaSeparatedComponents: projection.entityName,
+      }
+    })
+
+    const coreComponents = ['ReadModel']
+    if (info.projections.length > 0) {
+      coreComponents.push('Projects')
+    }
+
+    return [
+      {
+        packagePath: '@boostercloud/framework-core',
+        commaSeparatedComponents: coreComponents.join(', '),
+      },
+      {
+        packagePath: '@boostercloud/framework-types',
+        commaSeparatedComponents: info.projections.length > 0 ? 'UUID, ProjectionResult' : 'UUID',
+      },
+      ...eventsImports,
+    ]
+  }
+}

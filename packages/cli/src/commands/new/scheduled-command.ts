@@ -1,64 +1,61 @@
-import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
-import { Script } from '../../common/script'
+import { Args, BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
-import { generate, template } from '../../services/file-generator'
 import { HasName, joinParsers, parseName, ImportDeclaration } from '../../services/file-generator/target'
 import * as path from 'path'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { Logger } from 'framework-types/dist'
+import { FileGenerator } from 'cli/src/services/file-generator'
+import { UserProject } from 'cli/src/services/user-project'
 
-export default class ScheduledCommand extends BaseCommand {
-  public static description = "generate new scheduled command, write 'boost new:scheduled-command -h' to see options"
-  public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-  }
+export default class ScheduledCommand extends BaseCommand<typeof ScheduledCommand> {
+  public static description = 'generate a new scheduled command'
 
   public static args = [{ name: 'scheduledCommandName' }]
 
-  public async run(): Promise<void> {
-    const { args } = this.parse(ScheduledCommand)
+  implementation = Implementation
+}
 
-    try {
-      if (!args.scheduledCommandName)
-        throw "You haven't provided a scheduled command name, but it is required, run with --help for usage"
-      return run(args.scheduledCommandName)
-    } catch (error) {
-      console.error(error)
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+
+  async run(flags: Flags<typeof ScheduledCommand>, args: Args<typeof ScheduledCommand>): Promise<void> {
+    const scheduledCommandName = args.readModelName
+    if (!scheduledCommandName) {
+      throw new Error("You haven't provided a scheduled command name, but it is required, run with --help for usage")
     }
+
+    const info = await joinParsers(parseName(scheduledCommandName))
+
+    this.logger.info(`boost ${Brand.energize('new:scheduled-command')} 🚧`)
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Generating scheduled command', () => this.generateScheduledCommand(info))
+  }
+
+  private async generateScheduledCommand(info: HasName): Promise<void> {
+    const template = await this.fileGenerator.template('scheduled-command')
+    await this.fileGenerator.generate({
+      name: info.name,
+      extension: '.ts',
+      placementDir: path.join('src', 'scheduled-commands'),
+      template,
+      info: {
+        imports: this.generateImports(),
+        ...info,
+      },
+    })
+  }
+
+  private generateImports(): Array<ImportDeclaration> {
+    const componentsFromBoosterTypes = ['Register']
+    return [
+      {
+        packagePath: '@boostercloud/framework-core',
+        commaSeparatedComponents: 'ScheduledCommand',
+      },
+      {
+        packagePath: '@boostercloud/framework-types',
+        commaSeparatedComponents: componentsFromBoosterTypes.join(', '),
+      },
+    ]
   }
 }
-
-type ScheduledCommandInfo = HasName
-
-const run = async (name: string): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new:scheduled-command')} 🚧`, joinParsers(parseName(name)))
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Creating new scheduled command', generateScheduledCommand)
-    .info('Scheduled command generated!')
-    .done()
-
-function generateImports(): Array<ImportDeclaration> {
-  const componentsFromBoosterTypes = ['Register']
-  return [
-    {
-      packagePath: '@boostercloud/framework-core',
-      commaSeparatedComponents: 'ScheduledCommand',
-    },
-    {
-      packagePath: '@boostercloud/framework-types',
-      commaSeparatedComponents: componentsFromBoosterTypes.join(', '),
-    },
-  ]
-}
-
-const generateScheduledCommand = (info: ScheduledCommandInfo): Promise<void> =>
-  generate({
-    name: info.name,
-    extension: '.ts',
-    placementDir: path.join('src', 'scheduled-commands'),
-    template: template('scheduled-command'),
-    info: {
-      imports: generateImports(),
-      ...info,
-    },
-  })

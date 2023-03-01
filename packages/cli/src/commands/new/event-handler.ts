@@ -1,5 +1,5 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
+import { Args, BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import {
   HasEvent,
   HasName,
@@ -8,76 +8,75 @@ import {
   parseEvent,
   parseName,
 } from '../../services/file-generator/target'
-import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
-import { generate, template } from '../../services/file-generator'
 import * as path from 'path'
 import { classNameToFileName } from '../../common/filenames'
+import { Logger } from 'framework-types/dist'
+import { FileGenerator } from 'cli/src/services/file-generator'
+import { UserProject } from 'cli/src/services/user-project'
 
-export default class EventHandler extends BaseCommand {
+export default class EventHandler extends BaseCommand<typeof EventHandler> {
   public static description = 'create a new event handler'
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
     event: Oclif.flags.string({
       char: 'e',
       description: 'event that this event handler with handle',
       multiple: false,
+      required: true,
     }),
   }
 
   public static args = [{ name: 'eventHandlerName' }]
 
-  public async run(): Promise<void> {
-    const { args, flags } = this.parse(EventHandler)
+  implementation = Implementation
+}
 
-    try {
-      const event = flags.event
-      if (!args.eventHandlerName)
-        throw "You haven't provided an event handler name, but it is required, run with --help for usage"
-      if (!event) throw "You haven't provided an event, but it is required, run with --help for usage"
-      return run(args.eventHandlerName, event)
-    } catch (error) {
-      console.error(error)
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+
+  async run(flags: Flags<typeof EventHandler>, args: Args<typeof EventHandler>): Promise<void> {
+    const eventHandlerName = args.eventHandlerName
+    if (!eventHandlerName) {
+      throw new Error("You haven't provided a event handler name, but it is required, run with --help for usage")
     }
+
+    const info = await joinParsers(parseName(eventHandlerName), parseEvent(flags.event))
+
+    this.logger.info(`boost ${Brand.energize('new:event-handler')} 🚧`)
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Generating event handler', () => this.generateEventHandler(info))
+  }
+
+  private async generateEventHandler(info: HasName & HasEvent): Promise<void> {
+    const template = await this.fileGenerator.template('event-handler')
+    await this.fileGenerator.generate({
+      name: info.name,
+      extension: '.ts',
+      placementDir: path.join('src', 'event-handlers'),
+      template,
+      info: {
+        imports: this.generateImports(info),
+        ...info,
+      },
+    })
+  }
+
+  private generateImports(info: HasName & HasEvent): Array<ImportDeclaration> {
+    const fileName = classNameToFileName(info.event)
+    return [
+      {
+        packagePath: `../events/${fileName}`,
+        commaSeparatedComponents: info.event,
+      },
+      {
+        packagePath: '@boostercloud/framework-core',
+        commaSeparatedComponents: 'EventHandler',
+      },
+      {
+        packagePath: '@boostercloud/framework-types',
+        commaSeparatedComponents: 'Register',
+      },
+    ]
   }
 }
-
-type EventHandlerInfo = HasName & HasEvent
-
-const run = async (name: string, eventName: string): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new:event-handler')} 🚧`, joinParsers(parseName(name), parseEvent(eventName)))
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Creating new event handler', generateEventHandler)
-    .info('Event handler generated!')
-    .done()
-
-function generateImports(info: EventHandlerInfo): Array<ImportDeclaration> {
-  const fileName = classNameToFileName(info.event)
-  return [
-    {
-      packagePath: `../events/${fileName}`,
-      commaSeparatedComponents: info.event,
-    },
-    {
-      packagePath: '@boostercloud/framework-core',
-      commaSeparatedComponents: 'EventHandler',
-    },
-    {
-      packagePath: '@boostercloud/framework-types',
-      commaSeparatedComponents: 'Register',
-    },
-  ]
-}
-
-const generateEventHandler = (info: EventHandlerInfo): Promise<void> =>
-  generate({
-    name: info.name,
-    extension: '.ts',
-    placementDir: path.join('src', 'event-handlers'),
-    template: template('event-handler'),
-    info: {
-      imports: generateImports(info),
-      ...info,
-    },
-  })

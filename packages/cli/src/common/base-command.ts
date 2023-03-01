@@ -1,4 +1,5 @@
 import { Command, flags } from '@oclif/command'
+import { IConfig } from '@oclif/config'
 import { CloudProvider } from '../services/cloud-provider'
 import { GenericCloudProvider } from '../services/cloud-provider/generic.impl'
 import { DynamicImporter } from '../services/dynamic-importer'
@@ -23,18 +24,6 @@ import { UserProject } from '../services/user-project'
 import { LocalUserProject } from '../services/user-project/local.impl'
 import { IBooleanFlag, IOptionFlag } from '@oclif/parser/lib/flags'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type OclifToPrimitive<T> = T extends IBooleanFlag<any> ? boolean : T extends IOptionFlag<infer U> ? U : never
-
-export type Flags<T> = T extends { flags: unknown }
-  ? {
-      [P in keyof T['flags']]: OclifToPrimitive<T['flags'][P]>
-    } &
-      {
-        [P in keyof typeof BaseCommand.baseFlags]?: OclifToPrimitive<typeof BaseCommand.baseFlags[P]>
-      }
-  : never
-
 export abstract class BaseCommand<T extends typeof Command> extends Command {
   static baseFlags = {
     help: flags.help({ char: 'h' }),
@@ -54,15 +43,17 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
 
   protected flags!: Flags<T>
   protected logLevel!: Level
+  protected args!: Args<T>
   abstract implementation: CliCommandImplementation<T>
   private containerBuilder!: ContainerBuilder
 
   public async init(): Promise<void> {
     await super.init()
-    const { flags } = await this.parse(this.ctor)
+    const { args, flags } = await this.parse(this.ctor)
     const levelString = this.flags.level as keyof typeof Level
     this.logLevel = Level[levelString]
     this.flags = flags as Flags<T>
+    this.args = args as Args<T>
     await this.initBuilder()
   }
 
@@ -99,10 +90,10 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   protected async runImplementation(implementationClass: CliCommandImplementation<T>): Promise<void> {
     this.containerBuilder.registerAndUse(implementationClass)
     const container = this.containerBuilder.build()
-    const implementationInstance = container.get(implementationClass)
+    const implementationInstance = container.get<CliCommandImplementation<T>>(implementationClass)
     const errorHandlerInstance = container.get(ErrorHandler)
     try {
-      await implementationInstance.run(this.flags)
+      await implementationInstance.run(this.flags, this.args, this.config)
     } catch (error) {
       await errorHandlerInstance.handleError(error)
     }
@@ -124,8 +115,8 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   }
 }
 
-type CliCommandImplementation<T> = Class<{
-  run: (flags: Flags<T>) => Promise<void>
+type CliCommandImplementation<T extends typeof Command> = Class<{
+  run: (flags: Flags<T>, args: Args<T>, config: IConfig) => Promise<void>
 }>
 
 /** Decorator to ensure that the implementation class for a CLI command is runnable */
@@ -134,3 +125,21 @@ export function CliCommand() {
     return target
   }
 }
+
+/**
+ * This type is used to extract the flags from an Oclif command class.
+ */
+export type Flags<T> = T extends { flags: unknown }
+  ? {
+      [P in keyof T['flags']]: OclifToPrimitive<T['flags'][P]>
+    } &
+      {
+        [P in keyof typeof BaseCommand.baseFlags]?: OclifToPrimitive<typeof BaseCommand.baseFlags[P]>
+      }
+  : never
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type OclifToPrimitive<T> = T extends IBooleanFlag<any> ? boolean : T extends IOptionFlag<infer U> ? U : never
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export type Args<T> = { [x: string]: string | undefined }

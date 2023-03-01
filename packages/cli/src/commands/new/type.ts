@@ -1,17 +1,16 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
-import { Script } from '../../common/script'
+import { Args, BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
 import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../services/file-generator/target'
-import { generate, template } from '../../services/file-generator'
+import { FileGenerator } from '../../services/file-generator'
 import * as path from 'path'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { Logger } from 'framework-types/dist'
+import { UserProject } from 'cli/src/services/user-project'
 
-export default class Type extends BaseCommand {
+export default class Type extends BaseCommand<typeof Type> {
   public static description = 'create a new type'
 
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
       char: 'f',
       description: 'field that this type will contain',
@@ -21,36 +20,38 @@ export default class Type extends BaseCommand {
 
   public static args = [{ name: 'typeName' }]
 
-  public async run(): Promise<void> {
-    const { args, flags } = this.parse(Type)
-
-    try {
-      const fields = flags.fields || []
-      if (!args.typeName) throw "You haven't provided a type name, but it is required, run with --help for usage"
-      return run(args.typeName, fields)
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  implementation = Implementation
 }
 
-type TypeInfo = HasName & HasFields
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
 
-const run = async (name: string, rawFields: Array<string>): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new:type')} 🚧`, joinParsers(parseName(name), parseFields(rawFields)))
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Creating new type', generateType)
-    .info('Type generated!')
-    .done()
+  public async run(flags: Flags<typeof Type>, args: Args<typeof Type>): Promise<void> {
+    const fields = flags.fields ?? []
+    const typeName = args.typeName
+    if (!typeName) {
+      throw new Error("You haven't provided a type name, but it is required, run with --help for usage")
+    }
 
-const generateType = (info: TypeInfo): Promise<void> =>
-  generate({
-    name: info.name,
-    extension: '.ts',
-    placementDir: path.join('src', 'common'),
-    template: template('type'),
-    info: {
-      imports: [],
-      ...info,
-    },
-  })
+    const info = await joinParsers(parseName(typeName), parseFields(fields))
+
+    this.logger.info(`boost ${Brand.energize('new:type')} 🚧`)
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Generating type', () => this.generateType(info))
+  }
+
+  private async generateType(info: HasName & HasFields): Promise<void> {
+    const template = await this.fileGenerator.template('type')
+    await this.fileGenerator.generate({
+      name: info.name,
+      extension: '.ts',
+      placementDir: path.join('src', 'common'),
+      template,
+      info: {
+        imports: [],
+        ...info,
+      },
+    })
+  }
+}

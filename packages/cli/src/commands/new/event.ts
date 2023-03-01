@@ -1,6 +1,5 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
-import { Script } from '../../common/script'
+import { Args, BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
 import {
   HasName,
@@ -10,14 +9,14 @@ import {
   parseFields,
   ImportDeclaration,
 } from '../../services/file-generator/target'
-import { generate, template } from '../../services/file-generator'
+import { FileGenerator } from '../../services/file-generator'
 import * as path from 'path'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
+import { Logger } from 'framework-types/dist'
+import { UserProject } from 'cli/src/services/user-project'
 
-export default class Event extends BaseCommand {
+export default class Event extends BaseCommand<typeof Event> {
   public static description = 'create a new event'
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
       char: 'f',
       description: 'field that this event will contain',
@@ -27,49 +26,51 @@ export default class Event extends BaseCommand {
 
   public static args = [{ name: 'eventName' }]
 
-  public async run(): Promise<void> {
-    const { args, flags } = this.parse(Event)
+  implementation = Implementation
+}
 
-    try {
-      const fields = flags.fields || []
-      if (!args.eventName) throw "You haven't provided an event name, but it is required, run with --help for usage"
-      return run(args.eventName, fields)
-    } catch (error) {
-      console.error(error)
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+
+  public async run(flags: Flags<typeof Event>, args: Args<typeof Event>): Promise<void> {
+    const fields = flags.fields ?? []
+    const eventName = args.eventName
+    if (!eventName) {
+      throw new Error("You haven't provided an event name, but it is required, run with --help for usage")
     }
+
+    const info = await joinParsers(parseName(eventName), parseFields(fields))
+
+    this.logger.info(`boost ${Brand.energize('new:event')} 🚧`)
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Generating event', () => this.generateEvent(info))
+  }
+
+  private async generateEvent(info: HasName & HasFields): Promise<void> {
+    const template = await this.fileGenerator.template('event')
+    await this.fileGenerator.generate({
+      name: info.name,
+      extension: '.ts',
+      placementDir: path.join('src', 'events'),
+      template,
+      info: {
+        imports: this.generateImports(),
+        ...info,
+      },
+    })
+  }
+
+  private generateImports(): Array<ImportDeclaration> {
+    return [
+      {
+        packagePath: '@boostercloud/framework-core',
+        commaSeparatedComponents: 'Event',
+      },
+      {
+        packagePath: '@boostercloud/framework-types',
+        commaSeparatedComponents: 'UUID',
+      },
+    ]
   }
 }
-
-type EventInfo = HasName & HasFields
-
-const run = async (name: string, rawFields: Array<string>): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new:event')} 🚧`, joinParsers(parseName(name), parseFields(rawFields)))
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Creating new event', generateEvent)
-    .info('Event generated!')
-    .done()
-
-function generateImports(): Array<ImportDeclaration> {
-  return [
-    {
-      packagePath: '@boostercloud/framework-core',
-      commaSeparatedComponents: 'Event',
-    },
-    {
-      packagePath: '@boostercloud/framework-types',
-      commaSeparatedComponents: 'UUID',
-    },
-  ]
-}
-
-const generateEvent = (info: EventInfo): Promise<void> =>
-  generate({
-    name: info.name,
-    extension: '.ts',
-    placementDir: path.join('src', 'events'),
-    template: template('event'),
-    info: {
-      imports: generateImports(),
-      ...info,
-    },
-  })

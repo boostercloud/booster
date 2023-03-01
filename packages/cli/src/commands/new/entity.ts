@@ -1,6 +1,5 @@
 import * as Oclif from '@oclif/command'
-import BaseCommand from '../../common/base-command'
-import { Script } from '../../common/script'
+import { Args, BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
 import {
   HasFields,
@@ -13,14 +12,14 @@ import {
   ImportDeclaration,
 } from '../../services/file-generator/target'
 import * as path from 'path'
-import { generate, template } from '../../services/file-generator'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
+import { FileGenerator } from 'cli/src/services/file-generator'
+import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from 'framework-types/dist'
 
-export default class Entity extends BaseCommand {
+export default class Entity extends BaseCommand<typeof Entity> {
   public static description = 'create a new entity'
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
     fields: Oclif.flags.string({
       char: 'f',
       description: 'fields that this entity will contain',
@@ -35,67 +34,66 @@ export default class Entity extends BaseCommand {
 
   public static args = [{ name: 'entityName' }]
 
-  public async run(): Promise<void> {
-    const { args, flags } = this.parse(Entity)
-
-    try {
-      const fields = flags.fields || []
-      const events = flags.reduces || []
-      if (!args.entityName) throw "You haven't provided an entity name, but it is required, run with --help for usage"
-      return run(args.entityName, fields, events)
-    } catch (error) {
-      console.error(error)
-    }
-  }
+  implementation = Implementation
 }
 
-type EntityInfo = HasName & HasFields & HasReaction
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
 
-const run = async (name: string, rawFields: Array<string>, rawEvents: Array<string>): Promise<void> =>
-  Script.init(
-    `boost ${Brand.energize('new:entity')} 🚧`,
-    joinParsers(parseName(name), parseFields(rawFields), parseReaction(rawEvents))
-  )
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Creating new entity', generateEntity)
-    .info('Entity generated!')
-    .done()
-
-function generateImports(info: EntityInfo): Array<ImportDeclaration> {
-  const eventsImports: Array<ImportDeclaration> = info.events.map((eventData) => {
-    const fileName = classNameToFileName(eventData.eventName)
-    return {
-      packagePath: `../events/${fileName}`,
-      commaSeparatedComponents: eventData.eventName,
+  async run(flags: Flags<typeof Entity>, args: Args<typeof Entity>): Promise<void> {
+    const fields = flags.fields ?? []
+    const events = flags.reduces ?? []
+    const entityName = args.commandName
+    if (!entityName) {
+      throw new Error("You haven't provided a entity name, but it is required, run with --help for usage")
     }
-  })
 
-  const coreComponents = ['Entity']
-  if (info.events.length > 0) {
-    coreComponents.push('Reduces')
+    const info = await joinParsers(parseName(entityName), parseFields(fields), parseReaction(events))
+
+    this.logger.info(`boost ${Brand.energize('new:entity')} 🚧`)
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Generating entity', () => this.generateEntity(info))
   }
 
-  return [
-    {
-      packagePath: '@boostercloud/framework-core',
-      commaSeparatedComponents: coreComponents.join(', '),
-    },
-    {
-      packagePath: '@boostercloud/framework-types',
-      commaSeparatedComponents: 'UUID',
-    },
-    ...eventsImports,
-  ]
-}
+  private async generateEntity(info: HasName & HasFields & HasReaction): Promise<void> {
+    const template = await this.fileGenerator.template('entity')
+    await this.fileGenerator.generate({
+      name: info.name,
+      extension: '.ts',
+      placementDir: path.join('src', 'entities'),
+      template,
+      info: {
+        imports: this.generateImports(info),
+        ...info,
+      },
+    })
+  }
 
-const generateEntity = (info: EntityInfo): Promise<void> =>
-  generate({
-    name: info.name,
-    extension: '.ts',
-    placementDir: path.join('src', 'entities'),
-    template: template('entity'),
-    info: {
-      imports: generateImports(info),
-      ...info,
-    },
-  })
+  private generateImports(info: HasName & HasFields & HasReaction): Array<ImportDeclaration> {
+    const eventsImports: Array<ImportDeclaration> = info.events.map((eventData) => {
+      const fileName = classNameToFileName(eventData.eventName)
+      return {
+        packagePath: `../events/${fileName}`,
+        commaSeparatedComponents: eventData.eventName,
+      }
+    })
+
+    const coreComponents = ['Entity']
+    if (info.events.length > 0) {
+      coreComponents.push('Reduces')
+    }
+
+    return [
+      {
+        packagePath: '@boostercloud/framework-core',
+        commaSeparatedComponents: coreComponents.join(', '),
+      },
+      {
+        packagePath: '@boostercloud/framework-types',
+        commaSeparatedComponents: 'UUID',
+      },
+      ...eventsImports,
+    ]
+  }
+}

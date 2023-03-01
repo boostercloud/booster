@@ -1,19 +1,14 @@
-import { Command, flags } from '@oclif/command'
-import { Script } from '../../common/script'
+import { flags } from '@oclif/command'
+import { IConfig } from '@oclif/config'
+import { Args, BaseCommand, CliCommand, Flags } from 'cli/src/common/base-command'
+import { FileGenerator } from 'cli/src/services/file-generator'
+import { UserInput } from 'cli/src/services/user-input'
+import { ProjectCreationConfig, UserProject } from 'cli/src/services/user-project'
+import { Logger } from 'framework-types/dist'
 import Brand from '../../common/brand'
-import {
-  generateConfigFiles,
-  generateRootDirectory,
-  initializeGit,
-  installDependencies,
-  ProjectInitializerConfig,
-} from '../../services/project-initializer'
-import Prompter from '../../services/user-prompt'
-import { assertNameIsCorrect } from '../../services/provider-service'
 import { Provider } from '../../common/provider'
-import { checkProjectAlreadyExists } from '../../services/project-checker'
 
-export default class Project extends Command {
+export default class Project extends BaseCommand<typeof Project> {
   public static description = 'create a new project from scratch'
   public static flags = {
     help: flags.help({ char: 'h' }),
@@ -62,118 +57,115 @@ export default class Project extends Command {
 
   public static args = [{ name: 'projectName' }]
 
-  public async run(): Promise<void> {
-    const { args, flags } = this.parse(Project)
-    const { projectName } = args
+  implementation = Implementation
+}
 
-    try {
-      if (!projectName) throw "You haven't provided a project name, but it is required, run with --help for usage"
-      assertNameIsCorrect(projectName)
-      await checkProjectAlreadyExists(projectName)
-      const parsedFlags = { projectName, ...flags }
-      await run(parsedFlags as Partial<ProjectInitializerConfig>, this.config.version)
-    } catch (error) {
-      console.error(error)
+@CliCommand()
+class Implementation {
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly fileGenerator: FileGenerator,
+    readonly userInput: UserInput
+  ) {}
+
+  async run(flags: Flags<typeof Project>, args: Args<typeof Project>, cliConfig: IConfig): Promise<void> {
+    const projectName = args.projectName
+    if (!projectName) throw "You haven't provided a project name, but it is required, run with --help for usage"
+    this.logger.info(`boost ${Brand.energize('new')} 🚧`)
+    const parsedConfig = await this.parseConfig(projectName, cliConfig.version, flags)
+    await this.logger.logProcess('Creating project', () => this.userProject.create(projectName, parsedConfig))
+  }
+
+  private async parseConfig(
+    projectName: string,
+    boosterVersion: string,
+    flags: Flags<typeof Project>
+  ): Promise<ProjectCreationConfig> {
+    if (flags.default) {
+      return {
+        projectName: projectName,
+        providerPackageName: '@boostercloud/framework-provider-aws',
+        description: '',
+        version: '0.1.0',
+        author: '',
+        homepage: '',
+        license: 'MIT',
+        repository: '',
+        boosterVersion,
+        default: flags.default,
+        skipInstall: flags.skipInstall || false,
+        skipGit: flags.skipGit || false,
+      }
     }
-  }
-}
-
-const run = async (flags: Partial<ProjectInitializerConfig>, boosterVersion: string): Promise<void> =>
-  Script.init(`boost ${Brand.energize('new')} 🚧`, parseConfig(new Prompter(), flags, boosterVersion))
-    .step('Creating project root', generateRootDirectory)
-    .step('Generating config files', generateConfigFiles)
-    .optionalStep(Boolean(flags.skipInstall), 'Installing dependencies', installDependencies)
-    .optionalStep(Boolean(flags.skipGit), 'Initializing git repository', initializeGit)
-    .info('Project generated!')
-    .done()
-
-const getSelectedProviderPackage = (provider: Provider): string => {
-  switch (provider) {
-    case Provider.AWS:
-      return '@boostercloud/framework-provider-aws'
-    case Provider.AZURE:
-      return '@boostercloud/framework-provider-azure'
-    case Provider.KUBERNETES:
-      return '@boostercloud/framework-provider-kubernetes'
-    default:
-      return ''
-  }
-}
-
-const getProviderPackageName = async (prompter: Prompter, providerPackageName?: string): Promise<string> => {
-  if (providerPackageName) {
-    return providerPackageName
-  }
-
-  const providerSelection: Provider = (await prompter.defaultOrChoose(
-    providerPackageName,
-    "What's the package name of your provider infrastructure library?",
-    [Provider.AWS, Provider.AZURE, Provider.KUBERNETES, Provider.OTHER]
-  )) as Provider
-
-  if (providerSelection === Provider.OTHER) {
-    return await prompter.defaultOrPrompt(
-      undefined,
-      "What's the other provider integration library? e.g. @boostercloud/framework-provider-aws"
+    const description = await this.userInput.defaultString(
+      'What\'s your project description? (default: "")',
+      flags.description
     )
-  } else {
-    return getSelectedProviderPackage(providerSelection)
-  }
-}
+    const versionPrompt = await this.userInput.defaultString(
+      "What's the first version? (default: 0.1.0)",
+      flags.version
+    )
+    const version = versionPrompt || '0.1.0'
+    const author = await this.userInput.defaultString('Who\'s the author? (default: "")', flags.author)
+    const homepage = await this.userInput.defaultString('What\'s the website? (default: "")', flags.homepage)
+    const licensePrompt = await this.userInput.defaultString(
+      'What license will you be publishing this under? (default: MIT)',
+      flags.license
+    )
+    const license = licensePrompt || 'MIT'
+    const repository = await this.userInput.defaultString(
+      'What\'s the URL of the repository? (default: "")',
+      flags.repository
+    )
+    const providerPackageName = await this.getProviderPackageName(flags.providerPackageName)
 
-export const parseConfig = async (
-  prompter: Prompter,
-  flags: Partial<ProjectInitializerConfig>,
-  boosterVersion: string
-): Promise<ProjectInitializerConfig> => {
-  if (flags.default) {
-    return Promise.resolve({
-      projectName: flags.projectName as string,
-      providerPackageName: '@boostercloud/framework-provider-aws',
-      description: '',
-      version: '0.1.0',
-      author: '',
-      homepage: '',
-      license: 'MIT',
-      repository: '',
+    return {
+      projectName,
+      providerPackageName,
+      description,
+      version,
+      author,
+      homepage,
+      license,
+      repository,
       boosterVersion,
-      default: flags.default,
+      default: false,
       skipInstall: flags.skipInstall || false,
       skipGit: flags.skipGit || false,
-    })
+    }
   }
 
-  const description = await prompter.defaultOrPrompt(
-    flags.description,
-    'What\'s your project description? (default: "")'
-  )
-  const versionPrompt = await prompter.defaultOrPrompt(flags.version, "What's the first version? (default: 0.1.0)")
-  const version = versionPrompt || '0.1.0'
-  const author = await prompter.defaultOrPrompt(flags.author, 'Who\'s the author? (default: "")')
-  const homepage = await prompter.defaultOrPrompt(flags.homepage, 'What\'s the website? (default: "")')
-  const licensePrompt = await prompter.defaultOrPrompt(
-    flags.license,
-    'What license will you be publishing this under? (default: MIT)'
-  )
-  const license = licensePrompt || 'MIT'
-  const repository = await prompter.defaultOrPrompt(
-    flags.repository,
-    'What\'s the URL of the repository? (default: "")'
-  )
-  const providerPackageName = await getProviderPackageName(prompter, flags.providerPackageName)
+  private async getProviderPackageName(providerPackageName?: string): Promise<string> {
+    if (providerPackageName) {
+      return providerPackageName
+    }
 
-  return Promise.resolve({
-    projectName: flags.projectName as string,
-    providerPackageName,
-    description,
-    version,
-    author,
-    homepage,
-    license,
-    repository,
-    boosterVersion,
-    default: false,
-    skipInstall: flags.skipInstall || false,
-    skipGit: flags.skipGit || false,
-  })
+    const providerSelection: Provider = (await this.userInput.defaultChoice(
+      "What's the package name of your provider infrastructure library?",
+      [Provider.AWS, Provider.AZURE, Provider.KUBERNETES, Provider.OTHER],
+      providerPackageName
+    )) as Provider
+
+    if (providerSelection === Provider.OTHER) {
+      return await this.userInput.defaultString(
+        "What's the other provider integration library? e.g. @boostercloud/framework-provider-aws"
+      )
+    } else {
+      return this.getSelectedProviderPackage(providerSelection)
+    }
+  }
+
+  private getSelectedProviderPackage(provider: Provider): string {
+    switch (provider) {
+      case Provider.AWS:
+        return '@boostercloud/framework-provider-aws'
+      case Provider.AZURE:
+        return '@boostercloud/framework-provider-azure'
+      case Provider.KUBERNETES:
+        return '@boostercloud/framework-provider-kubernetes'
+      default:
+        return ''
+    }
+  }
 }
