@@ -2,7 +2,7 @@ import { FileSystem } from '../file-system'
 import { Component } from '../../common/component'
 import { DynamicImporter } from '.'
 import { Logger } from '@boostercloud/framework-types'
-import { CliError } from 'cli/src/common/errors'
+import { CliError } from '../../common/errors'
 
 @Component({ throws: CliError })
 export class SimpleDynamicImporter implements DynamicImporter {

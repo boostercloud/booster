@@ -1,7 +1,7 @@
 import { BaseCommand, CliCommand } from '../common/base-command'
 import Brand from '../common/brand'
-import { Logger } from 'framework-types/dist'
-import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from '@boostercloud/framework-types'
+import { UserProject } from '../services/user-project'
 
 @CliCommand()
 class Implementation {

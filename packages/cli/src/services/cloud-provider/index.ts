@@ -26,9 +26,4 @@ export abstract class CloudProvider {
    * supports it
    */
   abstract start(port: number): Promise<void>
-
-  /**
-   * Asserts that the name used for the cloud stack is correct
-   */
-  abstract assertNameIsCorrect(name: string): Promise<void>
 }

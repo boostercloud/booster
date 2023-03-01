@@ -1,9 +1,9 @@
 import { flags } from '@oclif/command'
 import { BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
-import { FileGenerator } from 'cli/src/services/file-generator'
-import { UserProject } from 'cli/src/services/user-project'
-import { Logger } from 'framework-types/dist'
+import { FileGenerator } from '../../services/file-generator'
+import { UserProject } from '../../services/user-project'
+import { Logger } from '@boostercloud/framework-types'
 
 export default class Publish extends BaseCommand<typeof Publish> {
   public static description = 'publish all resource template stubs that are available for customization'

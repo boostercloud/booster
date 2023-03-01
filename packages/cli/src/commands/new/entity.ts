@@ -13,9 +13,9 @@ import {
 } from '../../services/file-generator/target'
 import * as path from 'path'
 import { classNameToFileName } from '../../common/filenames'
-import { FileGenerator } from 'cli/src/services/file-generator'
-import { UserProject } from 'cli/src/services/user-project'
-import { Logger } from 'framework-types/dist'
+import { FileGenerator } from '../../services/file-generator'
+import { UserProject } from '../../services/user-project'
+import { Logger } from '@boostercloud/framework-types'
 
 export default class Entity extends BaseCommand<typeof Entity> {
   public static description = 'create a new entity'

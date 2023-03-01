@@ -2,7 +2,7 @@ import { Component } from '../../common/component'
 import { ProjectCreationConfig, UserProject } from '.'
 import { BoosterApp, BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Process } from '../process'
-import { CliError } from '../../common/errors'
+import { CliError, ImpossibleError } from '../../common/errors'
 import { FileSystem } from '../file-system'
 import { DynamicImporter } from '../dynamic-importer'
 import * as path from 'path'
@@ -12,8 +12,7 @@ import { classNameToFileName } from '../../common/filenames'
 import { Target } from '../file-generator/target'
 import { UserInput } from '../user-input'
 import Brand from '../../common/brand'
-import { CloudProvider } from '../cloud-provider'
-import { projectTemplates } from 'cli/src/templates/project'
+import { projectTemplates } from '../../templates/project'
 import { FileGenerator } from '../file-generator'
 
 @Component({ throws: CliError })
@@ -22,16 +21,15 @@ export class LocalUserProject implements UserProject {
   private _projectDir: string | undefined
   private _sandboxPath = '.deploy'
   private _config: BoosterConfig | undefined
+  public cliVersion: string | undefined
 
   constructor(
-    readonly cliVersion: string,
     readonly logger: Logger,
     readonly process: Process,
     readonly fileSystem: FileSystem,
     readonly dynamicImporter: DynamicImporter,
     readonly packageManager: PackageManager,
     readonly userInput: UserInput,
-    readonly cloudProvider: CloudProvider,
     readonly fileGenerator: FileGenerator
   ) {}
 
@@ -56,7 +54,7 @@ export class LocalUserProject implements UserProject {
   async create(projectName: string, config: ProjectCreationConfig): Promise<void> {
     // Check that the name is correct
     this.logger.debug('Checking that the project name is valid...')
-    await this.cloudProvider.assertNameIsCorrect(projectName)
+    await this.assertNameIsCorrect(projectName)
 
     // Ensure the project directory does not exist
     this.logger.debug('Checking that the project directory does not exist...')
@@ -290,6 +288,9 @@ export class LocalUserProject implements UserProject {
 
   private async performVersionCheck() {
     const boosterVersion = await this.getBoosterVersion()
+    if (!this.cliVersion) {
+      throw new ImpossibleError('The CLI version is not set')
+    }
     if (semver.major(boosterVersion) != semver.major(this.cliVersion)) {
       this.logger.warn(
         `WARNING: The CLI version (${this.cliVersion}) and the Booster version used in the project (${boosterVersion}) differ in the major version. This means that there are breaking changes between them, and your project might not work properly. Please check the release notes before continuing.`
@@ -303,6 +304,35 @@ export class LocalUserProject implements UserProject {
         `WARNING: The CLI version (${this.cliVersion}) and the Booster version used in the project (${boosterVersion}) differ in the patch version. This means that there could be bugs in your project that have been fixed in the framework. Please check the release notes before continuing.`
       )
     }
+  }
+
+  private async assertNameIsCorrect(name: string): Promise<void> {
+    type StringPredicate = (x: string) => boolean
+
+    // Current characters max length: 37
+    // Lambda name limit is 64 characters
+    // `-subscriptions-notifier` lambda is 23 characters
+    // `-app` prefix is added to application stack
+    // which is 64 - 23 - 4 = 37
+    const maxProjectNameLength = 37
+
+    const constraints: ReadonlyArray<[StringPredicate, string]> = [
+      [(name: string) => name.length > maxProjectNameLength, `be longer than ${maxProjectNameLength} characters`],
+      [(name: string) => name.includes(' '), 'contain spaces'],
+      [(name: string) => name.toLowerCase() !== name, 'contain uppercase letters'],
+      [(name: string) => name.includes('_'), 'contain underscore'],
+    ]
+
+    for (const [constraint, restrictionText] of constraints) {
+      if (constraint(name)) {
+        const message = this.nameFormatErrorMessage(name, restrictionText)
+        throw new CliError('CloudProviderError', message)
+      }
+    }
+  }
+
+  private nameFormatErrorMessage(name: string, restrictionText: string): string {
+    return `Project name cannot ${restrictionText}:\n\n    Found: '${name}'`
   }
 }
 

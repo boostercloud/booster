@@ -24,6 +24,11 @@ export interface ProjectCreationConfig {
  */
 export abstract class UserProject {
   /**
+   * Specifies the CLI version that the project is using
+   */
+  abstract cliVersion: string | undefined
+
+  /**
    * Creates a new project in the current directory
    *
    * @todo This method only will check if the directory exists and ask the user if it should be removed.

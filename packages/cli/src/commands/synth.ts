@@ -2,8 +2,8 @@ import { flags } from '@oclif/command'
 import { BaseCommand, CliCommand, Flags } from '../common/base-command'
 import Brand from '../common/brand'
 import { Logger } from '@boostercloud/framework-types'
-import { UserProject } from 'cli/src/services/user-project'
-import { CloudProvider } from 'cli/src/services/cloud-provider'
+import { UserProject } from '../services/user-project'
+import { CloudProvider } from '../services/cloud-provider'
 
 @CliCommand()
 class Implementation {

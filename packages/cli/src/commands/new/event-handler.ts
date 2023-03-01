@@ -11,9 +11,9 @@ import {
 import Brand from '../../common/brand'
 import * as path from 'path'
 import { classNameToFileName } from '../../common/filenames'
-import { Logger } from 'framework-types/dist'
-import { FileGenerator } from 'cli/src/services/file-generator'
-import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from '@boostercloud/framework-types'
+import { FileGenerator } from '../../services/file-generator'
+import { UserProject } from '../../services/user-project'
 
 export default class EventHandler extends BaseCommand<typeof EventHandler> {
   public static description = 'create a new event handler'

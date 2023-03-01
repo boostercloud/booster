@@ -2,7 +2,7 @@ import { Logger } from '@boostercloud/framework-types'
 import { Component } from '../../common/component'
 import { ErrorHandler } from '.'
 import { CliError, CliErrorName } from '../../common/errors'
-import Brand from 'cli/src/common/brand'
+import Brand from '../../common/brand'
 import { match } from 'ts-pattern'
 
 @Component({ throws: Error })

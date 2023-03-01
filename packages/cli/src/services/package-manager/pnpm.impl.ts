@@ -2,8 +2,8 @@ import { FileSystem } from '../file-system'
 import { Process } from '../process'
 import { SimplePackageManager } from './simple.impl'
 import { Logger } from '@boostercloud/framework-types'
-import { Component } from 'cli/src/common/component'
-import { CliError } from 'cli/src/common/errors'
+import { Component } from '../../common/component'
+import { CliError } from '../../common/errors'
 
 /**
  * A simple implementation of the PackageManager interface that uses the

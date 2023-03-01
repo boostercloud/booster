@@ -4,8 +4,8 @@ import Brand from '../../common/brand'
 import { HasFields, HasName, joinParsers, parseName, parseFields } from '../../services/file-generator/target'
 import { FileGenerator } from '../../services/file-generator'
 import * as path from 'path'
-import { Logger } from 'framework-types/dist'
-import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from '@boostercloud/framework-types'
+import { UserProject } from '../../services/user-project'
 
 export default class Type extends BaseCommand<typeof Type> {
   public static description = 'create a new type'

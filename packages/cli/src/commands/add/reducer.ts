@@ -3,8 +3,8 @@ import { BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import { HasName, HasReaction, joinParsers, parseName, parseReaction } from '../../services/file-generator/target'
 import Brand from '../../common/brand'
 import { generateReducers, getResourceSourceFile } from '../../services/method-generator'
-import { UserProject } from 'cli/src/services/user-project'
-import { Logger } from 'framework-types/dist'
+import { UserProject } from '../../services/user-project'
+import { Logger } from '@boostercloud/framework-types'
 
 @CliCommand()
 class Implementation {

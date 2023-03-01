@@ -5,7 +5,7 @@
  * This module exposed testing utilities for working with Effect services in tests.
  *
  * If you don't even know what Effect is, you probably should start by reading the docs
- * in the `@boostercloud/framework-types/dist/effect` module.
+ * in the `@boostercloud/@boostercloud/framework-types/effect` module.
  *
  * The key idea is that you can create a mock service that can be used in tests
  * instead of the real service. This allows you to test your code without

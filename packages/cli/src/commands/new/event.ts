@@ -11,8 +11,8 @@ import {
 } from '../../services/file-generator/target'
 import { FileGenerator } from '../../services/file-generator'
 import * as path from 'path'
-import { Logger } from 'framework-types/dist'
-import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from '@boostercloud/framework-types'
+import { UserProject } from '../../services/user-project'
 
 export default class Event extends BaseCommand<typeof Event> {
   public static description = 'create a new event'

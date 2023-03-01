@@ -2,9 +2,9 @@ import { Args, BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
 import { HasName, joinParsers, parseName, ImportDeclaration } from '../../services/file-generator/target'
 import * as path from 'path'
-import { Logger } from 'framework-types/dist'
-import { FileGenerator } from 'cli/src/services/file-generator'
-import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from '@boostercloud/framework-types'
+import { FileGenerator } from '../../services/file-generator'
+import { UserProject } from '../../services/user-project'
 
 export default class ScheduledCommand extends BaseCommand<typeof ScheduledCommand> {
   public static description = 'generate a new scheduled command'

@@ -1,7 +1,7 @@
 import { Component } from '../../common/component'
 import * as inquirer from 'inquirer'
 import { Logger } from '@boostercloud/framework-types'
-import { CliError } from 'cli/src/common/errors'
+import { CliError } from '../../common/errors'
 
 @Component({ throws: CliError })
 export class ConsoleUserInput {

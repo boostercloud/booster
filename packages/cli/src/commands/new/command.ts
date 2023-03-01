@@ -10,9 +10,9 @@ import {
   ImportDeclaration,
 } from '../../services/file-generator/target'
 import * as path from 'path'
-import { Logger } from 'framework-types/dist'
-import { UserProject } from 'cli/src/services/user-project'
-import { FileGenerator } from 'cli/src/services/file-generator'
+import { Logger } from '@boostercloud/framework-types'
+import { UserProject } from '../../services/user-project'
+import { FileGenerator } from '../../services/file-generator'
 
 export default class Command extends BaseCommand<typeof Command> {
   public static description = "generate new resource, write 'boost new' to see options"

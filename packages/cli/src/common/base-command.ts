@@ -1,3 +1,4 @@
+import 'reflect-metadata'
 import { Command, flags } from '@oclif/command'
 import { IConfig } from '@oclif/config'
 import { CloudProvider } from '../services/cloud-provider'
@@ -50,7 +51,7 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   public async init(): Promise<void> {
     await super.init()
     const { args, flags } = await this.parse(this.ctor)
-    const levelString = this.flags.level as keyof typeof Level
+    const levelString = flags.level as keyof typeof Level
     this.logLevel = Level[levelString]
     this.flags = flags as Flags<T>
     this.args = args as Args<T>
@@ -90,6 +91,8 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   protected async runImplementation(implementationClass: CliCommandImplementation<T>): Promise<void> {
     this.containerBuilder.registerAndUse(implementationClass)
     const container = this.containerBuilder.build()
+    const userProject = container.get(UserProject)
+    userProject.cliVersion = this.config.version
     const implementationInstance = container.get<ImplementationInstance<T>>(implementationClass)
     const errorHandlerInstance = container.get(ErrorHandler)
     try {
