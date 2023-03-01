@@ -90,7 +90,7 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   protected async runImplementation(implementationClass: CliCommandImplementation<T>): Promise<void> {
     this.containerBuilder.registerAndUse(implementationClass)
     const container = this.containerBuilder.build()
-    const implementationInstance = container.get<CliCommandImplementation<T>>(implementationClass)
+    const implementationInstance = container.get<ImplementationInstance<T>>(implementationClass)
     const errorHandlerInstance = container.get(ErrorHandler)
     try {
       await implementationInstance.run(this.flags, this.args, this.config)
@@ -115,9 +115,11 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   }
 }
 
-type CliCommandImplementation<T extends typeof Command> = Class<{
+interface ImplementationInstance<T extends typeof Command> {
   run: (flags: Flags<T>, args: Args<T>, config: IConfig) => Promise<void>
-}>
+}
+
+type CliCommandImplementation<T extends typeof Command> = Class<ImplementationInstance<T>>
 
 /** Decorator to ensure that the implementation class for a CLI command is runnable */
 export function CliCommand() {

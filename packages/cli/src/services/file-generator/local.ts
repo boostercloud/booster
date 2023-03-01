@@ -29,7 +29,23 @@ export class LocalFileGenerator implements FileGenerator {
     return new CliError('GeneratorError', 'An unknown error occurred', e)
   }
 
-  async copyStubs(): Promise<void> {
+  async copyStubs(force = false): Promise<void> {
+    const cwd = await this.process.cwd()
+    const destination = path.join(cwd, 'stubs')
+    const stubFolderExists = await this.fileSystem.exists(destination)
+    if (stubFolderExists && !force) {
+      const confirmation = await this.userInput.defaultBoolean(
+        Brand.dangerize(
+          'The "stubs" folder already exists. Do you want to overwrite it? This will remove all the files inside it.'
+        )
+      )
+      if (!confirmation) {
+        throw new CliError('GeneratorError', 'The "stubs" folder already exists. Aborting...')
+      } else {
+        await this.fileSystem.remove(destination, { recursive: true, force: true })
+      }
+    }
+    await this.fileSystem.makeDirectory(destination, { recursive: true })
     const mapping = this.createTemplateDestinationMap()
     for (const [from, to] of Object.entries(mapping)) {
       await this.fileSystem.copy(from, to)

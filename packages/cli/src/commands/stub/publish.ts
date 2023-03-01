@@ -1,12 +1,11 @@
 import { flags } from '@oclif/command'
-import BaseCommand from '../../common/base-command'
-import { Script } from '../../common/script'
+import { BaseCommand, CliCommand, Flags } from '../../common/base-command'
 import Brand from '../../common/brand'
-import { createStubsFolder, publishStubFiles, checkStubsFolderExists } from '../../services/stub-publisher'
-import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
-import Prompter from '../../services/user-prompt'
+import { FileGenerator } from 'cli/src/services/file-generator'
+import { UserProject } from 'cli/src/services/user-project'
+import { Logger } from 'framework-types/dist'
 
-export default class Publish extends BaseCommand {
+export default class Publish extends BaseCommand<typeof Publish> {
   public static description = 'publish all resource template stubs that are available for customization'
 
   public static usage = 'boost stub:publish --force'
@@ -17,35 +16,20 @@ export default class Publish extends BaseCommand {
     force: flags.boolean({
       char: 'f',
       description: 'Overwrite any existing stub files',
+      default: false,
     }),
   }
 
-  public async run(): Promise<void> {
-    const { flags } = this.parse(Publish)
-
-    const stubFolderExists: boolean = checkStubsFolderExists()
-
-    if (!stubFolderExists) {
-      createStubsFolder()
-    }
-
-    if (stubFolderExists && !flags.force) {
-      await Prompter.confirmPrompt({
-        message: Brand.dangerize('Stubs folder already exists. Do you want to overwrite it?'),
-      }).then((confirm: boolean) => {
-        if (!confirm) {
-          throw new Error(Brand.dangerize('Stubs folder already exists. Use --force option to overwrite files in it'))
-        }
-      })
-    }
-
-    await run()
-  }
+  implementation = Implementation
 }
 
-const run = async (): Promise<void> =>
-  Script.init(`boost ${Brand.energize('stub:publish')} 🗄`, Promise.resolve(process.cwd()))
-    .step('Verifying project', checkCurrentDirIsABoosterProject)
-    .step('Publishing stubs', publishStubFiles)
-    .info('Resource template stubs published!')
-    .done()
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly fileGenerator: FileGenerator, readonly userProject: UserProject) {}
+
+  async run(flags: Flags<typeof Publish>): Promise<void> {
+    this.logger.info(`boost ${Brand.energize('stub:publish')} 🗄`)
+    await this.userProject.performChecks()
+    await this.logger.logProcess('Publishing stubs', () => this.fileGenerator.copyStubs(flags.force))
+  }
+}

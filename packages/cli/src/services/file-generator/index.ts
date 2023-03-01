@@ -23,5 +23,5 @@ export abstract class FileGenerator {
   /**
    * Copies stubs to the user project
    */
-  abstract copyStubs(): Promise<void>
+  abstract copyStubs(force?: boolean): Promise<void>
 }
