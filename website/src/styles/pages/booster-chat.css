@@ -30,7 +30,7 @@
 
 @media screen and (max-width: 600px) {
   .bc-searchbar {
-    padding: 0;
+    padding: 0rem;
   }
 }
 
@@ -59,7 +59,8 @@
 .bc-chat {
   background-color: white;
   height: fit-content;
-  padding: 1rem;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
   position: relative;
   display: flex;
   flex-direction: column;
