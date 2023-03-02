@@ -56,7 +56,7 @@ jobs:
     strategy:
       max-parallel: 1
       matrix:
-        integration-test: [azure-func, azure-end-to-end]
+        integration-test: [azure-func, azure-end-to-end, azure-load]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
