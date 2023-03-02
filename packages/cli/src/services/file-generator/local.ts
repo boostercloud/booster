@@ -13,7 +13,7 @@ import { Process } from '../process'
 
 @Component({ throws: CliError })
 export class LocalFileGenerator implements FileGenerator {
-  private resourceTemplatesPath = path.join(__dirname, '..', '..', 'resources', 'templates')
+  private resourceTemplatesPath = path.join(__dirname, '..', '..', 'templates')
 
   constructor(
     readonly logger: Logger,

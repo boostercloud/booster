@@ -18,8 +18,8 @@ export class LocalFileSystem implements FileSystem {
     return cliErrorCatch('FileSystemError', e)
   }
 
-  async outputFile(path: string, contents: string): Promise<void> {
-    const normalizedPath = path.normalize(path)
+  async outputFile(filepath: string, contents: string): Promise<void> {
+    const normalizedPath = path.normalize(filepath)
     await fsExtra.outputFile(normalizedPath, contents)
   }
 
