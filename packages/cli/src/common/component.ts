@@ -58,15 +58,20 @@ export const Component =
             try {
               const result = target.apply(thisArg, argumentsList) as unknown
               if (result instanceof Promise) {
-                return result.catch((error: unknown) => {
+                return result.catch(async (error: unknown) => {
                   logger.debug(errorMessage(error))
-                  throw thisArg.catch(error)
+                  const err = await thisArg.catch(error)
+                  throw err
                 })
               }
               return result
             } catch (error) {
               logger.debug(errorMessage(error))
-              throw error
+              const err = (async () => {
+                const x = await thisArg.catch(error)
+                return x
+              })()
+              throw err
             }
           },
         })
