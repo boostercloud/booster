@@ -9,7 +9,7 @@ const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
 // see https://github.com/facebook/docusaurus/issues/7227
 export default function CustomNavbarItem(props: { content: string }): JSX.Element | null {
-  const [modalOpen, setModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState<string | null>(null)
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
@@ -48,14 +48,14 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
   }
   const openModal = () => {
     setResponse(null)
-    setModalOpen(modalOpen => !modalOpen)
+    setIsModalOpen(true)
   }
 
   const closeModal= () => {
     setSearchQuery(null)
     setResponse(null)
     setLoading(null)
-    setModalOpen(false)
+    setIsModalOpen(false)
   }
 
   useEffect(() => {
@@ -76,6 +76,13 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
     }
   }, [searchQuery])
   
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? "hidden" : ""
+  
+    return () => {
+      document.body.style.overflow = ""
+    }
+  }, [isModalOpen])
 
   return (
     <>
@@ -83,7 +90,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
         {props.content}
       </button>
       <Modal
-        isOpen={modalOpen}
+        isOpen={isModalOpen}
         onRequestClose={closeModal}
         style={{
           overlay: {
