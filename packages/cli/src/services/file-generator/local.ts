@@ -119,7 +119,7 @@ export class LocalFileGenerator implements FileGenerator {
     const fileName = classNameToFileName(name)
     const cwd = await this.process.cwd()
     const absolutePath = path.resolve(cwd)
-    const resourcePath = path.join(absolutePath, placementDir, `${fileName}.${extension}`)
+    const resourcePath = path.join(absolutePath, placementDir, `${fileName}${extension}`)
     const exists = await this.fileSystem.exists(resourcePath)
     return { resourcePath, exists }
   }
