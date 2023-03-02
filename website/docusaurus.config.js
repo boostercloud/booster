@@ -69,14 +69,9 @@ const config = {
           label: 'Docs',
         },
         {
-          type: 'custom-navbar-item', 
-          position: 'right',
-          content: 'AI Assistant 💬!'
-        },
-        {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
-          position: 'right',
+          position: 'left',
           customProps: {
             trackingEvent: 'UXDJRQQB',
           },
@@ -84,11 +79,16 @@ const config = {
         {
           href: 'https://discord.gg/bDY8MKx',
           label: 'Discord',
-          position: 'right',
+          position: 'left',
           customProps: {
             trackingEvent: 'D38YB2Q1',
           },
         },
+        {
+          type: 'custom-navbar-item', 
+          position: 'right',
+          content: 'AI Assistant 💬!'
+        }
       ],
     },
     footer: {
