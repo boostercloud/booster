@@ -104,11 +104,10 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
             bottom: 'auto',
             marginRight: '-50%',
             transform: 'translate(-50%, -50%)',
-            maxWidth: '600px',
             padding: '2rem',
             borderRadius: '1rem',
             maxHeight: '60%',
-            minWidth: '35%'
+            width: 'min(100vw, 600px)'
           },
         }}
       >
