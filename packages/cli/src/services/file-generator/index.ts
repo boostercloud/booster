@@ -24,4 +24,9 @@ export abstract class FileGenerator {
    * Copies stubs to the user project
    */
   abstract copyStubs(force?: boolean): Promise<void>
+
+  /**
+   * Returns the path to the file of a given resource
+   */
+  abstract lookupResource<T>(target: Target<T>): Promise<{ resourcePath: string; exists: boolean }>
 }

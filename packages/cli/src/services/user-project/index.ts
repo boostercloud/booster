@@ -1,5 +1,4 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Target } from '../file-generator/target'
 
 /**
  * Configuration for the project initialization
@@ -82,11 +81,6 @@ export abstract class UserProject {
    * Compiles the project and loads the configuration
    */
   abstract loadConfig(): Promise<BoosterConfig>
-
-  /**
-   * Returns the path to the file of a given resource
-   */
-  abstract lookupResource<T>(target: Target<T>): Promise<{ resourcePath: string; exists: boolean }>
 
   /**
    * Returns the Booster version that the project is using

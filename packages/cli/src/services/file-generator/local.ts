@@ -7,7 +7,6 @@ import { Logger } from '@boostercloud/framework-types'
 import Brand from '../../common/brand'
 import { FileSystem } from '../file-system'
 import { FileGenerator, TemplateType } from '.'
-import { UserProject } from '../user-project'
 import { CliError } from '../../common/errors'
 import { UserInput } from '../user-input'
 import { Process } from '../process'
@@ -19,7 +18,6 @@ export class LocalFileGenerator implements FileGenerator {
   constructor(
     readonly logger: Logger,
     readonly fileSystem: FileSystem,
-    readonly userProject: UserProject,
     readonly userInput: UserInput,
     readonly process: Process
   ) {}
@@ -53,7 +51,7 @@ export class LocalFileGenerator implements FileGenerator {
   }
 
   async generate<TInfo>(target: Target<TInfo>): Promise<void> {
-    const { resourcePath, exists } = await this.userProject.lookupResource(target)
+    const { resourcePath, exists } = await this.lookupResource(target)
     if (exists) {
       await this.confirmRemoveResource(target.name, target.placementDir, target.extension, resourcePath)
     }
@@ -112,5 +110,18 @@ export class LocalFileGenerator implements FileGenerator {
       mapping[templatePath] = destinationPath
     }
     return mapping
+  }
+
+  async lookupResource<TInfo>({
+    name,
+    placementDir,
+    extension,
+  }: Target<TInfo>): Promise<{ resourcePath: string; exists: boolean }> {
+    const fileName = classNameToFileName(name)
+    const cwd = await this.process.cwd()
+    const absolutePath = path.resolve(cwd)
+    const resourcePath = path.join(absolutePath, placementDir, `${fileName}.${extension}`)
+    const exists = await this.fileSystem.exists(resourcePath)
+    return { resourcePath, exists }
   }
 }

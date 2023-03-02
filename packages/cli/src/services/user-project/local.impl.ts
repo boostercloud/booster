@@ -8,8 +8,6 @@ import { DynamicImporter } from '../dynamic-importer'
 import * as path from 'path'
 import * as semver from 'semver'
 import { PackageManager } from '../package-manager'
-import { classNameToFileName } from '../../common/filenames'
-import { Target } from '../file-generator/target'
 import { UserInput } from '../user-input'
 import Brand from '../../common/brand'
 import { projectTemplates } from '../../templates/project'
@@ -208,18 +206,6 @@ export class LocalUserProject implements UserProject {
       })
     )
     return this._config as BoosterConfig
-  }
-
-  async lookupResource<TInfo>({
-    name,
-    placementDir,
-    extension,
-  }: Target<TInfo>): Promise<{ resourcePath: string; exists: boolean }> {
-    const fileName = classNameToFileName(name)
-    const cwd = await this.getAbsoluteProjectDir()
-    const resourcePath = path.join(cwd, placementDir, `${fileName}.${extension}`)
-    const exists = await this.fileSystem.exists(resourcePath)
-    return { resourcePath, exists }
   }
 
   async performChecks(): Promise<void> {
