@@ -1,7 +1,7 @@
 import { PackageManager } from '.'
 import { Process } from '../process'
 import { FileSystem } from '../file-system'
-import { CliError } from '../../common/errors'
+import { CliError, cliErrorCatch } from '../../common/errors'
 import { Logger } from '@boostercloud/framework-types'
 
 /**
@@ -19,8 +19,7 @@ export abstract class SimplePackageManager implements PackageManager {
   ) {}
 
   async catch(e: unknown): Promise<CliError> {
-    if (e instanceof CliError) return e
-    return new CliError('PackageManagerError', 'An unknown error occurred', e)
+    return cliErrorCatch('PackageManagerError', e)
   }
 
   getLockfileName(): string {

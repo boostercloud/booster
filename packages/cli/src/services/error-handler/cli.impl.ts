@@ -10,7 +10,29 @@ export class CliErrorHandler implements ErrorHandler<CliErrorName> {
   constructor(readonly logger: Logger) {}
 
   async catch(e: unknown): Promise<Error> {
-    return new Error('An unknown error occurred: ' + JSON.stringify(e))
+    if (e instanceof Promise) e = await e
+    if (e instanceof Error) return e
+    return new Error(`An unknown error occurred (${JSON.stringify(e)})`)
+  }
+
+  async handleAll(e: unknown): Promise<void> {
+    if (e instanceof Promise) e = await e
+    if (e instanceof CliError) return this.handleError(e)
+    this.logger.error(Brand.dangerize('An unknown error occurred'))
+    this.logger.error((e as any).name)
+    // If e is a primitive type, we can't access its properties
+    // we stringify it and return
+    if (!e || typeof e !== 'object') {
+      this.logger.error(JSON.stringify(e))
+      return
+    }
+    // if it has the message field and the stack field, we log them
+    if ('message' in e && 'stack' in e) {
+      const err = e as Error
+      this.logger.error(err.message)
+      this.logger.debug(err.stack)
+    }
+    return
   }
 
   async handleError(error: CliError): Promise<void> {

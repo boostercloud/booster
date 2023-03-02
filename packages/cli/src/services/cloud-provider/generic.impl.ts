@@ -1,4 +1,4 @@
-import { CliError } from '../../common/errors'
+import { CliError, cliErrorCatch } from '../../common/errors'
 import { Logger, ProviderInfrastructure } from '@boostercloud/framework-types'
 import { CloudProvider } from '.'
 import { UserProject } from '../user-project'
@@ -14,8 +14,7 @@ export class GenericCloudProvider implements CloudProvider {
   constructor(readonly logger: Logger, readonly userProject: UserProject) {}
 
   async catch(e: unknown): Promise<CliError> {
-    if (e instanceof CliError) return e
-    return new CliError('CloudProviderError', 'An unknown error occurred', e)
+    return cliErrorCatch('CloudProviderError', e)
   }
 
   async deploy(): Promise<void> {

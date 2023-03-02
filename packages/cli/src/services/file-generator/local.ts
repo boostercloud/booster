@@ -7,7 +7,7 @@ import { Logger } from '@boostercloud/framework-types'
 import Brand from '../../common/brand'
 import { FileSystem } from '../file-system'
 import { FileGenerator, TemplateType } from '.'
-import { CliError } from '../../common/errors'
+import { CliError, cliErrorCatch } from '../../common/errors'
 import { UserInput } from '../user-input'
 import { Process } from '../process'
 
@@ -23,8 +23,7 @@ export class LocalFileGenerator implements FileGenerator {
   ) {}
 
   async catch(e: unknown): Promise<CliError> {
-    if (e instanceof CliError) return e
-    return new CliError('GeneratorError', 'An unknown error occurred', e)
+    return cliErrorCatch('GeneratorError', e)
   }
 
   async copyStubs(force = false): Promise<void> {

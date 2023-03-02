@@ -66,26 +66,32 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
       this.logLevel = Level.debug
     }
     if (this.flags.silent) {
-      this.containerBuilder.register(Logger).useFactory(() => new FileLogger(this.logLevel))
+      this.containerBuilder
+        .register(Logger)
+        .useFactory(() => new FileLogger(this.logLevel))
+        .asSingleton()
     } else {
-      this.containerBuilder.register(Logger).useFactory(() => new OraLogger(this.logLevel))
+      this.containerBuilder
+        .register(Logger)
+        .useFactory(() => new OraLogger(this.logLevel))
+        .asSingleton()
     }
 
     // Now we register filesystem and process in order to run the package manager factory
-    this.containerBuilder.register(FileSystem).use(LocalFileSystem)
-    this.containerBuilder.register(Process).use(LocalProcess)
+    this.containerBuilder.register(FileSystem).use(LocalFileSystem).asSingleton()
+    this.containerBuilder.register(Process).use(LocalProcess).asSingleton()
 
     // We build a container to run the package manager factory, this one will be discarded
     const InferredPackageManager = await inferPackageManager(this.containerBuilder.build())
 
     // We register the rest of the services
-    this.containerBuilder.register(PackageManager).use(InferredPackageManager)
-    this.containerBuilder.register(CloudProvider).use(GenericCloudProvider)
-    this.containerBuilder.register(DynamicImporter).use(SimpleDynamicImporter)
-    this.containerBuilder.register(ErrorHandler).use(CliErrorHandler)
-    this.containerBuilder.register(FileGenerator).use(LocalFileGenerator)
-    this.containerBuilder.register(UserInput).use(ConsoleUserInput)
-    this.containerBuilder.register(UserProject).use(LocalUserProject)
+    this.containerBuilder.register(PackageManager).use(InferredPackageManager).asSingleton()
+    this.containerBuilder.register(CloudProvider).use(GenericCloudProvider).asSingleton()
+    this.containerBuilder.register(DynamicImporter).use(SimpleDynamicImporter).asSingleton()
+    this.containerBuilder.register(ErrorHandler).use(CliErrorHandler).asSingleton()
+    this.containerBuilder.register(FileGenerator).use(LocalFileGenerator).asSingleton()
+    this.containerBuilder.register(UserInput).use(ConsoleUserInput).asSingleton()
+    this.containerBuilder.register(UserProject).use(LocalUserProject).asSingleton()
   }
 
   protected async runImplementation(implementationClass: CliCommandImplementation<T>): Promise<void> {
@@ -98,7 +104,8 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
     try {
       await implementationInstance.run(this.flags, this.args, this.config)
     } catch (error) {
-      await errorHandlerInstance.handleError(error)
+      const a = await error
+      await errorHandlerInstance.handleAll(a)
     }
   }
 

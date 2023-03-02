@@ -1,3 +1,4 @@
+import * as path from 'path'
 import { ErrorBase } from '../services/error-handler'
 
 export type CliErrorName =
@@ -17,18 +18,23 @@ export class CliError extends ErrorBase<CliErrorName> {}
 
 export class ImpossibleError extends Error {
   constructor(message?: string) {
-    super(message)
-    this.name = 'ImpossibleError'
-    this.message = this.makeMessage(message)
+    super(makeMessage(message, new Error().stack))
   }
+}
 
-  private makeMessage(message?: string) {
-    const nodeVersion = process.version
-    const os = process.platform
-    const architecture = process.arch
-    const boosterVersion = require(__dirname + '../../package.json').version
-    const stackTrace = this.stack
-    return `✨ Congratulations, you have found a bug in Booster! ✨
+function makeMessage(message?: string, stack?: string) {
+  const nodeVersion = process.version
+  const os = process.platform
+  const architecture = process.arch
+  const boosterVersion = require(path.join(__dirname, '../../package.json')).version
+  const stackTrace = stack
+  return `
+
+  ====================
+  ERROR: ${message}
+  ====================
+
+  ✨ Congratulations, you have found a bug in Booster! ✨
 
   This shouldn't have happened! Please report this at the Booster GitHub repo 🙏❤️
 
@@ -46,7 +52,22 @@ export class ImpossibleError extends Error {
   - Node version: ${nodeVersion}
   - OS: ${os}-${architecture}
   - Stack trace:
+
   ${stackTrace}
   `
+}
+
+export async function cliErrorCatch(name: CliErrorName, e: unknown): Promise<CliError> {
+  const errorMessage = await toCliErrorMessage(e)
+  return new CliError(name, errorMessage)
+}
+
+async function toCliErrorMessage(e: unknown): Promise<string> {
+  if (e instanceof Promise) e = await e
+  if (e instanceof Error) return e.message
+  if (e instanceof CliError) {
+    const cause = await toCliErrorMessage(e.cause)
+    return `${e.message} > ${cause}`
   }
+  return JSON.stringify(e)
 }

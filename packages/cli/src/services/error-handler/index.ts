@@ -5,5 +5,6 @@ export class ErrorBase<TName extends string> extends Error {
 }
 
 export abstract class ErrorHandler<TReason extends string> {
+  abstract handleAll(e: unknown): Promise<void>
   abstract handleError<TError extends ErrorBase<TReason>>(error: TError): Promise<void>
 }

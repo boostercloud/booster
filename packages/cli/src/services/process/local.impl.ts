@@ -3,15 +3,14 @@ import { Component } from '../../common/component'
 import { Logger } from '@boostercloud/framework-types'
 import * as process from 'process'
 import { Process } from '.'
-import { CliError } from '../../common/errors'
+import { CliError, cliErrorCatch } from '../../common/errors'
 
 @Component({ throws: CliError })
 export class LocalProcess implements Process {
   constructor(readonly logger: Logger) {}
 
   async catch(e: unknown): Promise<CliError> {
-    if (e instanceof CliError) return e
-    return new CliError('ProcessError', 'An unknown error occurred', e)
+    return cliErrorCatch('ProcessError', e)
   }
 
   async getEnvironmentVariable(name: string): Promise<string | undefined> {

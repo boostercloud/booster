@@ -2,7 +2,7 @@ import { Component } from '../../common/component'
 import { ProjectCreationConfig, UserProject } from '.'
 import { BoosterApp, BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { Process } from '../process'
-import { CliError, ImpossibleError } from '../../common/errors'
+import { CliError, cliErrorCatch, ImpossibleError } from '../../common/errors'
 import { FileSystem } from '../file-system'
 import { DynamicImporter } from '../dynamic-importer'
 import * as path from 'path'
@@ -45,8 +45,7 @@ export class LocalUserProject implements UserProject {
   }
 
   async catch(e: unknown): Promise<CliError> {
-    if (e instanceof CliError) return e
-    return new CliError('ProjectConfigurationError', 'An unknown error occurred', e)
+    return cliErrorCatch('ProjectConfigurationError', e)
   }
 
   async create(projectName: string, config: ProjectCreationConfig): Promise<void> {
@@ -249,7 +248,8 @@ export class LocalUserProject implements UserProject {
   async getBoosterVersion(): Promise<string> {
     type PackageJson = { dependencies?: { '@boostercloud/framework-core'?: string } }
     const projectPath = await this.getAbsoluteProjectDir()
-    const packageJsonContents = await this.dynamicImporter.import<PackageJson>(`${projectPath}/package.json`)
+    const packageJsonPath = `${projectPath}/package.json`
+    const packageJsonContents = await this.dynamicImporter.import<PackageJson>(packageJsonPath)
     const version = packageJsonContents.dependencies?.['@boostercloud/framework-core']
     if (!version) {
       throw new CliError(

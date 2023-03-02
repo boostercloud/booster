@@ -28,13 +28,13 @@ export class OraLogger implements Logger {
 
   debug(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.debug) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
+    const message = this.makeMessage(data, ...optionalParams)
     console.debug(message)
   }
 
   info(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.info) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
+    const message = this.makeMessage(data, ...optionalParams)
     if (this.oraLogger.isSpinning) {
       this.oraLogger.text = message
     } else {
@@ -44,13 +44,18 @@ export class OraLogger implements Logger {
 
   warn(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.warn) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
+    const message = this.makeMessage(data, ...optionalParams)
     this.oraLogger.warn(message)
   }
 
   error(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.error) return
-    const message = [JSON.stringify(data), ...optionalParams].join('\n\t')
+    const message = this.makeMessage(data, ...optionalParams)
     this.oraLogger.fail(message)
+  }
+
+  private makeMessage(data: unknown, ...optionalParams: unknown[]): string {
+    const msg = typeof data === 'string' ? data : JSON.stringify(data)
+    return optionalParams.length > 0 ? msg + '\n\t' + optionalParams.join(' ') : msg
   }
 }

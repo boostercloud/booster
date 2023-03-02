@@ -4,7 +4,7 @@ import * as fsExtra from 'fs-extra'
 import * as path from 'path'
 import { Component } from '../../common/component'
 import { Logger } from '@boostercloud/framework-types'
-import { CliError } from '../../common/errors'
+import { CliError, cliErrorCatch } from '../../common/errors'
 
 /**
  * A simple implementation of the FileSystem interface that uses the Node.js
@@ -15,8 +15,7 @@ export class LocalFileSystem implements FileSystem {
   constructor(readonly logger: Logger) {}
 
   async catch(e: unknown): Promise<CliError> {
-    if (e instanceof CliError) return e
-    return new CliError('FileSystemError', 'An unknown error occurred', e)
+    return cliErrorCatch('FileSystemError', e)
   }
 
   async outputFile(path: string, contents: string): Promise<void> {
