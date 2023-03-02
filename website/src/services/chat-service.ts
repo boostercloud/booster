@@ -3,7 +3,7 @@ type SubscribeFn = (question: string, chunk: string, finished: boolean) => void
 export class ChatService {
   private static VercelEndpoint = 'https://booster-bot.vercel.app/api/answer'
 
-  static async answerBoosterQuestion(question: string, callback: SubscribeFn): Promise<string> {
+  static async answerBoosterQuestion(question: string, callback: SubscribeFn, abortSignal?: AbortSignal): Promise<string> {
     const response = await fetch(this.VercelEndpoint, {
       method: 'POST',
       headers: {
@@ -12,7 +12,9 @@ export class ChatService {
       body: JSON.stringify({
         question,
       }),
-    })
+      signal: abortSignal
+    }, 
+    )
 
     if (!response.ok) {
       throw new Error(response.statusText)
@@ -28,6 +30,12 @@ export class ChatService {
 
     while (!done) {
       const { value, done: doneReading } = await reader.read()
+
+      if (abortSignal.aborted) {
+        reader.cancel()
+        return
+      }
+
       done = doneReading
       const chunkValue = decoder.decode(value)
       callback(question, chunkValue, doneReading)
