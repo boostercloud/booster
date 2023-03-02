@@ -22,6 +22,10 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
   }
 
   const handleSearch = async (query: string, controller: AbortController) => {
+    if (query?.trim() === "" || query === null) {
+      return
+    }
+
     setLoading(true)
     setResponse('')
     setSearchQuery(query)
@@ -43,6 +47,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
     }
   }
   const openModal = () => {
+    setResponse(null)
     setModalOpen(modalOpen => !modalOpen)
   }
 
@@ -55,10 +60,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
 
   useEffect(() => {
     const abortController = new AbortController();
-    
-    if (searchQuery?.trim() !== "" && searchQuery !== null) {
-      handleSearch(searchQuery, abortController)
-    }
+    handleSearch(searchQuery, abortController)
   
     const modalElement = document.querySelector('.modal')
   
