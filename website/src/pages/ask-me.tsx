@@ -50,7 +50,7 @@ export default function BoosterChat(): JSX.Element {
           onFocus={() => setInteracted(true)}
           disabled={loading}
         />
-        <div className="bc-beta-disclaimer">Beta version</div>
+        <div className="bc-beta-disclaimer">Beta AI version</div>
       </div>
       <ChatResponse response={response} loading={loading} />
     </Layout>
