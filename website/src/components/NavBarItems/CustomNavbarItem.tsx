@@ -94,7 +94,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
         onRequestClose={closeModal}
         style={{
           overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            backgroundColor: '#656C85CC',
             zIndex: 1000,
           },
           content: {
