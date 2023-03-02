@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AnyClass, Class, HasLogger } from '@boostercloud/framework-types'
+import Brand from './brand'
 
 export interface ComponentContainer<T> {
   /**
@@ -48,18 +49,23 @@ export const Component =
         descriptor.value = new Proxy(origMethod, {
           apply: function (target: Class<T>, thisArg: T, argumentsList: unknown[]): unknown {
             const logger = thisArg.logger
-            logger.debug(`Calling ${target.name}#${prop} with arguments: ${JSON.stringify(argumentsList)}`)
+            logger.debug(
+              `\n${Brand.mellancholize('[DEBUG]')} ${thisArg.constructor.name}#${prop}(${argumentsList
+                .map((x) => JSON.stringify(x))
+                .join(', ')})`
+            )
+            const errorMessage = (error: unknown) => `${Brand.dangerize('[ERROR]')} at ${target.name}#${prop}: ${error}`
             try {
               const result = target.apply(thisArg, argumentsList) as unknown
               if (result instanceof Promise) {
                 return result.catch((error: unknown) => {
-                  logger.debug(`Error calling ${target.name}#${prop}: ${error}`)
+                  logger.debug(errorMessage(error))
                   throw thisArg.catch(error)
                 })
               }
               return result
             } catch (error) {
-              logger.debug(`Error calling ${target.name}#${prop}: ${error}`)
+              logger.debug(errorMessage(error))
               throw error
             }
           },
