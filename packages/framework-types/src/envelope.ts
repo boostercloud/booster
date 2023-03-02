@@ -1,6 +1,14 @@
-import { CommandInput, EntityInterface, EventInterface, ReadModelInterface, SequenceKey, UUID } from './concepts'
+import {
+  CommandInput,
+  EntityInterface,
+  EventInterface,
+  NotificationInterface,
+  ReadModelInterface,
+  SequenceKey,
+  UUID,
+} from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor } from './searcher'
+import { FilterFor, SortFor } from './searcher'
 import { Class } from './typelevel'
 
 /**
@@ -24,17 +32,36 @@ export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
 }
 
-export interface EventEnvelope extends Envelope {
+export type SuperKindType = 'domain' | 'notification' | 'booster'
+
+export interface EventStoreEntryEnvelope extends Envelope {
   typeName: string
   version: number
-  kind: 'event' | 'snapshot'
+  superKind: SuperKindType
   entityID: UUID
   entityTypeName: string
-  value: EventInterface | EntityInterface
-  createdAt: string
-  snapshottedEventCreatedAt?: string
+  value: EventInterface | EntityInterface | NotificationInterface
 }
 
+export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
+  kind: 'event'
+}
+
+export interface EventEnvelope extends NonPersistedEventEnvelope {
+  createdAt: string
+}
+
+export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvelope {
+  kind: 'snapshot'
+  snapshottedEventCreatedAt: string
+}
+
+export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelope {
+  /** Logic creation date of the snapshot, it always matches the creation date of the latest event included in it. */
+  createdAt: string
+  /** Time when this snapshot was actually persisted in the database. */
+  persistedAt: string
+}
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
 }
@@ -74,6 +101,16 @@ export interface ReadModelEnvelope {
   value: ReadModelInterface
 }
 
+export interface PaginatedEntityIdResult {
+  entityID: UUID
+}
+
+export interface PaginatedEntitiesIdsResult {
+  items: Array<PaginatedEntityIdResult>
+  count?: number
+  cursor?: Record<string, string>
+}
+
 export interface ReadModelListResult<TReadModel> {
   items: Array<TReadModel>
   count?: number
@@ -89,6 +126,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   className: string
   version: number
   filters: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
@@ -96,6 +134,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
   filter?: ReadModelRequestProperties<TReadModel>
+  sortBy?: ReadModelSortProperties<TReadModel>
   limit?: number
   afterCursor?: unknown
 }
@@ -106,6 +145,8 @@ export interface ReadModelByIdRequestArgs {
 }
 
 export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TReadModel>>
+
+export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
 export interface GraphQLRequestEnvelope extends Envelope {
   eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
@@ -137,17 +178,24 @@ export interface ConnectionDataEnvelope {
 }
 
 export interface UserEnvelope {
+  /** An optional identifier of the user */
   id?: string
+  /** The unique username of the current user */
   username: string
+  /** The list of role names assigned to this user */
   roles: Array<string>
+  /** An object containing the claims included in the body of the JWT token */
   claims: Record<string, unknown>
+  /** An object containing the headers of the JWT token for further verification */
   header?: Record<string, unknown>
 }
 
 export interface ContextEnvelope {
+  /** Decoded request header and body */
   request: {
     headers: unknown
     body: unknown
   }
+  /** Provider-dependent raw request context object */
   rawContext: unknown
 }

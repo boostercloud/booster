@@ -12,6 +12,7 @@ import * as ConnectionsAdapter from './library/connections-adapter'
 import * as path from 'path'
 import { searchReadModel } from './library/searcher-adapter'
 import { RedisAdapter } from './services/redis-adapter'
+import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 
 const storageUrl = 'http://localhost:3500'
 const eventRegistry = new EventRegistry(storageUrl)
@@ -32,9 +33,11 @@ export const Provider = (): ProviderLibrary => ({
   events: {
     rawToEnvelopes: EventsAdapter.rawToEnvelopes,
     store: EventsAdapter.store.bind(null, eventRegistry, userApp),
+    storeSnapshot: EventsAdapter.storeSnapshot.bind(null, eventRegistry),
     forEntitySince: EventsAdapter.forEntitySince.bind(null, eventRegistry),
     latestEntitySnapshot: EventsAdapter.latestEntitySnapshot.bind(null, eventRegistry),
     search: EventsAdapter.search.bind(null, eventRegistry),
+    searchEntitiesIDs: EventsAdapter.searchEntitiesIds.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -68,6 +71,9 @@ export const Provider = (): ProviderLibrary => ({
   // ScheduledCommandsLibrary
   scheduled: {
     rawToEnvelope: ScheduledAdapter.rawToEnvelope,
+  },
+  rockets: {
+    rawToEnvelopes: rawRocketInputToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

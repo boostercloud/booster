@@ -10,9 +10,8 @@ import {
   parseFields,
   ImportDeclaration,
 } from '../../services/generator/target'
-import { generate } from '../../services/generator'
+import { generate, template } from '../../services/generator'
 import * as path from 'path'
-import { templates } from '../../templates'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
 export default class Event extends BaseCommand {
@@ -30,7 +29,7 @@ export default class Event extends BaseCommand {
 
   public async run(): Promise<void> {
     const { args, flags } = this.parse(Event)
-    
+
     try {
       const fields = flags.fields || []
       if (!args.eventName) throw "You haven't provided an event name, but it is required, run with --help for usage"
@@ -68,7 +67,7 @@ const generateEvent = (info: EventInfo): Promise<void> =>
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'events'),
-    template: templates.event,
+    template: template('event'),
     info: {
       imports: generateImports(),
       ...info,

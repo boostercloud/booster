@@ -3,10 +3,14 @@ import { Register } from '@boostercloud/framework-types'
 import { ProductAvailabilityChanged } from '../events/product-availability-changed'
 import { Booster, EventHandler } from '@boostercloud/framework-core'
 import { Product } from '../entities/product'
+import { dispatchErrorCartMessage, dispatchEventErrorCartId } from '../constants'
 
 @EventHandler(StockMoved)
 export class HandleAvailability {
   public static async handle(event: StockMoved, register: Register): Promise<void> {
+    if (event.productID === dispatchEventErrorCartId) {
+      throw new Error(dispatchErrorCartMessage)
+    }
     // This method call is here to ensure it work. More info: https://github.com/boostercloud/booster/issues/797
     event.getOrigin()
     const product = await Booster.entity(Product, event.productID)

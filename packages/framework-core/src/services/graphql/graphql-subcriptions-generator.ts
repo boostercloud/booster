@@ -1,17 +1,22 @@
-import { GraphQLFieldConfigMap, GraphQLID, GraphQLNonNull, GraphQLObjectType } from 'graphql'
-import { ResolverBuilder, TargetTypesMap } from './common'
+import { GraphQLFieldConfigMap, GraphQLID, GraphQLInputObjectType, GraphQLNonNull, GraphQLObjectType } from 'graphql'
+import { ResolverBuilder } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
-import { GraphQLQueryGenerator } from './graphql-query-generator'
 import * as inflected from 'inflected'
+import { AnyClass } from '@boostercloud/framework-types'
+import { GraphqlQueryFilterFieldsBuilder } from './query-helpers/graphql-query-filter-fields-builder'
 
 export class GraphQLSubscriptionGenerator {
+  private graphqlQueryFilterFieldsBuilder: GraphqlQueryFilterFieldsBuilder
+
   public constructor(
-    private readonly targetTypes: TargetTypesMap,
+    private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly queryGenerator: GraphQLQueryGenerator,
     private readonly byIDResolverBuilder: ResolverBuilder,
-    private readonly filterResolverBuilder: ResolverBuilder
-  ) {}
+    private readonly filterResolverBuilder: ResolverBuilder,
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+  ) {
+    this.graphqlQueryFilterFieldsBuilder = new GraphqlQueryFilterFieldsBuilder(typeInformer, generatedFiltersByTypeName)
+  }
 
   public generate(): GraphQLObjectType | undefined {
     const byIDSubscriptions = this.generateByIDSubscriptions()
@@ -28,16 +33,15 @@ export class GraphQLSubscriptionGenerator {
 
   private generateByIDSubscriptions(): GraphQLFieldConfigMap<any, any> {
     const subscriptions: GraphQLFieldConfigMap<any, any> = {}
-    for (const name in this.targetTypes) {
-      const type = this.targetTypes[name]
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      subscriptions[name] = {
+    for (const readModel of this.readModels) {
+      const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
+      subscriptions[readModel.name] = {
         type: graphQLType,
         args: {
           id: { type: new GraphQLNonNull(GraphQLID) },
         },
         resolve: (source) => source,
-        subscribe: this.byIDResolverBuilder(type.class),
+        subscribe: this.byIDResolverBuilder(readModel),
       }
     }
     return subscriptions
@@ -45,14 +49,16 @@ export class GraphQLSubscriptionGenerator {
 
   private generateFilterSubscriptions(): GraphQLFieldConfigMap<any, any> {
     const subscriptions: GraphQLFieldConfigMap<any, any> = {}
-    for (const name in this.targetTypes) {
-      const type = this.targetTypes[name]
-      const graphQLType = this.typeInformer.getGraphQLTypeFor(type.class)
-      subscriptions[inflected.pluralize(name)] = {
+    for (const readModel of this.readModels) {
+      const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
+      subscriptions[inflected.pluralize(readModel.name)] = {
         type: graphQLType,
-        args: this.queryGenerator.generateFilterQueriesFields(`${name}Subscription`, type),
+        args: this.graphqlQueryFilterFieldsBuilder.generateFilterQueriesFields(
+          `${readModel.name}Subscription`,
+          readModel
+        ),
         resolve: (source) => source,
-        subscribe: this.filterResolverBuilder(type.class),
+        subscribe: this.filterResolverBuilder(readModel),
       }
     }
     return subscriptions

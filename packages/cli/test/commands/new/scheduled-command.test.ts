@@ -1,11 +1,11 @@
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { restore, replace, fake, stub } from 'sinon'
 import ScheduledCommand from '../../../src/commands/new/scheduled-command'
-import { templates } from '../../../src/templates'
 import Mustache = require('mustache')
 import * as fs from 'fs-extra'
 import { IConfig } from '@oclif/config'
 import { expect } from '../../expect'
+import { template } from '../../../src/services/generator'
 
 describe('new', (): void => {
   describe('ScheduledCommand', () => {
@@ -26,7 +26,7 @@ describe('new', (): void => {
     beforeEach(() => {
       stub(ProjectChecker, 'checkCurrentDirIsABoosterProject').returnsThis()
       replace(fs, 'outputFile', fake.resolves({}))
-      replace(ProjectChecker,'checkCurrentDirBoosterVersion', fake.resolves({}))
+      replace(ProjectChecker, 'checkCurrentDirBoosterVersion', fake.resolves({}))
     })
 
     afterEach(() => {
@@ -41,7 +41,7 @@ describe('new', (): void => {
     describe('Created correctly', () => {
       it('with scheduled command name', async () => {
         await new ScheduledCommand([scheduledCommandName], {} as IConfig).run()
-        const renderedCommand = Mustache.render(templates.scheduledCommand, {
+        const renderedCommand = Mustache.render(template('scheduled-command'), {
           imports: defaultScheduledCommandImports,
           name: scheduledCommandName,
         })
@@ -54,9 +54,7 @@ describe('new', (): void => {
         replace(console, 'error', fake.resolves({}))
         await new ScheduledCommand([], {} as IConfig).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(scheduledCommandRoot)
-        expect(console.error).to.have.been.calledWithMatch(
-          /You haven't provided a scheduled command name/
-        )
+        expect(console.error).to.have.been.calledWithMatch(/You haven't provided a scheduled command name/)
       })
 
       it('with two scheduled command names', async () => {

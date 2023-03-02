@@ -8,3 +8,4 @@ reporter: 'spec'
 timeout: 60000
 full-trace: true
 bail: true
+color: true

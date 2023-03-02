@@ -10,6 +10,7 @@ export function createMockEventEnvelopes(numOfEvents = 1): Array<EventEnvelope> 
       version: random.number(),
       entityID: random.uuid(),
       kind: 'event',
+      superKind: 'domain',
       value: {
         id: random.uuid(),
       },

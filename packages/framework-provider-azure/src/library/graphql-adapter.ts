@@ -1,10 +1,12 @@
-import { GraphQLRequestEnvelope, Logger, GraphQLRequestEnvelopeError } from '@boostercloud/framework-types'
+import { GraphQLRequestEnvelope, GraphQLRequestEnvelopeError, BoosterConfig } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { Context } from '@azure/functions'
 
 export async function rawGraphQLRequestToEnvelope(
-  context: Context,
-  logger: Logger
+  config: BoosterConfig,
+  context: Context
 ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> {
+  const logger = getLogger(config, 'graphql-adapter#rawGraphQLRequestToEnvelope')
   logger.debug('Received GraphQL request: ', context.req)
   const requestID = context.executionContext.invocationId
   const connectionID = undefined // TODO: Add this when sockets are supported
@@ -29,8 +31,9 @@ export async function rawGraphQLRequestToEnvelope(
       },
     }
   } catch (e) {
+    const error = e as Error
     return {
-      error: e,
+      error,
       requestID,
       connectionID,
       eventType,

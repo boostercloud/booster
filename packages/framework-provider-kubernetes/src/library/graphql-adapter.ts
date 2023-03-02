@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  Logger,
   BoosterConfig,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
@@ -8,12 +7,13 @@ import {
   GraphQLOperation,
   UUID,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export const rawToEnvelope = async (
-  request: { body?: GraphQLOperation | GraphQLClientMessage },
-  logger: Logger,
-  _config: BoosterConfig
+  config: BoosterConfig,
+  request: { body?: GraphQLOperation | GraphQLClientMessage }
 ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> => {
+  const logger = getLogger(config, 'graphql-adapter#rawToEnvelope')
   logger.debug('Received GraphQL request: ', request)
   return {
     requestID: UUID.generate(),

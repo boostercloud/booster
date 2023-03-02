@@ -4,20 +4,24 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeEvents,
+  storeSnapshot,
 } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
-import { EventRegistry } from './services'
+import { EventRegistry, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
-import { ReadModelRegistry } from './services'
+
 import {
+  deleteReadModel,
   fetchReadModel,
   rawReadModelEventsToEnvelopes,
   searchReadModel,
   storeReadModel,
 } from './library/read-model-adapter'
-import { searchEvents } from './library/events-search-adapter'
+import { searchEntitiesIds, searchEvents } from './library/events-search-adapter'
+import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 
 export * from './paths'
 export * from './services'
@@ -41,7 +45,9 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
+    storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
+    searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -51,7 +57,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     search: searchReadModel.bind(null, readModelRegistry),
     store: storeReadModel.bind(null, readModelRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    delete: undefined as any,
+    delete: deleteReadModel.bind(null, readModelRegistry),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     subscribe: undefined as any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -83,8 +89,10 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   },
   // ScheduledCommandsLibrary
   scheduled: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    rawToEnvelope: undefined as any,
+    rawToEnvelope: rawScheduledInputToEnvelope,
+  },
+  rockets: {
+    rawToEnvelopes: rawRocketInputToEnvelope,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

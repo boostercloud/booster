@@ -1,0 +1,147 @@
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
+# Entity
+
+If events are the _source of truth_ of your application, entities are the _current state_ of your application. For example, if you have an application that allows users to create bank accounts, the events would be something like `AccountCreated`, `MoneyDeposited`, `MoneyWithdrawn`, etc. But the entities would be the `BankAccount` themselves, with the current balance, owner, etc.
+
+Entities are created by _reducing_ the whole event stream. Booster generates entities on the fly, so you don't have to worry about their creation. However, you must define them in order to instruct Booster how to generate them.
+
+:::info
+Under the hood, Booster stores snapshots of the entities in order to reduce the load on the event store. That way, Booster doesn't have to reduce the whole event stream whenever the current state of an entity is needed.
+:::
+
+## Creating entities
+
+The Booster CLI will help you to create new entities. You just need to run the following command and the CLI will generate all the boilerplate for you:
+
+<TerminalWindow>
+
+```shell
+boost new:entity Product --fields displayName:string description:string price:Money
+```
+
+</TerminalWindow>
+
+This will generate a new file called `product.ts` in the `src/entities` directory. You can also create the file manually, but you will need to create the class and decorate it, so we recommend using the CLI.
+
+## Declaring an entity
+
+To declare an entity in Booster, you must define a class decorated with the `@Entity` decorator. Inside of the class, you must define a constructor with all the fields you want to have in your entity.
+
+```typescript title="src/entities/entity-name.ts"
+@Entity
+export class EntityName {
+  public constructor(readonly fieldA: SomeType, readonly fieldB: SomeOtherType /* as many fields as needed */) {}
+}
+```
+
+## The reduce function
+
+In order to tell Booster how to reduce the events, you must define a static method decorated with the `@Reduces` decorator. This method will be called by the framework every time an event of the specified type is emitted. The reducer method must return a new entity instance with the current state of the entity.
+
+```typescript title="src/entities/entity-name.ts"
+@Entity
+export class EntityName {
+  public constructor(readonly fieldA: SomeType, readonly fieldB: SomeOtherType /* as many fields as needed */) {}
+
+  // highlight-start
+  @Reduces(SomeEvent)
+  public static reduceSomeEvent(event: SomeEvent, currentEntityState?: EntityName): EntityName {
+    /* Return a new entity based on the current one */
+  }
+  // highlight-end
+}
+```
+
+The reducer method receives two parameters:
+
+- `event` - The event object that triggered the reducer
+- `currentEntity?` - The current state of the entity instance that the event belongs to if it exists. **This parameter is optional** and will be `undefined` if the entity doesn't exist yet (For example, when you process a `ProductCreated` event that will generate the first version of a `Product` entity).
+
+### Reducing multiple events
+
+You can define as many reducer methods as you want, each one for a different event type. For example, if you have a `Cart` entity, you could define a reducer for `ProductAdded` events and another one for `ProductRemoved` events.
+
+```typescript title="src/entities/cart.ts"
+@Entity
+export class Cart {
+  public constructor(readonly items: Array<CartItem>) {}
+
+  @Reduces(ProductAdded)
+  public static reduceProductAdded(event: ProductAdded, currentCart?: Cart): Cart {
+    const newItems = addToCart(event.item, currentCart)
+    return new Cart(newItems)
+  }
+
+  @Reduces(ProductRemoved)
+  public static reduceProductRemoved(event: ProductRemoved, currentCart?: Cart): Cart {
+    const newItems = removeFromCart(event.item, currentCart)
+    return new Cart(newItems)
+  }
+}
+```
+
+:::tip
+It's highly recommended to **keep your reducer functions pure**, which means that you should be able to produce the new entity version by just looking at the event and the current entity state. You should avoid calling third party services, reading or writing to a database, or changing any external state.
+:::
+
+There could be a lot of events being reduced concurrently among many entities, but, **for a specific entity instance, the events order is preserved**. This means that while one event is being reduced, all other events of any kind _that belong to the same entity instance_ will be waiting in a queue until the previous reducer has finished. This is how Booster guarantees that the entity state is consistent.
+
+![reducer process gif](/img/reducer.gif)
+
+### Eventual Consistency
+
+Additionally, due to the event driven and async nature of Booster, your data might not be instantly updated. Booster will consume the commands, generate events, and _eventually_ generate the entities. Most of the time this is not perceivable, but under huge loads, it could be noticed.
+
+This property is called [Eventual Consistency](https://en.wikipedia.org/wiki/Eventual_consistency), and it is a trade-off to have high availability for extreme situations, where other systems might simply fail.
+
+## Entity ID
+
+In order to identify each entity instance, you must define an `id` field on each entity. This field will be used by the framework to identify the entity instance. If the value of the `id` field matches the value returned by the [`entityID()` method](event#events-and-entities) of an Event, the framework will consider that the event belongs to that entity instance.
+
+```typescript title="src/entities/entity-name.ts"
+@Entity
+export class EntityName {
+  public constructor(
+    // highlight-next-line
+    readonly id: UUID,
+    readonly fieldA: SomeType,
+    readonly fieldB: SomeOtherType /* as many fields as needed */
+  ) {}
+
+  @Reduces(SomeEvent)
+  public static reduceSomeEvent(event: SomeEvent, currentEntityState?: EntityName): EntityName {
+    /* Return a new entity based on the current one */
+  }
+}
+```
+
+:::tip
+We recommend you to use the `UUID` type for the `id` field. You can generate a new `UUID` value by calling the `UUID.generate()` method already provided by the framework.
+:::
+
+## Entities naming convention
+
+Entities are a representation of your application state in a specific moment, so name them as closely to your domain objects as possible. Typical entity names are nouns that might appear when you think about your app. In an e-commerce application, some entities would be:
+
+- Cart
+- Product
+- UserProfile
+- Order
+- Address
+- PaymentMethod
+- Stock
+
+Entities live within the entities directory of the project source: `<project-root>/src/entities`.
+
+```text
+<project-root>
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities <------ put them here
+│   ├── events
+│   ├── index.ts
+│   └── read-models
+```

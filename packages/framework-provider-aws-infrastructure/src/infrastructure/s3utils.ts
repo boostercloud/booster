@@ -1,9 +1,11 @@
 import { ISDK } from 'aws-cdk'
 import { ObjectIdentifier, ObjectIdentifierList } from 'aws-sdk/clients/s3'
 import * as AWS from 'aws-sdk'
-import { Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
-export async function emptyS3Bucket(sdk: ISDK, logger: Logger, bucketName: string): Promise<void> {
+export async function emptyS3Bucket(config: BoosterConfig, sdk: ISDK, bucketName: string): Promise<void> {
+  const logger = getLogger(config, 's3utils#emptyS3Bucket')
   logger.info(bucketName + ': DELETE_IN_PROGRESS')
   const s3: AWS.S3 = await sdk.s3()
 
@@ -19,7 +21,7 @@ export async function emptyS3Bucket(sdk: ISDK, logger: Logger, bucketName: strin
           } as ObjectIdentifier)
       )
       await s3.deleteObjects({ Bucket: bucketName, Delete: { Objects: records } }).promise()
-      if (listedObjects.IsTruncated) await emptyS3Bucket(sdk, logger, bucketName)
+      if (listedObjects.IsTruncated) await emptyS3Bucket(config, sdk, bucketName)
     }
     logger.info(bucketName + ': DELETE_COMPLETE')
   } else {

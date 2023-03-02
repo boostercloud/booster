@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { mockReq } from 'sinon-express-mock'
-import { SinonStub, stub, replace, restore } from 'sinon'
+import { SinonStub, stub, replace, restore, fake } from 'sinon'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { expect } from '../expect'
-import { UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { random } from 'faker'
 import { Request } from 'express'
 
@@ -13,11 +13,15 @@ describe('Local provider graphql-adapter', () => {
     let mockBody: any
     let mockRequest: Request
     let mockUserToken: string
+    const mockConfig = new BoosterConfig('test')
+    mockConfig.logger = {
+      debug: fake(),
+      info: fake(),
+      warn: fake(),
+      error: fake(),
+    }
 
-    let debugStub: SinonStub
     let generateStub: SinonStub
-
-    let logger: any
 
     beforeEach(() => {
       mockUuid = random.uuid()
@@ -32,12 +36,7 @@ describe('Local provider graphql-adapter', () => {
         authorization: mockUserToken,
       }
 
-      debugStub = stub()
       generateStub = stub().returns(mockUuid)
-
-      logger = {
-        debug: debugStub,
-      }
 
       replace(UUID, 'generate', generateStub)
     })
@@ -47,9 +46,10 @@ describe('Local provider graphql-adapter', () => {
     })
 
     it('should call logger.debug', async () => {
-      await rawGraphQLRequestToEnvelope(mockRequest, logger)
+      await rawGraphQLRequestToEnvelope(mockConfig, mockRequest)
 
-      expect(debugStub).to.have.been.calledOnceWith(
+      expect(mockConfig.logger?.debug).to.have.been.calledOnceWith(
+        '[Booster]|graphql-adapter#rawGraphQLRequestToEnvelope: ',
         'Received GraphQL request: \n- Headers: ',
         mockRequest.headers,
         '\n- Body: ',
@@ -58,7 +58,7 @@ describe('Local provider graphql-adapter', () => {
     })
 
     it('should generate expected envelop', async () => {
-      const result = await rawGraphQLRequestToEnvelope(mockRequest, logger)
+      const result = await rawGraphQLRequestToEnvelope(mockConfig, mockRequest)
       expect(result).to.be.deep.equal({
         requestID: mockUuid,
         eventType: 'MESSAGE',

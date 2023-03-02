@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/eslint-config",
+      "comment": "added @typescript-eslint/no-extra-parens option",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/eslint-config"
+}

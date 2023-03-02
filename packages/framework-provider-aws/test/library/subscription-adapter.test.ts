@@ -2,7 +2,7 @@
 import { expect } from '../expect'
 import { DynamoDB } from 'aws-sdk'
 import { fake, createStubInstance, stub, restore, SinonStub } from 'sinon'
-import { Logger, SubscriptionEnvelope, BoosterConfig } from '@boostercloud/framework-types'
+import { SubscriptionEnvelope, BoosterConfig } from '@boostercloud/framework-types'
 import { random, lorem } from 'faker'
 import { subscriptionsStoreAttributes } from '../../src'
 import {
@@ -15,12 +15,6 @@ import {
 import { sortKeyForSubscription } from '../../src/library/keys-helper'
 import { DocumentClient } from 'aws-sdk/lib/dynamodb/document_client'
 
-const logger: Logger = {
-  info: fake(),
-  warn: fake(),
-  error: fake(),
-  debug: fake(),
-}
 const config = new BoosterConfig('test')
 
 describe('The "subscribeToReadModel" method', () => {
@@ -55,7 +49,7 @@ describe('The "subscribeToReadModel" method', () => {
   context('when the envelope is missing some required fields', () => {
     it('throws if the partitionKey is missing', async () => {
       delete envelope[subscriptionsStoreAttributes.partitionKey]
-      const promiseResult = subscribeToReadModel(db, config, logger, envelope)
+      const promiseResult = subscribeToReadModel(db, config, envelope)
       await expect(promiseResult).to.eventually.have.been.rejectedWith(
         /^Subscription envelope is missing any of the following required attributes/
       )
@@ -64,7 +58,7 @@ describe('The "subscribeToReadModel" method', () => {
 
     it('throws if the connectionID is missing', async () => {
       delete envelope.connectionID
-      const promiseResult = subscribeToReadModel(db, config, logger, envelope)
+      const promiseResult = subscribeToReadModel(db, config, envelope)
       await expect(promiseResult).to.eventually.have.been.rejectedWith(
         /^Subscription envelope is missing any of the following required attributes/
       )
@@ -73,7 +67,7 @@ describe('The "subscribeToReadModel" method', () => {
 
     it('throws if the operation ID is missing', async () => {
       delete envelope.operation.id
-      const promiseResult = subscribeToReadModel(db, config, logger, envelope)
+      const promiseResult = subscribeToReadModel(db, config, envelope)
       await expect(promiseResult).to.eventually.have.been.rejectedWith(
         /^Subscription envelope is missing any of the following required attributes/
       )
@@ -82,7 +76,7 @@ describe('The "subscribeToReadModel" method', () => {
 
     it('throws if the ttl attribute is missing', async () => {
       delete envelope[subscriptionsStoreAttributes.ttl]
-      const promiseResult = subscribeToReadModel(db, config, logger, envelope)
+      const promiseResult = subscribeToReadModel(db, config, envelope)
       await expect(promiseResult).to.eventually.have.been.rejectedWith(
         /^Subscription envelope is missing any of the following required attributes/
       )
@@ -95,7 +89,7 @@ describe('The "subscribeToReadModel" method', () => {
       db.put = fake.returns({
         promise: () => Promise.resolve(),
       })
-      await subscribeToReadModel(db, config, logger, envelope)
+      await subscribeToReadModel(db, config, envelope)
       expect(db.put).to.have.been.calledWithExactly({
         TableName: config.resourceNames.subscriptionsStore,
         Item: {
@@ -128,7 +122,7 @@ describe('The "fetchSubscriptions" method', () => {
         }),
     })
     const subscriptionName = lorem.word()
-    const result = await fetchSubscriptions(db, config, logger, subscriptionName)
+    const result = await fetchSubscriptions(db, config, subscriptionName)
 
     expect(db.query).to.have.been.calledWithExactly({
       TableName: config.resourceNames.subscriptionsStore,
@@ -179,7 +173,7 @@ describe('The "deleteSubscription" method', () => {
       promise: () => Promise.resolve({ Items: [] }),
     })
 
-    await deleteSubscription(db, config, logger, connectionID, subscriptionID)
+    await deleteSubscription(db, config, connectionID, subscriptionID)
     expect(db.delete).not.to.have.been.called
   })
 
@@ -197,7 +191,7 @@ describe('The "deleteSubscription" method', () => {
         }),
     })
 
-    await deleteSubscription(db, config, logger, connectionID, subscriptionID)
+    await deleteSubscription(db, config, connectionID, subscriptionID)
 
     expect(dbDeleteFake).to.have.been.calledWithExactly({
       TableName: config.resourceNames.subscriptionsStore,
@@ -241,7 +235,7 @@ describe('The "deleteAllSubscription" method', () => {
       promise: () => Promise.resolve({ Items: [] }),
     })
 
-    await deleteAllSubscriptions(db, config, logger, connectionID)
+    await deleteAllSubscriptions(db, config, connectionID)
     expect(db.batchWrite).not.to.have.been.called
   })
 
@@ -269,7 +263,7 @@ describe('The "deleteAllSubscription" method', () => {
         }),
     })
 
-    await deleteAllSubscriptions(db, config, logger, connectionID)
+    await deleteAllSubscriptions(db, config, connectionID)
 
     expect(dbBatchWriteFake).to.have.been.calledWithExactly({
       RequestItems: {

@@ -2,10 +2,10 @@
 import { expect } from '../expect'
 import * as EventsAdapter from '../../src/library/events-adapter'
 import { createStubInstance, fake, restore, match, stub, SinonStubbedInstance } from 'sinon'
-import { BoosterConfig, EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import { eventsStoreAttributes } from '../../src/constants'
-import { partitionKeyForEvent } from '../../src/library/partition-keys'
+import { partitionKeyForEvent, partitionKeyForSnapshot } from '../../src/library/partition-keys'
 import { Context } from '@azure/functions'
 import { random } from 'faker'
 import {
@@ -15,7 +15,6 @@ import {
 } from '../helpers/event-helper'
 
 describe('Events adapter', () => {
-  let mockLogger: Logger
   let mockConfig: BoosterConfig
   let mockEvents: Array<EventEnvelope>
 
@@ -38,12 +37,6 @@ describe('Events adapter', () => {
       }) as any,
     })
     mockConfig = new BoosterConfig('test')
-    mockLogger = {
-      info: fake(),
-      warn: fake(),
-      error: fake(),
-      debug: fake(),
-    }
     mockEntityName = random.word()
     mockEntityId = random.uuid()
     mockEvents = createMockEventEnvelopes(2)
@@ -66,13 +59,7 @@ describe('Events adapter', () => {
 
   describe('The "readEntityEventsSince" method', () => {
     it('Queries the events table to find all events related to a specific entity', async () => {
-      await EventsAdapter.readEntityEventsSince(
-        mockCosmosDbClient as any,
-        mockConfig,
-        mockLogger,
-        mockEntityName,
-        mockEntityId
-      )
+      await EventsAdapter.readEntityEventsSince(mockCosmosDbClient as any, mockConfig, mockEntityName, mockEntityId)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
@@ -104,13 +91,7 @@ describe('Events adapter', () => {
 
   describe('The "readEntityLatestSnapshot" method', () => {
     it('Finds the latest entity snapshot', async () => {
-      await EventsAdapter.readEntityLatestSnapshot(
-        mockCosmosDbClient as any,
-        mockConfig,
-        mockLogger,
-        mockEntityName,
-        mockEntityId
-      )
+      await EventsAdapter.readEntityLatestSnapshot(mockCosmosDbClient as any, mockConfig, mockEntityName, mockEntityId)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
@@ -128,7 +109,7 @@ describe('Events adapter', () => {
           parameters: [
             {
               name: '@partitionKey',
-              value: partitionKeyForEvent(mockEntityName, mockEntityId, 'snapshot'),
+              value: partitionKeyForSnapshot(mockEntityName, mockEntityId),
             },
           ],
         })
@@ -138,7 +119,7 @@ describe('Events adapter', () => {
 
   describe('The "storeEvents" method', () => {
     it('Publishes the eventEnvelopes passed via parameter', async () => {
-      await EventsAdapter.storeEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig, mockLogger)
+      await EventsAdapter.storeEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
@@ -153,8 +134,7 @@ describe('Events adapter', () => {
           ...mockEvents[0],
           [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
             mockEvents[0].entityTypeName,
-            mockEvents[0].entityID,
-            mockEvents[0].kind
+            mockEvents[0].entityID
           ),
           [eventsStoreAttributes.sortKey]: match.defined,
         })

@@ -7,14 +7,17 @@ export const template = `{
   "version": "{{{version}}}",
   "author": "{{{author}}}",
   "dependencies": {
+    "tslib": "^2.4.0",
     "@boostercloud/framework-core": "^${VERSION}",
     "@boostercloud/framework-types": "^${VERSION}",
-    "{{{providerPackageName}}}": "*"
+    "@boostercloud/framework-common-helpers": "^${VERSION}",
+    "{{{providerPackageName}}}": "^${VERSION}"
   },
   "devDependencies": {
     "@boostercloud/framework-provider-local": "^${VERSION}",
     "@boostercloud/framework-provider-local-infrastructure": "^${VERSION}",
-    "{{{providerPackageName}}}-infrastructure": "*",
+    "@boostercloud/metadata-booster": "^${VERSION}",
+    "{{{providerPackageName}}}-infrastructure": "^${VERSION}",
     "rimraf": "^3.0.1",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
@@ -23,13 +26,13 @@ export const template = `{
     "eslint-plugin-prettier": "3.4.0",
     "mocha": "8.4.0",
     "@types/mocha": "8.2.2",
+    "@types/jsonwebtoken": "^8.5.1",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
-    "typescript": "4.2.4",
+    "typescript": "4.7.4",
     "ts-node": "9.1.1",
-    "@types/node": "15.0.2",
-    "ttypescript": "1.5.12",
-    "metadata-booster": "0.3.1"
+    "@types/node": "16.11.7",
+    "ttypescript": "1.5.13"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -41,7 +44,7 @@ export const template = `{
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "compile": "ttsc -b tsconfig.json",
+    "build": "ttsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "test": "AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \\"test/**/*.test.ts\\""
   },

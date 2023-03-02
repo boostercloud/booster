@@ -1,5 +1,14 @@
 import { Booster } from '../booster'
-import { Class, EntityInterface, ProjectionMetadata, ProjectionResult } from '@boostercloud/framework-types'
+import {
+  Class,
+  EntityInterface,
+  ProjectionMetadata,
+  ProjectionResult,
+  ReadModelInterface,
+  UUID,
+} from '@boostercloud/framework-types'
+
+type PropType<TObj, TProp extends keyof TObj> = TObj[TProp]
 
 /**
  * Decorator to register a read model method as a projection
@@ -7,24 +16,25 @@ import { Class, EntityInterface, ProjectionMetadata, ProjectionResult } from '@b
  *
  * @param originEntity The entity that this method will react to
  */
-export function Projects<TEntity extends EntityInterface>(
+export function Projects<TEntity extends EntityInterface, TJoinKey extends keyof TEntity>(
   originEntity: Class<TEntity>,
-  joinKey: string
-): <TReadModel>(
+  joinKey: TJoinKey
+): <TReadModel extends ReadModelInterface>(
   readModelClass: Class<TReadModel>,
   methodName: string,
-  methodDescriptor: ProjectionMethod<TEntity, TReadModel>
+  methodDescriptor: ProjectionMethod<TEntity, TReadModel, PropType<TEntity, TJoinKey>>
 ) => void {
   return (readModelClass, methodName) => {
-    registerProjection(originEntity.name, {
-      joinKey: joinKey,
+    const projectionMetadata = {
+      joinKey,
       class: readModelClass,
       methodName: methodName,
-    })
+    } as ProjectionMetadata<EntityInterface>
+    registerProjection(originEntity.name, projectionMetadata)
   }
 }
 
-function registerProjection(originName: string, projectionMetadata: ProjectionMetadata): void {
+function registerProjection(originName: string, projectionMetadata: ProjectionMetadata<EntityInterface>): void {
   Booster.configureCurrentEnv((config): void => {
     const entityProjections = config.projections[originName] || []
     if (entityProjections.indexOf(projectionMetadata) < 0) {
@@ -35,6 +45,6 @@ function registerProjection(originName: string, projectionMetadata: ProjectionMe
   })
 }
 
-type ProjectionMethod<TEntity, TReadModel> = TypedPropertyDescriptor<
-  (_: TEntity, readModel?: TReadModel) => ProjectionResult<TReadModel>
->
+type ProjectionMethod<TEntity, TReadModel, TPropType> = TPropType extends Array<UUID>
+  ? TypedPropertyDescriptor<(_: TEntity, readModelID: UUID, readModel?: TReadModel) => ProjectionResult<TReadModel>>
+  : TypedPropertyDescriptor<(_: TEntity, readModel?: TReadModel) => ProjectionResult<TReadModel>>

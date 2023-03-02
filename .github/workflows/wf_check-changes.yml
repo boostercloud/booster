@@ -1,0 +1,60 @@
+name: Checking changeset
+on:
+  push:
+    branches:
+      - main
+      - '1.0.0'
+    paths-ignore:
+      - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
+
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
+
+jobs:
+  changes-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        uses: ./.github/actions/build
+
+      - name: Check for changes
+        uses: ./.github/actions/call-rush
+        with:
+          command: change --verify
+
+      - name: Post help comment
+        if: failure()
+        uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            **Oops**, looks like you forgot to add a changeset.
+
+            ⚠️ Please run `rush change` and commit the changeset file.
+
+            This command will prompt you for a change description and generate a changeset file. You can read more about changesets [here](https://rushjs.io/pages/best_practices/change_logs/).
+
+            Remember that you should use the version bump that is appropriate for the change you are making:
+
+            | Version bump | Meaning |
+            | ------------ | ------- |
+            | `patch`      | Bug fixes, documentation changes, etc. |
+            | `minor`      | New features, non-breaking changes |
+            | `major`      | Breaking changes |
+
+            If you are unsure about which version bump to use, please ask in the comments and we will help you out.

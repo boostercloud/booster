@@ -1,3 +1,5 @@
+import { isRejected } from './promise_utils'
+
 export class Promises {
   /**
    * Waits until all the passed promise-like values are settled, no matter if they were fulfilled or rejected.
@@ -23,9 +25,7 @@ export class Promises {
     const results = await Promise.allSettled(values) // Promise.allSettled never throws
 
     // Get all the failed promises
-    const failed: Array<PromiseRejectedResult> = results
-      .filter((res) => res.status == 'rejected')
-      .map((res) => res as PromiseRejectedResult)
+    const failed: Array<PromiseRejectedResult> = results.filter(isRejected)
 
     // Throw if we found any failed ones
     if (failed.length > 0) {

@@ -13,8 +13,9 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeEvents,
+  storeSnapshot,
 } from './library/events-adapter'
-import { searchEvents } from './library/events-searcher-adapter'
+import { searchEntitiesIds, searchEvents } from './library/events-searcher-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
   deleteReadModel,
@@ -30,6 +31,7 @@ import {
   fetchSubscriptions,
   subscribeToReadModel,
 } from './library/subscription-adapter'
+import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 
 const dynamoDB: DynamoDB.DocumentClient = new DynamoDB.DocumentClient({
   maxRetries: 10,
@@ -61,7 +63,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
       latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
       search: searchEvents.bind(null, dynamoDB),
+      searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
+      storeSnapshot: storeSnapshot.bind(null, dynamoDB),
     },
     // ProviderReadModelsLibrary
     readModels: {
@@ -94,6 +98,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     // ScheduledCommandsLibrary
     scheduled: {
       rawToEnvelope: rawScheduledInputToEnvelope,
+    },
+    rockets: {
+      rawToEnvelopes: rawRocketInputToEnvelope,
     },
     // ProviderInfrastructureGetter
     infrastructure: () => {

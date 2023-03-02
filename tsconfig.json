@@ -13,9 +13,8 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    "lib": [
-      "ES2019",
-      "ES2020"
-    ]
+    "useUnknownInCatchVariables": false,
+    "skipLibCheck": true,
+    "lib": ["ES2019", "ES2020"]
   }
 }

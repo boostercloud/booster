@@ -17,9 +17,25 @@ export default class Clean extends BaseCommand {
 
   public static flags = {
     help: flags.help({ char: 'h' }),
+    verbose: flags.boolean({
+      description: 'display full error messages',
+      default: false,
+    }),
   }
 
   public async run(): Promise<void> {
     await runTasks((ctx: string) => cleanProject(process.cwd()))
+  }
+
+  async catch(fullError: Error) {
+    const {
+      flags: { verbose },
+    } = this.parse(Clean)
+
+    if (verbose) {
+      console.error(fullError.message)
+    }
+
+    return super.catch(fullError)
   }
 }

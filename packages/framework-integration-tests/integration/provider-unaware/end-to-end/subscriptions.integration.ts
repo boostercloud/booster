@@ -1,7 +1,6 @@
 import { random } from 'faker'
 import gql from 'graphql-tag'
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../../helper/expect'
 import { Observable } from 'apollo-client/util/Observable'
 import { waitForIt } from '../../helper/sleep'
 import { FilterFor } from '@boostercloud/framework-types'
@@ -9,8 +8,6 @@ import { DisconnectableApolloClient } from '@boostercloud/application-tester'
 import { applicationUnderTest } from './setup'
 import { beforeHookProductId } from '../../../src/constants'
 import * as path from 'path'
-
-chai.use(require('chai-as-promised'))
 
 describe('subscriptions', () => {
   //TODO: Azure provider doesn't support subscription Interface so these tests are skipped for Azure
@@ -254,7 +251,10 @@ function cartSubscription(client: DisconnectableApolloClient, cartID: string): O
       subscription CartReadModel($cartId: ID!) {
         CartReadModel(id: $cartId) {
           id
-          cartItems
+          cartItems {
+            productId
+            quantity
+          }
         }
       }
     `,
@@ -268,7 +268,10 @@ function cartFilteredSubscription(client: DisconnectableApolloClient, filter: Fi
       subscription CartReadModels($filter: CartReadModelSubscriptionFilter) {
         CartReadModels(filter: $filter) {
           id
-          cartItems
+          cartItems {
+            productId
+            quantity
+          }
           cartItemsIds
         }
       }
@@ -283,7 +286,10 @@ function cartFilteredSingleIDSubscription(client: DisconnectableApolloClient, ca
       subscription CartReadModel($cartId: ID!) {
         CartReadModel(id: $cartId) {
           id
-          cartItems
+          cartItems {
+            productId
+            quantity
+          }
           cartItemsIds
         }
       }

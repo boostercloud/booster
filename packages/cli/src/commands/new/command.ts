@@ -2,7 +2,7 @@ import * as Oclif from '@oclif/command'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
-import { generate } from '../../services/generator'
+import { generate, template } from '../../services/generator'
 import {
   HasName,
   HasFields,
@@ -12,7 +12,6 @@ import {
   ImportDeclaration,
 } from '../../services/generator/target'
 import * as path from 'path'
-import { templates } from '../../templates'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 
 export default class Command extends BaseCommand {
@@ -75,7 +74,7 @@ const generateCommand = (info: CommandInfo): Promise<void> =>
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'commands'),
-    template: templates.command,
+    template: template('command'),
     info: {
       imports: generateImports(info),
       ...info,

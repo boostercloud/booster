@@ -13,12 +13,12 @@ import {
   GraphQLRequestEnvelopeError,
   GraphQLStart,
   GraphQLStop,
-  Logger,
   MessageTypes,
   ProviderConnectionsLibrary,
   UserEnvelope,
 } from '@boostercloud/framework-types'
 import { BoosterTokenVerifier } from '../../../booster-token-verifier'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export interface GraphQLWebsocketHandlerCallbacks {
   onStartOperation: (
@@ -31,22 +31,22 @@ export interface GraphQLWebsocketHandlerCallbacks {
 export class GraphQLWebsocketHandler {
   public constructor(
     private readonly config: BoosterConfig,
-    private readonly logger: Logger,
     private readonly connectionManager: ProviderConnectionsLibrary,
     private readonly callbacks: GraphQLWebsocketHandlerCallbacks,
     private readonly boosterTokenVerifier: BoosterTokenVerifier
   ) {}
 
   public async handle(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<void> {
+    const logger = getLogger(this.config, 'GraphQLWebsocketHandler#handle')
     if (!envelope.connectionID) {
       // Impossible case, but just to be sure. The only thing we can do here is to log, as we don't have the connection
       // to send the message to
-      this.logger.error('Missing websocket connectionID')
+      logger.error('Missing websocket connectionID')
       return
     }
 
     try {
-      this.logger.debug('Handling websocket message')
+      logger.debug('Handling websocket message')
       if ('error' in envelope) {
         throw envelope.error
       }
@@ -55,7 +55,7 @@ export class GraphQLWebsocketHandler {
       }
 
       const clientMessage = envelope.value as GraphQLClientMessage
-      this.logger.debug('Received client message: ', clientMessage)
+      logger.debug('Received client message: ', clientMessage)
       switch (clientMessage.type) {
         case MessageTypes.GQL_CONNECTION_INIT:
           return await this.handleInit(envelope.connectionID, clientMessage)
@@ -70,12 +70,14 @@ export class GraphQLWebsocketHandler {
           throw new Error(`Unknown message type. Message=${clientMessage}`)
       }
     } catch (e) {
-      this.logger.error(e)
-      await this.connectionManager.sendMessage(this.config, envelope.connectionID, new GraphQLInitError(e.message))
+      const error = e as Error
+      logger.error(e)
+      await this.connectionManager.sendMessage(this.config, envelope.connectionID, new GraphQLInitError(error.message))
     }
   }
 
   private async handleInit(connectionID: string, clientMessage: GraphQLInit): Promise<void> {
+    const logger = getLogger(this.config, 'GraphQLWebsocketHandler#handleInit')
     let userEnvelope: UserEnvelope | undefined
     if (clientMessage.payload?.Authorization) {
       userEnvelope = await this.boosterTokenVerifier.verify(clientMessage.payload.Authorization)
@@ -85,9 +87,9 @@ export class GraphQLWebsocketHandler {
       expirationTime: nowEpoch + this.config.subscriptions.maxConnectionDurationInSeconds,
       user: userEnvelope,
     }
-    this.logger.debug('Storing connection data: ', connectionData)
+    logger.debug('Storing connection data: ', connectionData)
     await this.connectionManager.storeData(this.config, connectionID, connectionData)
-    this.logger.debug('Sending ACK')
+    logger.debug('Sending ACK')
     await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLInitAck())
   }
 
@@ -96,6 +98,7 @@ export class GraphQLWebsocketHandler {
     envelope: GraphQLRequestEnvelope,
     message: GraphQLStart
   ): Promise<void> {
+    const logger = getLogger(this.config, 'GraphQLWebsocketHandler#handleStart')
     if (!message.id) {
       throw new Error(`Missing "id" in ${message.type} message`)
     }
@@ -111,15 +114,15 @@ export class GraphQLWebsocketHandler {
     }
     const augmentedEnvelope = await this.augmentEnvelope(connectionID, envelope, message)
 
-    this.logger.debug('Executing operation. Envelope: ', augmentedEnvelope)
+    logger.debug('Executing operation. Envelope: ', augmentedEnvelope)
     const result = await this.callbacks.onStartOperation(augmentedEnvelope)
 
     if ('next' in result) {
-      this.logger.debug('Subscription finished.')
+      logger.debug('Subscription finished.')
       return // It was a subscription. We don't need to send any data
     }
 
-    this.logger.debug('Operation finished. Sending DATA:', result)
+    logger.debug('Operation finished. Sending DATA:', result)
     // It was a query or mutation. We send data and complete the operation
     await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLData(message.id, result))
     await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLComplete(message.id))
@@ -130,8 +133,9 @@ export class GraphQLWebsocketHandler {
     envelope: GraphQLRequestEnvelope,
     message: GraphQLStart
   ): Promise<GraphQLRequestEnvelope> {
+    const logger = getLogger(this.config, 'GraphQLWebsocketHandler#augmentEnvelope')
     const connectionData = await this.connectionManager.fetchData(this.config, connectionID)
-    this.logger.debug('Found connection data: ', connectionData)
+    logger.debug('Found connection data: ', connectionData)
     return {
       ...envelope,
       currentUser: connectionData?.user,
@@ -143,19 +147,20 @@ export class GraphQLWebsocketHandler {
   }
 
   private async handleStop(connectionID: string, message: GraphQLStop): Promise<void> {
+    const logger = getLogger(this.config, 'GraphQLWebsocketHandler#handleStop')
     if (!message.id) {
       throw new Error(`Missing "id" in ${message.type} message`)
     }
 
-    this.logger.debug('Executing stop operation')
+    logger.debug('Executing stop operation')
     await this.callbacks.onStopOperation(connectionID, message.id)
-    this.logger.debug('Stop operation finished')
+    logger.debug('Stop operation finished')
     try {
       await this.connectionManager.sendMessage(this.config, connectionID, new GraphQLComplete(message.id))
     } catch (e) {
       // It could be the case that the client already closed the connection without waiting for stop operation to finish
       // Log this but ignore it
-      this.logger.info(
+      logger.info(
         `Received an exception while sending the "complete" message after stopping the GraphQL operation with id ${message.id}.` +
           'The client probably closed the connection. Ignoring. ',
         e
@@ -164,8 +169,9 @@ export class GraphQLWebsocketHandler {
   }
 
   private async handleTerminate(connectionID: string): Promise<void> {
-    this.logger.debug('Executing terminate operation')
+    const logger = getLogger(this.config, 'GraphQLWebsocketHandler#handleTerminate')
+    logger.debug('Executing terminate operation')
     await this.callbacks.onTerminate(connectionID)
-    this.logger.debug('Terminate operation finished')
+    logger.debug('Terminate operation finished')
   }
 }

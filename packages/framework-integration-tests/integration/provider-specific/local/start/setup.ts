@@ -1,13 +1,13 @@
 import { start } from '../../../helper/cli-helper'
 import { sleep } from '../../../helper/sleep'
-import { ChildProcess } from 'child_process'
+import { ChildProcessWithoutNullStreams } from 'child_process'
 import { sandboxPathFor, storePIDFor } from '../../../helper/file-helper'
 import { overrideWithBoosterLocalDependencies } from '../../../helper/deps-helper'
 import { sandboxName } from '../constants'
 import { createSandboxProject } from '../../../../../cli/src/common/sandbox'
 import { runCommand } from '@boostercloud/framework-common-helpers'
 
-let serverProcess: ChildProcess
+let serverProcess: ChildProcessWithoutNullStreams
 let sandboxPath: string
 
 before(async () => {
@@ -19,10 +19,13 @@ before(async () => {
   await overrideWithBoosterLocalDependencies(sandboxPath)
 
   console.log('installing dependencies...')
-  await runCommand(sandboxPath, 'npm install')
+  await runCommand(sandboxPath, 'npm install --omit=dev --omit=optional --no-bin-links')
 
   console.log(`starting local server in ${sandboxPath}...`)
   serverProcess = start(sandboxPath, 'local')
+  if (!serverProcess.pid) {
+    throw new Error('Pid not found')
+  }
   storePIDFor(sandboxPath, serverProcess.pid) //store pid to kill process on stop
   await sleep(2000)
   console.log('local server ready')

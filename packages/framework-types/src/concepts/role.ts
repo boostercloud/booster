@@ -1,4 +1,5 @@
 import { Class } from '../typelevel'
+import { CommandAuthorizer, EventStreamAuthorizer, ReadModelAuthorizer } from './authorizers'
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface RoleInterface {}
@@ -13,7 +14,14 @@ export interface AuthMetadata {
   readonly signUpMethods?: Array<SignUpMethod>
   readonly skipConfirmation?: boolean
 }
+export interface CommandRoleAccess {
+  readonly authorize?: 'all' | Array<Class<RoleInterface>> | CommandAuthorizer
+}
 
-export interface RoleAccess {
-  readonly authorize: 'all' | Array<Class<RoleInterface>>
+export interface ReadModelRoleAccess {
+  readonly authorize?: 'all' | Array<Class<RoleInterface>> | ReadModelAuthorizer
+}
+
+export interface EventStreamRoleAccess {
+  readonly authorizeReadEvents: 'all' | Array<Class<RoleInterface>> | EventStreamAuthorizer
 }

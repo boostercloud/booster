@@ -5,14 +5,14 @@ import {
   EntityInterface,
   ReducerMetadata,
   EventInterface,
-  RoleAccess,
+  EventStreamRoleAccess,
   AnyClass,
+  EventStreamAuthorizer,
 } from '@boostercloud/framework-types'
 import 'reflect-metadata'
+import { BoosterAuthorizer } from '../booster-authorizer'
 
-interface EntityAttributes {
-  authorizeReadEvents: RoleAccess['authorize']
-}
+type EntityAttributes = EventStreamRoleAccess
 
 // The craziness with the following both types (the param and return types of the @Entity decorator) is to achieve that either:
 // - The @Entity decorator doesn't have parenthesis: THEN the decorator needs to accept a class as a parameter and return void
@@ -29,18 +29,28 @@ type EntityDecoratorResult<TEntity, TParam> = TParam extends EntityAttributes
 export function Entity<TEntity extends EntityInterface, TParam extends EntityDecoratorParam>(
   classOrAttributes: TParam
 ): EntityDecoratorResult<TEntity, TParam> {
-  let authorizeReadEvents: RoleAccess['authorize'] = []
+  let authorizeReadEvents: EventStreamRoleAccess['authorizeReadEvents']
+
   // This function will be either returned or executed, depending on the parameters passed to the decorator
-  const mainLogicFunction = (entityClass: Class<TEntity>) => {
+  const mainLogicFunction = (entityClass: Class<TEntity>): void => {
     Booster.configureCurrentEnv((config): void => {
       if (config.entities[entityClass.name]) {
         throw new Error(`An entity called ${entityClass.name} is already registered
         If you think that this is an error, try performing a clean build..`)
       }
 
+      let eventStreamAuthorizer: EventStreamAuthorizer = BoosterAuthorizer.denyAccess
+      if (authorizeReadEvents === 'all') {
+        eventStreamAuthorizer = BoosterAuthorizer.allowAccess
+      } else if (Array.isArray(authorizeReadEvents)) {
+        eventStreamAuthorizer = BoosterAuthorizer.authorizeRoles.bind(null, authorizeReadEvents)
+      } else if (typeof authorizeReadEvents === 'function') {
+        eventStreamAuthorizer = authorizeReadEvents
+      }
+
       config.entities[entityClass.name] = {
         class: entityClass,
-        authorizeReadEvents,
+        eventStreamAuthorizer,
       }
     })
   }

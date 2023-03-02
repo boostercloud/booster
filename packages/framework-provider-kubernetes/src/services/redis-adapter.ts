@@ -1,9 +1,10 @@
-import { Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import fetch from 'node-fetch'
 import * as redis from 'redis'
 
 export class RedisAdapter {
-  public static keySeparator: string = '_____'
+  public static keySeparator = '_____'
 
   private _client?: redis.RedisClient
   constructor(readonly daprUrl: string, readonly redisUrl: string) {}
@@ -22,7 +23,8 @@ export class RedisAdapter {
     return new RedisAdapter('http://localhost:3500', redisUrl)
   }
 
-  public async set(key: string, value: unknown, logger: Logger): Promise<void> {
+  public async set(config: BoosterConfig, key: string, value: unknown): Promise<void> {
+    const logger = getLogger(config, 'RedisAdapter#set')
     const stateUrl = `${this.daprUrl}/v1.0/state/statestore`
     logger.debug('About to post', value)
     const data = [{ key: key, value: value }]
@@ -40,7 +42,8 @@ export class RedisAdapter {
     }
   }
 
-  public async keys(keyPattern: string, logger: Logger): Promise<Array<string>> {
+  public async keys(config: BoosterConfig, keyPattern: string): Promise<Array<string>> {
+    const logger = getLogger(config, 'RedisAdapter#keys')
     logger.debug('RedisAdapter keys')
     return new Promise((resolve) => {
       this.client.keys(`booster||${keyPattern}*`, function (err: Error | null, res: Array<string>) {
@@ -62,7 +65,8 @@ export class RedisAdapter {
     )
   }
 
-  public async setViaRedis(key: string, value: string, logger: Logger): Promise<void> {
+  public async setViaRedis(config: BoosterConfig, key: string, value: string): Promise<void> {
+    const logger = getLogger(config, 'RedisAdapter#setViaRedis')
     const response = this.client.set('booster||' + key, value)
     logger.debug(response)
     logger.debug('END RedisAdapter setViaRedis')

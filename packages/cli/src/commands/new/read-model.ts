@@ -13,8 +13,7 @@ import {
   parseProjections,
 } from '../../services/generator/target'
 import * as path from 'path'
-import { generate } from '../../services/generator'
-import { templates } from '../../templates'
+import { generate, template } from '../../services/generator'
 import { checkCurrentDirIsABoosterProject } from '../../services/project-checker'
 import { classNameToFileName } from '../../common/filenames'
 
@@ -95,7 +94,7 @@ const generateReadModel = (info: ReadModelInfo): Promise<void> =>
     name: info.name,
     extension: '.ts',
     placementDir: path.join('src', 'read-models'),
-    template: templates.readModel,
+    template: template('read-model'),
     info: {
       imports: generateImports(info),
       ...info,

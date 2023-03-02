@@ -1,6 +1,6 @@
+/* eslint-disable no-case-declarations */
 import {
   BoosterConfig,
-  Logger,
   InvalidParameterError,
   GraphQLRequestEnvelope,
   InvalidProtocolError,
@@ -15,6 +15,7 @@ import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './se
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { BoosterTokenVerifier } from './booster-token-verifier'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult | void
 
@@ -24,13 +25,12 @@ export class BoosterGraphQLDispatcher {
   private readonly readModelDispatcher: BoosterReadModelsReader
   private readonly boosterTokenVerifier: BoosterTokenVerifier
 
-  public constructor(private config: BoosterConfig, private logger: Logger) {
-    this.readModelDispatcher = new BoosterReadModelsReader(config, logger)
-    this.graphQLSchema = GraphQLGenerator.generateSchema(config, logger)
+  public constructor(private config: BoosterConfig) {
+    this.readModelDispatcher = new BoosterReadModelsReader(config)
+    this.graphQLSchema = GraphQLGenerator.generateSchema(config)
     this.boosterTokenVerifier = new BoosterTokenVerifier(config)
     this.websocketHandler = new GraphQLWebsocketHandler(
       config,
-      logger,
       this.config.provider.connections,
       {
         onStartOperation: this.runGraphQLOperation.bind(this),
@@ -42,14 +42,17 @@ export class BoosterGraphQLDispatcher {
   }
 
   public async dispatch(request: unknown): Promise<unknown> {
-    const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(request, this.logger, this.config)
-    this.logger.debug('Received the following GraphQL envelope: ', envelopeOrError)
+    const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#dispatch')
+    const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(this.config, request)
+    logger.debug('Received the following GraphQL envelope: ', envelopeOrError)
 
     switch (envelopeOrError.eventType) {
       case 'CONNECT':
         return this.config.provider.graphQL.handleResult(null, graphQLWebsocketSubprotocolHeaders)
       case 'MESSAGE':
-        return this.config.provider.graphQL.handleResult(await this.handleMessage(envelopeOrError))
+        const responseHeaders = { ...this.config.defaultResponseHeaders }
+        const result = await this.handleMessage(envelopeOrError, responseHeaders)
+        return this.config.provider.graphQL.handleResult(result, responseHeaders)
       case 'DISCONNECT':
         return this.config.provider.graphQL.handleResult(await this.handleDisconnect(envelopeOrError.connectionID))
       default:
@@ -59,38 +62,45 @@ export class BoosterGraphQLDispatcher {
     }
   }
 
-  private async verifyTokenFromEnvelop(
+  private async verifyTokenFromEnvelope(
     envelope: GraphQLRequestEnvelope
   ): Promise<GraphQLRequestEnvelope | GraphQLRequestEnvelopeError> {
+    const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#verifyTokenFromEnvelop')
     if (envelope.token) {
       try {
-        this.logger.debug(`Decoding current user from auth token: ${envelope.token}`)
+        logger.debug(`Decoding current user from auth token: ${envelope.token}`)
         envelope.currentUser = await this.boosterTokenVerifier.verify(envelope.token)
       } catch (e) {
         envelope = {
           ...envelope,
           error: e,
         } as GraphQLRequestEnvelopeError
-        this.logger.debug('Unable to decode auth token')
+        logger.debug('Unable to decode auth token')
       }
     }
     return envelope
   }
 
-  private async handleMessage(envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError): Promise<DispatchResult> {
-    this.logger.debug('Starting GraphQL operation:', envelope)
+  private async handleMessage(
+    envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError,
+    responseHeaders: Record<string, string>
+  ): Promise<DispatchResult> {
+    const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#handleMessage')
+    logger.debug('Starting GraphQL operation:', envelope)
 
-    const envelopeOrError = await this.verifyTokenFromEnvelop(envelope)
+    const envelopeOrError = await this.verifyTokenFromEnvelope(envelope)
 
     if (cameThroughSocket(envelopeOrError)) {
       return this.websocketHandler.handle(envelopeOrError)
     }
-    return this.runGraphQLOperation(envelopeOrError)
+    return this.runGraphQLOperation(envelopeOrError, responseHeaders)
   }
 
   private async runGraphQLOperation(
-    envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError
+    envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError,
+    responseHeaders: Record<string, string> = {}
   ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
+    const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#runGraphQLOperation')
     try {
       if ('error' in envelope) {
         throw envelope.error
@@ -109,6 +119,14 @@ export class BoosterGraphQLDispatcher {
         throw errors
       }
       const operationData = graphql.getOperationAST(queryDocument, operation.operationName)
+      const isIntrospectionQuery =
+        operation.operationName === 'IntrospectionQuery' || operation.query.includes('__schema')
+      if (isIntrospectionQuery && !this.config.enableGraphQLIntrospection) {
+        throw new InvalidProtocolError(
+          'Instrospection queries are disabled. Check the configuration if you want to enable them.'
+        )
+      }
+
       if (!operationData) {
         throw new InvalidParameterError(
           'Could not extract GraphQL operation. ' +
@@ -118,6 +136,7 @@ export class BoosterGraphQLDispatcher {
       }
       const resolverContext: GraphQLResolverContext = {
         connectionID: envelope.connectionID,
+        responseHeaders: responseHeaders,
         requestID: envelope.requestID,
         user: envelope.currentUser,
         operation: {
@@ -136,8 +155,9 @@ export class BoosterGraphQLDispatcher {
           return await this.handleSubscription(queryDocument, resolverContext)
       }
     } catch (e) {
-      this.logger.error(e)
-      const errors = Array.isArray(e) ? e.map(toGraphQLErrorWithExtensions) : [toGraphQLErrorWithExtensions(e)]
+      const error = e as Error
+      logger.error(e)
+      const errors = Array.isArray(e) ? e.map(toGraphQLErrorWithExtensions) : [toGraphQLErrorWithExtensions(error)]
       return { errors }
     }
   }
@@ -146,6 +166,7 @@ export class BoosterGraphQLDispatcher {
     queryDocument: DocumentNode,
     resolverContext: GraphQLResolverContext
   ): Promise<ExecutionResult> {
+    const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#handleQueryOrMutation')
     const result = await graphql.execute({
       schema: this.graphQLSchema,
       document: queryDocument,
@@ -154,7 +175,7 @@ export class BoosterGraphQLDispatcher {
       operationName: resolverContext.operation.operationName,
     })
     result.errors = result.errors?.map(toGraphQLErrorWithExtensions)
-    this.logger.debug('GraphQL result: ', result)
+    logger.debug('GraphQL result: ', result)
     return result
   }
 
@@ -162,6 +183,7 @@ export class BoosterGraphQLDispatcher {
     queryDocument: DocumentNode,
     resolverContext: GraphQLResolverContext
   ): Promise<AsyncIterableIterator<ExecutionResult> | ExecutionResult> {
+    const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#handleSubscription')
     if (!cameThroughSocket(resolverContext)) {
       throw new InvalidProtocolError(
         'This API and protocol does not support "subscription" operations, only "query" and "mutation". Use the socket API for "subscription"'
@@ -174,17 +196,18 @@ export class BoosterGraphQLDispatcher {
       variableValues: resolverContext.operation.variables,
       operationName: resolverContext.operation.operationName,
     })
-    this.logger.debug('GraphQL subscription finished')
+    logger.debug('GraphQL subscription finished')
     return result
   }
 
   private async handleDisconnect(connectionID?: string): Promise<void> {
+    const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#handleDisconnect')
     if (!connectionID) {
       // This should be impossible, but just in case
-      this.logger.info("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
+      logger.info("Received a DISCONNECT message but field 'connectionID' is missing. Doing nothing")
       return
     }
-    this.logger.debug('Deleting all subscriptions and connection data')
+    logger.debug('Deleting all subscriptions and connection data')
     await this.config.provider.connections.deleteData(this.config, connectionID)
     await this.readModelDispatcher.unsubscribeAll(connectionID)
   }

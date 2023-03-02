@@ -1,0 +1,69 @@
+{
+  "folders": [
+    {
+      "name": "📦 @boostercloud/application-tester",
+      "path": "packages/application-tester"
+    },
+    {
+      "name": "📦 @boostercloud/cli",
+      "path": "packages/cli"
+    },
+    {
+      "name": "📦 @boostercloud/framework-common-helpers",
+      "path": "packages/framework-common-helpers"
+    },
+    {
+      "name": "📦 @boostercloud/framework-core",
+      "path": "packages/framework-core"
+    },
+    {
+      "name": "📦 @boostercloud/framework-integration-tests",
+      "path": "packages/framework-integration-tests"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-aws",
+      "path": "packages/framework-provider-aws"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-aws-infrastructure",
+      "path": "packages/framework-provider-aws-infrastructure"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-azure",
+      "path": "packages/framework-provider-azure"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-azure-infrastructure",
+      "path": "packages/framework-provider-azure-infrastructure"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-kubernetes",
+      "path": "packages/framework-provider-kubernetes"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-kubernetes-infrastructure",
+      "path": "packages/framework-provider-kubernetes-infrastructure"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-local",
+      "path": "packages/framework-provider-local"
+    },
+    {
+      "name": "📦 @boostercloud/framework-provider-local-infrastructure",
+      "path": "packages/framework-provider-local-infrastructure"
+    },
+    {
+      "name": "📦 @boostercloud/framework-types",
+      "path": "packages/framework-types"
+    },
+    {
+      "name": "📦 @boostercloud/metadata-booster",
+      "path": "packages/metadata-booster"
+    },
+    {
+      "name": "⚙️ @boostercloud/eslint-config",
+      "path": "tools/eslint-config"
+    }
+  ],
+  "settings": {}
+}

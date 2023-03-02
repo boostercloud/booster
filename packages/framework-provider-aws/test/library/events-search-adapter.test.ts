@@ -8,7 +8,7 @@ import {
   EventParametersFilterByType,
   EventSearchParameters,
   EventSearchResponse,
-  Logger,
+  NonPersistedEventEnvelope,
 } from '@boostercloud/framework-types'
 import { random, date } from 'faker'
 import { DynamoDB } from 'aws-sdk'
@@ -16,11 +16,11 @@ import { searchEvents } from '../../src/library/events-searcher-adapter'
 import { eventsStoreAttributes } from '../../src'
 import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
 import { DocumentClient } from 'aws-sdk/clients/dynamodb'
-import rewire = require('rewire')
+
+const rewire = require('rewire')
 
 describe('Events searcher adapter', () => {
   const config: BoosterConfig = new BoosterConfig('test')
-  const logger: Logger = console
   let db: SinonStubbedInstance<DynamoDB.DocumentClient>
   beforeEach(() => {
     db = createStubInstance(DynamoDB.DocumentClient, {
@@ -42,7 +42,7 @@ describe('Events searcher adapter', () => {
 
   describe('The "searchEvents" method', () => {
     it('throws an error when an invalid search is made', async () => {
-      await expect(searchEvents(db, config, logger, {} as never)).to.be.rejectedWith(/Invalid search event query/)
+      await expect(searchEvents(db, config, {} as never)).to.be.rejectedWith(/Invalid search event query/)
     })
 
     describe('for a search by entity with ID', () => {
@@ -131,7 +131,7 @@ describe('Events searcher adapter', () => {
   ): void {
     context('with no time filters', () => {
       it('does the query with no time filters', async () => {
-        await searchEvents(db, config, logger, getFilters())
+        await searchEvents(db, config, getFilters())
         expect(db.query).to.have.been.calledWithExactly(getQuery())
       })
     })
@@ -151,7 +151,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with "from" time filter and limit', async () => {
-        await searchEvents(db, config, logger, filterWithFrom)
+        await searchEvents(db, config, filterWithFrom)
         expect(db.query).to.have.been.calledWithExactly(queryWithFromTimeAdditions)
       })
     })
@@ -169,7 +169,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with "from" time filter', async () => {
-        await searchEvents(db, config, logger, filterWithFrom)
+        await searchEvents(db, config, filterWithFrom)
         expect(db.query).to.have.been.calledWithExactly(queryWithFromTimeAdditions)
       })
     })
@@ -187,7 +187,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with "to" time filters', async () => {
-        await searchEvents(db, config, logger, filterWithTo)
+        await searchEvents(db, config, filterWithTo)
         expect(db.query).to.have.been.calledWithExactly(queryWithToTimeAdditions)
       })
     })
@@ -207,7 +207,7 @@ describe('Events searcher adapter', () => {
       })
 
       it('does the query with both time filters', async () => {
-        await searchEvents(db, config, logger, fullFilter)
+        await searchEvents(db, config, fullFilter)
         expect(db.query).to.have.been.calledWithExactly(fullQuery)
       })
     })
@@ -235,7 +235,7 @@ describe('Events searcher adapter', () => {
           }) as any
         )
 
-        await searchEvents(db, config, logger, getFilters())
+        await searchEvents(db, config, getFilters())
         expect(db.batchGet).to.have.been.calledWithExactly({
           RequestItems: {
             [config.resourceNames.eventsStore]: {
@@ -261,7 +261,7 @@ describe('Events searcher adapter', () => {
       const occurredThirdDate = date.recent(),
         occurredSecondDate = date.recent(10, occurredThirdDate),
         occurredFirstDate = date.recent(10, occurredSecondDate)
-      const unsortedResult: Array<EventEnvelope> = [
+      const unsortedResult: Array<NonPersistedEventEnvelope> = [
         buildEventEnvelope(occurredThirdID, occurredThirdDate.toISOString()),
         buildEventEnvelope(occurredFirstID, occurredFirstDate.toISOString()),
         buildEventEnvelope(occurredSecondID, occurredSecondDate.toISOString()),
@@ -284,7 +284,7 @@ describe('Events searcher adapter', () => {
           occurredFirstID,
         ])
 
-        const res: Array<EventSearchResponse> = await rewiredModule.searchEvents(db, config, logger, getFilters())
+        const res: Array<EventSearchResponse> = await rewiredModule.searchEvents(db, config, getFilters())
         console.log(res)
 
         // Check they are sorted
@@ -307,6 +307,7 @@ function buildEventEnvelope(id: string, createdAt: string): EventEnvelope {
     entityTypeName: random.alpha(),
     typeName: random.alpha(),
     kind: 'event',
+    superKind: 'domain',
     version: random.number(),
   }
 }

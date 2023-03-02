@@ -1,5 +1,5 @@
 import { mkdirSync, readdirSync, rmSync, statSync } from 'fs'
-import { copySync } from 'fs-extra'
+import { copySync, existsSync } from 'fs-extra'
 import * as path from 'path'
 
 const copyFolder = (origin: string, destiny: string): void => {
@@ -19,8 +19,12 @@ export const createSandboxProject = (sandboxPath: string, assets?: Array<string>
   mkdirSync(sandboxPath, { recursive: true })
   copyFolder('src', path.join(sandboxPath, 'src'))
 
-  const projectFiles = ['package.json', 'tsconfig.json']
-  projectFiles.forEach((file: string) => copySync(file, path.join(sandboxPath, file)))
+  const projectFiles = ['package.json', 'package-lock.json', 'tsconfig.json']
+  projectFiles.forEach((file: string) => {
+    if (existsSync(file)) {
+      copySync(file, path.join(sandboxPath, file))
+    }
+  })
 
   if (assets) {
     assets.forEach((asset) => {

@@ -3,19 +3,16 @@
 import { expect } from '../expect'
 import * as Library from '../../src/library/events-adapter'
 import { restore, fake, match, createStubInstance } from 'sinon'
-import { EventEnvelope, BoosterConfig, UUID, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, UUID, NonPersistedEventEnvelope } from '@boostercloud/framework-types'
 import { DynamoDBStreamEvent } from 'aws-lambda'
 import { DynamoDB } from 'aws-sdk'
 import { eventsStoreAttributes } from '../../src'
-import { partitionKeyForEvent, partitionKeyForIndexByEntity } from '../../src/library/keys-helper'
+import {
+  partitionKeyForEntitySnapshot,
+  partitionKeyForEvent,
+  partitionKeyForIndexByEntity,
+} from '../../src/library/keys-helper'
 import { DocumentClient, Converter } from 'aws-sdk/clients/dynamodb'
-
-const fakeLogger: Logger = {
-  info: fake(),
-  warn: fake(),
-  error: fake(),
-  debug: fake(),
-}
 
 describe('the events-adapter', () => {
   afterEach(() => {
@@ -44,7 +41,7 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
-      await Library.readEntityEventsSince(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+      await Library.readEntityEventsSince(dynamoDB, config, 'SomeEntity', 'someSpecialID')
 
       expect(dynamoDB.query).to.have.been.calledWith(
         match({
@@ -68,7 +65,7 @@ describe('the events-adapter', () => {
       const config = new BoosterConfig('test')
       config.appName = 'nuke-button'
 
-      await Library.readEntityLatestSnapshot(dynamoDB, config, fakeLogger, 'SomeEntity', 'someSpecialID')
+      await Library.readEntityLatestSnapshot(dynamoDB, config, 'SomeEntity', 'someSpecialID')
 
       expect(dynamoDB.query).to.have.been.calledWith(
         match({
@@ -76,7 +73,7 @@ describe('the events-adapter', () => {
           ConsistentRead: true,
           KeyConditionExpression: `${eventsStoreAttributes.partitionKey} = :partitionKey`,
           ExpressionAttributeValues: {
-            ':partitionKey': partitionKeyForEvent('SomeEntity', 'someSpecialID', 'snapshot'),
+            ':partitionKey': partitionKeyForEntitySnapshot('SomeEntity', 'someSpecialID'),
           },
           ScanIndexForward: false,
           Limit: 1,
@@ -108,10 +105,11 @@ describe('the events-adapter', () => {
       })
       const fakeDynamo: DocumentClient = { put: fakePut } as any
 
-      const eventEnvelopes = events.map((e): EventEnvelope => {
+      const eventEnvelopes = events.map((e): NonPersistedEventEnvelope => {
         return {
           version: 1,
           kind: 'event',
+          superKind: 'domain',
           requestID,
           entityID: e.entityID(),
           entityTypeName: 'fake-entity-name',
@@ -119,19 +117,14 @@ describe('the events-adapter', () => {
           value: {
             entityID: e.entityID,
           },
-          createdAt: new Date().toISOString(),
         }
       })
 
-      await Library.storeEvents(fakeDynamo, eventEnvelopes, config, fakeLogger)
+      await Library.storeEvents(fakeDynamo, eventEnvelopes, config)
 
       expect(fakePut).to.be.calledTwice
       for (const eventEnvelope of eventEnvelopes) {
-        const partitionKey = partitionKeyForEvent(
-          eventEnvelope.entityTypeName,
-          eventEnvelope.entityID,
-          eventEnvelope.kind
-        )
+        const partitionKey = partitionKeyForEvent(eventEnvelope.entityTypeName, eventEnvelope.entityID)
         expect(fakePut).to.be.calledWithExactly({
           TableName: config.resourceNames.eventsStore,
           ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
@@ -154,36 +147,36 @@ describe('the events-adapter', () => {
   })
 })
 
-function buildEventEnvelopes(): Array<EventEnvelope> {
+function buildEventEnvelopes(): Array<NonPersistedEventEnvelope> {
   return [
     {
       version: 1,
       entityID: 'id',
       kind: 'event',
+      superKind: 'domain',
       value: {
         id: 'id',
       },
       typeName: 'EventName',
       entityTypeName: 'EntityName',
       requestID: 'requestID',
-      createdAt: 'once',
     },
     {
       version: 1,
       entityID: 'id2',
       kind: 'event',
+      superKind: 'domain',
       value: {
         id: 'id2',
       },
       typeName: 'EventName2',
       entityTypeName: 'EntityName2',
       requestID: 'requestID2',
-      createdAt: 'once upon a time',
     },
   ]
 }
 
-function wrapEventEnvelopesForDynamoDB(eventEnvelopes: Array<EventEnvelope>): DynamoDBStreamEvent {
+function wrapEventEnvelopesForDynamoDB(eventEnvelopes: Array<NonPersistedEventEnvelope>): DynamoDBStreamEvent {
   const dynamoMessage = {
     Records: eventEnvelopes.map((envelope) => ({
       dynamodb: {

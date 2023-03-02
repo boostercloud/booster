@@ -1,7 +1,8 @@
-import { BoosterConfig, Logger, SubscriptionEnvelope } from '@boostercloud/framework-types'
+import { BoosterConfig, SubscriptionEnvelope } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { subscriptionsStoreAttributes } from '../constants'
 import { sortKeyForSubscription } from './keys-helper'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export interface SubscriptionIndexRecord {
   [subscriptionsStoreAttributes.partitionKey]: string
@@ -13,7 +14,6 @@ export interface SubscriptionIndexRecord {
 export async function subscribeToReadModel(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   subscriptionEnvelope: SubscriptionEnvelope
 ): Promise<void> {
   if (
@@ -46,7 +46,6 @@ export async function subscribeToReadModel(
 export async function fetchSubscriptions(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   subscriptionName: string
 ): Promise<Array<SubscriptionEnvelope>> {
   // TODO: filter expired ones. Or... is it needed?
@@ -67,10 +66,10 @@ export async function fetchSubscriptions(
 export async function deleteSubscription(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   connectionID: string,
   subscriptionID: string
 ): Promise<void> {
+  const logger = getLogger(config, 'subscription-adapter#deleteSubscription')
   // TODO: Manage query pagination
   const result = await db
     .query({
@@ -110,9 +109,9 @@ export async function deleteSubscription(
 export async function deleteAllSubscriptions(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   connectionID: string
 ): Promise<void> {
+  const logger = getLogger(config, 'subscription-adapter#deleteAllSubscriptions')
   // TODO: Manage query pagination and db.batchWrite limit of 25 operations at a time
   const result = await db
     .query({

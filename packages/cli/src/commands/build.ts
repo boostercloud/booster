@@ -17,9 +17,25 @@ export default class Build extends BaseCommand {
 
   public static flags = {
     help: flags.help({ char: 'h' }),
+    verbose: flags.boolean({
+      description: 'display full error messages',
+      default: false,
+    }),
   }
 
   public async run(): Promise<void> {
     await runTasks((ctx: string) => compileProject(process.cwd()))
+  }
+
+  async catch(fullError: Error) {
+    const {
+      flags: { verbose },
+    } = this.parse(Build)
+
+    if (verbose) {
+      console.error(fullError.message)
+    }
+
+    return super.catch(fullError)
   }
 }

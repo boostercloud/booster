@@ -1,0 +1,25 @@
+@import 'fonts.css';
+
+:root, * {
+  font-family: 'IamwriterquattroS';
+  --ifm-font-family-base: 'IamwriterquattroS';
+  --ifm-link-color: #00f;
+  --ifm-color-primary: #0000ff;
+  --ifm-color-primary-dark: #0000e6;
+  --ifm-color-primary-darker: #0000d9;
+  --ifm-color-primary-darkest: #0000b3;
+  --ifm-color-primary-light: #1a1aff;
+  --ifm-color-primary-lighter: #2626ff;
+  --ifm-color-primary-lightest: #4d4dff;
+}
+
+svg {
+  display: unset;
+}
+
+.container {
+  margin: unset;
+  max-width: unset;
+}
+
+@import './styles/index.css';

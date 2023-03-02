@@ -3,24 +3,28 @@ import {
   BoosterConfig,
   FilterFor,
   InvalidParameterError,
-  Logger,
   Operation,
   ReadModelListResult,
+  SortFor,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
-export async function search(
+export async function search<TResult>(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
-  logger: Logger,
   containerName: string,
   filters: FilterFor<unknown>,
-  limit?: number,
+  limit?: number | undefined,
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false,
-  order?: Record<string, string>
-): Promise<Array<any> | ReadModelListResult<any>> {
+  order?: SortFor<unknown>,
+  projections = '*'
+): Promise<Array<TResult> | ReadModelListResult<TResult>> {
+  const logger = getLogger(config, 'query-helper#search')
   const filterExpression = buildFilterExpression(filters)
-  const queryDefinition = `SELECT * FROM c ${filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression}`
+  const queryDefinition = `SELECT ${projections} FROM c ${
+    filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression
+  }`
   const queryWithOrder = queryDefinition + buildOrderExpression(order)
   let finalQuery = queryWithOrder
   if (paginatedVersion && limit) {
@@ -103,6 +107,9 @@ function buildOperation(
         case 'includes': {
           return `ARRAY_CONTAINS(${propName}, ${holder(index)}, true)`
         }
+        case 'isDefined': {
+          return value ? `IS_DEFINED(${propName})` : `NOT IS_DEFINED(${propName})`
+        }
         default:
           if (typeof value === 'object') {
             return buildOperation(operation, value, usedPlaceholders, propName)
@@ -170,9 +177,9 @@ function buildAttributeValue(
           value: element,
         })
       })
-    } else if (typeof value === 'object' && key !== 'includes') {
+    } else if (typeof value === 'object' && key !== 'includes' && value !== null) {
       attributeValues = [...attributeValues, ...buildExpressionAttributeValues({ [key]: value }, usedPlaceholders)]
-    } else {
+    } else if (key !== 'isDefined') {
       attributeValues.push({
         name: holder(index),
         value: value as {},
@@ -182,11 +189,26 @@ function buildAttributeValue(
   return attributeValues
 }
 
-function buildOrderExpression(order: Record<string, string> | undefined): string {
-  if (!order || !Object.keys(order).length) return ''
-  let orderQuery = ' ORDER BY'
-  orderQuery += Object.entries(order)
-    .map(([key, value]) => ` c.${key} ${value}`)
-    .join(',')
+function buildOrderExpression(sortFor: SortFor<unknown> | undefined): string {
+  if (!sortFor || !Object.keys(sortFor).length) return ''
+  let orderQuery = ' ORDER BY '
+  orderQuery += toLocalSortFor(sortFor)?.join(', ')
   return orderQuery
+}
+
+function toLocalSortFor(
+  sortBy?: SortFor<unknown>,
+  parentKey = '',
+  sortedList: Array<string> = []
+): undefined | Array<string> {
+  if (!sortBy || Object.keys(sortBy).length === 0) return
+  const elements = sortBy!
+  Object.entries(elements).forEach(([key, value]) => {
+    if (typeof value === 'string') {
+      sortedList.push(`c.${parentKey}${key} ${value}`)
+    } else {
+      toLocalSortFor(value as SortFor<unknown>, `${parentKey}${key}.`, sortedList)
+    }
+  })
+  return sortedList
 }

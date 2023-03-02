@@ -1,16 +1,11 @@
 import { HelmManager } from '../../src/infrastructure/helm-manager'
 import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
-import { Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 describe('The user interaction with Helm', async () => {
-  const fakeLogger: Logger = {
-    info: fake(),
-    warn: fake(),
-    error: fake(),
-    debug: fake(),
-  }
-  const helm = new HelmManager(fakeLogger)
+  const config = new BoosterConfig('production')
+  const helm = new HelmManager(config)
   afterEach(() => {
     restore()
   })

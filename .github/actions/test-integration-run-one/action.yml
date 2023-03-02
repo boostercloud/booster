@@ -1,0 +1,118 @@
+name: Run one integration test
+
+inputs:
+  integration-test:
+    required: true
+    type: string
+  aws-region:
+    default: 'us-east-1'
+    required: false
+    type: string
+  azure-region:
+    default: 'Central US'
+    required: false
+    type: string
+  azure-publisher-email:
+    default: 'noreply@booster.cloud'
+    required: false
+    type: string
+  azure-publisher-name:
+    default: 'Booster App'
+    required: false
+    type: string
+
+  # Secrets
+  bot-aws-access-key-id:
+    required: false
+    type: string
+  bot-aws-secret-access-key:
+    required: false
+    type: string
+  azure-clientid:
+    required: false
+    type: string
+  azure-secret:
+    required: false
+    type: string
+  azure-tenantid:
+    required: false
+    type: string
+  azure-subscriptionid:
+    required: false
+    type: string
+  azure-credentials:
+    required: false
+    type: string
+  gh_token:
+    required: true
+    type: string
+
+  github_token:
+    required: true
+    type: string
+
+runs:
+  using: 'composite'
+  steps:
+    # If this was triggered by a /integration command, check out merge commit
+    - name: Fork based /integration checkout
+      id: fork-based-checkout
+      if: github.event_name == 'repository_dispatch' &&
+        github.event.client_payload.slash_command.args.named.sha != '' &&
+        contains(github.event.client_payload.pull_request.head.sha, github.event.client_payload.slash_command.args.named.sha)
+      uses: actions/checkout@v3
+      with:
+        ref: 'refs/pull/${{ github.event.client_payload.pull_request.number }}/merge'
+
+    - uses: ./.github/actions/build
+
+    # Sets ACTUAL_SHA environment variable to slash_command.args.named.sha if it was a fork based checkout
+    - name: Set ACTUAL_SHA environment variable
+      if: steps.fork-based-checkout.outcome == 'success'
+      shell: bash
+      run: echo "ACTUAL_SHA=${{ github.event.client_payload.slash_command.args.named.sha }}" >> $GITHUB_ENV
+
+    # Sets ACTUAL_SHA to github.sha if fork-based-checkout was skipped
+    - name: Set ACTUAL_SHA environment variable
+      if: steps.fork-based-checkout.outcome != 'success'
+      shell: bash
+      run: echo "ACTUAL_SHA=${{ github.sha }}" >> $GITHUB_ENV
+
+    - name: Set BOOSTER_APP_SUFFIX environment variable
+      shell: bash
+      run: echo "BOOSTER_APP_SUFFIX=$(echo ${{ env.ACTUAL_SHA }} | head -c 7)" >> $GITHUB_ENV
+
+    # This step will download the artifact named `integration-test-dependencies-${{ github.sha }}`
+    # from the `Prepare Integration Tests` workflow into the `packages/framework-integration-tests/.booster`
+    # folder.
+    - name: Download integration test dependencies
+      uses: actions/download-artifact@v2
+      with:
+        name: integration-test-dependencies-${{ env.ACTUAL_SHA }}
+        path: packages/framework-integration-tests/.booster
+
+    # Login if inputs.azure-credentials is set
+    - name: Login to Azure
+      if: ${{ inputs.azure-credentials }}
+      uses: azure/login@v1.4.0
+      with:
+        creds: ${{ inputs.azure-credentials }}
+
+    - name: Running ${{ inputs.integration-test }} integration test
+      shell: bash
+      run: cd packages/framework-integration-tests && node ../../common/scripts/install-run-rushx.js integration/${{ inputs.integration-test }} -v
+      env:
+        AWS_ACCESS_KEY_ID: ${{ inputs.bot-aws-access-key-id }}
+        AWS_SECRET_ACCESS_KEY: ${{ inputs.bot-aws-secret-access-key }}
+        AWS_REGION: ${{ inputs.aws-region }}
+        AZURE_APP_ID: ${{ inputs.azure-clientid }}
+        AZURE_SECRET: ${{ inputs.azure-secret }}
+        AZURE_TENANT_ID: ${{ inputs.azure-tenantid }}
+        AZURE_SUBSCRIPTION_ID: ${{ inputs.azure-subscriptionid }}
+        REGION: ${{ inputs.azure-region }}
+        publisherEmail: ${{ inputs.azure-publisher-email }}
+        publisherName: ${{ inputs.azure-publisher-name }}}
+        ARM_CLIENT_ID: ${{ inputs.azure-clientid }}
+        ARM_CLIENT_SECRET: ${{ inputs.azure-secret }}
+        ARM_SUBSCRIPTION_ID: ${{ inputs.azure-subscriptionid }}
+        ARM_TENANT_ID: ${{ inputs.azure-tenantid }}

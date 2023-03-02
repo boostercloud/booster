@@ -5,6 +5,7 @@ import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { restore } from 'sinon'
 import { random } from 'faker'
 import { APIGatewayProxyEvent } from 'aws-lambda'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 describe('AWS Provider graphql-adapter', () => {
   afterEach(() => {
@@ -70,7 +71,8 @@ describe('AWS Provider graphql-adapter', () => {
     })
 
     it('generates an envelope correctly from an AWS event', async () => {
-      const gotOutput = await rawGraphQLRequestToEnvelope(request, console)
+      const config = new BoosterConfig('test')
+      const gotOutput = await rawGraphQLRequestToEnvelope(config, request)
       expect(gotOutput).to.be.deep.equal(expectedOutput)
     })
   })

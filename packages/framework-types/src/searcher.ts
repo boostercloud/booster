@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/indent */
 import { SequenceKey, UUID } from './concepts'
 import { ReadModelListResult } from './envelope'
-import { Class, ReadOnlyNonEmptyArray } from './typelevel'
+import { AnyClass, Class, ReadOnlyNonEmptyArray } from './typelevel'
 
 export type SearcherFunction<TObject> = (
-  className: string,
+  objectClass: AnyClass,
   filters: FilterFor<TObject>,
+  sortBy: SortFor<TObject>,
   limit?: number,
   afterCursor?: any,
   paginatedVersion?: boolean
 ) => Promise<Array<TObject> | ReadModelListResult<TObject>>
 
 export type FinderByKeyFunction<TObject> = (
-  className: string,
+  objectClass: AnyClass,
   id: UUID,
   sequenceKey?: SequenceKey
 ) => Promise<TObject | ReadOnlyNonEmptyArray<TObject>>
@@ -33,6 +34,7 @@ export class Searcher<TObject> {
   private _limit?: number
   private _afterCursor?: any
   private filters: FilterFor<TObject> = {}
+  private _sortByList: SortFor<TObject> = {}
   private _paginatedVersion = false
 
   /**
@@ -62,6 +64,11 @@ export class Searcher<TObject> {
     return this
   }
 
+  public sortBy(sortBy?: SortFor<TObject>): this {
+    if (sortBy) this._sortByList = sortBy
+    return this
+  }
+
   public limit(limit?: number): this {
     if (limit) this._limit = limit
     return this
@@ -77,15 +84,19 @@ export class Searcher<TObject> {
     return this
   }
 
+  /**
+   * @deprecated Use searchOnce instead
+   */
   public async findById(id: UUID, sequenceKey?: SequenceKey): Promise<TObject | ReadOnlyNonEmptyArray<TObject>> {
-    return this.finderByKeyFunction(this.objectClass.name, id, sequenceKey)
+    return this.finderByKeyFunction(this.objectClass, id, sequenceKey)
   }
 
   public async searchOne(): Promise<TObject> {
     // TODO: If there is only an ID filter with one value, this should call to `findById`
     const searchResult = await this.searcherFunction(
-      this.objectClass.name,
+      this.objectClass,
       this.filters,
+      this._sortByList,
       1, // Forces limit 1
       this._afterCursor,
       false // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
@@ -98,8 +109,9 @@ export class Searcher<TObject> {
    */
   public async search(): Promise<Array<TObject> | ReadModelListResult<TObject>> {
     return this.searcherFunction(
-      this.objectClass.name,
+      this.objectClass,
       this.filters,
+      this._sortByList,
       this._limit,
       this._afterCursor,
       this._paginatedVersion
@@ -107,10 +119,15 @@ export class Searcher<TObject> {
   }
 }
 
+export type SortFor<TType> = {
+  [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
+}
+
 export type FilterFor<TType> = {
   [TProp in keyof TType]?: Operation<TType[TProp]>
 } &
-  FilterCombinators<TType>
+  FilterCombinators<TType> &
+  IsDefinedOperator
 
 interface FilterCombinators<TType> {
   and?: Array<FilterFor<TType>>
@@ -130,10 +147,15 @@ export type Operation<TType> = TType extends Array<infer TElementType>
   ? FilterFor<TType>
   : never
 
-interface BooleanOperators<TType> {
-  eq?: TType
-  ne?: TType
+interface IsDefinedOperator {
+  isDefined?: boolean
 }
+
+interface BooleanOperators<TType> extends IsDefinedOperator {
+  eq?: TType | null
+  ne?: TType | null
+}
+
 interface ScalarOperators<TType> extends BooleanOperators<TType> {
   gt?: TType
   gte?: TType
@@ -149,4 +171,5 @@ interface StringOperators<TType> extends ScalarOperators<TType> {
 
 interface ArrayOperators<TElementType> {
   includes?: TElementType
+  isDefined?: boolean
 }

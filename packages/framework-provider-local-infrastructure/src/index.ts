@@ -5,7 +5,9 @@ import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import * as cors from 'cors'
-import { loadRocket } from './infrastructure-rocket'
+import { configureScheduler } from './scheduler'
+import { RocketLoader } from '@boostercloud/framework-common-helpers'
+import { InfrastructureRocket } from './infrastructure-rocket'
 
 export * from './test-helper/local-test-helper'
 export * from './infrastructure-rocket'
@@ -29,7 +31,7 @@ async function defaultErrorHandler(
 }
 
 export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): ProviderInfrastructure => {
-  const rockets = rocketDescriptors?.map(loadRocket)
+  const rockets = rocketDescriptors?.map(RocketLoader.loadRocket) as InfrastructureRocket[]
   return {
     /**
      * `run` serves as the entry point for the local provider. It starts the required infrastructure
@@ -41,19 +43,26 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
     start: async (config: BoosterConfig, port: number): Promise<void> => {
       const expressServer = express()
       const router = express.Router()
-      const userProject: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
-      const graphQLService = new GraphQLService(userProject)
+      const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
+      const graphQLService = new GraphQLService(userProject as UserApp)
       router.use('/graphql', new GraphQLController(graphQLService).router)
       if (rockets && rockets.length > 0) {
         rockets.forEach((rocket) => {
-          rocket.mountStack(config, router)
+          rocket.mountStack(config, router, { port })
         })
       }
       expressServer.use(
         express.json({
+          limit: '6mb',
           verify: (req, res, buf) => {
             req.rawBody = buf
           },
+        })
+      )
+      expressServer.use(
+        express.urlencoded({
+          extended: true,
+          limit: '6mb',
         })
       )
       expressServer.use(cors())
@@ -64,7 +73,9 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       })
       expressServer.use(router)
       expressServer.use(defaultErrorHandler)
-      expressServer.listen(port)
+      expressServer.listen(port, () => {
+        configureScheduler(config, userProject)
+      })
     },
   }
 }

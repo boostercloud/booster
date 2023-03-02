@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any,@typescript-eslint/no-magic-numbers */
 import {
   BoosterConfig,
-  Logger,
   OptimisticConcurrencyUnexpectedVersionError,
   ReadModelEnvelope,
   ReadModelInterface,
@@ -14,10 +13,10 @@ import { DynamoDBRecord, DynamoDBStreamEvent } from 'aws-lambda'
 import { DynamoDB } from 'aws-sdk'
 import { Converter } from 'aws-sdk/clients/dynamodb'
 import { Arn } from './arn'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 
 export async function rawReadModelEventsToEnvelopes(
   config: BoosterConfig,
-  logger: Logger,
   rawEvents: DynamoDBStreamEvent
 ): Promise<Array<ReadModelEnvelope>> {
   return rawEvents.Records.map(toReadModelEnvelope.bind(null, config))
@@ -26,11 +25,11 @@ export async function rawReadModelEventsToEnvelopes(
 export async function fetchReadModel(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   readModelName: string,
   readModelID: UUID,
   sequenceKey?: SequenceKey
 ): Promise<ReadOnlyNonEmptyArray<ReadModelInterface>> {
+  const logger = getLogger(config, 'read-models-adapter#fetchReadModel')
   // We're using query for get single read models too as the difference in performance
   // between get-item and query is none for a single item.
   // Source: https://forums.aws.amazon.com/thread.jspa?threadID=93743
@@ -89,11 +88,11 @@ export async function fetchReadModel(
 export async function storeReadModel(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   readModelName: string,
   readModel: ReadModelInterface,
   expectedCurrentVersion: number
 ): Promise<void> {
+  const logger = getLogger(config, 'read-models-adapter#storeReadModel')
   try {
     await db
       .put({
@@ -105,9 +104,10 @@ export async function storeReadModel(
       })
       .promise()
   } catch (e) {
+    const error = e as Error
     // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
-    if (e.name == 'ConditionalCheckFailedException') {
-      throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
+    if (error.name == 'ConditionalCheckFailedException') {
+      throw new OptimisticConcurrencyUnexpectedVersionError(error.message)
     }
     throw e
   }
@@ -117,10 +117,10 @@ export async function storeReadModel(
 export async function deleteReadModel(
   db: DynamoDB.DocumentClient,
   config: BoosterConfig,
-  logger: Logger,
   readModelName: string,
   readModel: ReadModelInterface
 ): Promise<void> {
+  const logger = getLogger(config, 'read-models-adapter#deleteReadModel')
   const sequenceKeyName = config.readModelSequenceKeys[readModelName]
   await db
     .delete({

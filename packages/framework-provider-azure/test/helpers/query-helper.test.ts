@@ -3,23 +3,22 @@ import { expect } from '../expect'
 import { search } from '../../src/helpers/query-helper'
 import { createStubInstance, fake, match, restore, stub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, FilterFor, Logger } from '@boostercloud/framework-types'
+import { BoosterConfig, FilterFor } from '@boostercloud/framework-types'
 import { random } from 'faker'
 
 describe('Query helper', () => {
   describe('The "search" method', () => {
-    let mockLogger: Logger
     let mockConfig: BoosterConfig
 
     let mockReadModelName: string
 
     let mockCosmosDbClient: SinonStubbedInstance<CosmosClient>
     class Money {
-      constructor(public cents: number, public currency: string) {}
+      constructor(public cents: number | null, public currency: string) {}
     }
 
     class Item {
-      constructor(public sku: string, public price: Money) {}
+      constructor(public sku: string | null, public price: Money) {}
     }
 
     class Product {
@@ -36,12 +35,6 @@ describe('Query helper', () => {
 
     beforeEach(() => {
       mockConfig = new BoosterConfig('test')
-      mockLogger = {
-        info: fake(),
-        warn: fake(),
-        error: fake(),
-        debug: fake(),
-      }
       mockCosmosDbClient = createStubInstance(CosmosClient, {
         database: stub().returns({
           container: stub().returns({
@@ -61,7 +54,7 @@ describe('Query helper', () => {
     })
 
     it('Executes a SQL query without filters in the read model table', async () => {
-      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, {})
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, {})
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
@@ -78,13 +71,41 @@ describe('Query helper', () => {
       )
     })
 
+    it('Executes a SQL query with a projection in the read model table', async () => {
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        {},
+        undefined,
+        undefined,
+        false,
+        undefined,
+        'DISTINCT field'
+      )
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT DISTINCT field FROM c ',
+          parameters: [],
+        })
+      )
+    })
+
     it('Executes a SQL query with filters in the read model table', async () => {
       const filters: FilterFor<Product> = {
         id: { eq: '3', in: ['test1', 'test2', 'test3'] },
         stock: { gt: 0, lte: 10 },
       }
 
-      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
@@ -135,7 +156,7 @@ describe('Query helper', () => {
         not: { id: { eq: '333' } },
       }
 
-      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters)
 
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
@@ -164,7 +185,7 @@ describe('Query helper', () => {
         and: [{ id: { contains: '3' } }, { id: { contains: '4' } }],
       }
 
-      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters)
 
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
@@ -211,7 +232,7 @@ describe('Query helper', () => {
         },
       }
 
-      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters)
 
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
@@ -245,7 +266,7 @@ describe('Query helper', () => {
         items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
       }
 
-      await search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters)
 
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
@@ -274,7 +295,6 @@ describe('Query helper', () => {
       await search(
         mockCosmosDbClient as any,
         mockConfig,
-        mockLogger,
         mockReadModelName,
         filters,
         undefined,
@@ -300,7 +320,6 @@ describe('Query helper', () => {
       await search(
         mockCosmosDbClient as any,
         mockConfig,
-        mockLogger,
         mockReadModelName,
         filters,
         undefined,
@@ -320,23 +339,38 @@ describe('Query helper', () => {
       )
     })
 
+    it('Supports order for nested fields', async () => {
+      const filters: FilterFor<Product> = {}
+      const order = { sku: 'DESC', address: { street: 'ASC' } }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        order
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT * FROM c  ORDER BY c.sku DESC, c.address.street ASC',
+          parameters: [],
+        })
+      )
+    })
+
     it('Supports limited results', async () => {
       const filters: FilterFor<Product> = {
         days: { includes: 2 },
         items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
       }
       const order = { sku: 'DESC', price: 'ASC' }
-      await search(
-        mockCosmosDbClient as any,
-        mockConfig,
-        mockLogger,
-        mockReadModelName,
-        filters,
-        3,
-        undefined,
-        false,
-        order
-      )
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters, 3, undefined, false, order)
 
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
@@ -365,17 +399,7 @@ describe('Query helper', () => {
         items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
       }
       const order = { sku: 'DESC', price: 'ASC' }
-      await search(
-        mockCosmosDbClient as any,
-        mockConfig,
-        mockLogger,
-        mockReadModelName,
-        filters,
-        3,
-        { id: '3' },
-        true,
-        order
-      )
+      await search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters, 3, { id: '3' }, true, order)
 
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
@@ -398,6 +422,93 @@ describe('Query helper', () => {
       )
     })
 
+    it('supports isDefine filters', async () => {
+      const filters: FilterFor<Product> = {
+        and: [
+          { days: { isDefined: true } },
+          { mainItem: { isDefined: false } },
+          { mainItem: { sku: { isDefined: true } } },
+        ],
+      }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT * FROM c WHERE (IS_DEFINED(c["days"]) and NOT IS_DEFINED(c["mainItem"]) and IS_DEFINED(c["mainItem"]["sku"]))',
+          parameters: [],
+        })
+      )
+    })
+
+    it('supports isDefine filters with complex filters', async () => {
+      const filters: FilterFor<Product> = {
+        and: [
+          {
+            id: { eq: '3' },
+          },
+          {
+            mainItem: {
+              sku: {
+                eq: 'test',
+              },
+            },
+          },
+          {
+            or: [
+              {
+                days: { isDefined: true },
+              },
+              {
+                items: { includes: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+              },
+            ],
+          },
+          { mainItem: { sku: { eq: null } } },
+          { mainItem: { price: { cents: { ne: null } } } },
+        ],
+      }
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        filters,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+      )
+
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT * FROM c WHERE (c["id"] = @id_0 and c["mainItem"]["sku"] = @sku_0 and (IS_DEFINED(c["days"]) or ARRAY_CONTAINS(c["items"], @items_0, true)) and c["mainItem"]["sku"] = @sku_1 and c["mainItem"]["price"]["cents"] <> @cents_0)',
+          parameters: [
+            { name: '@id_0', value: '3' },
+            { name: '@sku_0', value: 'test' },
+            { name: '@items_0', value: { sku: 'test', price: { cents: 1000, currency: 'EUR' } } },
+            { name: '@sku_1', value: null },
+            { name: '@cents_0', value: null },
+          ],
+        })
+      )
+    })
+
     it('Throws an error with non supported filters', async () => {
       const unknownOperator = 'existsIn'
       const filters: FilterFor<any> = {
@@ -405,9 +516,9 @@ describe('Query helper', () => {
       }
 
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      expect(
-        search(mockCosmosDbClient as any, mockConfig, mockLogger, mockReadModelName, filters)
-      ).to.be.eventually.rejectedWith(`Operator "${unknownOperator}" is not supported`)
+      expect(search(mockCosmosDbClient as any, mockConfig, mockReadModelName, filters)).to.be.eventually.rejectedWith(
+        `Operator "${unknownOperator}" is not supported`
+      )
     })
   })
 })

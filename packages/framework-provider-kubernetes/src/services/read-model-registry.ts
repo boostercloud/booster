@@ -1,4 +1,5 @@
-import { BoosterConfig, Logger, ReadModelInterface, ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, ReadModelInterface, ReadModelEnvelope, UUID } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import fetch from 'node-fetch'
 import { RedisAdapter } from './redis-adapter'
 
@@ -18,38 +19,37 @@ export class ReadModelRegistry {
 
   public async search(
     config: BoosterConfig,
-    logger: Logger,
     readModelName: string,
     filters: Filters
   ): Promise<Array<ReadModelInterface>> {
-    const l = (msg: string): void => logger.debug('readModelRegistry#search: ' + msg)
+    const logger = getLogger(config, 'ReadModelRegistry#search')
     if (filters.id) {
       // TODO: Allow complex filters in K8s provider. Currently we only allow filter by Id or get all entries
       const readModelId = filters.id.eq
-      l(`Got id ${readModelId ?? 'UNDEFINED'}`)
+      logger.debug(`Got id ${readModelId ?? 'UNDEFINED'}`)
       if (!readModelId) throw new Error('Only searching by ID is supported')
       const url = `${this.url}/v1.0/state/statestore/${this.readModelKey(readModelName, readModelId)}`
-      l(`Performing a fetch to ${url}`)
+      logger.debug(`Performing a fetch to ${url}`)
       const response = await fetch(url)
       if (!response.ok) {
-        l(`Error on performing GET from ${url}`)
+        logger.debug(`Error on performing GET from ${url}`)
       }
-      l(`Got result ${JSON.stringify(response)}`)
+      logger.debug(`Got result ${JSON.stringify(response)}`)
       try {
         const body = await response.json()
-        l(`Got JSON ${JSON.stringify(body)}`)
+        logger.debug(`Got JSON ${JSON.stringify(body)}`)
         // TODO: Remove unnecessary id setting from k8s read model registry
         if (body) {
           body.id = readModelId
         }
         return [body.value]
       } catch (err) {
-        l(`Error ${JSON.stringify(err)}`)
+        logger.debug(`Error ${JSON.stringify(err)}`)
         return []
       }
     } else {
-      const keys = await this.redis.keys(['rm', readModelName, '*'].join(RedisAdapter.keySeparator), logger)
-      l(`Obtainer following keys for query: ${keys}`)
+      const keys = await this.redis.keys(config, ['rm', readModelName, '*'].join(RedisAdapter.keySeparator))
+      logger.debug(`Obtainer following keys for query: ${keys}`)
       const results: ReadModelInterface[] = []
       await Promise.all(
         keys.map(async (k) => {
@@ -59,16 +59,21 @@ export class ReadModelRegistry {
           }
         })
       )
-      l(`Got ${results} envelopes, returning`)
+      logger.debug(`Got ${results} envelopes, returning`)
       return results
     }
   }
 
-  public async store(readModel: ReadModelEnvelope, logger: Logger): Promise<void> {
-    await this.redis.set(this.readModelEnvelopeKey(readModel), readModel, logger)
+  public async store(config: BoosterConfig, readModel: ReadModelEnvelope): Promise<void> {
+    await this.redis.set(config, this.readModelEnvelopeKey(readModel), readModel)
   }
 
-  public async fetch(readModelName: string, readModelID: UUID, logger: Logger): Promise<ReadModelInterface | null> {
+  public async fetch(
+    config: BoosterConfig,
+    readModelName: string,
+    readModelID: UUID
+  ): Promise<ReadModelInterface | null> {
+    const logger = getLogger(config, 'ReadModelRegistry#fetch')
     const key: string = this.readModelKey(readModelName, readModelID)
     logger.debug('fetching key booster||', key)
     const envelope = await this.redis.hget<ReadModelEnvelope>(`booster||${key}`)

@@ -2,16 +2,21 @@ import { ApolloClient, ApolloQueryResult } from 'apollo-client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { internet, random } from 'faker'
 import gql from 'graphql-tag'
-import { expect } from 'chai'
-import * as chai from 'chai'
+import { expect } from '../../helper/expect'
 import { sleep, waitForIt } from '../../helper/sleep'
-import { EventSearchResponse, EventTimeParameterFilter } from '@boostercloud/framework-types'
+import {
+  EventSearchResponse,
+  EventTimeParameterFilter,
+  PaginatedEntitiesIdsResult,
+  UUID,
+} from '@boostercloud/framework-types'
 import { applicationUnderTest } from './setup'
-chai.use(require('chai-as-promised'))
+import { unique } from '@boostercloud/framework-common-helpers'
 
 describe('Events end-to-end tests', () => {
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
+  let knowledgeableClient: ApolloClient<NormalizedCacheObject>
   let expiredClient: ApolloClient<NormalizedCacheObject>
   let beforeClient: ApolloClient<NormalizedCacheObject>
   let expiredAndBeforeClient: ApolloClient<NormalizedCacheObject>
@@ -22,12 +27,21 @@ describe('Events end-to-end tests', () => {
     const userEmail = internet.email()
     const userToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail')
     loggedClient = applicationUnderTest.graphql.client(userToken)
-    const expiredToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0)
+    const tokenWithTheMagicWord = applicationUnderTest.token.forUser(userEmail, undefined, {
+      customClaims: {
+        magicWord: 'opensesame',
+      },
+    })
+    knowledgeableClient = applicationUnderTest.graphql.client(tokenWithTheMagicWord)
+    const expiredToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', { expiresIn: 0 })
     expiredClient = applicationUnderTest.graphql.client(expiredToken)
     const notBefore = Math.floor(Date.now() / 1000) + 999999
-    const beforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', undefined, notBefore)
+    const beforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', { notBefore })
     beforeClient = applicationUnderTest.graphql.client(beforeToken)
-    const expiredAndBeforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', 0, notBefore)
+    const expiredAndBeforeToken = applicationUnderTest.token.forUser(userEmail, 'UserWithEmail', {
+      expiresIn: 0,
+      notBefore,
+    })
     expiredAndBeforeClient = applicationUnderTest.graphql.client(expiredAndBeforeToken)
   })
 
@@ -37,18 +51,24 @@ describe('Events end-to-end tests', () => {
         context('with a non-authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByType(anonymousClient, 'OrderCreated')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to some roles', async () => {
             await expect(queryByType(anonymousClient, 'ProductUpdated')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can read events belonging to an entity authorized for "all"', async () => {
             await expect(queryByType(anonymousClient, 'CartItemChanged')).to.eventually.be.fulfilled
+          })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByType(anonymousClient, 'StockMoved')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
           })
         })
 
@@ -94,13 +114,13 @@ describe('Events end-to-end tests', () => {
         context('with an authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByType(loggedClient, 'OrderCreated')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to other role', async () => {
             await expect(queryByType(loggedClient, 'CartPaid')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
@@ -111,6 +131,34 @@ describe('Events end-to-end tests', () => {
           it('can read events belonging to an entity authorized for their role', async () => {
             await expect(queryByType(loggedClient, 'ProductUpdated')).to.eventually.be.fulfilled
           })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByType(loggedClient, 'StockMoved')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
+          })
+        })
+
+        context('with a custom authorizer', () => {
+          it('can not read events belonging to an entity with no authorization declaration', async () => {
+            await expect(queryByType(knowledgeableClient, 'OrderCreated')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          }).timeout(10000)
+
+          it('can not read events belonging to an entity authorized to a role', async () => {
+            await expect(queryByType(knowledgeableClient, 'CartPaid')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          })
+
+          it('can read events belonging to an entity authorized for "all"', async () => {
+            await expect(queryByType(knowledgeableClient, 'CartItemChanged')).to.eventually.be.fulfilled
+          })
+
+          it('can read events belonging to an entity that satisfies the custom authorizer', async () => {
+            await expect(queryByType(knowledgeableClient, 'StockMoved')).to.eventually.be.fulfilled
+          })
         })
       })
 
@@ -118,31 +166,37 @@ describe('Events end-to-end tests', () => {
         context('with a non-authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByEntity(anonymousClient, 'Order')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to some roles', async () => {
             await expect(queryByEntity(anonymousClient, 'Product')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can read events belonging to an entity authorized for "all"', async () => {
             await expect(queryByEntity(anonymousClient, 'Cart')).to.eventually.be.fulfilled
           })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByEntity(anonymousClient, 'Stock')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
+          })
         })
 
         context('with an authenticated user', () => {
           it('can not read events belonging to an entity with no authorization declaration', async () => {
             await expect(queryByEntity(loggedClient, 'Order')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
           it('can not read events belonging to an entity authorized to other role', async () => {
             await expect(queryByEntity(loggedClient, 'Payment')).to.eventually.be.rejectedWith(
-              /Access denied for reading events/
+              /Access denied for this resource/
             )
           })
 
@@ -153,9 +207,38 @@ describe('Events end-to-end tests', () => {
           it('can read events belonging to an entity authorized for their role', async () => {
             await expect(queryByEntity(loggedClient, 'Product')).to.eventually.be.fulfilled
           })
+
+          it('can not read events from an entity with a custom authorizer', async () => {
+            await expect(queryByEntity(loggedClient, 'Stock')).to.eventually.be.rejectedWith(
+              /You don't know the magic word/
+            )
+          })
+        })
+
+        context('with a custom authorizer', () => {
+          it('can not read events belonging to an entity with no authorization declaration', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Order')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          })
+
+          it('can not read events belonging to an entity authorized to a role', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Payment')).to.eventually.be.rejectedWith(
+              /Access denied for this resource/
+            )
+          })
+
+          it('can read events belonging to an entity authorized for "all"', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Cart')).to.eventually.be.fulfilled
+          })
+
+          it('can read events belonging to an entity that satisfies the custom authorizer', async () => {
+            await expect(queryByEntity(knowledgeableClient, 'Stock')).to.eventually.be.fulfilled
+          })
         })
       })
     })
+
     describe('the result of the queries', () => {
       let mockCartId: string
       let mockProductId: string
@@ -178,7 +261,7 @@ describe('Events end-to-end tests', () => {
               quantity: mockQuantity,
             },
             mutation: gql`
-              mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+              mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
                 ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
               }
             `,
@@ -370,7 +453,7 @@ describe('Events end-to-end tests', () => {
     })
     describe('the result of the queries involving many events', () => {
       let mockCartId: string
-      const numberOfProvisionedEvents = 150
+      const numberOfProvisionedEvents = 50
 
       beforeEach(async () => {
         const mutationPromises: Array<Promise<unknown>> = []
@@ -384,14 +467,19 @@ describe('Events end-to-end tests', () => {
                 quantity: 1,
               },
               mutation: gql`
-                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+                mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
                   ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
                 }
               `,
             })
           )
         }
-        await Promise.all(mutationPromises)
+        try {
+          await Promise.all(mutationPromises)
+        } catch (e) {
+          console.log(JSON.stringify(e))
+          throw e
+        }
       })
       context('when doing a query that would return many (150) events', () => {
         it('returns the expected result', async () => {
@@ -410,6 +498,280 @@ describe('Events end-to-end tests', () => {
             expect(event.entityID).to.be.equal(mockCartId)
           }
         })
+      })
+    })
+  })
+
+  describe('Query events ids', () => {
+    // warn: this is a non-deterministic test as it needs an empty list of anotherCounter as we can't filter the events search
+    describe('without limit', () => {
+      //TODO: AWS provider doesn't support entityIds Interface so these tests are skipped for AWS
+      if (process.env.TESTED_PROVIDER === 'AWS') {
+        console.log('****************** Warning **********************')
+        console.log('AWS provider does not support entityIds Interface so these tests are skipped for AWS')
+        console.log('*************************************************')
+        return
+      }
+
+      let mockCounterId: string
+      const mockCounterIds = [] as Array<UUID>
+      let mockSameCounterId: string
+      const numberOfProvisionedEvents = 3
+      let mockIdentifier: string
+
+      beforeEach(async () => {
+        // Provision N events with same counterId
+        mockSameCounterId = random.uuid()
+        console.log(`Adding ${numberOfProvisionedEvents} events with id ${mockSameCounterId}`)
+        for (let i = 0; i < numberOfProvisionedEvents; i++) {
+          await anonymousClient.mutate({
+            variables: {
+              counterId: mockSameCounterId,
+              identifier: mockSameCounterId,
+            },
+            mutation: gql`
+              mutation IncrementCounter($counterId: ID!, $identifier: String!) {
+                IncrementCounter(input: { counterId: $counterId, identifier: $identifier })
+              }
+            `,
+          })
+        }
+        await waitForIt(
+          () => {
+            return anonymousClient.query({
+              variables: {
+                filterBy: { identifier: { eq: mockSameCounterId } },
+              },
+              query: gql`
+                query ListCounterReadModels($filterBy: ListCounterReadModelFilter) {
+                  ListCounterReadModels(filter: $filterBy) {
+                    items {
+                      id
+                      identifier
+                      amount
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => {
+            const items = result?.data?.ListCounterReadModels?.items
+            return items?.length > 0 && items[0].amount === numberOfProvisionedEvents
+          }
+        )
+
+        // Provision N events with random counterId and same identifier
+        mockIdentifier = random.uuid()
+        console.log(`Adding ${numberOfProvisionedEvents} events with identifier ${mockIdentifier}`)
+        for (let i = 0; i < numberOfProvisionedEvents; i++) {
+          mockCounterId = random.uuid()
+          mockCounterIds.push(mockCounterId)
+          await anonymousClient.mutate({
+            variables: {
+              counterId: mockCounterId,
+              identifier: mockIdentifier,
+            },
+            mutation: gql`
+              mutation IncrementCounter($counterId: ID!, $identifier: String!) {
+                IncrementCounter(input: { counterId: $counterId, identifier: $identifier })
+              }
+            `,
+          })
+        }
+        await waitForIt(
+          () => {
+            return anonymousClient.query({
+              variables: {
+                filterBy: { identifier: { eq: mockIdentifier } },
+              },
+              query: gql`
+                query ListCounterReadModels($filterBy: ListCounterReadModelFilter) {
+                  ListCounterReadModels(filter: $filterBy) {
+                    items {
+                      id
+                      identifier
+                      amount
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCounterReadModels?.items?.length === numberOfProvisionedEvents
+        )
+      })
+
+      it('Should return all elements', async () => {
+        const result = await anonymousClient.mutate({
+          variables: {
+            entityName: 'Counter',
+            limit: 99999, // limit could not be mockSameCounterId as the test could be run several times
+          },
+          mutation: gql`
+            mutation EntitiesIdsFinder($entityName: String!, $limit: Float!) {
+              EntitiesIdsFinder(input: { entityName: $entityName, limit: $limit })
+            }
+          `,
+        })
+
+        const events: PaginatedEntitiesIdsResult = result?.data?.EntitiesIdsFinder
+
+        // counter with same id should be only 1
+        const sameCounterIdEvents = events.items.filter((event) => event.entityID === mockSameCounterId)
+        expect(sameCounterIdEvents.length).to.be.equal(1)
+
+        // all random counters should be returned
+        const currentEntitiesIds = events.items.map((item) => item.entityID)
+        expect(currentEntitiesIds).to.include.members(mockCounterIds)
+        const distinctCurrentEntitiesIds = unique(events.items.map((item) => item.entityID))
+        expect(distinctCurrentEntitiesIds.length).to.be.equal(currentEntitiesIds.length)
+
+        // There are exactly the expected number of ids
+        expect(currentEntitiesIds.length).to.be.equal(numberOfProvisionedEvents + 1)
+      })
+    })
+
+    // warn: this is a non-deterministic test as it needs an empty list of anotherCounter as we can't filter the events search
+    describe('paginated with limit 1', () => {
+      //TODO: AWS provider doesn't support entityIds Interface so these tests are skipped for AWS
+      if (process.env.TESTED_PROVIDER === 'AWS') {
+        console.log('****************** Warning **********************')
+        console.log('AWS provider does not support entityIds Interface so these tests are skipped for AWS')
+        console.log('*************************************************')
+        return
+      }
+
+      let mockAnotherCounterId: string
+      const mockAnotherCounterIds = [] as Array<UUID>
+      let mockSameAnotherCounterId: string
+      const numberOfProvisionedEvents = 3
+      let mockIdentifier: string
+
+      beforeEach(async () => {
+        // Provision N events with same anotherCounterId
+        mockSameAnotherCounterId = random.uuid()
+        console.log(`Adding ${numberOfProvisionedEvents} events with id ${mockSameAnotherCounterId}`)
+        for (let i = 0; i < numberOfProvisionedEvents; i++) {
+          await anonymousClient.mutate({
+            variables: {
+              anotherCounterId: mockSameAnotherCounterId,
+              identifier: mockSameAnotherCounterId,
+            },
+            mutation: gql`
+              mutation IncrementAnotherCounter($anotherCounterId: ID!, $identifier: String!) {
+                IncrementAnotherCounter(input: { anotherCounterId: $anotherCounterId, identifier: $identifier })
+              }
+            `,
+          })
+        }
+        await waitForIt(
+          () => {
+            return anonymousClient.query({
+              variables: {
+                filterBy: { identifier: { eq: mockSameAnotherCounterId } },
+              },
+              query: gql`
+                query ListAnotherCounterReadModels($filterBy: ListAnotherCounterReadModelFilter) {
+                  ListAnotherCounterReadModels(filter: $filterBy) {
+                    items {
+                      id
+                      identifier
+                      amount
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => {
+            const items = result?.data?.ListAnotherCounterReadModels?.items
+            return items?.length > 0 && items[0].amount === numberOfProvisionedEvents
+          }
+        )
+
+        // Provision N events with random anotherCounterId and same identifier
+        mockIdentifier = random.uuid()
+        console.log(`Adding ${numberOfProvisionedEvents} events with identifier ${mockIdentifier}`)
+        for (let i = 0; i < numberOfProvisionedEvents; i++) {
+          mockAnotherCounterId = random.uuid()
+          mockAnotherCounterIds.push(mockAnotherCounterId)
+          await anonymousClient.mutate({
+            variables: {
+              anotherCounterId: mockAnotherCounterId,
+              identifier: mockIdentifier,
+            },
+            mutation: gql`
+              mutation IncrementAnotherCounter($anotherCounterId: ID!, $identifier: String!) {
+                IncrementAnotherCounter(input: { anotherCounterId: $anotherCounterId, identifier: $identifier })
+              }
+            `,
+          })
+        }
+        await waitForIt(
+          () => {
+            return anonymousClient.query({
+              variables: {
+                filterBy: { identifier: { eq: mockIdentifier } },
+              },
+              query: gql`
+                query ListAnotherCounterReadModels($filterBy: ListAnotherCounterReadModelFilter) {
+                  ListAnotherCounterReadModels(filter: $filterBy) {
+                    items {
+                      id
+                      identifier
+                      amount
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListAnotherCounterReadModels?.items?.length === numberOfProvisionedEvents
+        )
+      })
+
+      it('Should return the exact number of pages', async () => {
+        let cursor: Record<'id', string> | undefined = undefined
+        let count = 9999
+        let pages = 0
+        const items = []
+        while (count != 0) {
+          const result: any = await anonymousClient.mutate({
+            variables: {
+              entityName: 'AnotherCounter',
+              limit: 1,
+              afterCursor: cursor,
+            },
+            mutation: gql`
+              mutation EntitiesIdsFinder($entityName: String!, $limit: Float!, $afterCursor: JSON) {
+                EntitiesIdsFinder(input: { entityName: $entityName, limit: $limit, afterCursor: $afterCursor })
+              }
+            `,
+          })
+
+          cursor = result.data.EntitiesIdsFinder.cursor
+          count = result.data.EntitiesIdsFinder.count
+          if (count !== 0) {
+            pages++
+            items.push(...result.data.EntitiesIdsFinder?.items)
+            console.log(`Pages ${pages}`)
+          }
+        }
+        expect(pages).to.be.eq(numberOfProvisionedEvents + 1)
+
+        // counter with same id should be only 1
+        const sameCounterIdEvents = items.filter((event) => event.entityID == mockSameAnotherCounterId)
+        expect(sameCounterIdEvents.length).to.be.equal(1)
+
+        // all random counters should be returned
+        const currentEntitiesIds = items.map((item) => item.entityID)
+        expect(currentEntitiesIds).to.include.members(mockAnotherCounterIds)
+        const distinctCurrentEntitiesIds = unique(items.map((item) => item.entityID))
+        expect(distinctCurrentEntitiesIds.length).to.be.equal(currentEntitiesIds.length)
+
+        // There are exactly the expected number of ids
+        expect(currentEntitiesIds.length).to.be.equal(numberOfProvisionedEvents + 1)
       })
     })
   })

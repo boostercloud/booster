@@ -1,8 +1,6 @@
-import { Register } from './register'
-import { AnyClass, Class } from '../typelevel'
-import { RoleAccess } from './role'
-import { PropertyMetadata } from 'metadata-booster'
-import { CommandFilterHooks } from './filter-hooks'
+import { Class } from '../typelevel'
+import { PropertyMetadata } from '@boostercloud/metadata-booster'
+import { Register, CommandAuthorizer, CommandFilterHooks } from './.'
 
 export type CommandInput = Record<string, any>
 
@@ -23,7 +21,7 @@ export interface CommandMetadata<TCommand = unknown> {
   // Class to unknown.
   readonly class: CommandInterface<TCommand>
   readonly properties: Array<PropertyMetadata>
-  readonly authorizedRoles: RoleAccess['authorize']
+  readonly methods: Array<PropertyMetadata>
+  readonly authorizer: CommandAuthorizer
   readonly before: NonNullable<CommandFilterHooks['before']>
-  readonly returnClass: AnyClass
 }

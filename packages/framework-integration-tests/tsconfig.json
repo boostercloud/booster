@@ -14,15 +14,9 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
-    "lib": [
-      "ES2019",
-      "ES2020"
-    ],
-    "plugins": [
-      { "transform": "metadata-booster" }
-    ]
+    "useUnknownInCatchVariables": false,
+    "lib": ["ES2019", "ES2020"],
+    "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },
-  "include": [
-    "src/**/*"
-  ]
+  "include": ["src/**/*"]
 }

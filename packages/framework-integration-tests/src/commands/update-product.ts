@@ -1,10 +1,10 @@
 import { Command } from '@boostercloud/framework-core'
 import { Register } from '@boostercloud/framework-types'
 import { ProductUpdated, ProductUpdateReason } from '../events/product-updated'
-import { SKU } from '../common/sku'
 import { Money } from '../common/money'
 import { UUID } from '@boostercloud/framework-types'
 import { Picture } from '../common/picture'
+import { ProductType } from '../entities/product'
 
 @Command({
   authorize: 'all',
@@ -12,14 +12,16 @@ import { Picture } from '../common/picture'
 export class UpdateProduct {
   public constructor(
     readonly id: UUID,
-    readonly sku: SKU,
+    readonly sku: string,
     readonly name: string,
     readonly shortDescription: string,
     readonly longDescription: string,
     readonly price: Money,
     readonly pictures: Array<Picture>,
     readonly deleted: boolean = false,
-    readonly reason: ProductUpdateReason = ProductUpdateReason.CatalogChange
+    readonly reason: ProductUpdateReason = ProductUpdateReason.CatalogChange,
+    readonly productDetails?: Record<string, unknown>,
+    readonly productType?: ProductType
   ) {}
 
   public static async handle(command: UpdateProduct, register: Register): Promise<void> {
@@ -32,7 +34,9 @@ export class UpdateProduct {
         command.price,
         command.pictures,
         command.deleted,
-        command.reason
+        command.reason,
+        command.productDetails,
+        command.productType
       )
     )
   }

@@ -1,0 +1,69 @@
+name: Prepare Integration Tests
+
+on:
+  workflow_call:
+    inputs:
+      command_sha:
+        required: false
+        default: ${{ github.sha }}
+        type: string
+
+      pr_sha:
+        required: false
+        type: string
+
+      pr_number:
+        required: false
+        default: '0'
+        type: string
+
+jobs:
+  prepare-integration-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16.14
+
+      # If this was triggered by a /integration command, check out merge commit
+      - name: Fork based /integration checkout
+        id: fork-based-checkout
+        if: inputs.pr_number != '0' && inputs.command_sha != '' && contains(inputs.pr_sha, inputs.command_sha)
+        uses: actions/checkout@v3
+        with:
+          ref: 'refs/pull/${{ inputs.pr_number }}/merge'
+
+      - name: Build
+        uses: ./.github/actions/build
+
+      - name: Pack local dependencies for integration tests
+        uses: ./.github/actions/call-rush
+        with:
+          command: pack-integration-deps
+
+      # This step will upload all the files in the `packages/framework-integration-tests/.booster` folder
+      # to the GitHub Actions artifacts. This is needed because the integration tests are run in a different
+      # job, and we need to pass the dependencies to it. The artifact is suffixed with the name of the git
+      # commit, so that we can have multiple artifacts for the same branch. Those will be deleted after
+      # 1 day. It is also useful because these dependencies could be downloaded by the user to run the
+      # integration tests locally, or even test their own Booster applications with this version.
+      - name: Upload integration test dependencies
+        uses: actions/upload-artifact@v2
+        if: inputs.command_sha != ''
+        with:
+          # suffix the name with the git commit
+          name: integration-test-dependencies-${{ inputs.command_sha }}
+          path: packages/framework-integration-tests/.booster
+          retention-days: 1
+
+      - name: Upload integration test dependencies
+        uses: actions/upload-artifact@v2
+        if: inputs.command_sha == ''
+        with:
+          # suffix the name with the git commit
+          name: integration-test-dependencies-${{ github.sha }}
+          path: packages/framework-integration-tests/.booster
+          retention-days: 1

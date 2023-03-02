@@ -19,7 +19,7 @@ import { replace, fake, restore } from 'sinon'
 import { expect } from '../expect'
 import { boosterAppPod } from '../../src/infrastructure/templates/booster-app-template'
 import { internet, random } from 'faker'
-import { Logger } from '@boostercloud/framework-types'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 describe('Users interaction with K8s cluster', () => {
   const NAMESPACE_NAME = random.word()
@@ -113,13 +113,8 @@ describe('Users interaction with K8s cluster', () => {
     replace(KubernetesObjectApi.prototype, 'replace', fake.resolves(new KubernetesObjectApi()))
     replace(CoreV1Api.prototype, 'readNamespacedSecret', fake.resolves(secret))
 
-    const fakeLogger: Logger = {
-      info: fake(),
-      warn: fake(),
-      error: fake(),
-      debug: fake(),
-    }
-    k8sManager = new K8sManagement(fakeLogger)
+    const config = new BoosterConfig('production')
+    k8sManager = new K8sManagement(config)
   })
 
   afterEach(() => {
@@ -161,7 +156,7 @@ describe('Users interaction with K8s cluster', () => {
 
   it('allows searching a non existing namespace', async () => {
     const clusterResponse = await k8sManager.getNamespace(NAMESPACE_NAME_NON_EXIST)
-    expect(clusterResponse).to.be.equal(undefined)
+    expect(clusterResponse).to.be.undefined
   })
 
   it('allows getting a specific pod', async () => {
@@ -171,7 +166,7 @@ describe('Users interaction with K8s cluster', () => {
 
   it('allows searching a non existing pod', async () => {
     const clusterResponse = await k8sManager.getPodFromNamespace(NAMESPACE_NAME, POD_NAME_NON_EXIST)
-    expect(clusterResponse).to.be.equal(undefined)
+    expect(clusterResponse).to.be.undefined
   })
 
   it('allows getting the main node node', async () => {

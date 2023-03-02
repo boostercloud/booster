@@ -71,13 +71,12 @@ export async function checkResourceExists(name: string, placementDir: string, ex
   }
 }
 
-export async function checkCurrentDirBoosterVersion(userAgent: string): Promise<void> {
-  return checkBoosterVersion(userAgent, process.cwd())
+export async function checkCurrentDirBoosterVersion(version: string): Promise<void> {
+  return checkBoosterVersion(version, process.cwd())
 }
 
-async function checkBoosterVersion(userAgent: string, projectPath: string): Promise<void> {
+async function checkBoosterVersion(cliVersion: string, projectPath: string): Promise<void> {
   const projectVersion = await getBoosterVersion(projectPath)
-  const cliVersion = userAgent.split(' ')[0].split('/')[2]
   await compareVersionsAndDisplayMessages(cliVersion, projectVersion)
 }
 
@@ -86,7 +85,11 @@ async function getBoosterVersion(projectPath: string): Promise<string> {
   try {
     const packageJsonContents = require(path.join(projectAbsolutePath, 'package.json'))
     const version = packageJsonContents.dependencies['@boostercloud/framework-core']
-    const versionParts = version.replace('^', '').replace('.tgz', '').split('-')
+    const versionParts = version
+      .replace('workspace:', '') // We remove the workspace protocol in case we're in the Booster monorepo
+      .replace('^', '')
+      .replace('.tgz', '')
+      .split('-')
     return versionParts[versionParts.length - 1]
   } catch (e) {
     throw new Error(

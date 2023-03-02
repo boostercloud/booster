@@ -1,12 +1,14 @@
 import {
   UUID,
   UserApp,
-  Logger,
   BoosterConfig,
   EventEnvelope,
   OptimisticConcurrencyUnexpectedVersionError,
+  EntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
-import { retryIfError } from '@boostercloud/framework-common-helpers'
+import { retryIfError, getLogger } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '..'
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers
@@ -19,14 +21,14 @@ export function rawEventsToEnvelopes(rawEvents: Array<unknown>): Array<EventEnve
 export async function readEntityEventsSince(
   eventRegistry: EventRegistry,
   config: BoosterConfig,
-  logger: Logger,
   entityTypeName: string,
   entityID: UUID,
   since?: string
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-adapter#readEntityEventsSince')
   const fromTime = since ? since : originOfTime
 
-  const query: object = {
+  const query = {
     entityID: entityID,
     entityTypeName: entityTypeName,
     kind: 'event',
@@ -34,73 +36,79 @@ export async function readEntityEventsSince(
       $gt: fromTime,
     },
   }
-  const result: Array<EventEnvelope> = await eventRegistry.query(query)
+  const result = await eventRegistry.query(query)
 
-  logger.debug(
-    `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`,
-    result
-  )
-  return result
+  logger.debug(`Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`, result)
+  return result as Array<EventEnvelope>
 }
 
 export async function readEntityLatestSnapshot(
   eventRegistry: EventRegistry,
   config: BoosterConfig,
-  logger: Logger,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
-  const query: object = {
+): Promise<EntitySnapshotEnvelope | undefined> {
+  const logger = getLogger(config, 'events-adapter#readEntityLatestSnapshot')
+  const query = {
     entityID: entityID,
     entityTypeName: entityTypeName,
     kind: 'snapshot',
   }
 
-  const snapshot = (await eventRegistry.queryLatest(query)) as EventEnvelope
+  const snapshot = await eventRegistry.queryLatestSnapshot(query)
 
   if (snapshot) {
-    logger.debug(
-      `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
-      snapshot
-    )
-    return snapshot as EventEnvelope
+    logger.debug(`Snapshot found for entity ${entityTypeName} with ID ${entityID}:`, snapshot)
+    return snapshot as EntitySnapshotEnvelope
   } else {
-    logger.debug(
-      `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
-    )
-    return null
+    logger.debug(`No snapshot found for entity ${entityTypeName} with ID ${entityID}.`)
+    return undefined
   }
 }
 
 export async function storeEvents(
   userApp: UserApp,
   eventRegistry: EventRegistry,
-  eventEnvelopes: Array<EventEnvelope>,
-  _config: BoosterConfig,
-  logger: Logger
-): Promise<void> {
-  logger.debug('[EventsAdapter#storeEvents] Storing the following event envelopes:', eventEnvelopes)
-  for (const eventEnvelope of eventEnvelopes) {
+  nonPersistedEventEnvelopes: Array<NonPersistedEventEnvelope>,
+  config: BoosterConfig
+): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-adapter#storeEvents')
+  logger.debug('Storing the following event envelopes:', nonPersistedEventEnvelopes)
+  const persistedEventEnvelopes: Array<EventEnvelope> = []
+  for (const nonPersistedEventEnvelope of nonPersistedEventEnvelopes) {
+    const persistableEventEnvelope = {
+      ...nonPersistedEventEnvelope,
+      createdAt: new Date().toISOString(),
+    }
     await retryIfError(
-      logger,
-      () => persistEvent(eventRegistry, eventEnvelope),
+      async () => await persistEvent(eventRegistry, persistableEventEnvelope),
       OptimisticConcurrencyUnexpectedVersionError
     )
+    persistedEventEnvelopes.push(persistableEventEnvelope)
   }
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelopes stored')
+  logger.debug('EventEnvelopes stored: ', persistedEventEnvelopes)
 
-  await userApp.boosterEventDispatcher(eventEnvelopes)
+  await userApp.boosterEventDispatcher(persistedEventEnvelopes)
+  return persistedEventEnvelopes
+}
+
+export async function storeSnapshot(
+  eventRegistry: EventRegistry,
+  snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
+  config: BoosterConfig
+): Promise<EntitySnapshotEnvelope> {
+  const logger = getLogger(config, 'events-adapter#storeSnapshot')
+  logger.debug('Storing the following snapshot envelope:', snapshotEnvelope)
+  const persistableEntitySnapshot = {
+    ...snapshotEnvelope,
+    createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+    persistedAt: new Date().toISOString(),
+  }
+  await retryIfError(() => eventRegistry.store(persistableEntitySnapshot), OptimisticConcurrencyUnexpectedVersionError)
+  logger.debug('Snapshot stored')
+  return persistableEntitySnapshot
 }
 
 async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
-  try {
-    await eventRegistry.store(eventEnvelope)
-  } catch (e) {
-    //TODO check the exception raised when there is a write error,
-    //to implement Optimistic Concurrency approach
-    //if (e.name == 'TODO') {
-    //  throw new OptimisticConcurrencyUnexpectedVersionError(e.message)
-    //}
-    throw e
-  }
+  await eventRegistry.store(eventEnvelope)
 }

@@ -1,18 +1,33 @@
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import * as path from 'path'
-import { exec } from 'child-process-promise'
-import { wrapExecError } from '../common/errors'
+import { guardError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
 import { currentEnvironment } from './environment'
 import { createSandboxProject, removeSandboxProject } from '../common/sandbox'
-import { installProductionDependencies } from './dependencies'
+import { PackageManagerService } from './package-manager'
+import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
+import { LivePackageManager } from './package-manager/live.impl'
 
-export const DEPLOYMENT_SANDBOX = '.deploy'
+export const DEPLOYMENT_SANDBOX = path.join(process.cwd(), '.deploy')
 
 export async function createDeploymentSandbox(): Promise<string> {
   const config = await compileProjectAndLoadConfig(process.cwd())
   const sandboxRelativePath = createSandboxProject(DEPLOYMENT_SANDBOX, config.assets)
-  await installProductionDependencies(sandboxRelativePath)
+  const effect = gen(function* ($) {
+    const { setProjectRoot, installProductionDependencies } = yield* $(PackageManagerService)
+    yield* $(setProjectRoot(sandboxRelativePath))
+    yield* $(installProductionDependencies())
+  })
+  await unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Could not install production dependencies'),
+    }
+  )
   return sandboxRelativePath
 }
 
@@ -27,20 +42,47 @@ export async function compileProjectAndLoadConfig(userProjectPath: string): Prom
 }
 
 export async function compileProject(projectPath: string): Promise<void> {
-  try {
-    await exec('npm run clean && npm run compile', { cwd: projectPath })
-  } catch (e) {
-    throw wrapExecError(e, 'Project contains compilation errors')
-  }
+  const effect = compileProjectEff(projectPath)
+  return await unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Project contains compilation errors'),
+    }
+  )
 }
 
+const compileProjectEff = (projectPath: string) =>
+  gen(function* ($) {
+    const { setProjectRoot, build } = yield* $(PackageManagerService)
+    yield* $(setProjectRoot(projectPath))
+    yield* $(cleanProjectEff(projectPath))
+    return yield* $(build([]))
+  })
+
 export async function cleanProject(projectPath: string): Promise<void> {
-  try {
-    await exec('npm run clean', { cwd: projectPath })
-  } catch (e) {
-    throw wrapExecError(e, 'Error cleaning project')
-  }
+  const effect = cleanProjectEff(projectPath)
+  return unsafeRunEffect(
+    pipe(
+      effect,
+      mapError((e) => e.error)
+    ),
+    {
+      layer: LivePackageManager,
+      onError: guardError('Could not clean project'),
+    }
+  )
 }
+
+const cleanProjectEff = (projectPath: string) =>
+  gen(function* ($) {
+    const { setProjectRoot, runScript } = yield* $(PackageManagerService)
+    yield* $(setProjectRoot(projectPath))
+    yield* $(runScript('clean', []))
+  })
 
 function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   const userProject = loadUserProject(userProjectPath)

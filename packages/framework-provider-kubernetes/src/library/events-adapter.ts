@@ -2,12 +2,16 @@
 import {
   BoosterConfig,
   EventEnvelope,
+  EntitySnapshotEnvelope,
   EventSearchParameters,
   EventSearchResponse,
-  Logger,
+  PaginatedEntitiesIdsResult,
   UserApp,
   UUID,
+  NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
 } from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import { EventRegistry } from '../services/event-registry'
 import { RedisAdapter } from '../services/redis-adapter'
 
@@ -16,15 +20,28 @@ export const rawToEnvelopes = (events: Array<unknown>): Array<EventEnvelope> => 
 export const store = async (
   registry: EventRegistry,
   userApp: UserApp,
-  events: Array<EventEnvelope>,
-  _config: BoosterConfig,
-  logger: Logger
-): Promise<void> => {
+  events: Array<NonPersistedEventEnvelope>,
+  config: BoosterConfig
+): Promise<Array<EventEnvelope>> => {
+  const logger = getLogger(config, 'events-adapter#store')
+  const persistableEvents = []
   for (const envelope of events) {
     logger.debug('Storing event envelope', envelope)
-    await registry.store(envelope, logger)
+    const persistedEvent = await registry.storeEvent(config, envelope)
+    persistableEvents.push(persistedEvent)
   }
   await userApp.boosterEventDispatcher(events)
+  return persistableEvents
+}
+
+export const storeSnapshot = async (
+  registry: EventRegistry,
+  snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
+  config: BoosterConfig
+): Promise<EntitySnapshotEnvelope> => {
+  const logger = getLogger(config, 'events-adapter#storeSnapshot')
+  logger.debug('Storing snapshot envelope', snapshotEnvelope)
+  return await registry.storeSnapshot(config, snapshotEnvelope)
 }
 
 const isNewerThan = (isoString: string) => (key: string) => {
@@ -35,8 +52,7 @@ const isNewerThan = (isoString: string) => (key: string) => {
 
 export const forEntitySince = async (
   registry: EventRegistry,
-  _config: BoosterConfig,
-  logger: Logger,
+  config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID,
   since?: string
@@ -49,44 +65,53 @@ export const forEntitySince = async (
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
   }
-  const queryResult = await registry.query(query, logger)
-  return queryResult
+  const queryResult = await registry.query(config, query)
+  return queryResult as Array<EventEnvelope>
 }
 
 export async function latestEntitySnapshot(
   registry: EventRegistry,
-  _config: BoosterConfig,
-  logger: Logger,
+  config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID
-): Promise<EventEnvelope | null> {
+): Promise<EntitySnapshotEnvelope | undefined> {
+  const logger = getLogger(config, 'events-adapter#latestEntitySnapshot')
   const query = {
     keyQuery: ['ee', entityTypeName, entityID, 'snapshot'].join(RedisAdapter.keySeparator),
     keyPredicate: () => true,
     valuePredicate: () => true,
     sortBy: (a: EventEnvelope, b: EventEnvelope) => a.createdAt.localeCompare(b.createdAt),
   }
-  const snapshot = (await registry.queryLatest(query, logger)) as EventEnvelope
+  const snapshot = (await registry.queryLatest(config, query)) as EntitySnapshotEnvelope
 
   if (snapshot) {
     logger.debug(
       `[EventsAdapter#latestEntitySnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
       snapshot
     )
-    return snapshot as EventEnvelope
+    return snapshot as EntitySnapshotEnvelope
   } else {
     logger.debug(
       `[EventsAdapter#latestEntitySnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
-    return null
+    return undefined
   }
 }
 
 export const search = (
   _registry: EventRegistry,
   _config: BoosterConfig,
-  _logger: Logger,
   _filters: EventSearchParameters
 ): Promise<Array<EventSearchResponse>> => {
   throw new Error('eventsAdapter#search: Not implemented yet')
+}
+
+export async function searchEntitiesIds(
+  eventRegistry: EventRegistry,
+  config: BoosterConfig,
+  limit: number,
+  afterCursor: Record<string, string> | undefined,
+  entityTypeName: string
+): Promise<PaginatedEntitiesIdsResult> {
+  throw new Error('eventsAdapter#searchEntitiesIds: Not implemented yet')
 }

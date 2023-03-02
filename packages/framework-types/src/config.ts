@@ -1,6 +1,6 @@
 import {
   ReducerMetadata,
-  MigrationMetadata,
+  SchemaMigrationMetadata,
   EntityMetadata,
   RoleMetadata,
   CommandMetadata,
@@ -9,13 +9,16 @@ import {
   EventHandlerInterface,
   ScheduledCommandMetadata,
   EventMetadata,
-  TokenVerifierConfig,
-  CommandHandlerReturnTypeMetadata,
+  GlobalErrorHandlerMetadata,
+  EntityInterface,
+  DataMigrationMetadata,
+  TokenVerifier,
+  NotificationMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
-import { RocketDescriptor, RocketFunction } from './rocket-descriptor'
+import { RocketDescriptor, RocketFunction } from './rockets'
 import { Logger } from '.'
 
 /**
@@ -31,10 +34,12 @@ export class BoosterConfig {
   public rockets?: Array<RocketDescriptor>
   public appName = 'new-booster-app'
   public assets?: Array<string>
+  public defaultResponseHeaders: Record<string, string> = {}
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
   }
+  public enableGraphQLIntrospection = true
   private _userProjectRootPath?: string
   public readonly codeRelativePath: string = 'dist'
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
@@ -48,17 +53,22 @@ export class BoosterConfig {
 
   public readonly functionRelativePath: string = path.join('..', this.codeRelativePath, 'index.js')
   public readonly events: Record<EventName, EventMetadata> = {}
+  public readonly notifications: Record<EventName, NotificationMetadata> = {}
+  public readonly partitionKeys: Record<EventName, string> = {}
+  public readonly topicToEvent: Record<string, EventName> = {}
+  public readonly eventToTopic: Record<EventName, string> = {}
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
-  public readonly commandHandlerReturnTypes: Record<CommandName, CommandHandlerReturnTypeMetadata> = {}
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
-  public readonly projections: Record<EntityName, Array<ProjectionMetadata>> = {}
+  public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
   public readonly readModelSequenceKeys: Record<EntityName, string> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
-  public readonly migrations: Record<ConceptName, Map<Version, MigrationMetadata>> = {}
+  public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
+  public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
+  public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
   public registerRocketFunction(id: string, func: RocketFunction): void {
@@ -77,7 +87,12 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  private _tokenVerifiers?: Array<TokenVerifierConfig>
+  /**
+   * Add `TokenVerifier` implementations to this array to enable token verification.
+   * When a bearer token arrives in a request 'Authorization' header, it will be checked
+   * against all the verifiers registered here.
+   */
+  public tokenVerifiers: Array<TokenVerifier> = []
 
   public constructor(public readonly environmentName: string) {}
 
@@ -115,7 +130,7 @@ export class BoosterConfig {
   }
 
   public currentVersionFor(className: string): number {
-    const migrations = this.migrations[className]
+    const migrations = this.schemaMigrations[className]
     if (!migrations) {
       return 1
     }
@@ -167,65 +182,24 @@ export class BoosterConfig {
     return value
   }
 
-  public get tokenVerifiers(): Array<TokenVerifierConfig> {
-    /*
-     * TODO: Leaving this lazy initializer to load tokenVerifier options from environment
-     * variables here for backwards compatibility reasons, but we should consider forcing
-     * users to always set these options manually in the config.ts file. They can still
-     * load the config from env variables manually, but we don't need to decide this for them.
-     */
-    if (!this._tokenVerifiers) {
-      if (
-        process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] &&
-        process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] &&
-        process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM]
-      ) {
-        console.warn(
-          'Deprecation notice: Implicitly loading the JWT token verifier options from default environment variables is deprecated.' +
-            " Please set your application's `config.tokenVerifiers` options explicitly in your `src/config/config.ts` file."
-        )
-        this._tokenVerifiers = [
-          {
-            issuer: process.env[JWT_ENV_VARS.BOOSTER_JWT_ISSUER] as string,
-            jwksUri: process.env[JWT_ENV_VARS.BOOSTER_JWKS_URI] as string,
-            rolesClaim: process.env[JWT_ENV_VARS.BOOSTER_ROLES_CLAIM] as string,
-          },
-        ]
-      } else {
-        this._tokenVerifiers = []
-      }
-    }
-    return this._tokenVerifiers
-  }
-
-  public set tokenVerifiers(tokenVerifiers: Array<TokenVerifierConfig>) {
-    this._tokenVerifiers = tokenVerifiers
-  }
-
   private validateAllMigrations(): void {
-    for (const conceptName in this.migrations) {
-      this.validateConceptMigrations(conceptName, this.migrations[conceptName])
+    for (const conceptName in this.schemaMigrations) {
+      this.validateConceptSchemaMigrations(conceptName, this.schemaMigrations[conceptName])
     }
   }
 
-  private validateConceptMigrations(conceptName: string, migrations: Map<number, MigrationMetadata>): void {
+  private validateConceptSchemaMigrations(conceptName: string, migrations: Map<number, SchemaMigrationMetadata>): void {
     // Check that migrations are defined consecutively. In other words, there are no gaps between the version numbers
     const currentVersion = this.currentVersionFor(conceptName)
     for (let toVersion = 2; toVersion <= currentVersion; toVersion++) {
       if (!migrations.has(toVersion)) {
         throw new Error(
-          `Migrations for '${conceptName}' are invalid: they are missing a migration with toVersion=${toVersion}. ` +
+          `Schema Migrations for '${conceptName}' are invalid: they are missing a migration with toVersion=${toVersion}. ` +
             `There must be a migration for '${conceptName}' for every version in the range [2..${currentVersion}]`
         )
       }
     }
   }
-}
-
-export const JWT_ENV_VARS = {
-  BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',
-  BOOSTER_JWKS_URI: 'BOOSTER_JWKS_URI',
-  BOOSTER_ROLES_CLAIM: 'BOOSTER_ROLES_CLAIM',
 }
 
 interface ResourceNames {
@@ -244,3 +218,4 @@ type RoleName = string
 type ConceptName = string
 type Version = number
 type ScheduledCommandName = string
+type DataMigrationName = string

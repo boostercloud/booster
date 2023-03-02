@@ -31,7 +31,7 @@ describe('entities', async () => {
         quantity: mockQuantity,
       },
       mutation: gql`
-        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float) {
+        mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
           ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
         }
       `,
@@ -39,6 +39,7 @@ describe('entities', async () => {
 
     await waitForIt(
       () => applicationUnderTest.query.readModels(mockCartId, CART_READ_MODEL_NAME),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (readModel: any) =>
         readModel && readModel[0]?.id === mockCartId && readModel[0]?.cartItems[0]?.productId === mockProductId
     )
@@ -50,7 +51,7 @@ describe('entities', async () => {
         confirmationToken: mockConfirmationToken,
       },
       mutation: gql`
-        mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String) {
+        mutation ConfirmPayment($paymentId: ID!, $cartId: ID!, $confirmationToken: String!) {
           ConfirmPayment(input: { paymentId: $paymentId, cartId: $cartId, confirmationToken: $confirmationToken })
         }
       `,

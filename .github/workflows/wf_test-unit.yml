@@ -1,0 +1,37 @@
+name: Unit Tests
+on:
+  push:
+    branches:
+      - main
+      - '1.0.0'
+    paths-ignore:
+      - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
+
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '**.md'
+      - 'website/**'
+      - '.github/**'
+      - '.vscode/**'
+      - 'packages/**/.vscode/**'
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Build
+        uses: ./.github/actions/build
+
+      - name: Unit tests
+        uses: ./.github/actions/call-rush
+        with:
+          command: test -v

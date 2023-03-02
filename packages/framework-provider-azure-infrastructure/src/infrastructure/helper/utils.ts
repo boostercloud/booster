@@ -2,10 +2,10 @@ import * as fsExtra from 'fs-extra'
 import * as path from 'path'
 import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
 import * as Mustache from 'mustache'
-import { ApplicationTokenCredentials, loginWithServicePrincipalSecret } from 'ms-rest-azure'
 import { configuration } from './params'
-import WebSiteManagement from 'azure-arm-website'
-import ResourceManagementClient from 'azure-arm-resource/lib/resource/resourceManagementClient'
+import { WebSiteManagementClient as WebSiteManagement } from '@azure/arm-appservice'
+import { ResourceManagementClient } from '@azure/arm-resources'
+import { TokenCredential, ClientSecretCredential } from '@azure/identity'
 
 const MAX_TERRAFORM_SIZE_NAME = 24
 const MAX_RESOURCE_GROUP_NAME_SIZE = 20
@@ -68,23 +68,19 @@ export function readProjectConfig(userProjectPath: string): BoosterConfig {
   return app.config
 }
 
-export async function createWebSiteManagementClient(
-  credentials: ApplicationTokenCredentials
-): Promise<WebSiteManagement> {
+export async function createWebSiteManagementClient(credentials: TokenCredential): Promise<WebSiteManagement> {
   return new WebSiteManagement(credentials, configuration.subscriptionId)
 }
 
-export async function createResourceManagementClient(
-  credentials: ApplicationTokenCredentials
-): Promise<ResourceManagementClient> {
+export async function createResourceManagementClient(credentials: TokenCredential): Promise<ResourceManagementClient> {
   return new ResourceManagementClient(credentials, configuration.subscriptionId)
 }
 
-export async function azureCredentials(): Promise<ApplicationTokenCredentials> {
-  const applicationTokenCredentials = await loginWithServicePrincipalSecret(
+export async function azureCredentials(): Promise<TokenCredential> {
+  const applicationTokenCredentials = new ClientSecretCredential(
+    configuration.tenantId,
     configuration.appId,
-    configuration.secret,
-    configuration.tenantId
+    configuration.secret
   )
 
   if (!applicationTokenCredentials) {

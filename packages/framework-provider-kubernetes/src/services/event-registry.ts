@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { EventEnvelope, Logger, UUID } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  EventEnvelope,
+  EntitySnapshotEnvelope,
+  UUID,
+  NonPersistedEventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+} from '@boostercloud/framework-types'
+import { getLogger } from '@boostercloud/framework-common-helpers'
 import fetch from 'node-fetch'
 import { RedisAdapter } from './redis-adapter'
 
@@ -16,10 +24,15 @@ export class EventRegistry {
     this.redis = RedisAdapter.build()
   }
 
-  public async store(event: EventEnvelope, logger: Logger): Promise<void> {
+  public async storeEvent(config: BoosterConfig, event: NonPersistedEventEnvelope): Promise<EventEnvelope> {
+    const logger = getLogger(config, 'event-registry#store')
     const stateUrl = `${this.url}/v1.0/state/statestore`
     logger.debug('About to post', event)
-    const data = [{ key: this.eventKey(event), value: event }]
+    const persistableEvent: EventEnvelope = {
+      ...event,
+      createdAt: new Date().toISOString(),
+    }
+    const data = [{ key: this.eventKey(persistableEvent), value: persistableEvent }]
     const response = await fetch(stateUrl, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -32,11 +45,41 @@ export class EventRegistry {
       const err = response.text()
       throw err
     }
+    return persistableEvent
   }
 
-  public async query(query: Query, logger: Logger): Promise<Array<EventEnvelope>> {
+  public async storeSnapshot(
+    config: BoosterConfig,
+    snapshot: NonPersistedEntitySnapshotEnvelope
+  ): Promise<EntitySnapshotEnvelope> {
+    const logger = getLogger(config, 'event-registry#storeSnapshot')
+    const stateUrl = `${this.url}/v1.0/state/statestore`
+    logger.debug('About to post', snapshot)
+    const persistableSnapshot = {
+      ...snapshot,
+      createdAt: snapshot.snapshottedEventCreatedAt,
+      persistedAt: new Date().toISOString(),
+    }
+    const data = [{ key: this.snapshotKey(persistableSnapshot), value: snapshot }]
+    const response = await fetch(stateUrl, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    if (!response.ok) {
+      logger.error("Couldn't store snapshot")
+      const err = response.text()
+      throw err
+    }
+    return persistableSnapshot
+  }
+
+  public async query(config: BoosterConfig, query: Query): Promise<Array<EventEnvelope | EntitySnapshotEnvelope>> {
+    const logger = getLogger(config, 'event-registry#query')
     logger.debug('Getting redis keys')
-    const redisKeys = await this.redis.keys(query.keyQuery, logger)
+    const redisKeys = await this.redis.keys(config, query.keyQuery)
     logger.debug(`Got redis keys: ${JSON.stringify(redisKeys)}`)
     if (!redisKeys) {
       return []
@@ -53,10 +96,13 @@ export class EventRegistry {
     return envelopes
   }
 
-  public async queryLatest(query: Query, logger: Logger): Promise<EventEnvelope | null> {
-    const result = await this.query(query, logger)
+  public async queryLatest(
+    config: BoosterConfig,
+    query: Query
+  ): Promise<EventEnvelope | EntitySnapshotEnvelope | undefined> {
+    const result = await this.query(config, query)
     if (result.length <= 0) {
-      return null
+      return undefined
     }
     return result[result.length - 1]
   }
@@ -69,6 +115,19 @@ export class EventRegistry {
       event.kind, // 'event' | 'snapshot'
       event.typeName, // 'PostCreated' event name
       event.createdAt, // timespan
+      UUID.generate(), // hash to make key unique
+    ]
+    return keyParts.join(RedisAdapter.keySeparator)
+  }
+
+  private snapshotKey(snapshot: EntitySnapshotEnvelope): string {
+    const keyParts = [
+      'ee', // event envelope marker
+      snapshot.entityTypeName, // 'Post' entity name
+      snapshot.entityID, // entityId
+      snapshot.kind, // 'event' | 'snapshot'
+      snapshot.version, // snapshot version
+      snapshot.snapshottedEventCreatedAt, // timespan
       UUID.generate(), // hash to make key unique
     ]
     return keyParts.join(RedisAdapter.keySeparator)

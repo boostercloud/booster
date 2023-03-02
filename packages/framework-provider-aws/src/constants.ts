@@ -32,5 +32,6 @@ export const environmentVarNames = {
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
 } as const
 
+// Imposed limits by AWS
 export const dynamoDbBatchGetLimit = 100
 export const dynamoDbBatchWriteLimit = 25

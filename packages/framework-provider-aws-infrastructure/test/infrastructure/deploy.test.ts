@@ -14,6 +14,9 @@ const testEnvironment = {
   region: 'testRegion',
 }
 const config = new BoosterConfig('test')
+config.logger = {
+  info: fake(),
+} as unknown as Logger
 config.userProjectRootPath = '.'
 
 describe('the deployment module', () => {
@@ -38,13 +41,10 @@ describe('the deployment module', () => {
           },
         })
       )
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
 
-      await deploy(config, logger)
+      await deploy(config)
 
-      expect(logger.info).to.have.been.called
+      expect(config.logger?.info).to.have.been.called
     })
 
     it('throws errors', async () => {
@@ -62,12 +62,7 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = {
-        info: fake(),
-        error: fake(),
-      } as unknown as Logger
-
-      await expect(deploy(config, logger)).to.eventually.be.rejectedWith(errorMessage)
+      await expect(deploy(config)).to.eventually.be.rejectedWith(errorMessage)
     })
 
     it('builds the AppStack calling to the `getStackServiceConfiguration`', async () => {
@@ -83,11 +78,7 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
-
-      await deploy(config, logger)
+      await deploy(config)
 
       expect(StackTools.getStackServiceConfiguration).to.have.been.calledOnceWith(config)
     })
@@ -107,11 +98,7 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
-
-      await deploy(config, logger)
+      await deploy(config)
 
       expect(fakeBootstrap).to.be.calledOnceWith(
         match([EnvironmentUtils.format(testEnvironment.account, testEnvironment.region)])
@@ -135,11 +122,7 @@ describe('the deployment module', () => {
         })
       )
 
-      const logger = {
-        info: fake(),
-      } as unknown as Logger
-
-      await deploy(config, logger)
+      await deploy(config)
 
       const appNamePrefixRegExp = new RegExp('^' + testAppName + '-')
       expect(fakeBootstrap).to.have.been.calledOnce
@@ -169,16 +152,12 @@ describe('the deployment module', () => {
           })
         )
 
-        const logger = {
-          info: fake(),
-        } as unknown as Logger
-
         const fakeRocket: InfrastructureRocket = {
           mountStack: fake(),
           unmountStack: fake(),
         }
 
-        await deploy(config, logger, [fakeRocket])
+        await deploy(config, [fakeRocket])
 
         expect(StackTools.getStackServiceConfiguration).to.have.been.calledOnceWith(config, [fakeRocket])
       })

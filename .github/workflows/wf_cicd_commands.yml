@@ -1,0 +1,21 @@
+name: Dispatch CICD commands
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  dispatch-command:
+    runs-on: ubuntu-latest
+    # Only run for PRs, not issue comments
+    if: ${{ github.event.issue.pull_request }}
+    steps:
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v3
+        with:
+          token: ${{ secrets.MONKEYBOT_PAT }}
+          issue-type: pull-request
+          permission: write
+          # Define commands here
+          commands: |
+            integration

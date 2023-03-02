@@ -1,14 +1,17 @@
-import { EventEnvelope, UUID } from '@boostercloud/framework-types'
+import { EntitySnapshotEnvelope, EventEnvelope, UUID } from '@boostercloud/framework-types'
 
-export function partitionKeyForEvent(
-  entityTypeName: string,
-  entityID: UUID,
-  kind: EventEnvelope['kind'] = 'event'
-): string {
-  return `${entityTypeName}-${entityID}-${kind}`
+export function partitionKeyForEvent(entityTypeName: string, entityID: UUID): string {
+  return `${entityTypeName}-${entityID}-event`
 }
 
-export function partitionKeyForIndexByEntity(entityTypeName: string, kind: EventEnvelope['kind']): string {
+export function partitionKeyForEntitySnapshot(entityTypeName: string, entityID: UUID): string {
+  return `${entityTypeName}-${entityID}-snapshot`
+}
+
+export function partitionKeyForIndexByEntity(
+  entityTypeName: string,
+  kind: EventEnvelope['kind'] | EntitySnapshotEnvelope['kind']
+): string {
   return `${entityTypeName}-${kind}`
 }
 

@@ -1,4 +1,4 @@
-import { Projects, ReadModel } from '@boostercloud/framework-core'
+import { Booster, Projects, ReadModel } from '@boostercloud/framework-core'
 import {
   ProjectionResult,
   ReadModelInterface,
@@ -8,9 +8,10 @@ import {
 } from '@boostercloud/framework-types'
 import { CartItem } from '../common/cart-item'
 import { Address } from '../common/address'
-import { Cart } from '../entities/cart'
+import { Cart, MigratedCart } from '../entities/cart'
 import { Payment } from '../entities/payment'
-import { beforeHookException, throwExceptionId } from '../constants'
+import { beforeHookException, projectionErrorCartId, projectionErrorCartMessage, throwExceptionId } from '../constants'
+import { ProductReadModel } from './product-read-model'
 
 @ReadModel({
   authorize: 'all',
@@ -28,6 +29,25 @@ export class CartReadModel {
 
   public getChecks(): number {
     return this.checks
+  }
+
+  public get cartItemsSize(): number | undefined {
+    return this.cartItems ? this.cartItems.length : 0
+  }
+
+  public get myAddress(): Promise<Address> {
+    return Promise.resolve(this.shippingAddress || new Address('', '', '', '', '', ''))
+  }
+
+  public get lastProduct(): Promise<ProductReadModel | undefined> {
+    if (this.cartItemsSize === 0) {
+      return Promise.resolve(undefined)
+    }
+    return Booster.readModel(ProductReadModel)
+      .filter({
+        id: { eq: this.cartItems.at(-1)?.productId },
+      })
+      .searchOne()
   }
 
   public static async beforeFn(
@@ -62,7 +82,14 @@ export class CartReadModel {
   }
 
   @Projects(Cart, 'id')
-  public static updateWithCart(cart: Cart, oldCartReadModel?: CartReadModel): ProjectionResult<CartReadModel> {
+  @Projects(MigratedCart, 'id')
+  public static updateWithCart(
+    cart: Cart | MigratedCart,
+    oldCartReadModel?: CartReadModel
+  ): ProjectionResult<CartReadModel> {
+    if (cart.id === projectionErrorCartId) {
+      throw new Error(projectionErrorCartMessage)
+    }
     const cartProductIds = cart?.cartItems.map((item) => item.productId as string)
     // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
     cart.getId()
