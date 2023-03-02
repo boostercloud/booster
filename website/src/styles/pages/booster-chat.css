@@ -28,6 +28,12 @@
   width: 100%;
 }
 
+@media screen and (max-width: 600px) {
+  .bc-searchbar {
+    padding: 0;
+  }
+}
+
 .bc-input {
   outline: none;
   border: none;

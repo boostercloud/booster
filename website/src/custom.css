@@ -22,4 +22,20 @@ svg {
   max-width: unset;
 }
 
+.navbar__item--button {
+  margin-right: 1rem;
+}
+
+@media screen and (min-width: 769px) and (max-width: 997px) {
+  .navbar__item--button {
+    margin-right: 11rem
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .navbar__item--button {
+    margin-right: 3rem
+  }
+}
+
 @import './styles/index.css';

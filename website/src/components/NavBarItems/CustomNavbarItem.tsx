@@ -86,7 +86,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
 
   return (
     <>
-      <button onClick={openModal} type="button">
+      <button onClick={openModal} type="button" className='navbar__item--button'>
         {props.content}
       </button>
       <Modal
