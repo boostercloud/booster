@@ -50,7 +50,8 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
 
   public async init(): Promise<void> {
     await super.init()
-    const { args, flags } = await this.parse(this.ctor)
+    const staticFlags = { ...this.ctor.flags, ...BaseCommand.baseFlags }
+    const { args, flags } = await this.parse({ ...this.ctor, flags: staticFlags })
     const levelString = flags.level as keyof typeof Level
     this.logLevel = Level[levelString]
     this.flags = flags as Flags<T>
