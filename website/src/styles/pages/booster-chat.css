@@ -125,11 +125,16 @@
   text-align: center;
 }
 
-.bc-beta-disclaimer {
-  position: absolute;
-  bottom: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.8rem;
-  color: #0000e6;
+.bc-ask-ai-logo {
+  display: flex;
+  align-items: center;
+  height: 15px;
 }
+
+.bc-logo-container {
+  width: 48rem;
+  max-width: 75%;
+  display: flex;
+  justify-content: end;
+  margin-bottom: -25px;
+} 
