@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Added tests for partition key generation functions and removed the unused `partitionKeyForIndexByEntity` function from the Azure provider",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

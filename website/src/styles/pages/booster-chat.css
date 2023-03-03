@@ -137,3 +137,12 @@
   margin: 0;
   text-align: center;
 }
+
+.bc-beta-disclaimer {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: #0000e6;
+}
