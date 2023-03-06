@@ -122,6 +122,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
             disabled={loading}
             autoFocus
           />
+          <div className="bc-beta-disclaimer">Provisional free version</div>
         </div>
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
       </Modal>
