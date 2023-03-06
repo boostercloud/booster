@@ -38,6 +38,11 @@ export default function BoosterChat(): JSX.Element {
 
   return (
     <Layout wrapperClassName="bc-layout">
+      <img className="bc-hero" src={useBaseUrl('/img/booster-logo.png')} alt="Booster Logo" />
+      <CoolTitle hidden={interacted} />
+      <div className="bc-logo-container">
+        <img className="bc-ask-ai-logo" src={useBaseUrl('/img/ask-ai-logo.png')} alt="Ask AI Logo" />
+      </div>
       <div className="bc-searchbar">
         <SearchIcon />
         <input
@@ -48,7 +53,6 @@ export default function BoosterChat(): JSX.Element {
           onFocus={() => setInteracted(true)}
           disabled={loading}
         />
-        <div className="bc-beta-disclaimer">Beta AI version</div>
       </div>
       <ChatResponse response={response} loading={loading} hasFinished={true}/>
     </Layout>
