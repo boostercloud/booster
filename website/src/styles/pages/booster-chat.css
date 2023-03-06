@@ -230,3 +230,13 @@
   justify-content: end;
   margin-bottom: -25px;
 } 
+
+.navbar_custom_item--button {
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.navbar_custom_item--image {
+  height: 15px;
+}

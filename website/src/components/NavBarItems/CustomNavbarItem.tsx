@@ -87,8 +87,8 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
 
   return (
     <>
-      <button onClick={openModal} type="button" className='navbar__item--button' style={{ border: 'none', background: 'none', padding: 0 }}>
-        <img src={props.imageURL} alt={props.altText} style={{ height: '15px' }}/>
+      <button onClick={openModal} type="button" className='navbar_custom_item--button'>
+        <img src={props.imageURL} alt={props.altText} className='navbar_custom_item--image'/>
       </button>
       <Modal
         isOpen={isModalOpen}
