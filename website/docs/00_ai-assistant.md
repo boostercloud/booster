@@ -2,7 +2,7 @@
 slug: /
 ---
 
-import BoosterChat from '@site/src/pages/ask-me'
+import BoosterChat from '@site/src/components/BoosterChat/BoosterChat'
 
 # What is Booster?
 
