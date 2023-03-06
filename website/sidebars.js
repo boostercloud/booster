@@ -4,6 +4,7 @@
 
 const sidebars = {
   docs: [
+    'ai-assistant',
     'introduction',
     {
       type: 'category',
