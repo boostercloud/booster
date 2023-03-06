@@ -64,6 +64,12 @@ const config = {
       items: [
         {
           type: 'doc',
+          docId: 'ai-assistant',
+          position: 'left',
+          label: 'Docs',
+        },
+        {
+          type: 'doc',
           docId: 'introduction',
           position: 'left',
           label: 'Docs',

@@ -4,9 +4,10 @@ import ReactMarkdown from 'react-markdown'
 interface ChatResponseProps {
   loading: boolean
   response: string | null
+  embedded: boolean
 }
 
-export const ChatResponse: FC<ChatResponseProps> = ({ loading, response }) => {
+export const ChatResponse: FC<ChatResponseProps> = ({ loading, response, embedded }) => {
   const [displayPopup, setDisplayPopup] = useState(false)
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export const ChatResponse: FC<ChatResponseProps> = ({ loading, response }) => {
 
   return (
     <>
-      <div className="bc-chat">
+      <div className={ embedded ? "bc-chat-embedded" : "bc-chat"} >
         <ReactMarkdown>{response}</ReactMarkdown>
       </div>
       <div className="bc-chat-popup" style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
