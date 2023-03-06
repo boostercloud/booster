@@ -172,6 +172,18 @@
   transition: all 0.5s ease-in-out;
 }
 
+.bc-chat-popup-embedded {
+  bottom: -200rem;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: #2A27E2 2px solid;
+  background-color: white;
+  border-radius: 10px;
+  transition: all 0.5s ease-in-out;
+}
+
 .bc-chat-popup > p {
   margin: 0;
   text-align: center;

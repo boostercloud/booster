@@ -1,6 +1,6 @@
 import React, { FC, useEffect, useMemo, useState } from 'react'
 
-const MIN_SPEED = 1000
+const MIN_SPEED = 700
 
 enum Direction {
   FORWARD = 'FORWARD',

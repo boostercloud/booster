@@ -45,6 +45,7 @@ export default function BoosterChat(props: BoosterChatProps): JSX.Element {
   if (embedded) {
     return (
       <div className='bc-embedded'>
+        <CoolTitle hidden={interacted} />
         <div className='bc-logo-container'>
           <img className='bc-ask-ai-logo-embedded' src={useBaseUrl('/img/ask-ai-logo.png')} alt="Ask AI Logo" />
         </div>
@@ -55,6 +56,7 @@ export default function BoosterChat(props: BoosterChatProps): JSX.Element {
             className="bc-input-embedded"
             type="text"
             onKeyDown={handleKeyDown}
+            onFocus={() => setInteracted(true)}
             disabled={loading}
           />
         </div>
