@@ -22,18 +22,25 @@ svg {
   max-width: unset;
 }
 
-.navbar__item--button {
+.navbar_custom_item--button {
   margin-right: 1rem;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.navbar_custom_item--image {
+  height: 15px;
 }
 
 @media screen and (min-width: 769px) and (max-width: 997px) {
-  .navbar__item--button {
+  .navbar_custom_item--button {
     margin-right: 11rem
   }
 }
 
 @media screen and (max-width: 768px) {
-  .navbar__item--button {
+  .navbar_custom_item--button {
     margin-right: 3rem
   }
 }

@@ -65,13 +65,14 @@
   border: none;
   flex: 1;
   background-color: #C8B2F1;
-  color: white;
+  color: black;
   font-weight: bold;
   font-size: medium;
 }
 
 .bc-input-embedded::placeholder {
-  color: #f4f0fc;
+  color: white;
+  font-style: italic;
 }
 
 .bc-input {
@@ -230,13 +231,3 @@
   justify-content: end;
   margin-bottom: -25px;
 } 
-
-.navbar_custom_item--button {
-  border: none;
-  background: none;
-  padding: 0;
-}
-
-.navbar_custom_item--image {
-  height: 15px;
-}
