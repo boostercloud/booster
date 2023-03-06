@@ -87,7 +87,8 @@ const config = {
         {
           type: 'custom-navbar-item', 
           position: 'right',
-          content: 'AI Assistant 💬!'
+          imageURL: '/img/ask-ai-logo.png',
+          altText: 'Ask AI'
         }
       ],
     },

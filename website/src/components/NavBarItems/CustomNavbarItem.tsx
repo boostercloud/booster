@@ -8,7 +8,7 @@ import { ChatResponse } from '../BoosterChat/ChatResponse';
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
 // see https://github.com/facebook/docusaurus/issues/7227
-export default function CustomNavbarItem(props: { content: string }): JSX.Element | null {
+export default function CustomNavbarItem(props: { imageURL: string, altText: string }): JSX.Element | null {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState<string | null>(null)
   const [response, setResponse] = useState(null)
@@ -86,8 +86,8 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
 
   return (
     <>
-      <button onClick={openModal} type="button" className='navbar__item--button'>
-        {props.content}
+      <button onClick={openModal} type="button" className='navbar__item--button' style={{ border: 'none', background: 'none', padding: 0 }}>
+        <img src={props.imageURL} alt={props.altText} style={{ height: '15px' }}/>
       </button>
       <Modal
         isOpen={isModalOpen}
@@ -114,7 +114,7 @@ export default function CustomNavbarItem(props: { content: string }): JSX.Elemen
         <div className="bc-searchbar">
           <SearchIcon />
           <input
-            placeholder="What is Booster?"
+            placeholder="Ask me about Booster"
             className="bc-searchinput"
             type="text"
             onKeyDown={handleKeyDown}
