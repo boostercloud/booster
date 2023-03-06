@@ -17,6 +17,10 @@ export default function BoosterChat(): JSX.Element {
   }
 
   const handleSearch = async (query: string) => {
+    if (query?.trim() === "" || query === null) {
+      return
+    }
+    
     setLoading(true)
     setResponse('')
     ChatService.answerBoosterQuestion(query, handleResponseUpdated)
@@ -41,18 +45,25 @@ export default function BoosterChat(): JSX.Element {
       <div className='bc-logo-container'>
         <img className='bc-ask-ai-logo-embedded' src={useBaseUrl('/img/ask-ai-logo.png')} alt="Ask AI" />
       </div>
-      <div className='bc-searchbar-embedded'>
-        <SearchIcon className='bc-searchbar-icon-embedded'/>
-        <input
-          placeholder="Ask me about Booster"
-          className="bc-input-embedded"
-          type="text"
-          onKeyDown={handleKeyDown}
-          onFocus={() => setInteracted(true)}
-          disabled={loading}
-        />
-      </div>
+      <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} />
       <ChatResponse response={response} loading={loading} hasFinished={true}/>
+    </div>
+  )
+}
+
+export function AskAIBar({ handleKeyDown, setInteracted, loading }) {
+  return (
+    <div className='bc-searchbar-embedded'>
+      <SearchIcon className='bc-searchbar-icon-embedded'/>
+      <input
+        placeholder="Ask me about Booster"
+        className="bc-input-embedded"
+        type="text"
+        onKeyDown={handleKeyDown}
+        onFocus={() => setInteracted(true)}
+        disabled={loading}
+      />
+      <div className="bc-beta-disclaimer">Provisional free version</div>
     </div>
   )
 }

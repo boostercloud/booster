@@ -4,6 +4,7 @@ import Modal from 'react-modal';
 import { ChatService } from '@site/src/services/chat-service';
 import { useState } from 'react';
 import { ChatResponse } from '../BoosterChat/ChatResponse';
+import { AskAIBar } from '../BoosterChat/BoosterChat';
 
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
@@ -111,19 +112,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
           },
         }}
       >
-        <div className="bc-searchbar">
-          <SearchIcon />
-          <input
-            placeholder="Ask me about Booster"
-            className="bc-searchinput"
-            type="text"
-            onKeyDown={handleKeyDown}
-            onFocus={() => setInteracted(true)}
-            disabled={loading}
-            autoFocus
-          />
-          <div className="bc-beta-disclaimer">Provisional free version</div>
-        </div>
+        <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} />
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
       </Modal>
     </>
