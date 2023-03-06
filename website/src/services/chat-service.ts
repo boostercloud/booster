@@ -31,7 +31,7 @@ export class ChatService {
     while (!done) {
       const { value, done: doneReading } = await reader.read()
 
-      if (abortSignal.aborted) {
+      if (abortSignal && abortSignal.aborted) {
         reader.cancel()
         return
       }
