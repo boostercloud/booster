@@ -71,6 +71,25 @@
   flex-direction: column;
 }
 
+.bc-animated-title {
+  margin: 0;
+  font-size: 18px;
+  font-style: italic;
+  text-align: center;
+}
+
+.bc-animated-container {
+  height: auto;
+  min-height: 25px;
+  overflow: auto;
+}
+
+.bc-animated-container-hidden {
+  height: 0px;
+  min-height: 0px;
+  overflow: auto;
+}
+
 .bc-chat:first-child {
   margin-top: var(--ifm-paragraph-margin-bottom)
 }
