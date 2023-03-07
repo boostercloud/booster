@@ -11,9 +11,11 @@ export default function BoosterChat(): JSX.Element {
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
   const [interacted, setInteracted] = useState(false)
+  const [hasFinished, setHasFinished] = useState(false)
 
   const handleResponseUpdated = (_question, newResponseFragment, _hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
+    setHasFinished(_hasFinished)
   }
 
   const handleSearch = async (query: string) => {
@@ -23,6 +25,8 @@ export default function BoosterChat(): JSX.Element {
     
     setLoading(true)
     setResponse('')
+    setHasFinished(false)
+
     ChatService.answerBoosterQuestion(query, handleResponseUpdated)
       .catch((error) => {
         setResponse(NO_RESPONSE)
@@ -46,7 +50,7 @@ export default function BoosterChat(): JSX.Element {
         <img className='bc-ask-ai-logo-embedded' src={useBaseUrl('/img/ask-ai-logo.png')} alt="Ask AI" />
       </div>
       <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} />
-      <ChatResponse response={response} loading={loading} hasFinished={true}/>
+      <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
     </div>
   )
 }

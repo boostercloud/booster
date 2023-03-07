@@ -35,7 +35,7 @@ export const ChatResponse: FC<ChatResponseProps> = ({ loading, response, hasFini
 
   if (hasFinished === false) {
     return (
-      <div className="bc-chat">
+      <div className="bc-chat-embedded">
         <ReactMarkdown>{response}</ReactMarkdown>
       </div>
     )
