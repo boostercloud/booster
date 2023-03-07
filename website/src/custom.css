@@ -62,8 +62,8 @@
 }
 
 .bc-input::placeholder {
-  color: white;
-  font-style: italic;
+  color: gray;
+  font-weight: normal;
 }
 
 .bc-chat {
