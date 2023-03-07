@@ -1,9 +1,7 @@
-import useBaseUrl from '@docusaurus/useBaseUrl'
 import { ChatService } from '@site/src/services/chat-service'
 import AskAISearchIcon from '@site/static/img/ask-ai-bubble.svg'
 import React, { useState } from 'react'
 import { ChatResponse } from './ChatResponse'
-import { CoolTitle } from './CoolTitle'
 import { fathom } from 'docusaurus-plugin-fathom'
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
@@ -46,7 +44,6 @@ export default function BoosterChat(): JSX.Element {
 
   return (
     <div className='bc-layout'>
-      <CoolTitle hidden={interacted} />
       <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle= {false}/>
       <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
     </div>
