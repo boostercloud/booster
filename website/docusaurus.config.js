@@ -69,12 +69,6 @@ const config = {
           label: 'Docs',
         },
         {
-          type: 'doc',
-          docId: 'introduction',
-          position: 'left',
-          label: 'Docs',
-        },
-        {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
           position: 'left',
