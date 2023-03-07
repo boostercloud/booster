@@ -4,6 +4,7 @@ import { ChatService } from '@site/src/services/chat-service';
 import { useState } from 'react';
 import { ChatResponse } from '../BoosterChat/ChatResponse';
 import { AskAIBar } from '../BoosterChat/BoosterChat';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
@@ -15,10 +16,10 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
   const [loading, setLoading] = useState(null)
   const [hasFinished, setHasFinished] = useState(false)
   const [interacted, setInteracted] = useState(false)
-    
+
   const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
-      setResponse((prev) => `${prev}${newResponseFragment}`)
-      setHasFinished(hasFinished)
+    setResponse((prev) => `${prev}${newResponseFragment}`)
+    setHasFinished(hasFinished)
   }
 
   const handleSearch = async (query: string, controller: AbortController) => {
@@ -32,13 +33,13 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
     setHasFinished(false)
 
     ChatService.answerBoosterQuestion(query, handleResponseUpdated, controller.signal)
-    .catch((error) => {
-      setResponse(NO_RESPONSE)
-      console.error(error)
-    })
-    .finally(() => {
-      setLoading(false)
-    })
+      .catch((error) => {
+        setResponse(NO_RESPONSE)
+        console.error(error)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   const handleKeyDown = (event) => {
@@ -51,7 +52,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
     setIsModalOpen(true)
   }
 
-  const closeModal= () => {
+  const closeModal = () => {
     setSearchQuery(null)
     setResponse(null)
     setLoading(null)
@@ -61,13 +62,13 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
   useEffect(() => {
     const abortController = new AbortController();
     handleSearch(searchQuery, abortController)
-  
+
     const modalElement = document.querySelector('.modal')
-  
+
     if (modalElement) {
       modalElement.addEventListener('Modal.afterClose', abortController.abort)
     }
-  
+
     return () => {
       if (modalElement) {
         modalElement.removeEventListener('Modal.afterClose', abortController.abort)
@@ -75,10 +76,10 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
       abortController.abort()
     }
   }, [searchQuery])
-  
+
   useEffect(() => {
     document.body.style.overflow = isModalOpen ? "hidden" : ""
-  
+
     return () => {
       document.body.style.overflow = ""
     }
@@ -87,7 +88,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
   return (
     <>
       <button onClick={openModal} type="button" className='navbar_custom_item--button'>
-        <img src={props.imageURL} alt={props.altText} className='navbar_custom_item--image'/>
+        <img src={props.imageURL} alt={props.altText} className='navbar_custom_item--image' />
       </button>
       <Modal
         isOpen={isModalOpen}
@@ -111,8 +112,8 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
           },
         }}
       >
-        <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle={true}/>
-        <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
+        <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle={true} />
+        <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
       </Modal>
     </>
   )

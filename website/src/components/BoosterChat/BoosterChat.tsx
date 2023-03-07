@@ -1,6 +1,6 @@
 import useBaseUrl from '@docusaurus/useBaseUrl'
 import { ChatService } from '@site/src/services/chat-service'
-import SearchIcon from '@site/static/img/search-icon.svg'
+import AskAISearchIcon from '@site/static/img/ask-ai-bubble.svg'
 import React, { useState } from 'react'
 import { ChatResponse } from './ChatResponse'
 import { CoolTitle } from './CoolTitle'
@@ -46,9 +46,6 @@ export default function BoosterChat(): JSX.Element {
   return (
     <div className='bc-layout'>
       <CoolTitle hidden={interacted} />
-      <div className='bc-logo-container'>
-        <img className='bc-ask-ai-logo' src={useBaseUrl('/img/ask-ai-logo.png')} alt="Ask AI" />
-      </div>
       <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle= {false}/>
       <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
     </div>
@@ -58,7 +55,7 @@ export default function BoosterChat(): JSX.Element {
 export function AskAIBar({ handleKeyDown, setInteracted, loading, isModalStyle }) {
   return (
     <div className= {isModalStyle ? 'bc-searchbar max-width-100' : 'bc-searchbar'}>
-      <SearchIcon className='bc-searchbar-icon'/>
+      <AskAISearchIcon className='bc-searchbar-icon'/>
       <input
         placeholder="Ask me about Booster"
         className="bc-input"
@@ -67,7 +64,7 @@ export function AskAIBar({ handleKeyDown, setInteracted, loading, isModalStyle }
         onFocus={() => setInteracted(true)}
         disabled={loading}
       />
-      <div className="bc-beta-disclaimer">Provisional free version</div>
+      <div className="bc-beta-disclaimer"> Ask AI · Temporary free version</div>
     </div>
   )
 }
