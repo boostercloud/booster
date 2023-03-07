@@ -44,24 +44,24 @@ export default function BoosterChat(): JSX.Element {
   }
 
   return (
-    <div className='bc-embedded'>
+    <div className='bc-layout'>
       <CoolTitle hidden={interacted} />
       <div className='bc-logo-container'>
-        <img className='bc-ask-ai-logo-embedded' src={useBaseUrl('/img/ask-ai-logo.png')} alt="Ask AI" />
+        <img className='bc-ask-ai-logo' src={useBaseUrl('/img/ask-ai-logo.png')} alt="Ask AI" />
       </div>
-      <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} />
+      <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle= {false}/>
       <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
     </div>
   )
 }
 
-export function AskAIBar({ handleKeyDown, setInteracted, loading }) {
+export function AskAIBar({ handleKeyDown, setInteracted, loading, isModalStyle }) {
   return (
-    <div className='bc-searchbar-embedded'>
-      <SearchIcon className='bc-searchbar-icon-embedded'/>
+    <div className= {isModalStyle ? 'bc-searchbar max-width-100' : 'bc-searchbar'}>
+      <SearchIcon className='bc-searchbar-icon'/>
       <input
         placeholder="Ask me about Booster"
-        className="bc-input-embedded"
+        className="bc-input"
         type="text"
         onKeyDown={handleKeyDown}
         onFocus={() => setInteracted(true)}

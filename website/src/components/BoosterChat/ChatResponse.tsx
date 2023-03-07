@@ -46,7 +46,7 @@ export const ChatResponse: FC<ChatResponseProps> = ({ loading, response, hasFini
       <div className={ "bc-chat-embedded"} >
         <ReactMarkdown>{response}</ReactMarkdown>
       </div>
-      <div className={ "bc-chat-popup-embedded" } style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
+      <div className={ "bc-chat-popup" } style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
         <ReactMarkdown>
           Not the answer you expected? We will be greatful to answer your question on the
           [#booster-help](https://discord.com/channels/763753198388510780/1019895895325675550) channel on Discord 🤗

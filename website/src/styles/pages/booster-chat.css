@@ -1,4 +1,4 @@
-.bc-embedded {
+.bc-layout {
   min-height: calc(100vh - 60px);
   display: flex;
   flex-direction: column;
@@ -9,16 +9,16 @@
   padding-bottom: 6rem;
 }
 
-.bc-embedded > * {
+.bc-layout > * {
   transition: all;
   transition-duration: 0.5s;
 }
 
-.bc-searchbar-icon-embedded {
+.bc-searchbar-icon {
   filter: invert(10%) sepia(99%) saturate(7430%) hue-rotate(266deg) brightness(83%) contrast(107%);
 }
 
-.bc-searchbar-embedded { 
+.bc-searchbar { 
   background-color: #C8B2F1;
   display: flex;
   gap: 1rem;
@@ -29,7 +29,11 @@
   max-width: 94%;
 }
 
-.bc-input-embedded {
+.max-width-100 {
+  max-width: 100%;
+}
+
+.bc-input {
   outline: none;
   border: none;
   flex: 1;
@@ -39,7 +43,7 @@
   font-size: medium;
 }
 
-.bc-input-embedded::placeholder {
+.bc-input::placeholder {
   color: white;
   font-style: italic;
 }
@@ -75,6 +79,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-top: 3rem;
 }
 
 .bc-loader {
@@ -104,7 +109,7 @@
   }
 }
 
-.bc-chat-popup-embedded {
+.bc-chat-popup {
   bottom: -200rem;
   padding: 20px 30px;
   display: flex;
@@ -125,7 +130,7 @@
   color: #0000e6;
 }
 
-.bc-ask-ai-logo-embedded {
+.bc-ask-ai-logo {
   display: flex;
   align-items: center;
   height: 20px;

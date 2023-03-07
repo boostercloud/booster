@@ -1,4 +1,3 @@
-import SearchIcon from '@site/static/img/search-icon.svg'
 import React, { useEffect } from 'react';
 import Modal from 'react-modal';
 import { ChatService } from '@site/src/services/chat-service';
@@ -112,7 +111,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
           },
         }}
       >
-        <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} />
+        <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle={true}/>
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
       </Modal>
     </>
