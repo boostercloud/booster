@@ -3,7 +3,7 @@ import Modal from 'react-modal';
 import { ChatService } from '@site/src/services/chat-service';
 import { useState } from 'react';
 import { ChatResponse } from '../BoosterChat/ChatResponse';
-import { AskAIBar } from '../BoosterChat/BoosterChat';
+import { AskAIBar, AskAIDisclaimer } from '../BoosterChat/BoosterChat';
 import { fathom } from 'docusaurus-plugin-fathom'
 
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
@@ -114,6 +114,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
         }}
       >
         <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle={true} />
+        <AskAIDisclaimer/>
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
       </Modal>
     </>

@@ -161,10 +161,9 @@
 }
 
 .bc-beta-disclaimer {
-  position: absolute;
-  bottom: -25px;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-top: -25px;
+  width: 100%;
+  text-align: center;
   font-size: 0.65rem;
   color: var(--ask-ai-color);
 }

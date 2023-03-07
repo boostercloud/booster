@@ -45,6 +45,7 @@ export default function BoosterChat(): JSX.Element {
   return (
     <div className='bc-layout'>
       <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle= {false}/>
+      <AskAIDisclaimer/>
       <ChatResponse response={response} loading={loading} hasFinished={hasFinished}/>
     </div>
   )
@@ -62,7 +63,10 @@ export function AskAIBar({ handleKeyDown, setInteracted, loading, isModalStyle }
         onFocus={() => setInteracted(true)}
         disabled={loading}
       />
-      <div className="bc-beta-disclaimer"> Ask AI · Temporary free version</div>
     </div>
   )
+}
+
+export function AskAIDisclaimer() {
+  return (<div className="bc-beta-disclaimer"> Ask AI · Temporary free version</div>)
 }
