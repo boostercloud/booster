@@ -17,10 +17,6 @@
 
 .bc-layout {
   min-height: calc(100vh - 60px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2rem;
   background-color: white;
   padding-top: 4rem;
   padding-bottom: 6rem;
@@ -34,10 +30,12 @@
 .bc-searchbar-icon {
   width: 22.25px;
   height: 22px;
-  filter: invert(10%) sepia(99%) saturate(7430%) hue-rotate(266deg) brightness(83%) contrast(107%);
+  flex-shrink: 0;
 }
 
 .bc-searchbar { 
+  margin-left: auto;
+  margin-right: auto;
   display: flex;
   gap: 1rem;
   padding: 1rem;
@@ -161,7 +159,7 @@
 }
 
 .bc-beta-disclaimer {
-  margin-top: -25px;
+  margin-top: 8px;
   width: 100%;
   text-align: center;
   font-size: 0.65rem;
