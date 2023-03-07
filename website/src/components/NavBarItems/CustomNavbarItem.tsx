@@ -4,6 +4,7 @@ import { ChatService } from '@site/src/services/chat-service';
 import { useState } from 'react';
 import { ChatResponse } from '../BoosterChat/ChatResponse';
 import { AskAIBar } from '../BoosterChat/BoosterChat';
+import { fathom } from 'docusaurus-plugin-fathom'
 
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
@@ -26,6 +27,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
       return
     }
 
+    fathom.trackGoal('UNOKECXW', 0)
     setLoading(true)
     setResponse('')
     setSearchQuery(query)

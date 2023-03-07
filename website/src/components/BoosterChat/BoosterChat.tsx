@@ -4,7 +4,7 @@ import SearchIcon from '@site/static/img/search-icon.svg'
 import React, { useState } from 'react'
 import { ChatResponse } from './ChatResponse'
 import { CoolTitle } from './CoolTitle'
-
+import { fathom } from 'docusaurus-plugin-fathom'
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
 export default function BoosterChat(): JSX.Element {
@@ -23,6 +23,7 @@ export default function BoosterChat(): JSX.Element {
       return
     }
     
+    fathom.trackGoal('CEJF3EH1', 0)
     setLoading(true)
     setResponse('')
     setHasFinished(false)
