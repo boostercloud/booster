@@ -4,6 +4,6 @@ slug: /
 
 import BoosterChat from '@site/src/components/BoosterChat/BoosterChat'
 
-# What is Booster?
+# What is Booster Framework?
 
 <BoosterChat/>
