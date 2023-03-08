@@ -65,11 +65,11 @@ export default function BoosterChat(): JSX.Element {
       <AskAIDisclaimer />
       {!hasSearched && (
         <div className='bc-quick-questions-panel'>
+          <button className='bc-quick-question' onClick={() => onQuickQuestionClick('Create a read-model and subscribe to it using websockets in Bash')}>Create a read-model and subscribe to it using websockets in Bash</button>
           <button className='bc-quick-question' onClick={() => onQuickQuestionClick("Summary of Booster's components")}>Summary of Booster's components</button>
           <button className='bc-quick-question' onClick={() => onQuickQuestionClick('How to know when a reducer failed?')}>How to know when a reducer failed?</button>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick('Create a read-model and subscribe to it using websockets in Bash')}>Create a read-model and subscribe to it using websockets in Bash</button>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}>What's the difference between an entity and a read-model?</button>
           <button className='bc-quick-question' onClick={() => onQuickQuestionClick('How to throw an exception in a reducer?')}>How to throw an exception in a reducer?</button>
+          <button className='bc-quick-question' onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}>What's the difference between an entity and a read-model?</button>
         </div>
       )}
       <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
