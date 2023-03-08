@@ -51,7 +51,7 @@ export abstract class SimplePackageManager implements PackageManager {
 
   async installProductionDependencies(): Promise<void> {
     try {
-      await this.runScript('install', ['--production', '--no-bin-links', '--no-optional'])
+      await this.runScript('install', ['--omit=dev', '--omit=optional', '--no-bin-links'])
     } catch (e) {
       if (e instanceof CliError) throw e
       throw new CliError('ProcessError', `There were some issues installing prod dependencies: ${e}`, e)
