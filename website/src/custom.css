@@ -93,7 +93,7 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 20px;
-  width: 50rem;
+  width: 48rem;
   max-width: 94%; /* Like in .bc-searchbar */
 }
 
