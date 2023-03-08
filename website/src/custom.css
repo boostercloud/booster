@@ -125,7 +125,7 @@
   display: block;
   margin: 15px auto;
   position: relative;
-  color: #2A27E2;
+  color: var(--ask-ai-color);
   box-sizing: border-box;
   animation: animloader 1s linear infinite alternate;
 }
