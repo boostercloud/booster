@@ -52,11 +52,11 @@ export const ChatResponse: FC<ChatResponseProps> = ({ loading, response, hasFini
         <ReactMarkdown>{response}</ReactMarkdown>
       </div>
       <div className={ "bc-chat-popup" } style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
-        <text>
+        <p>
         Note the answer you expected? We will be grateful to answer your question on the 
         <a href={'https://discord.com/channels/763753198388510780/1019895895325675550'} target="_blank" onClick={() => AnalyticsClient.trackEvent('UESXT8VI')}> #booster-help </a>
         channel on Discord 🤗
-        </text>
+        </p>
       </div>
     </>
   )
