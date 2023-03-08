@@ -22,6 +22,7 @@
     "autoprefixer": "^10.4.13",
     "clsx": "^1.2.1",
     "docusaurus-plugin-fathom": "^1.1.0",
+    "fathom-client": "^3.5.0",
     "graphql": "^16.6.0",
     "graphql-ws": "^5.11.3",
     "postcss": "^8.4.19",

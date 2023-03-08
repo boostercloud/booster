@@ -1,8 +1,9 @@
 import { ChatService } from '@site/src/services/chat-service'
 import AskAISearchIcon from '@site/static/img/ask-ai-bubble.svg'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { AnalyticsClient } from '../Analytics/analytics-client'
 import { ChatResponse } from './ChatResponse'
-import { fathom } from 'docusaurus-plugin-fathom'
+
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
 export default function BoosterChat(): JSX.Element {
@@ -10,6 +11,10 @@ export default function BoosterChat(): JSX.Element {
   const [loading, setLoading] = useState(null)
   const [interacted, setInteracted] = useState(false)
   const [hasFinished, setHasFinished] = useState(false)
+
+  useEffect(() => {
+    AnalyticsClient.start()  
+  }, [])
 
   const handleResponseUpdated = (_question, newResponseFragment, _hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
@@ -21,7 +26,7 @@ export default function BoosterChat(): JSX.Element {
       return
     }
     
-    fathom.trackGoal('CEJF3EH1', 0)
+    AnalyticsClient.trackEvent('CEJF3EH1')
     setLoading(true)
     setResponse('')
     setHasFinished(false)
@@ -29,6 +34,7 @@ export default function BoosterChat(): JSX.Element {
     ChatService.answerBoosterQuestion(query, handleResponseUpdated)
       .catch((error) => {
         setResponse(NO_RESPONSE)
+        AnalyticsClient.trackEvent('SFWQOOY0')
         console.error(error)
       })
       .finally(() => {

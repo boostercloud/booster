@@ -4,7 +4,7 @@ import { ChatService } from '@site/src/services/chat-service';
 import { useState } from 'react';
 import { ChatResponse } from '../BoosterChat/ChatResponse';
 import { AskAIBar, AskAIDisclaimer } from '../BoosterChat/BoosterChat';
-import { fathom } from 'docusaurus-plugin-fathom'
+import { AnalyticsClient } from '../Analytics/analytics-client';
 
 const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
@@ -16,7 +16,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
   const [loading, setLoading] = useState(null)
   const [hasFinished, setHasFinished] = useState(false)
   const [interacted, setInteracted] = useState(false)
-
+  
   const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
     setHasFinished(hasFinished)
@@ -27,20 +27,21 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
       return
     }
 
-    fathom.trackGoal('UNOKECXW', 0)
+    AnalyticsClient.trackEvent('UNOKECXW')
     setLoading(true)
     setResponse('')
     setSearchQuery(query)
     setHasFinished(false)
 
     ChatService.answerBoosterQuestion(query, handleResponseUpdated, controller.signal)
-      .catch((error) => {
-        setResponse(NO_RESPONSE)
-        console.error(error)
-      })
-      .finally(() => {
-        setLoading(false)
-      })
+    .catch((error) => {
+      setResponse(NO_RESPONSE)
+      AnalyticsClient.trackEvent('SFWQOOY0')
+      console.error(error)
+    })
+    .finally(() => {
+      setLoading(false)
+    })
   }
 
   const handleKeyDown = (event) => {
@@ -59,6 +60,10 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
     setLoading(null)
     setIsModalOpen(false)
   }
+
+  useEffect(() => {
+    AnalyticsClient.start()  
+  }, [])
 
   useEffect(() => {
     const abortController = new AbortController();
