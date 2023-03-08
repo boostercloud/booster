@@ -15,7 +15,6 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
   const [hasFinished, setHasFinished] = useState(false)
-  const [interacted, setInteracted] = useState(false)
   
   const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
@@ -118,7 +117,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
           },
         }}
       >
-        <AskAIBar handleKeyDown={handleKeyDown} setInteracted={setInteracted} loading={loading} isModalStyle={true} />
+        <AskAIBar handleKeyDown={handleKeyDown} loading={loading} isModalStyle={true} />
         <AskAIDisclaimer/>
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
       </Modal>
