@@ -4,6 +4,7 @@ import Brand from '../../common/brand'
 import { FileGenerator } from '../../services/file-generator'
 import { UserProject } from '../../services/user-project'
 import { Logger } from '@boostercloud/framework-types'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class Publish extends BaseCommand<typeof Publish> {
   public static description = 'publish all resource template stubs that are available for customization'
@@ -25,11 +26,16 @@ export default class Publish extends BaseCommand<typeof Publish> {
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly fileGenerator: FileGenerator, readonly userProject: UserProject) {}
+  constructor(
+    readonly logger: Logger,
+    readonly fileGenerator: FileGenerator,
+    readonly userProject: UserProject,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   async run(flags: Flags<typeof Publish>): Promise<void> {
     this.logger.info(`boost ${Brand.energize('stub:publish')} 🗄`)
     await this.userProject.performChecks()
-    await this.logger.logProcess('Publishing stubs', () => this.fileGenerator.copyStubs(flags.force))
+    await this.taskLogger.logTask('Publishing stubs', () => this.fileGenerator.copyStubs(flags.force))
   }
 }

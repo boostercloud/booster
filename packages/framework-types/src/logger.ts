@@ -35,15 +35,6 @@ export abstract class Logger {
    * Log an error message
    */
   abstract error(message?: unknown, ...optionalParams: unknown[]): void
-
-  // TODO: Move this to a separate interface that is in charge of logging the start and end of a process
-  // As usually that's just something of the CLI, and in the core you will have the Tracer interface for
-  // that, which will use Open Telemetry to log the start and end of a process.
-  /**
-   * Logs the start and the end of a function call, logging the
-   * outcome of the function
-   */
-  abstract logProcess<T>(message: string, process: () => T): T
 }
 
 export type HasLogger = {

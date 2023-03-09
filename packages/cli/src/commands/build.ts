@@ -2,14 +2,15 @@ import { BaseCommand, CliCommand } from '../common/base-command'
 import Brand from '../common/brand'
 import { Logger } from '@boostercloud/framework-types'
 import { UserProject } from '../services/user-project'
+import { TaskLogger } from '../services/task-logger'
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject) {}
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly taskLogger: TaskLogger) {}
 
   async run(): Promise<void> {
     this.logger.info(`boost ${Brand.dangerize('build')} 🚀`)
-    await this.logger.logProcess('Building project', this.userProject.compile)
+    await this.taskLogger.logTask('Building project', this.userProject.compile)
     this.logger.info('Build complete!')
   }
 }

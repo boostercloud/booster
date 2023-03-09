@@ -5,10 +5,11 @@ import Brand from '../../common/brand'
 import { generateReducers, getResourceSourceFile } from '../../services/method-generator'
 import { UserProject } from '../../services/user-project'
 import { Logger } from '@boostercloud/framework-types'
+import { TaskLogger } from '../../services/task-logger'
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject) {}
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly taskLogger: TaskLogger) {}
 
   async run(flags: Flags<typeof Reducer>): Promise<void> {
     const entity = flags.entity
@@ -18,7 +19,7 @@ class Implementation {
     const templateInfo = await joinParsers(parseName(entity), parseReaction(events))
 
     const reducerWord = events.length > 1 ? 'reducers' : 'reducer'
-    await this.logger.logProcess(`Generating ${reducerWord}`, () => generateReducerMethods(templateInfo))
+    await this.taskLogger.logTask(`Generating ${reducerWord}`, () => generateReducerMethods(templateInfo))
   }
 }
 export default class Reducer extends BaseCommand<typeof Reducer> {

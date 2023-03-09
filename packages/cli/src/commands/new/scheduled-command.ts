@@ -5,6 +5,7 @@ import * as path from 'path'
 import { Logger } from '@boostercloud/framework-types'
 import { FileGenerator } from '../../services/file-generator'
 import { UserProject } from '../../services/user-project'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class ScheduledCommand extends BaseCommand<typeof ScheduledCommand> {
   public static description = 'generate a new scheduled command'
@@ -16,7 +17,12 @@ export default class ScheduledCommand extends BaseCommand<typeof ScheduledComman
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly fileGenerator: FileGenerator,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   async run(flags: Flags<typeof ScheduledCommand>, args: Args<typeof ScheduledCommand>): Promise<void> {
     const scheduledCommandName = args.readModelName
@@ -28,7 +34,7 @@ class Implementation {
 
     this.logger.info(`boost ${Brand.energize('new:scheduled-command')} 🚧`)
     await this.userProject.performChecks()
-    await this.logger.logProcess('Generating scheduled command', () => this.generateScheduledCommand(info))
+    await this.taskLogger.logTask('Generating scheduled command', () => this.generateScheduledCommand(info))
   }
 
   private async generateScheduledCommand(info: HasName): Promise<void> {

@@ -13,6 +13,7 @@ import { FileGenerator } from '../../services/file-generator'
 import * as path from 'path'
 import { Logger } from '@boostercloud/framework-types'
 import { UserProject } from '../../services/user-project'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class Event extends BaseCommand<typeof Event> {
   public static description = 'create a new event'
@@ -31,7 +32,12 @@ export default class Event extends BaseCommand<typeof Event> {
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly fileGenerator: FileGenerator,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   public async run(flags: Flags<typeof Event>, args: Args<typeof Event>): Promise<void> {
     const fields = flags.fields ?? []
@@ -44,7 +50,7 @@ class Implementation {
 
     this.logger.info(`boost ${Brand.energize('new:event')} 🚧`)
     await this.userProject.performChecks()
-    await this.logger.logProcess('Generating event', () => this.generateEvent(info))
+    await this.taskLogger.logTask('Generating event', () => this.generateEvent(info))
   }
 
   private async generateEvent(info: HasName & HasFields): Promise<void> {

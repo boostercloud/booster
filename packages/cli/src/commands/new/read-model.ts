@@ -16,6 +16,7 @@ import { classNameToFileName } from '../../common/filenames'
 import { Logger } from '@boostercloud/framework-types'
 import { FileGenerator } from '../../services/file-generator'
 import { UserProject } from '../../services/user-project'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class ReadModel extends BaseCommand<typeof ReadModel> {
   public static description = 'create a new read model'
@@ -39,7 +40,12 @@ export default class ReadModel extends BaseCommand<typeof ReadModel> {
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly fileGenerator: FileGenerator,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   public async run(flags: Flags<typeof ReadModel>, args: Args<typeof ReadModel>): Promise<void> {
     const fields = flags.fields ?? []
@@ -53,7 +59,7 @@ class Implementation {
 
     this.logger.info(`boost ${Brand.energize('new:read-model')} 🚧`)
     await this.userProject.performChecks()
-    await this.logger.logProcess('Generating read model', () => this.generateReadModel(info))
+    await this.taskLogger.logTask('Generating read model', () => this.generateReadModel(info))
   }
 
   private async generateReadModel(info: HasName & HasFields & HasProjections): Promise<void> {

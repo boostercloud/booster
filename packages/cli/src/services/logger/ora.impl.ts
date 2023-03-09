@@ -14,18 +14,6 @@ export class OraLogger implements Logger {
     }
   }
 
-  logProcess<T>(message: string, process: () => T): T {
-    try {
-      this.oraLogger.start(message)
-      const result = process()
-      this.oraLogger.succeed(message)
-      return result
-    } catch (e) {
-      this.oraLogger.fail(message)
-      throw e
-    }
-  }
-
   debug(data: unknown, ...optionalParams: unknown[]): void {
     if (this.logLevel > Level.debug) return
     const message = this.makeMessage(data, ...optionalParams)

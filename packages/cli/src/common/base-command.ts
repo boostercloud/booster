@@ -24,6 +24,9 @@ import { LocalProcess } from '../services/process/local.impl'
 import { UserProject } from '../services/user-project'
 import { LocalUserProject } from '../services/user-project/local.impl'
 import { IBooleanFlag, IOptionFlag } from '@oclif/parser/lib/flags'
+import { NoOpTaskLogger } from '../services/task-logger/noop-task-logger'
+import { TaskLogger } from '../services/task-logger'
+import { OraTaskLogger } from '../services/task-logger/ora-task-logger'
 
 export abstract class BaseCommand<T extends typeof Command> extends Command {
   static baseFlags = {
@@ -71,11 +74,13 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
         .register(Logger)
         .useFactory(() => new FileLogger(this.logLevel))
         .asSingleton()
+      this.containerBuilder.register(TaskLogger).use(NoOpTaskLogger)
     } else {
       this.containerBuilder
         .register(Logger)
         .useFactory(() => new OraLogger(this.logLevel))
         .asSingleton()
+      this.containerBuilder.register(TaskLogger).use(OraTaskLogger)
     }
 
     // Now we register filesystem and process in order to run the package manager factory

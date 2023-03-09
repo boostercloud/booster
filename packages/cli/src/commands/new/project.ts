@@ -7,6 +7,7 @@ import { ProjectCreationConfig, UserProject } from '../../services/user-project'
 import { Logger } from '@boostercloud/framework-types'
 import Brand from '../../common/brand'
 import { Provider } from '../../common/provider'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class Project extends BaseCommand<typeof Project> {
   public static description = 'create a new project from scratch'
@@ -66,7 +67,8 @@ class Implementation {
     readonly logger: Logger,
     readonly userProject: UserProject,
     readonly fileGenerator: FileGenerator,
-    readonly userInput: UserInput
+    readonly userInput: UserInput,
+    readonly taskLogger: TaskLogger
   ) {}
 
   async run(flags: Flags<typeof Project>, args: Args<typeof Project>, cliConfig: IConfig): Promise<void> {
@@ -74,7 +76,7 @@ class Implementation {
     if (!projectName) throw "You haven't provided a project name, but it is required, run with --help for usage"
     this.logger.info(`boost ${Brand.energize('new')} 🚧`)
     const parsedConfig = await this.parseConfig(projectName, cliConfig.version, flags)
-    await this.logger.logProcess('Creating project', () => this.userProject.create(projectName, parsedConfig))
+    await this.taskLogger.logTask('Creating project', () => this.userProject.create(projectName, parsedConfig))
   }
 
   private async parseConfig(

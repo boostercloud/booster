@@ -4,10 +4,16 @@ import { Logger } from '@boostercloud/framework-types'
 import Brand from '../common/brand'
 import { UserProject } from '../services/user-project'
 import { CloudProvider } from '../services/cloud-provider'
+import { TaskLogger } from '../services/task-logger'
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly cloudProvider: CloudProvider) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly cloudProvider: CloudProvider,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   async run(flags: Flags<typeof Start>) {
     const port = flags.port
@@ -15,7 +21,7 @@ class Implementation {
     await this.userProject.overrideEnvironment(flags.environment)
     const currentEnvironment = this.userProject.getEnvironment()
     this.logger.info(`boost ${Brand.dangerize('start')} [${currentEnvironment}] 🚀`)
-    await this.logger.logProcess(`Starting project on port ${flags.port}`, async () => {
+    await this.taskLogger.logTask(`Starting project on port ${flags.port}`, async () => {
       await this.cloudProvider.start(port)
     })
   }

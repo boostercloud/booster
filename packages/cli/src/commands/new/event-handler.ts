@@ -14,6 +14,7 @@ import { classNameToFileName } from '../../common/filenames'
 import { Logger } from '@boostercloud/framework-types'
 import { FileGenerator } from '../../services/file-generator'
 import { UserProject } from '../../services/user-project'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class EventHandler extends BaseCommand<typeof EventHandler> {
   public static description = 'create a new event handler'
@@ -33,7 +34,12 @@ export default class EventHandler extends BaseCommand<typeof EventHandler> {
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly fileGenerator: FileGenerator,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   async run(flags: Flags<typeof EventHandler>, args: Args<typeof EventHandler>): Promise<void> {
     const eventHandlerName = args.eventHandlerName
@@ -45,7 +51,7 @@ class Implementation {
 
     this.logger.info(`boost ${Brand.energize('new:event-handler')} 🚧`)
     await this.userProject.performChecks()
-    await this.logger.logProcess('Generating event handler', () => this.generateEventHandler(info))
+    await this.taskLogger.logTask('Generating event handler', () => this.generateEventHandler(info))
   }
 
   private async generateEventHandler(info: HasName & HasEvent): Promise<void> {

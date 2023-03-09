@@ -13,6 +13,7 @@ import * as path from 'path'
 import { Logger } from '@boostercloud/framework-types'
 import { UserProject } from '../../services/user-project'
 import { FileGenerator } from '../../services/file-generator'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class Command extends BaseCommand<typeof Command> {
   public static description = "generate new resource, write 'boost new' to see options"
@@ -31,7 +32,12 @@ export default class Command extends BaseCommand<typeof Command> {
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly fileGenerator: FileGenerator,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   public async run(flags: Flags<typeof Command>, args: Args<typeof Command>): Promise<void> {
     const fields = flags.fields ?? []
@@ -44,7 +50,7 @@ class Implementation {
 
     this.logger.info(`boost ${Brand.energize('new:command')} 🚧`)
     await this.userProject.performChecks()
-    await this.logger.logProcess('Generating command', () => this.generateCommand(info))
+    await this.taskLogger.logTask('Generating command', () => this.generateCommand(info))
   }
 
   private async generateCommand(info: HasName & HasFields): Promise<void> {

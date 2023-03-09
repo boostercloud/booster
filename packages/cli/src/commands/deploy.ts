@@ -4,17 +4,23 @@ import { Logger } from '@boostercloud/framework-types'
 import Brand from '../common/brand'
 import { UserProject } from '../services/user-project'
 import { CloudProvider } from '../services/cloud-provider'
+import { TaskLogger } from '../services/task-logger'
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly cloudProvider: CloudProvider) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly cloudProvider: CloudProvider,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   async run(flags: Flags<typeof Deploy>): Promise<void> {
     this.logger.info('Ensuring environment is properly set')
     await this.userProject.overrideEnvironment(flags.environment)
     const currentEnvironment = await this.userProject.getEnvironment()
     this.logger.info(`boost ${Brand.dangerize('deploy')} [${currentEnvironment}] 🚀`)
-    await this.logger.logProcess('Deploying project', async () => {
+    await this.taskLogger.logTask('Deploying project', async () => {
       await this.userProject.performChecks()
       await this.userProject.inSandboxRun(this.cloudProvider.deploy)
     })

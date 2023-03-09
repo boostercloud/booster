@@ -6,6 +6,7 @@ import { FileGenerator } from '../../services/file-generator'
 import * as path from 'path'
 import { Logger } from '@boostercloud/framework-types'
 import { UserProject } from '../../services/user-project'
+import { TaskLogger } from '../../services/task-logger'
 
 export default class Type extends BaseCommand<typeof Type> {
   public static description = 'create a new type'
@@ -25,7 +26,12 @@ export default class Type extends BaseCommand<typeof Type> {
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly fileGenerator: FileGenerator) {}
+  constructor(
+    readonly logger: Logger,
+    readonly userProject: UserProject,
+    readonly fileGenerator: FileGenerator,
+    readonly taskLogger: TaskLogger
+  ) {}
 
   public async run(flags: Flags<typeof Type>, args: Args<typeof Type>): Promise<void> {
     const fields = flags.fields ?? []
@@ -38,7 +44,7 @@ class Implementation {
 
     this.logger.info(`boost ${Brand.energize('new:type')} 🚧`)
     await this.userProject.performChecks()
-    await this.logger.logProcess('Generating type', () => this.generateType(info))
+    await this.taskLogger.logTask('Generating type', () => this.generateType(info))
   }
 
   private async generateType(info: HasName & HasFields): Promise<void> {

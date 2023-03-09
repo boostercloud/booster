@@ -11,10 +11,11 @@ import Brand from '../../common/brand'
 import { generateProjection, getResourceSourceFile } from '../../services/method-generator'
 import { Logger } from '@boostercloud/framework-types'
 import { UserProject } from '../../services/user-project'
+import { TaskLogger } from '../../services/task-logger'
 
 @CliCommand()
 class Implementation {
-  constructor(readonly logger: Logger, readonly userProject: UserProject) {}
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly taskLogger: TaskLogger) {}
 
   async run(flags: Flags<typeof Projection>): Promise<void> {
     const readModelName = flags['read-model']
@@ -22,7 +23,7 @@ class Implementation {
     this.logger.info(`boost ${Brand.energize('add:projection')} 🚀`)
     const templateInfo = await joinParsers(parseName(readModelName), parseProjectionField(projectionName))
     await this.userProject.performChecks()
-    await this.logger.logProcess('Generating projection', () => generateProjectionMethod(templateInfo))
+    await this.taskLogger.logTask('Generating projection', () => generateProjectionMethod(templateInfo))
   }
 }
 export default class Projection extends BaseCommand<typeof Projection> {

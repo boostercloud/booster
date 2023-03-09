@@ -17,28 +17,11 @@ export function getLogger(config: BoosterConfig, location?: string, overridenLog
   const prefixedWarnFunction = warn.bind(null, prefix)
   const prefixedErrFunction = error.bind(null, prefix)
 
-  // TODO: Probably the logProcess function should be moved to a different service,
-  // like a "process logger" or something like that
-  const defaultLogProcess = <T>(message: string, process: () => T): T => {
-    prefixedInfoFunction(`${message} [START]`)
-    try {
-      const result = process()
-      prefixedInfoFunction(`${message} [SUCCESS]`)
-      return result
-    } catch (e) {
-      prefixedErrFunction(`${message} [ERROR]`)
-      throw e
-    }
-  }
-
-  const logProcess = config.logger?.logProcess ?? defaultLogProcess
-
   return {
     debug: config.logLevel <= Level.debug ? prefixedDebugFunction : noopLog,
     info: config.logLevel <= Level.info ? prefixedInfoFunction : noopLog,
     warn: config.logLevel <= Level.warn ? prefixedWarnFunction : noopLog,
     error: prefixedErrFunction,
-    logProcess,
   }
 }
 
