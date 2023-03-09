@@ -1,6 +1,8 @@
 import Layout from '@theme/Layout'
 import React from 'react'
 
+// This file is not used. The current home page is done with Webflow at the moment.
+
 export default function Home(): JSX.Element {
   return (
     <Layout wrapperClassName="hp-layout">

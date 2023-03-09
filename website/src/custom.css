@@ -1,4 +1,5 @@
 @import 'fonts.css';
+@import './styles/index.css';
 
 :root, * {
   font-family: 'IamwriterquattroS';
@@ -11,6 +12,170 @@
   --ifm-color-primary-light: #1a1aff;
   --ifm-color-primary-lighter: #2626ff;
   --ifm-color-primary-lightest: #4d4dff;
+  --ask-ai-color: #5C00E2;
+}
+
+.bc-layout {
+  min-height: calc(100vh - 60px);
+  background-color: white;
+  padding-top: 4rem;
+  padding-bottom: 6rem;
+}
+
+.bc-layout > * {
+  transition: all;
+  transition-duration: 0.5s;
+}
+
+.bc-searchbar-icon {
+  width: 22.25px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.bc-searchbar { 
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  position: relative;
+  border-radius: 50px;
+  width: 48rem;
+  max-width: 94%;
+  border-color: var(--ask-ai-color);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.max-width-100 {
+  max-width: 100%;
+}
+
+.bc-input {
+  outline: none;
+  border: none;
+  flex: 1;
+  color: black;
+  font-weight: bold;
+  font-size: medium;
+}
+
+.bc-reset-button {
+  border: none;
+  background: none;
+  flex-shrink: 0;
+}
+
+.bc-reset-icon {
+  height: 15px;
+}
+
+.bc-input::placeholder {
+  color: gray;
+  font-weight: normal;
+}
+
+.bc-chat {
+  background-color: white;
+  height: fit-content;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow-y: 'scroll';
+}
+
+.bc-chat-embedded {
+  background-color: white;
+  width: 56rem;
+  max-width: 100%;
+  height: fit-content;
+  border-radius: 1rem;
+  padding: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.bc-quick-questions-panel {
+  padding: 30px 0px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 48rem;
+  max-width: 94%; /* Like in .bc-searchbar */
+}
+
+.bc-quick-question {
+  border-radius: 50px;
+  font-size: 0.85rem;
+  color: var(--ask-ai-color);
+  border-color: var(--ask-ai-color);
+  border-width: 1px;
+  padding: 6px 15px;
+  background-color: white;
+}
+
+.bc-chat:first-child {
+  margin-top: var(--ifm-paragraph-margin-bottom)
+}
+
+.--loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 1.5rem;
+  width: 48rem;
+  max-width: 94%;
+}
+
+.bc-loader {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+  margin: 15px auto;
+  position: relative;
+  color: var(--ask-ai-color);
+  box-sizing: border-box;
+  animation: animloader 1s linear infinite alternate;
+}
+
+@keyframes animloader {
+  0% {
+    box-shadow: -38px -12px ,  -14px 0,  14px 0, 38px 0;
+  }
+  33% {
+    box-shadow: -38px 0px, -14px -12px,  14px 0, 38px 0;
+  }
+  66% {
+    box-shadow: -38px 0px , -14px 0, 14px -12px, 38px 0;
+  }
+  100% {
+    box-shadow: -38px 0 , -14px 0, 14px 0 , 38px -12px;
+  }
+}
+
+.bc-chat-popup {
+  bottom: -200rem;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: #2A27E2 2px solid;
+  background-color: white;
+  border-radius: 10px;
+  transition: all 0.5s ease-in-out;
+}
+
+.bc-beta-disclaimer {
+  margin-top: 8px;
+  width: 48rem;
+  max-width: 94%; /* Like in .bc-searchbar */
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--ask-ai-color);
 }
 
 svg {
@@ -22,4 +187,25 @@ svg {
   max-width: unset;
 }
 
-@import './styles/index.css';
+.navbar_custom_item--button {
+  margin-right: 1rem;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.navbar_custom_item--image {
+  height: 15px;
+}
+
+@media screen and (min-width: 769px) and (max-width: 997px) {
+  .navbar_custom_item--button {
+    margin-right: 11rem
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .navbar_custom_item--button {
+    margin-right: 3rem
+  }
+}

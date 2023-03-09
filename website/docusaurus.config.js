@@ -64,14 +64,14 @@ const config = {
       items: [
         {
           type: 'doc',
-          docId: 'introduction',
+          docId: 'ai-assistant',
           position: 'left',
           label: 'Docs',
         },
         {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
-          position: 'right',
+          position: 'left',
           customProps: {
             trackingEvent: 'UXDJRQQB',
           },
@@ -79,11 +79,17 @@ const config = {
         {
           href: 'https://discord.gg/bDY8MKx',
           label: 'Discord',
-          position: 'right',
+          position: 'left',
           customProps: {
             trackingEvent: 'D38YB2Q1',
           },
         },
+        {
+          type: 'custom-navbar-item', 
+          position: 'right',
+          imageURL: '/img/ask-ai-logo.png',
+          altText: 'Ask AI'
+        }
       ],
     },
     footer: {
