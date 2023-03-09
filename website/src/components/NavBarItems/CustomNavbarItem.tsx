@@ -3,10 +3,8 @@ import Modal from 'react-modal';
 import { ChatService } from '@site/src/services/chat-service';
 import { useState } from 'react';
 import { ChatResponse } from '../BoosterChat/ChatResponse';
-import { AskAIBar, AskAIDisclaimer } from '../BoosterChat/BoosterChat';
+import { AskAIBar, AskAIDisclaimer, ASK_AI_ERROR } from '../BoosterChat/BoosterChat';
 import { AnalyticsClient } from '../Analytics/analytics-client';
-
-const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
 
 // see https://github.com/facebook/docusaurus/issues/7227
 export default function CustomNavbarItem(props: { imageURL: string, altText: string }): JSX.Element | null {
@@ -34,7 +32,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
 
     ChatService.answerBoosterQuestion(query, handleResponseUpdated, controller.signal)
     .catch((error) => {
-      setResponse(NO_RESPONSE)
+      setResponse(ASK_AI_ERROR)
       AnalyticsClient.trackEvent('SFWQOOY0')
       console.error(error)
     })
@@ -117,7 +115,7 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
           },
         }}
       >
-        <AskAIBar handleKeyDown={handleKeyDown} loading={loading} isModalStyle={true} />
+        <AskAIBar handleKeyDown={handleKeyDown} loading={loading} isModalStyle={true} hasFinished={hasFinished} resetSearchResponse={null} />
         <AskAIDisclaimer/>
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
       </Modal>

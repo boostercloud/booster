@@ -59,6 +59,16 @@
   font-size: medium;
 }
 
+.bc-reset-button {
+  border: none;
+  background: none;
+  flex-shrink: 0;
+}
+
+.bc-reset-icon {
+  height: 15px;
+}
+
 .bc-input::placeholder {
   color: gray;
   font-weight: normal;

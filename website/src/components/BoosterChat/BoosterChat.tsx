@@ -1,10 +1,10 @@
 import { ChatService } from '@site/src/services/chat-service'
 import AskAISearchIcon from '@site/static/img/ask-ai-bubble.svg'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AnalyticsClient } from '../Analytics/analytics-client'
 import { ChatResponse } from './ChatResponse'
 
-const NO_RESPONSE = 'Sorry, I don`t know how to help with that.'
+export const ASK_AI_ERROR = 'There was an unexpected error. Please try again 🙏'
 
 export default function BoosterChat(): JSX.Element {
   const [response, setResponse] = useState(null)
@@ -34,7 +34,7 @@ export default function BoosterChat(): JSX.Element {
 
     ChatService.answerBoosterQuestion(query, handleResponseUpdated)
       .catch((error) => {
-        setResponse(NO_RESPONSE)
+        setResponse(ASK_AI_ERROR)
         AnalyticsClient.trackEvent('SFWQOOY0')
         console.error(error)
       })
@@ -59,17 +59,22 @@ export default function BoosterChat(): JSX.Element {
     handleSearch(query)
   }
 
+  const resetSearchResponse = () => {
+    setResponse(null)
+    setLoading(null)
+    setHasFinished(false)
+  }
+
   return (
     <div className='bc-layout'>
-      <AskAIBar handleKeyDown={handleKeyDown} loading={loading} isModalStyle={false} />
+      <AskAIBar handleKeyDown={handleKeyDown} loading={loading} isModalStyle={false} hasFinished={hasFinished} resetSearchResponse={resetSearchResponse} />
       <AskAIDisclaimer />
       {!hasSearched && (
         <div className='bc-quick-questions-panel'>
           <button className='bc-quick-question' onClick={() => onQuickQuestionClick('Create a read-model and subscribe to it using websockets in Bash')}>Create a read-model and subscribe to it using websockets in Bash</button>
           <button className='bc-quick-question' onClick={() => onQuickQuestionClick("Summary of Booster's components")}>Summary of Booster's components</button>
           <button className='bc-quick-question' onClick={() => onQuickQuestionClick('How to know when a reducer failed?')}>How to know when a reducer failed?</button>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick('How to throw an exception in a reducer?')}>How to throw an exception in a reducer?</button>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}>What's the difference between an entity and a read-model?</button>
+          <button className='bc-quick-question' onClick={() => onQuickQuestionClick('How to throw an exception in a reducer?')}>How to throw an exception in a reducer?</button>          <button className='bc-quick-question' onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}>What's the difference between an entity and a read-model?</button>
         </div>
       )}
       <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
@@ -77,7 +82,15 @@ export default function BoosterChat(): JSX.Element {
   )
 }
 
-export function AskAIBar({ handleKeyDown, loading, isModalStyle }) {
+export function AskAIBar({ handleKeyDown, loading, isModalStyle, hasFinished, resetSearchResponse }) {
+  const inputRef = useRef(null);
+
+  const handleResetClick = () => {
+    inputRef.current.value = ''
+    resetSearchResponse()
+    inputRef.current.focus()
+  }
+
   return (
     <div className={isModalStyle ? 'bc-searchbar max-width-100' : 'bc-searchbar'}>
       <AskAISearchIcon className='bc-searchbar-icon' />
@@ -87,10 +100,21 @@ export function AskAIBar({ handleKeyDown, loading, isModalStyle }) {
         type="text"
         onKeyDown={handleKeyDown}
         disabled={loading}
+        ref={inputRef}
       />
+      {hasFinished ? <ResetSearchButton resetSearchResponse={handleResetClick} /> : null}
     </div>
   )
 }
+
+export function ResetSearchButton({ resetSearchResponse }) {
+  return (
+    <button className="bc-reset-button" onClick={resetSearchResponse}>
+      <img src="/img/cancel.svg" className="bc-reset-icon" alt="Reset" />
+    </button>
+  )
+}
+
 
 export function AskAIDisclaimer() {
   return (<div className="bc-beta-disclaimer"> Ask AI · Temporary free version</div>)
