@@ -1,4 +1,4 @@
-import { ChatService } from '@site/src/services/chat-service'
+const { ChatService } = require(`${__dirname}/../../theme/chat-service`)
 import AskAISearchIcon from '@site/static/img/ask-ai-bubble.svg'
 import React, { useEffect, useRef, useState } from 'react'
 import { AnalyticsClient } from '../Analytics/analytics-client'
@@ -10,7 +10,7 @@ export default function BoosterChat(): JSX.Element {
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
   const [hasFinished, setHasFinished] = useState(false)
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false)
 
   useEffect(() => {
     AnalyticsClient.start()
@@ -22,7 +22,7 @@ export default function BoosterChat(): JSX.Element {
   }
 
   const handleSearch = async (query: string) => {
-    if (query?.trim() === "" || query === null) {
+    if (query?.trim() === '' || query === null) {
       return
     }
 
@@ -66,15 +66,44 @@ export default function BoosterChat(): JSX.Element {
   }
 
   return (
-    <div className='bc-layout'>
-      <AskAIBar handleKeyDown={handleKeyDown} loading={loading} isModalStyle={false} hasFinished={hasFinished} resetSearchResponse={resetSearchResponse} />
+    <div className="bc-layout">
+      <AskAIBar
+        handleKeyDown={handleKeyDown}
+        loading={loading}
+        isModalStyle={false}
+        hasFinished={hasFinished}
+        resetSearchResponse={resetSearchResponse}
+      />
       <AskAIDisclaimer />
       {!hasSearched && (
-        <div className='bc-quick-questions-panel'>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick('Create a read-model and subscribe to it using websockets in Bash')}>Create a read-model and subscribe to it using websockets in Bash</button>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick("Summary of Booster's components")}>Summary of Booster's components</button>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick('How to know when a reducer failed?')}>How to know when a reducer failed?</button>
-          <button className='bc-quick-question' onClick={() => onQuickQuestionClick('How to throw an exception in a reducer?')}>How to throw an exception in a reducer?</button>          <button className='bc-quick-question' onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}>What's the difference between an entity and a read-model?</button>
+        <div className="bc-quick-questions-panel">
+          <button
+            className="bc-quick-question"
+            onClick={() => onQuickQuestionClick('Create a read-model and subscribe to it using websockets in Bash')}
+          >
+            Create a read-model and subscribe to it using websockets in Bash
+          </button>
+          <button className="bc-quick-question" onClick={() => onQuickQuestionClick("Summary of Booster's components")}>
+            Summary of Booster's components
+          </button>
+          <button
+            className="bc-quick-question"
+            onClick={() => onQuickQuestionClick('How to know when a reducer failed?')}
+          >
+            How to know when a reducer failed?
+          </button>
+          <button
+            className="bc-quick-question"
+            onClick={() => onQuickQuestionClick('How to throw an exception in a reducer?')}
+          >
+            How to throw an exception in a reducer?
+          </button>{' '}
+          <button
+            className="bc-quick-question"
+            onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}
+          >
+            What's the difference between an entity and a read-model?
+          </button>
         </div>
       )}
       <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
@@ -83,7 +112,7 @@ export default function BoosterChat(): JSX.Element {
 }
 
 export function AskAIBar({ handleKeyDown, loading, isModalStyle, hasFinished, resetSearchResponse }) {
-  const inputRef = useRef(null);
+  const inputRef = useRef(null)
 
   const handleResetClick = () => {
     inputRef.current.value = ''
@@ -93,7 +122,7 @@ export function AskAIBar({ handleKeyDown, loading, isModalStyle, hasFinished, re
 
   return (
     <div className={isModalStyle ? 'bc-searchbar max-width-100' : 'bc-searchbar'}>
-      <AskAISearchIcon className='bc-searchbar-icon' />
+      <AskAISearchIcon className="bc-searchbar-icon" />
       <input
         placeholder="Ask AI anything about Booster Framework"
         className="bc-input"
@@ -115,7 +144,6 @@ export function ResetSearchButton({ resetSearchResponse }) {
   )
 }
 
-
 export function AskAIDisclaimer() {
-  return (<div className="bc-beta-disclaimer"> Ask AI · Temporary free version</div>)
+  return <div className="bc-beta-disclaimer"> Ask AI · Temporary free version</div>
 }

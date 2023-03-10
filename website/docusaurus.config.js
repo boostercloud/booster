@@ -85,11 +85,11 @@ const config = {
           },
         },
         {
-          type: 'custom-navbar-item', 
+          type: 'custom-navbar-item',
           position: 'right',
           imageURL: '/img/ask-ai-logo.png',
-          altText: 'Ask AI'
-        }
+          altText: 'Ask AI',
+        },
       ],
     },
     footer: {
@@ -182,7 +182,7 @@ const config = {
         },
       }
     },
-    require.resolve('docusaurus-plugin-fathom')
+    require.resolve('docusaurus-plugin-fathom'),
   ],
 }
 
