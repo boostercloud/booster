@@ -1,5 +1,5 @@
 import ComponentTypes from '@theme-original/NavbarItem/ComponentTypes';
-import CustomNavbarItem from '../../components/NavbarItems/CustomNavbarItem';
+import CustomNavbarItem from '@site/src/components/NavbarItems/CustomNavbarItem';
 
 export default {
   ...ComponentTypes,
