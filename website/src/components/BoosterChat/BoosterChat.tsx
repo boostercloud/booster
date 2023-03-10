@@ -1,4 +1,4 @@
-import { ChatService } from '@site/src/services/chat-service'
+const { ChatService } = require(`${__dirname}/../../theme/chat-service`)
 import AskAISearchIcon from '@site/static/img/ask-ai-bubble.svg'
 import React, { useEffect, useRef, useState } from 'react'
 import { AnalyticsClient } from '../Analytics/analytics-client'
@@ -124,7 +124,7 @@ export function AskAIBar({ handleKeyDown, loading, isModalStyle, hasFinished, re
     <div className={isModalStyle ? 'bc-searchbar max-width-100' : 'bc-searchbar'}>
       <AskAISearchIcon className="bc-searchbar-icon" />
       <input
-        placeholder="Ask AI anything about Booster"
+        placeholder="Ask AI anything about Booster Framework"
         className="bc-input"
         type="text"
         onKeyDown={handleKeyDown}

@@ -1,5 +1,5 @@
 import ComponentTypes from '@theme-original/NavbarItem/ComponentTypes'
-const CustomNavbarItem = require(`${__dirname}/../../components/NavbarItems/CustomNavbarItem`).default
+import CustomNavbarItem from './CustomNavbarItem'
 
 export default {
   ...ComponentTypes,
