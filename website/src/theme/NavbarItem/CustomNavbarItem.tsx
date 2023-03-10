@@ -1,26 +1,26 @@
-import React, { useEffect } from 'react';
-import Modal from 'react-modal';
-import { ChatService } from '@site/src/services/chat-service';
-import { useState } from 'react';
-import { ChatResponse } from '../BoosterChat/ChatResponse';
-import { AskAIBar, AskAIDisclaimer, ASK_AI_ERROR } from '../BoosterChat/BoosterChat';
-import { AnalyticsClient } from '../Analytics/analytics-client';
+import React, { useEffect } from 'react'
+import Modal from 'react-modal'
+import { ChatService } from '../chat-service'
+import { useState } from 'react'
+import { ChatResponse } from '../../components/BoosterChat/ChatResponse'
+import { AskAIBar, AskAIDisclaimer, ASK_AI_ERROR } from '../../components/BoosterChat/BoosterChat'
+import { AnalyticsClient } from '../../components/Analytics/analytics-client'
 
 // see https://github.com/facebook/docusaurus/issues/7227
-export default function CustomNavbarItem(props: { imageURL: string, altText: string }): JSX.Element | null {
+export default function CustomNavbarItem(props: { imageURL: string; altText: string }): JSX.Element | null {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState<string | null>(null)
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
   const [hasFinished, setHasFinished] = useState(false)
-  
+
   const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
     setHasFinished(hasFinished)
   }
 
   const handleSearch = async (query: string, controller: AbortController) => {
-    if (query?.trim() === "" || query === null) {
+    if (query?.trim() === '' || query === null) {
       return
     }
 
@@ -31,14 +31,14 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
     setHasFinished(false)
 
     ChatService.answerBoosterQuestion(query, handleResponseUpdated, controller.signal)
-    .catch((error) => {
-      setResponse(ASK_AI_ERROR)
-      AnalyticsClient.trackEvent('SFWQOOY0')
-      console.error(error)
-    })
-    .finally(() => {
-      setLoading(false)
-    })
+      .catch((error) => {
+        setResponse(ASK_AI_ERROR)
+        AnalyticsClient.trackEvent('SFWQOOY0')
+        console.error(error)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   const handleKeyDown = (event) => {
@@ -59,11 +59,11 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
   }
 
   useEffect(() => {
-    AnalyticsClient.start()  
+    AnalyticsClient.start()
   }, [])
 
   useEffect(() => {
-    const abortController = new AbortController();
+    const abortController = new AbortController()
     handleSearch(searchQuery, abortController)
 
     const modalElement = document.querySelector('.modal')
@@ -81,18 +81,18 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
   }, [searchQuery])
 
   useEffect(() => {
-    document.body.style.overflow = isModalOpen ? "hidden" : ""
+    document.body.style.overflow = isModalOpen ? 'hidden' : ''
 
     return () => {
-      document.body.style.overflow = ""
+      document.body.style.overflow = ''
     }
   }, [isModalOpen])
 
   return (
     <>
-      <button onClick={openModal} type="button" className='navbar_custom_item--button'>
-        <img src={props.imageURL} alt={props.altText} className='navbar_custom_item--image' />
-      </button>
+      <a onClick={openModal} href="javascript:void(0)" className="navbar_custom_item--button">
+        <img src={props.imageURL} alt={props.altText} className="navbar_custom_item--image" />
+      </a>
       <Modal
         isOpen={isModalOpen}
         onRequestClose={closeModal}
@@ -111,12 +111,18 @@ export default function CustomNavbarItem(props: { imageURL: string, altText: str
             padding: '2rem',
             borderRadius: '1rem',
             maxHeight: '60%',
-            width: 'min(100vw, 600px)'
+            width: 'min(100vw, 600px)',
           },
         }}
       >
-        <AskAIBar handleKeyDown={handleKeyDown} loading={loading} isModalStyle={true} hasFinished={hasFinished} resetSearchResponse={null} />
-        <AskAIDisclaimer/>
+        <AskAIBar
+          handleKeyDown={handleKeyDown}
+          loading={loading}
+          isModalStyle={true}
+          hasFinished={hasFinished}
+          resetSearchResponse={null}
+        />
+        <AskAIDisclaimer />
         <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
       </Modal>
     </>
