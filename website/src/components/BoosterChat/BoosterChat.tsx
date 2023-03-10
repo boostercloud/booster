@@ -124,7 +124,7 @@ export function AskAIBar({ handleKeyDown, loading, isModalStyle, hasFinished, re
     <div className={isModalStyle ? 'bc-searchbar max-width-100' : 'bc-searchbar'}>
       <AskAISearchIcon className="bc-searchbar-icon" />
       <input
-        placeholder="Ask AI anything about Booster Framework"
+        placeholder="Ask AI anything about Booster"
         className="bc-input"
         type="text"
         onKeyDown={handleKeyDown}
