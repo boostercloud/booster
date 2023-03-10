@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react'
 import Modal from 'react-modal'
-import { ChatService } from '../../services/chat-service'
+import { ChatService } from '../chat-service'
 import { useState } from 'react'
-import { ChatResponse } from '../BoosterChat/ChatResponse'
-import { AskAIBar, AskAIDisclaimer, ASK_AI_ERROR } from '../BoosterChat/BoosterChat'
-import { AnalyticsClient } from '../Analytics/analytics-client'
+import { ChatResponse } from '../../components/BoosterChat/ChatResponse'
+import { AskAIBar, AskAIDisclaimer, ASK_AI_ERROR } from '../../components/BoosterChat/BoosterChat'
+import { AnalyticsClient } from '../../components/Analytics/analytics-client'
 
 // see https://github.com/facebook/docusaurus/issues/7227
 export default function CustomNavbarItem(props: { imageURL: string; altText: string }): JSX.Element | null {
