@@ -12,7 +12,7 @@
   --ifm-color-primary-light: #1a1aff;
   --ifm-color-primary-lighter: #2626ff;
   --ifm-color-primary-lightest: #4d4dff;
-  --ask-ai-color: #5C00E2;
+  --privategpt-color: #5C00E2;
 }
 
 .bc-layout {
@@ -41,7 +41,7 @@
   border-radius: 50px;
   width: 48rem;
   max-width: 94%;
-  border-color: var(--ask-ai-color);
+  border-color: var(--privategpt-color);
   border-width: 1px;
   border-style: solid;
 }
@@ -110,8 +110,8 @@
 .bc-quick-question {
   border-radius: 50px;
   font-size: 0.85rem;
-  color: var(--ask-ai-color);
-  border-color: var(--ask-ai-color);
+  color: var(--privategpt-color);
+  border-color: var(--privategpt-color);
   border-width: 1px;
   padding: 6px 15px;
   background-color: white;
@@ -137,7 +137,7 @@
   display: block;
   margin: 15px auto;
   position: relative;
-  color: var(--ask-ai-color);
+  color: var(--privategpt-color;
   box-sizing: border-box;
   animation: animloader 1s linear infinite alternate;
 }
@@ -175,7 +175,7 @@
   max-width: 94%; /* Like in .bc-searchbar */
   text-align: center;
   font-size: 0.65rem;
-  color: var(--ask-ai-color);
+  color: var(--privategpt-color);
 }
 
 svg {

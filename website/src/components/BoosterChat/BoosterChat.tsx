@@ -1,5 +1,5 @@
 const { ChatService } = require(`${__dirname}/../../theme/chat-service`)
-import AskAISearchIcon from '@site/static/img/ask-ai-bubble.svg'
+import PrivateGPTSearchIcon from '@site/static/img/privateGptIcon.svg'
 import React, { useEffect, useRef, useState } from 'react'
 import { AnalyticsClient } from '../Analytics/analytics-client'
 import { ChatResponse } from './ChatResponse'
@@ -122,9 +122,9 @@ export function AskAIBar({ handleKeyDown, loading, isModalStyle, hasFinished, re
 
   return (
     <div className={isModalStyle ? 'bc-searchbar max-width-100' : 'bc-searchbar'}>
-      <AskAISearchIcon className="bc-searchbar-icon" />
+      <PrivateGPTSearchIcon className="bc-searchbar-icon" />
       <input
-        placeholder="Ask AI anything about Booster"
+        placeholder="Ask PrivateGPT about Booster"
         className="bc-input"
         type="text"
         onKeyDown={handleKeyDown}
@@ -145,5 +145,5 @@ export function ResetSearchButton({ resetSearchResponse }) {
 }
 
 export function AskAIDisclaimer() {
-  return <div className="bc-beta-disclaimer"> Ask AI · Temporary free version</div>
+  return <div className="bc-beta-disclaimer"> PrivateGPT · Temporary free version</div>
 }
