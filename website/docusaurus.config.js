@@ -50,7 +50,7 @@ const config = {
   themeConfig: {
     fathomAnalytics: {
       siteId: 'LHRTIPFZ',
-      customDomain: 'https://tools.eventsource.cloud',
+      customDomain: 'https://tl1.boosterframework.com',
     },
     colorMode: {
       defaultMode: 'light',
