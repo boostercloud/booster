@@ -38,6 +38,7 @@
 
 .bc-thumbs-container {
   display: flex;
+  margin-bottom: 2rem;
 }
 
 .bc-thumbs-button {

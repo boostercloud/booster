@@ -15,9 +15,10 @@ export default function CustomNavbarItem(props: { imageURL: string; altText: str
   const [hasFinished, setHasFinished] = useState(false)
   const [questionId, setQuestionId] = useState<string | null>(null)
 
-  const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
+  const handleResponseUpdated = (_questionId, question, newResponseFragment, hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
     setHasFinished(hasFinished)
+    setQuestionId(_questionId)
   }
 
   const handleSearch = async (query: string, controller: AbortController) => {

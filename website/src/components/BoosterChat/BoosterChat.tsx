@@ -17,9 +17,10 @@ export default function BoosterChat(): JSX.Element {
     AnalyticsClient.start()
   }, [])
 
-  const handleResponseUpdated = (_question, newResponseFragment, _hasFinished) => {
+  const handleResponseUpdated = (_questionId, _question, newResponseFragment, _hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
     setHasFinished(_hasFinished)
+    setQuestionId(_questionId)
   }
 
   const handleSearch = async (query: string) => {

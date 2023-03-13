@@ -1,4 +1,4 @@
-type SubscribeFn = (question: string, chunk: string, finished: boolean) => void
+type SubscribeFn = (questionId: string, question: string, chunk: string, finished: boolean) => void
 
 enum ApiEndpoint {
   Answer = 'https://asktoai.boosterframework.com/api/answer',
@@ -44,6 +44,10 @@ export class ChatService {
       throw new Error(response.statusText)
     }
 
+    /// TODO: Check why we are not getting the header here. 
+    /// When I tested the vercel endpoint using Postman I was getting the header
+    const questionId = response.headers.get('x-question-id')
+    
     const data = response.body
     if (!data) {
       return
@@ -62,7 +66,7 @@ export class ChatService {
 
       done = doneReading
       const chunkValue = decoder.decode(value)
-      callback(question, chunkValue, doneReading)
+      callback(questionId, question, chunkValue, doneReading)
     }
   }
 }
