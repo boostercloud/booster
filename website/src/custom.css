@@ -15,6 +15,7 @@
   --privategpt-color: #5C00E2;
   --privategpt-width: 56rem;
   --privategpt-max-width: 100%;
+  --privategpt-color-lightest: #f1e8fe;
 }
 
 .bc-layout {
@@ -33,6 +34,36 @@
   width: 22.25px;
   height: 22px;
   flex-shrink: 0;
+}
+
+.bc-thumbs-container {
+  display: flex;
+}
+
+.bc-thumbs-button {
+  margin: 0.3rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--privategpt-color);
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bc-thumbs-button:disabled {
+  background-color: var(--privategpt-color-lightest);
+}
+
+.bc-thumbs-button:hover {
+  background-color: var(--privategpt-color-lightest);
+}
+
+.bc-thumbs-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
 }
 
 .bc-searchbar { 
@@ -106,6 +137,10 @@
   border-width: 1px;
   padding: 6px 15px;
   background-color: white;
+}
+
+.bc-quick-question:hover {
+  background-color: var(--privategpt-color-lightest);
 }
 
 .bc-chat:first-child {
