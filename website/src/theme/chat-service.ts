@@ -46,7 +46,7 @@ export class ChatService {
 
     /// TODO: Check why we are not getting the header here. 
     /// When I tested the vercel endpoint using Postman I was getting the header
-    const questionId = response.headers.get('x-question-id')
+    const questionId = response.headers.get('X-Question-Id')
     
     const data = response.body
     if (!data) {
