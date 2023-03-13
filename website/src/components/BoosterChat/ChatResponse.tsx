@@ -4,12 +4,13 @@ import { AnalyticsClient } from '../Analytics/analytics-client'
 import { ThumbsComponent } from './ThumbsComponent'
 
 interface ChatResponseProps {
+  questionId: string | null
   loading: boolean
   response: string | null
   hasFinished: Boolean
 }
 
-export const ChatResponse: FC<ChatResponseProps> = ({ loading, response, hasFinished }) => {
+export const ChatResponse: FC<ChatResponseProps> = ({ questionId, loading, response, hasFinished }) => {
   const [displayPopup, setDisplayPopup] = useState(false)
 
   useEffect(() => {
@@ -46,7 +47,9 @@ export const ChatResponse: FC<ChatResponseProps> = ({ loading, response, hasFini
       </div>
       { !hasFinished ? null :
         <div>
-          <ThumbsComponent />
+          { !questionId ? null :
+            <ThumbsComponent questionId={questionId}/>
+          }
           <div className={ "bc-chat-popup" } style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
             <p>
             Note the answer you expected? We will be grateful to answer your question on the 

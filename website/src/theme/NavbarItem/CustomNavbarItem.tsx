@@ -13,6 +13,7 @@ export default function CustomNavbarItem(props: { imageURL: string; altText: str
   const [response, setResponse] = useState(null)
   const [loading, setLoading] = useState(null)
   const [hasFinished, setHasFinished] = useState(false)
+  const [questionId, setQuestionId] = useState<string | null>(null)
 
   const handleResponseUpdated = (question, newResponseFragment, hasFinished) => {
     setResponse((prev) => `${prev}${newResponseFragment}`)
@@ -123,7 +124,12 @@ export default function CustomNavbarItem(props: { imageURL: string; altText: str
           resetSearchResponse={null}
         />
         <AskAIDisclaimer />
-        <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
+        <ChatResponse 
+          questionId={questionId}
+          response={response} 
+          loading={loading} 
+          hasFinished={hasFinished} 
+        />
       </Modal>
     </>
   )

@@ -11,6 +11,7 @@ export default function BoosterChat(): JSX.Element {
   const [loading, setLoading] = useState(null)
   const [hasFinished, setHasFinished] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [questionId, setQuestionId] = useState<string | null>(null)
 
   useEffect(() => {
     AnalyticsClient.start()
@@ -106,7 +107,12 @@ export default function BoosterChat(): JSX.Element {
           </button>
         </div>
       )}
-      <ChatResponse response={response} loading={loading} hasFinished={hasFinished} />
+      <ChatResponse 
+        questionId={questionId}
+        response={response} 
+        loading={loading} 
+        hasFinished={hasFinished}
+        />
     </div>
   )
 }
