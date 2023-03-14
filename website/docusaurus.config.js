@@ -50,7 +50,7 @@ const config = {
   themeConfig: {
     fathomAnalytics: {
       siteId: 'LHRTIPFZ',
-      customDomain: 'https://tl1.boosterframework.com',
+      customDomain: 'https://tl1.docs.boosterframework.com',
     },
     colorMode: {
       defaultMode: 'light',
