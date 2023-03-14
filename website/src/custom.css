@@ -12,7 +12,9 @@
   --ifm-color-primary-light: #1a1aff;
   --ifm-color-primary-lighter: #2626ff;
   --ifm-color-primary-lightest: #4d4dff;
-  --ask-ai-color: #5C00E2;
+  --privategpt-color: #5C00E2;
+  --privategpt-width: 56rem;
+  --privategpt-max-width: 100%;
 }
 
 .bc-layout {
@@ -39,9 +41,9 @@
   padding: 1rem;
   position: relative;
   border-radius: 50px;
-  width: 48rem;
-  max-width: 94%;
-  border-color: var(--ask-ai-color);
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+  border-color: var(--privategpt-color);
   border-width: 1px;
   border-style: solid;
 }
@@ -74,21 +76,10 @@
   font-weight: normal;
 }
 
-.bc-chat {
-  background-color: white;
-  height: fit-content;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  overflow-y: 'scroll';
-}
-
 .bc-chat-embedded {
   background-color: white;
-  width: 56rem;
-  max-width: 100%;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
   height: fit-content;
   border-radius: 1rem;
   padding: 1rem;
@@ -103,15 +94,15 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 20px;
-  width: 48rem;
-  max-width: 94%; /* Like in .bc-searchbar */
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
 }
 
 .bc-quick-question {
   border-radius: 50px;
   font-size: 0.85rem;
-  color: var(--ask-ai-color);
-  border-color: var(--ask-ai-color);
+  color: var(--privategpt-color);
+  border-color: var(--privategpt-color);
   border-width: 1px;
   padding: 6px 15px;
   background-color: white;
@@ -126,8 +117,8 @@
   justify-content: center;
   align-items: center;
   padding-top: 1.5rem;
-  width: 48rem;
-  max-width: 94%;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
 }
 
 .bc-loader {
@@ -137,7 +128,7 @@
   display: block;
   margin: 15px auto;
   position: relative;
-  color: var(--ask-ai-color);
+  color: var(--privategpt-color);
   box-sizing: border-box;
   animation: animloader 1s linear infinite alternate;
 }
@@ -167,15 +158,21 @@
   background-color: white;
   border-radius: 10px;
   transition: all 0.5s ease-in-out;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+}
+
+.bc-chat-popup p {
+  margin-bottom: 0;
 }
 
 .bc-beta-disclaimer {
   margin-top: 8px;
-  width: 48rem;
-  max-width: 94%; /* Like in .bc-searchbar */
   text-align: center;
   font-size: 0.65rem;
-  color: var(--ask-ai-color);
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+  color: var(--privategpt-color);
 }
 
 svg {
