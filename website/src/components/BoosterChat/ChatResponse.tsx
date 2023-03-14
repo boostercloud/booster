@@ -53,7 +53,7 @@ export const ChatResponse: FC<ChatResponseProps> = ({ loading, response, hasFini
       </div>
       <div className={ "bc-chat-popup" } style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
         <p>
-        Note the answer you expected? We will be grateful to answer your question on the 
+        Not the answer you expected? We will be grateful to answer your question on the 
         <a href={'https://discord.com/channels/763753198388510780/1019895895325675550'} target="_blank" onClick={() => AnalyticsClient.trackEvent('UESXT8VI')}> #booster-help </a>
         channel on Discord 🤗
         </p>
