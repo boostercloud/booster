@@ -1,14 +1,35 @@
-type SubscribeFn = (question: string, chunk: string, finished: boolean) => void
+type SubscribeFn = (questionId: string, question: string, chunk: string, finished: boolean) => void
+
+enum ApiEndpoint {
+  Answer = 'https://asktoai.boosterframework.com/api/answer',
+  ReactAnswer = 'https://asktoai.boosterframework.com/api/reactanswer',
+}
+
+export enum AnswerReaction {
+  Upvoted = 'Upvoted',
+  Downvoted = 'Downvoted'
+}
 
 export class ChatService {
-  private static VercelEndpoint = 'https://asktoai.boosterframework.com/api/answer'
+  static async reactToAnswer(questionId: string, reaction: AnswerReaction) {
+    await fetch(ApiEndpoint.ReactAnswer, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "questionID": questionId,
+        "reaction": reaction
+      })
+    })
+  }
 
   static async answerBoosterQuestion(
     question: string,
     callback: SubscribeFn,
     abortSignal?: AbortSignal
   ): Promise<string> {
-    const response = await fetch(this.VercelEndpoint, {
+    const response = await fetch(ApiEndpoint.Answer, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -23,6 +44,7 @@ export class ChatService {
       throw new Error(response.statusText)
     }
 
+    const questionId = response.headers.get('X-Question-Id')
     const data = response.body
     if (!data) {
       return
@@ -41,16 +63,7 @@ export class ChatService {
 
       done = doneReading
       const chunkValue = decoder.decode(value)
-      callback(question, chunkValue, doneReading)
+      callback(questionId, question, chunkValue, doneReading)
     }
-  }
-
-  static async _answerBoosterQuestion(question: string, subscribeFn: SubscribeFn): Promise<void> {
-    return new Promise(async (resolve, reject) => {
-      setTimeout(() => {
-        subscribeFn(question, 'Response', true)
-        resolve()
-      }, 2000)
-    })
   }
 }
