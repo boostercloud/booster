@@ -152,5 +152,5 @@ export function ResetSearchButton({ resetSearchResponse }) {
 }
 
 export function AskAIDisclaimer() {
-  return <div className="bc-beta-disclaimer"> PrivateGPT · Temporary free version</div>
+  return <div className="bc-beta-disclaimer"> PrivateGPT · Free beta version</div>
 }

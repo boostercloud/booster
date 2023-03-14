@@ -52,9 +52,9 @@ export const ChatResponse: FC<ChatResponseProps> = ({ questionId, loading, respo
           }
           <div className={ "bc-chat-popup" } style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
             <p>
-            Not the answer you expected? We will be grateful to answer your question on the 
-            <a href={'https://discord.com/channels/763753198388510780/1019895895325675550'} target="_blank" onClick={() => AnalyticsClient.trackEvent('UESXT8VI')}> #booster-help </a>
-            channel on Discord 🤗
+Not the answer you expected? This is still a beta version, and the answers' quality may vary depending on the question language, spelling, and other factors. If you feel that was the case, please double-check with the documentation and remember that you can also use our
+<a href={'https://discord.com/channels/763753198388510780/1019895895325675550'} target="_blank" onClick={() => AnalyticsClient.trackEvent('UESXT8VI')}> #booster-help </a>
+Discord channel 🤗
             </p>
           </div>
         </div>
