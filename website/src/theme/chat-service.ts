@@ -12,16 +12,16 @@ export enum AnswerReaction {
 
 export class ChatService {
   static async reactToAnswer(questionId: string, reaction: AnswerReaction) {
-    await fetch(ApiEndpoint.ReactAnswer), {
+    await fetch(ApiEndpoint.ReactAnswer, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        questionId,
-        reaction
+        "questionID": questionId,
+        "reaction": reaction
       })
-    }
+    })
   }
 
   static async answerBoosterQuestion(
@@ -44,10 +44,7 @@ export class ChatService {
       throw new Error(response.statusText)
     }
 
-    /// TODO: Check why we are not getting the header here. 
-    /// When I tested the vercel endpoint using Postman I was getting the header
     const questionId = response.headers.get('X-Question-Id')
-    
     const data = response.body
     if (!data) {
       return
