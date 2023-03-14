@@ -93,6 +93,10 @@
   font-size: medium;
 }
 
+.bc-input:disabled {
+  background-color: white;
+}
+
 .bc-reset-button {
   border: none;
   background: none;
