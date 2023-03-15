@@ -81,12 +81,18 @@ export default function BoosterChat(): JSX.Element {
         <div className="bc-quick-questions-panel">
           <button
             className="bc-quick-question"
-            onClick={() => onQuickQuestionClick('Create a read-model and subscribe to it using websockets in Bash')}
+            onClick={() => onQuickQuestionClick('What is Booster Framework?')}
           >
-            Create a read-model and subscribe to it using websockets in Bash
+           What is Booster Framework?
           </button>
           <button className="bc-quick-question" onClick={() => onQuickQuestionClick("Summary of Booster's components")}>
             Summary of Booster's components
+          </button>
+          <button
+            className="bc-quick-question"
+            onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}
+          >
+            What's the difference between an entity and a read-model?
           </button>
           <button
             className="bc-quick-question"
@@ -96,15 +102,9 @@ export default function BoosterChat(): JSX.Element {
           </button>
           <button
             className="bc-quick-question"
-            onClick={() => onQuickQuestionClick('How to throw an exception in a reducer?')}
+            onClick={() => onQuickQuestionClick('Create a read-model and subscribe to it using websockets in Bash')}
           >
-            How to throw an exception in a reducer?
-          </button>{' '}
-          <button
-            className="bc-quick-question"
-            onClick={() => onQuickQuestionClick("What's the difference between an entity and a read-model?")}
-          >
-            What's the difference between an entity and a read-model?
+            Create a read-model and subscribe to it using websockets in Bash
           </button>
         </div>
       )}
