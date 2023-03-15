@@ -646,17 +646,26 @@ query {
 
 #### String filters
 
-| Filter     |  Value   |                Description |
-| :--------- | :------: | -------------------------: |
-| eq         |  String  |                   Equal to |
-| ne         |  String  |               Not equal to |
-| gt         |  String  |               Greater than |
-| gte        |  String  |      Greater or equal than |
-| lt         |  String  |                 Lower than |
-| lte        |  String  |        Lower or equal than |
-| in         | [String] |      Exists in given array |
-| beginsWith |  String  | Starts with a given substr |
-| contains   |  String  |    Contains a given substr |
+| Filter     |  Value   |                         Description |
+|:-----------| :------: |------------------------------------:|
+| eq         |  String  |                            Equal to |
+| ne         |  String  |                        Not equal to |
+| gt         |  String  |                        Greater than |
+| gte        |  String  |               Greater or equal than |
+| lt         |  String  |                          Lower than |
+| lte        |  String  |                 Lower or equal than |
+| in         | [String] |               Exists in given array |
+| beginsWith |  String  |          Starts with a given substr |
+| contains   |  String  |             Contains a given substr |
+| regex*     |  String  |                  Regular expression |
+| iRegex*    |  String  | Case insensitive Regular expression |
+
+**NOTE**: 
+
+:::note
+`regex` and `iRegex` are supported by Azure and Local Provider only
+:::
+
 
 Example:
 

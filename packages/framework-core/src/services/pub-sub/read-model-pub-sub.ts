@@ -86,6 +86,12 @@ function filterByOperation<TReadModel extends ReadModelInterface>(
         break
       case 'includes':
         return includes(readModelPropValue, value)
+      case 'regex':
+        if (!regex(readModelPropValue, value)) return false
+        break
+      case 'iRegex':
+        if (!regex(readModelPropValue, value, 'i')) return false
+        break
       default:
         if (typeof value === 'object') {
           return filterByOperation(value, readModelPropValue[operation])
@@ -93,6 +99,14 @@ function filterByOperation<TReadModel extends ReadModelInterface>(
     }
   }
   return true
+}
+
+function regex(readModelPropValue: any, element: any, flags?: string): boolean {
+  if (!Array.isArray(readModelPropValue) && typeof readModelPropValue === 'string') {
+    const expression = new RegExp(element, flags)
+    return expression.test(readModelPropValue)
+  }
+  return false
 }
 
 function contains(readModelPropValue: any, element: any): boolean {
