@@ -1,0 +1,17 @@
+name: Website Update
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/**'
+
+jobs:
+  update-website:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Run update script
+        run: bash .github/actions/update-website/action.sh
