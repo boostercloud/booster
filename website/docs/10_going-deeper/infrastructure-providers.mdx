@@ -201,7 +201,7 @@ export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.
 export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerOrganizationId')
 export AZURE_SECRET=$(az ad sp credential reset --id ${AZURE_APP_ID} | jq -r '.password')
 export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
-export REGION
+export REGION=$REGION
 ```
 
 :::note
