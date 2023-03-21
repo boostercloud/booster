@@ -1,6 +1,4 @@
-import React, { useContext } from 'react';
-import MarkdownContext from './MarkdownContext';
-
+import React from 'react';
 
 type CustomLinkProps = {
   href: string;
@@ -13,27 +11,17 @@ type CustomLinkProps = {
 // in the mdx file to create a link that opens in a new tab and executes
 // the custom onClick function.
 const CustomLink = ({ href, onClick, children }: CustomLinkProps): JSX.Element => {
-  // Check if the component is being used within a Markdown context
-  const isMarkdown = useContext(MarkdownContext)
-  if (isMarkdown) {
-    return (
-      <code>
-        [{href}]({children})
-      </code>
-    );
-  } else {
-    const handleClick = (_event) => {
-      if (onClick) {
-        onClick(); // execute the custom onClick function
-      }
-    };
-  
-    return (
-      <a href={href} target="_blank" onClick={handleClick}>
-        {children}
-      </a>
-    )
-  }
+  const handleClick = (_event) => {
+    if (onClick) {
+      onClick(); // execute the custom onClick function
+    }
+  };
+
+  return (
+    <a href={href} target="_blank" onClick={handleClick}>
+      {children}
+    </a>
+  )
 }
 
 export default CustomLink
