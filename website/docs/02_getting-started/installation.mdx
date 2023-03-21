@@ -3,7 +3,7 @@ description: How to install Booster locally, and start a Booster project in no t
 ---
 
 import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
-import CustomLink from '@site/src/components/CustomLink'
+import {CLInstallBooster} from '@site/src/components/CustomLinkWrappers'
 import TabItem from '@theme/TabItem'
 import Tabs from '@theme/Tabs'
 
@@ -159,7 +159,7 @@ git config --global user.email "your_email@youremail.com"
 
 Booster comes with a command-line tool that helps you generating boilerplate code,
 testing and deploying the application, and deleting all the resources in the cloud. All
-the stable versions are published to <CustomLink href="https://www.npmjs.com/package/@boostercloud/cli" onClick={() => fathom.trackGoal('AXTW7ICE', 0)}> `npm`,</CustomLink>
+the stable versions are published to <CLInstallBooster> `npm`,</CLInstallBooster>
 these versions are the recommended ones, as they are well documented, and the changes are
 stated in the release notes.
 

@@ -8,4 +8,9 @@ export class AnalyticsClient {
   static trackEvent(event: string) {
     Fathom.trackGoal(event, 0)
   }
+
+  static startAndTrackEvent(event: string) {
+    this.start()
+    this.trackEvent(event)
+  }
 }
