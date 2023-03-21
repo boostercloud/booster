@@ -14,9 +14,11 @@ const CustomLink = ({ href, onClick, children }: CustomLinkProps): JSX.Element =
   };
 
   return (
-    <a href={href} target="_blank" onClick={handleClick}>
-      {children}
-    </a>
+    <div>
+      <a href={href} target="_blank" onClick={handleClick}>
+        {children}
+      </a>
+    </div>
   )
 }
 
