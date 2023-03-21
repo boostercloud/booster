@@ -6,7 +6,7 @@ type CustomLinkProps = {
   children: React.ReactNode;
 };
 
-const CustomLink = ({ href, onClick, children }: CustomLinkProps): JSX.Element => {
+export default function CustomLink({ href, onClick, children }: CustomLinkProps): JSX.Element {
   const handleClick = (_event) => {
     if (onClick) {
       onClick(); // execute the custom onClick function
@@ -21,5 +21,3 @@ const CustomLink = ({ href, onClick, children }: CustomLinkProps): JSX.Element =
     </div>
   )
 }
-
-export default CustomLink
