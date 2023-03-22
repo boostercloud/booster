@@ -26,8 +26,8 @@ fetch_pages_query='{ListPageReadModels(filter: {}, limit: 1000, sortBy: {}) {ite
 graphql_result=$(curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${access_token}" \
   -d "{\"query\": \"$fetch_pages_query\"}" $GRAPHQL_URL)
 
-printf '%s' "$graphql_result" | jq '.data.ListPageReadModels.items[] | {id, path, title, checksum}'
-
+# For debugging purposes to print the result of the query
+# printf '%s' "$graphql_result" | jq '.data.ListPageReadModels.items[] | {id, path, title, checksum}'
 
 # Parse the GraphQL result using jq
 items=$(echo $graphql_result | jq '.data.ListPageReadModels.items')
@@ -63,6 +63,10 @@ for item in $(echo "${items}" | jq -r '.[] | @base64'); do
   remote_file_paths+=("$path/$title")
   remote_file_checksums+=("$checksum")
 done
+echo "Remote Files Count: ${#remote_file_ids[@]} ========================="
+
+# Define array of excluded files
+excluded_files=("00_ai-assistant.md" "README.md")
 
 # Define array of excluded directories
 excluded_dirs=("node_modules" "build" ".docusaurus" "static" "src")
@@ -75,6 +79,9 @@ for dir in "${excluded_dirs[@]}"; do
   find_cmd+=" -not -path \"*/$dir/*\""
 done
 
+for file in "${excluded_files[@]}"; do
+  find_cmd+=" -not -name \"$file\""
+done
 
 echo "Local Files ========================="
 
@@ -85,10 +92,11 @@ while read filepath; do
   echo "$REPO_URL$filepath:$checksum"
   paths+=("$REPO_URL$filepath")
   checksums+=("$checksum")
-done < <(eval "$find_cmd" | head -n 5)
+done < <(eval "$find_cmd")
+echo "Local Files Count: ${#paths[@]} ========================="
 
-store_pages=()
-remove_pages=()
+stored_pages=()
+removed_pages=()
 
 echo "Find missing files in local files ==============="
 # Find missing files in local files
@@ -101,13 +109,13 @@ for (( i=0; i<${#remote_file_paths[@]}; i++ )); do
     # The file exists in both arrays, so do nothing
   :
   else
-    remove_pages+=("${file}:${checksum}")
+    removed_pages+=("${file}:${checksum}")
 
-    pageId="${remote_file_ids[$i]}"
-    echo "Remove page with id: ${pageId}"
+    page_id="${remote_file_ids[$i]}"
+    echo "Removing page with id: ${page_id}"
 
     curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${access_token}"\
-  -d "{\"query\": \"mutation { DeletePage(input: { pageID: \\\"$pageId\\\" }) }\"}" \
+  -d "{\"query\": \"mutation { DeletePage(input: { pageID: \\\"$page_id\\\" }) }\"}" \
   $GRAPHQL_URL
   fi
 done
@@ -118,36 +126,62 @@ for (( i=0; i<${#paths[@]}; i++ )); do
   file="${paths[$i]}"
   checksum="${checksums[$i]}"
   
-  # Check if the file exists in remote_file and has the same checksum
-  if grep -q -F "${checksum}" <(echo "${remote_file_checksums[*]}"); then
-    # The file exists in both arrays, so do nothing
-    :
-  else
-    store_pages+=("${file}:${checksum}")
 
-    echo "Store page with checksum: ${checksum}"
+  # Check if the file exists in remote_file and has the same checksum
+  j=-1
+  for (( k=0; k<${#remote_file_checksums[@]}; k++ )); do
+    if [[ "${remote_file_checksums[$k]}" == "${checksum}" ]]; then
+      j=$k
+      break
+    fi
+  done
+
+
+  if (( j == -1 )); then
+    # The file does not exist in remote_file_checksums, so create a new page
+    stored_pages+=("${file}:${checksum}")
+
+    echo "Storing page with checksum: ${checksum}"
     path=$(dirname "$file")
     filename=$(basename "$file")
 
     curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${access_token}"\
-  -d "{\"query\": \"mutation { StorePage(input: { path: \\\"$path\\\", title: \\\"$filename\\\", checksum: \\\"$checksum\\\" }) }\"}" \
-  $GRAPHQL_URL
+    -d "{\"query\": \"mutation { StorePage(input: { path: \\\"$path\\\", title: \\\"$filename\\\", checksum: \\\"$checksum\\\" }) }\"}" \
+    $GRAPHQL_URL
+
+  else
+    remote_file="${remote_file_paths[$j]}"
+    
+    if [[ "${file}" == "${remote_file}" ]]; then
+      # The file has the same checksum and path, so nothing to do here
+    :
+    else
+      page_id="${remote_file_ids[$j]}"
+      path=$(dirname "$file")
+      filename=$(basename "$file")
+
+      echo "Updating page with id: ${page_id} to path: ${path} name: ${filename} checksum: ${checksum}"
+
+      curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer ${access_token}"\
+      -d "{\"query\": \"mutation { UpdatePage(input: { pageID: \\\"$page_id\\\", path: \\\"$path\\\", title: \\\"$filename\\\" }) }\"}" \
+      $GRAPHQL_URL
+    fi
   fi
 done
 
 
 # Print the results
 echo "Local files added:"
-echo "${#store_pages[@]}"
+echo "${#stored_pages[@]}"
 
-for (( i=0; i<${#store_pages[@]}; i++ )); do
-  echo -e "${store_pages[$i]}"
+for (( i=0; i<${#stored_pages[@]}; i++ )); do
+  echo -e "${stored_pages[$i]}"
 done
 
 echo -e "Remote files deleted:"
-echo "${#remove_pages[@]}"
+echo "${#removed_pages[@]}"
 
-for (( i=0; i<${#remove_pages[@]}; i++ )); do
-  echo -e "${remove_pages[$i]}"
+for (( i=0; i<${#removed_pages[@]}; i++ )); do
+  echo -e "${removed_pages[$i]}"
 done
 
