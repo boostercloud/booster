@@ -1,6 +1,6 @@
 #!/bin/bash
 
-GRAPHQL_URL="http://localhost:3000/graphql"
+GRAPHQL_URL="$AI_BOOSTER_URL"
 REPO_URL="https://raw.githubusercontent.com/boostercloud/booster/main/"
 
 # Auth0 credentials from environment variables
