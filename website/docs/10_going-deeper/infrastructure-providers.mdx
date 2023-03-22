@@ -145,6 +145,7 @@ Once you have created the Azure account, you need to install the Azure CLI on yo
 To configure Azure as a provider you need to meet certain prerequisites:
 
 - Install [jq](https://stedolan.github.io/jq/download/) in your system.
+- Install [the terraform CLI](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/install-cli).
 - Check `@boostercloud/framework-provider-azure` is listed in your app `package.json` dependencies.
 - Check `@boostercloud/framework-provider-azure-infrastructure` is listed in your app `package.json` devDependencies.
 - Check both dependencies are installed, otherwise use `npm install` in the root of your project.
@@ -155,10 +156,33 @@ At this moment you have to log in you Azure account using the Azure CLI with the
 az login
 ```
 
-Then create a service pricipal running the following command.
+You will get something like this:
 
 ```bash
-az ad sp create-for-rbac --name <service-principal-name>
+[
+  {
+    "cloudName": "AzureCloud",
+    "homeTenantId": "00000000-0000-0000-0000-000000000000",
+    "id": "00000000-0000-0000-0000-000000000000",
+    "isDefault": true,
+    "managedByTenants": [],
+    "name": "Azure subscription name",
+    "state": "Enabled",
+    "tenantId": "00000000-0000-0000-0000-000000000000",
+    "user": {
+      "name": "boosteduser@boosteddomain.com",
+      "type": "user"
+    }
+  }
+]
+```
+
+Keep the `id` from the login output around.
+
+Then create a service pricipal that is a contributor to a chosen subscription running the following command.
+
+```bash
+az ad sp create-for-rbac --name <service-principal-name> --role="Contributor" --scopes="/subscriptions/<the-id-from-the-login-output>"
 ```
 
 :::note
@@ -174,10 +198,10 @@ SP_DISPLAY_NAME="<service-principal-name>" #replace <service-principal-name> wit
 REGION="East US" #replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
 
 export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appId')
-export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerTenantId')
-export AZURE_SECRET=$(az ad sp credential reset --name ${AZURE_APP_ID} | jq -r '.password')
+export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerOrganizationId')
+export AZURE_SECRET=$(az ad sp credential reset --id ${AZURE_APP_ID} | jq -r '.password')
 export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
-export REGION
+export REGION=$REGION
 ```
 
 :::note
@@ -201,6 +225,10 @@ Open your terminal and run the bash file to export you env variables and the dep
 ```bash
 source <path-to-your-bash-file> && boost deploy -e production
 ```
+
+:::note
+Remember to have [the terraform CLI](https://developer.hashicorp.com/terraform/tutorials/azure-get-started/install-cli) installed in your system.
+:::
 
 Now just let the magic happen, Booster will create everything for you and give you back your app ready to use URL. 🚀
 
