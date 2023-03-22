@@ -7,29 +7,33 @@ type CLStepByStepProps = {
 }
   
 export const CLStepByStep: React.FC = ({ children }: CLStepByStepProps) => {
-  const href = 'https://github.com/boostercloud/booster/tree/main/examples'
+  const { text, href } = extractLinkInfo(children)
   const onClick = () => AnalyticsClient.startAndTrackEvent('GYHPPIBS')
 
-  return (<CustomLink href={href} onClick={onClick}>{children}</CustomLink>)
+  return (<CustomLink href={href} onClick={onClick}>{text}</CustomLink>)
 }
 
 export const CLExampleApps: React.FC = ({ children }: CLStepByStepProps) => {
-  const href = 'https://github.com/boostercloud/examples'
-  const onClick = () => AnalyticsClient.startAndTrackEvent('YY7T3ZSZ')
-
-  return (<CustomLink href={href} onClick={onClick}>{children}</CustomLink>)
+  return createCustomLinkComponent(children, 'YY7T3ZSZ')
 }
 
 export const CLAskMeRepo: React.FC = ({ children }: CLStepByStepProps) => {
-  const href = 'https://github.com/boostercloud/examples/tree/master/askme'
-  const onClick = () => AnalyticsClient.startAndTrackEvent('NE1EADCK')
-
-  return (<CustomLink href={href} onClick={onClick}>{children}</CustomLink>)
+  return createCustomLinkComponent(children, 'NE1EADCK')
 }
 
 export const CLInstallBooster: React.FC = ({ children }: CLStepByStepProps) => {
-  const href = 'https://www.npmjs.com/package/@boostercloud/cli'
-  const onClick = () => AnalyticsClient.startAndTrackEvent('AXTW7ICE')
+  return createCustomLinkComponent(children, 'AXTW7ICE')
+}
 
-  return (<CustomLink href={href} onClick={onClick}>{children}</CustomLink>)
+function createCustomLinkComponent(element: React.ReactNode, event: string) {
+  const { text, href } = extractLinkInfo(element)
+  const onClick = () => AnalyticsClient.startAndTrackEvent(event)
+  return <CustomLink href={href} onClick={onClick}>{text}</CustomLink>
+}
+
+function extractLinkInfo(element: React.ReactNode) {
+  if (React.isValidElement(element) && element.props.href) {
+    return { text: element.props.children, href: element.props.href };
+  }
+  return { text: '', href: '' };
 }
