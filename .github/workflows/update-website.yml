@@ -20,3 +20,4 @@ jobs:
           AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
           AUTH0_AUDIENCE: ${{ secrets.AUTH0_PRIVATEGPT_AUDIENCE }}
           AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          AI_BOOSTER_URL: ${{ secrets.AI_BOOSTER_URL }}
