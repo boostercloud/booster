@@ -18,7 +18,7 @@ const CustomLink = ({ href, onClick, children }: CustomLinkProps): JSX.Element =
   };
 
   return (
-    <a href={href} target="_blank" onClick={handleClick}>
+    <a href={href} target="_blank" rel="noopener noreferrer" onClick={handleClick}>
       {children}
     </a>
   )
