@@ -27,7 +27,6 @@ auth0_response=$(curl -s -X POST -H "Content-Type: application/json" \
   $AUTH0_DOMAIN)
 
 access_token=$(echo $auth0_response | jq -r '.access_token')
-echo "access token: ${access_token}"
 
 
 # Define GraphQL query
