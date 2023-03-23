@@ -7,10 +7,7 @@ type CLStepByStepProps = {
 }
   
 export const CLStepByStep: React.FC = ({ children }: CLStepByStepProps) => {
-  const { text, href } = extractLinkInfo(children)
-  const onClick = () => AnalyticsClient.startAndTrackEvent('GYHPPIBS')
-
-  return (<CustomLink href={href} onClick={onClick}>{text}</CustomLink>)
+  return createCustomLinkComponent(children, 'GYHPPIBS')
 }
 
 export const CLExampleApps: React.FC = ({ children }: CLStepByStepProps) => {
