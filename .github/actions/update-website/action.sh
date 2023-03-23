@@ -1,5 +1,14 @@
 #!/bin/bash
 
+# ===================================================================================================================================================================================== #
+# Action Summary:                                                                                                                                                                       #
+# ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- #
+# - Gets an access token from Auth0 using the specified credentials to perform queries and mutations                                                                                    #
+# - Fetches a list of items from the GraphQL API, which include the IDs, paths, titles, and checksums of pages stored                                                                   #
+# - Uses the find command to iterate through each .md and .mdx file in the website directory and its subdirectories, excluding certain directories and fields                           #
+# - Compares the local files and remote files to find missing files in each, and either stores or updates or deletes pages using GraphQL mutations depending on the comparison results  #
+# ===================================================================================================================================================================================== #
+
 GRAPHQL_URL="$AI_BOOSTER_URL"
 REPO_URL="https://raw.githubusercontent.com/boostercloud/booster/main/"
 
