@@ -267,14 +267,14 @@ The preferred way of accepting contributions is following the [Github flow](http
 
 ### Publishing your Pull Request
 
-Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarifying the intent and goals of the change.
+Make sure that you describe your change thoroughly in the PR body, adding references for any related issues and links to any resource that helps clarify the intent and goals of the change.
 
 When you submit a PR to the Booster repository:
 
 - _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
-- If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before committing to significant changes.
-- Code must be mergeable and all conflicts solved before merging it.
-- Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **Lock conversation** in the pull request. The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge.
+- If tests pass, your code will be reviewed by at least two core team members. Clarifications or improvements might be asked. They reserve the right to close any PR that does not meet the project quality standards, goals, or philosophy. So, discussing your plans in an issue or the Spectrum channel is always a good idea before committing to significant changes.
+- Code must be mergeable, and all conflicts must be solved before merging.
+- Once the review process is done, unit tests pass, and conflicts are fixed, you still need to make the Integration tests check to pass. You need to **Lock conversation** in the pull request to do that. The _integration tests_ will run, and a new check will appear with an "In progress" status. After some time, if everything goes well, the status check will become green, and your PR is now ready to merge.
 
 ### Branch naming conventions
 
