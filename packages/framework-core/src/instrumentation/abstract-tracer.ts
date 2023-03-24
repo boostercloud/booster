@@ -22,7 +22,7 @@ export class CallInformation<T> {
  * @param onSuccess This method is called after the method is called and it has not thrown any error
  * @param onError This method is called after the method is called and it has thrown an error
  */
-export abstract class Tracer<T> {
+export abstract class Tracer<T = unknown> {
   abstract onStart(callInformation: CallInformation<T>): void
   abstract onSuccess(callInformation: CallInformation<T>, result: unknown): void
   abstract onError(callInformation: CallInformation<T>, error: unknown): void
