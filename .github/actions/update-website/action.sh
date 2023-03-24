@@ -12,14 +12,21 @@
 GRAPHQL_URL="$AI_BOOSTER_URL"
 REPO_URL="https://raw.githubusercontent.com/boostercloud/booster/main/website/"
 
-# Auth0 credentials from environment variables
-CLIENT_ID="$AUTH0_CLIENT_ID"
-CLIENT_SECRET="$AUTH0_CLIENT_SECRET"
-AUDIENCE="$AUTH0_PRIVATEGPT_AUDIENCE"
-AUTH0_DOMAIN="$AUTH0_DOMAIN"
+# Auth0 credentials from the environment variables of the workflow file:
+CLIENT_ID=$AUTH0_CLIENT_ID
+CLIENT_SECRET=$AUTH0_CLIENT_SECRET
+AUDIENCE=$AUTH0_AUDIENCE
+AUTH0_DOMAIN=$AUTH0_DOMAIN
 
-# Go to the website folder
-cd ../../../website/
+echo "Auth0 Domain: $AUTH0_DOMAIN"
+echo "Current dir: $GITHUB_WORKSPACE"
+
+if [ -d "$GITHUB_WORKSPACE/website/" ]; then
+  cd "$GITHUB_WORKSPACE/website/"
+else
+  echo "Directory not found"
+  exit 1
+fi
 
 # Get Auth0 token
 auth0_response=$(curl -s -X POST -H "Content-Type: application/json" \
@@ -28,8 +35,8 @@ auth0_response=$(curl -s -X POST -H "Content-Type: application/json" \
 
 access_token=$(echo $auth0_response | jq -r '.access_token')
 
-# Check if access_token is empty and exit with an error if it is
-if [ -z "$access_token" ]; then
+# Check if access_token is empty or null and exit with an error if it is
+if [ -z "$access_token" ] || [ "$access_token" = "null" ]; then
     echo "Error: Failed to obtain access token from Auth0."
     exit 1
 fi
@@ -48,7 +55,6 @@ graphql_result=$(curl -X POST -H "Content-Type: application/json" -H "Authorizat
 items=$(echo $graphql_result | jq '.data.ListPageReadModels.items')
 count=$(echo $graphql_result | jq '.data.ListPageReadModels.count')
 cursor=$(echo $graphql_result | jq '.data.ListPageReadModels.cursor')
-
 
 remote_file_paths=()
 remote_file_checksums=()

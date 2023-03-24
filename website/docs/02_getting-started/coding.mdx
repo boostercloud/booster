@@ -297,11 +297,9 @@ Read models are _projections_ of one or more entities into a new object that is 
 `Post` entity:
 
 <TerminalWindow>
-
 ```bash
 boost new:read-model PostReadModel --fields title:string author:string --projects Post:id
 ```
-
 </TerminalWindow>
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
