@@ -14,5 +14,6 @@ export {
   boosterRocketDispatcher,
 } from './booster'
 export * from './services/token-verifiers'
+export * from './instrumentation/index'
 
 export const Booster: BoosterApp = boosterModule.Booster

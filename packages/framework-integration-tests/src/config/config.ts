@@ -2,11 +2,22 @@ import { Booster, PublicKeyTokenVerifier } from '@boostercloud/framework-core'
 import { BoosterConfig, DecodedToken } from '@boostercloud/framework-types'
 import * as fs from 'fs'
 import * as path from 'path'
+import { CustomTracer } from '../common/custom-tracer'
 
 class CustomPublicKeyTokenVerifier extends PublicKeyTokenVerifier {
   public async verify(token: string): Promise<DecodedToken> {
     await super.verify(token)
     throw new Error('Unauthorized')
+  }
+}
+
+function configureInvocationsHandler(config: BoosterConfig) {
+  const customTracer = new CustomTracer()
+  config.traceConfiguration = {
+    enableTraceNotification: true,
+    includeInternal: false,
+    onStart: customTracer.onStart,
+    onEnd: customTracer.onStart,
   }
 }
 
@@ -27,12 +38,14 @@ Booster.configure('local', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  configureInvocationsHandler(config)
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-aws'
   config.assets = ['assets', 'assetFile.txt']
+  configureInvocationsHandler(config)
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {
@@ -61,6 +74,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  configureInvocationsHandler(config)
 })
 
 Booster.configure('azure', (config: BoosterConfig): void => {
@@ -89,4 +103,5 @@ Booster.configure('azure', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  configureInvocationsHandler(config)
 })

@@ -1,4 +1,5 @@
 import {
+  TraceActionTypes,
   BOOSTER_SUPER_KIND,
   BoosterConfig,
   EntityInterface,
@@ -16,6 +17,7 @@ import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher
 import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterEntityTouched } from '../core-concepts/touch-entity/events/booster-entity-touched'
+import { Trace } from '../instrumentation'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -30,6 +32,7 @@ export class EventStore {
    * Also, in order to make next calls faster, this method caches the newly calculated
    * snapshot storing it at the end of the process.
    */
+  @Trace(TraceActionTypes.FETCH_ENTITY_SNAPSHOT)
   public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
@@ -70,6 +73,7 @@ export class EventStore {
     }
   }
 
+  @Trace(TraceActionTypes.STORE_SNAPSHOT)
   private async storeSnapshot(
     snapshot: NonPersistedEntitySnapshotEnvelope
   ): Promise<EntitySnapshotEnvelope | undefined> {
@@ -92,6 +96,7 @@ export class EventStore {
     }
   }
 
+  @Trace(TraceActionTypes.LOAD_LATEST_SNAPSHOT)
   private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#loadLatestSnapshot')
     logger.debug(`Loading latest snapshot for entity ${entityName} and ID ${entityID}`)
@@ -102,12 +107,18 @@ export class EventStore {
     return undefined
   }
 
-  private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
+  @Trace(TraceActionTypes.LOAD_EVENT_STREAM_SINCE)
+  private async loadEventStreamSince(
+    entityTypeName: string,
+    entityID: UUID,
+    timestamp: string
+  ): Promise<EventEnvelope[]> {
     const logger = getLogger(this.config, 'EventStore#loadEventStreamSince')
     logger.debug(`Loading list of pending events for entity ${entityTypeName} with ID ${entityID} since ${timestamp}`)
     return this.config.provider.events.forEntitySince(this.config, entityTypeName, entityID, timestamp)
   }
 
+  @Trace(TraceActionTypes.ENTITY_REDUCER)
   private async entityReducer(
     eventEnvelope: EventEnvelope,
     latestSnapshot?: NonPersistedEntitySnapshotEnvelope

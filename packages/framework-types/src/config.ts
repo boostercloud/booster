@@ -1,13 +1,9 @@
 import {
-  ReducerMetadata,
-  SchemaMigrationMetadata,
-  EntityMetadata,
-  RoleMetadata,
   CommandMetadata,
-  ProjectionMetadata,
-  ReadModelMetadata,
+  DataMigrationMetadata,
+  EntityInterface,
+  EntityMetadata,
   EventHandlerInterface,
-  ScheduledCommandMetadata,
   EventMetadata,
   GlobalErrorHandlerMetadata,
   EntityInterface,
@@ -15,12 +11,20 @@ import {
   TokenVerifier,
   QueryMetadata,
   NotificationMetadata,
+  ProjectionMetadata,
+  ReadModelMetadata,
+  ReducerMetadata,
+  RoleMetadata,
+  ScheduledCommandMetadata,
+  SchemaMigrationMetadata,
+  TokenVerifier,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rockets'
 import { Logger } from '.'
+import { TraceConfiguration } from './instrumentation/trace-types'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -85,6 +89,13 @@ export class BoosterConfig {
   }
   public getRegisteredRocketFunction(id: string): RocketFunction | undefined {
     return this.rocketFunctionMap[id]
+  }
+
+  public traceConfiguration: TraceConfiguration = {
+    enableTraceNotification: false,
+    includeInternal: false,
+    onStart: () => {},
+    onEnd: () => {},
   }
 
   /** Environment variables set at deployment time on the target lambda functions */

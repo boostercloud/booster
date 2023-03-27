@@ -3,12 +3,15 @@ import {
   InvalidVersionError,
   SchemaMigrationMetadata,
   ReadModelInterface,
+  TraceActionTypes,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+import { Trace } from './instrumentation'
 
 export class ReadModelSchemaMigrator {
   public constructor(private config: BoosterConfig) {}
 
+  @Trace(TraceActionTypes.READ_MODEL_SCHEMA_MIGRATOR_RUN)
   public async migrate<TMigratableReadModel extends ReadModelInterface>(
     readModel: TMigratableReadModel,
     readModelName: string

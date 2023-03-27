@@ -100,6 +100,7 @@ const sidebars = {
         'going-deeper/touch-entities',
         'going-deeper/custom-templates',
         'going-deeper/framework-packages',
+        'going-deeper/instrumentation',
       ],
     },
     'frequently-asked-questions',
