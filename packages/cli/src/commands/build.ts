@@ -1,41 +1,22 @@
-import { flags } from '@oclif/command'
-import BaseCommand from '../common/base-command'
-import { compileProject } from '../services/config-service'
-import { checkCurrentDirIsABoosterProject } from '../services/project-checker'
-import { Script } from '../common/script'
+import { BaseCommand, CliCommand } from '../common/base-command'
 import Brand from '../common/brand'
+import { Logger } from '@boostercloud/framework-types'
+import { UserProject } from '../services/user-project'
+import { TaskLogger } from '../services/task-logger'
 
-const runTasks = async (compileAndLoad: (ctx: string) => Promise<void>): Promise<void> =>
-  Script.init(`boost ${Brand.dangerize('build')} 🚀`, Promise.resolve(process.cwd()))
-    .step('Checking project structure', checkCurrentDirIsABoosterProject)
-    .step('Building project', compileAndLoad)
-    .info('Build complete!')
-    .done()
+@CliCommand()
+class Implementation {
+  constructor(readonly logger: Logger, readonly userProject: UserProject, readonly taskLogger: TaskLogger) {}
 
-export default class Build extends BaseCommand {
+  async run(): Promise<void> {
+    this.logger.info(`boost ${Brand.dangerize('build')} 🚀`)
+    await this.taskLogger.logTask('Building project', this.userProject.compile)
+    this.logger.info('Build complete!')
+  }
+}
+
+export default class Build extends BaseCommand<typeof Build> {
   public static description = 'Build the current application as configured in your `index.ts` file.'
 
-  public static flags = {
-    help: flags.help({ char: 'h' }),
-    verbose: flags.boolean({
-      description: 'display full error messages',
-      default: false,
-    }),
-  }
-
-  public async run(): Promise<void> {
-    await runTasks((ctx: string) => compileProject(process.cwd()))
-  }
-
-  async catch(fullError: Error) {
-    const {
-      flags: { verbose },
-    } = this.parse(Build)
-
-    if (verbose) {
-      console.error(fullError.message)
-    }
-
-    return super.catch(fullError)
-  }
+  implementation = Implementation
 }

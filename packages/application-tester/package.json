@@ -46,8 +46,7 @@
     "tslib": "^2.4.0",
     "ws": "7.4.5",
     "@types/sinon": "10.0.0",
-    "sinon": "9.2.3",
-    "@effect-ts/core": "^0.60.4"
+    "sinon": "9.2.3"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.7.0",

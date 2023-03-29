@@ -1,7 +1,21 @@
-import { PackageManagerService } from '.'
-import { Layer, orDie } from '@boostercloud/framework-types/dist/effect'
-import { makePackageManager } from './common'
+import { FileSystem } from '../file-system'
+import { Process } from '../process'
+import { SimplePackageManager } from './simple.impl'
+import { Logger } from '@boostercloud/framework-types'
+import { Component } from '../../common/component'
+import { CliError } from '../../common/errors'
 
-export const makeNpmPackageManager = makePackageManager('npm')
+/**
+ * A simple implementation of the PackageManager interface that uses the
+ * NPM CLI to manage packages.
+ */
+@Component({ throws: CliError })
+export class NpmPackageManager extends SimplePackageManager {
+  constructor(readonly logger: Logger, readonly process: Process, readonly fileSystem: FileSystem) {
+    super('npm', logger, process, fileSystem)
+  }
 
-export const NpmPackageManager = Layer.fromEffect(PackageManagerService)(orDie(makeNpmPackageManager))
+  getLockfileName(): string {
+    return 'package-lock.json'
+  }
+}

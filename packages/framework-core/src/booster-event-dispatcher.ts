@@ -12,7 +12,7 @@ import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { createInstance, Promises, getLogger } from '@boostercloud/framework-common-helpers'
-import { NotificationInterface } from 'framework-types/dist'
+import { NotificationInterface } from '@boostercloud/framework-types'
 
 export class BoosterEventDispatcher {
   /**

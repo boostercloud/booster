@@ -7,7 +7,7 @@ import {
   Scope,
   SourceFile,
 } from 'ts-morph'
-import { Projection, ReactionEvent } from './generator/target'
+import { Projection, ReactionEvent } from './file-generator/target'
 import { fileNameWithExtension } from '../common/filenames'
 
 export function getResourceSourceFile(name: string): SourceFile {

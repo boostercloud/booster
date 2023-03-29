@@ -3,7 +3,10 @@
   "compilerOptions": {
     "declaration": false, // Required for MS Rush to compile Oclif properly
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },
   "include": ["src/**/*"]
 }

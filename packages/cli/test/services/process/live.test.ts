@@ -1,7 +1,6 @@
 import * as process from 'process'
 import * as childProcessPromise from 'child-process-promise'
 import { fake, replace, restore } from 'sinon'
-import { Effect, gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LiveProcess } from '../../../src/services/process/live.impl'
 import { expect } from '../../expect'
 import { guardError } from '../../../src/common/errors'

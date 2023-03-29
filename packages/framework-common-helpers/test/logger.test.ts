@@ -5,7 +5,7 @@
 
 import { expect } from './helpers/expect'
 import { fake, replace, restore } from 'sinon'
-import { BoosterConfig, Level } from '@boostercloud/framework-types'
+import { BoosterConfig, Level, Logger } from '@boostercloud/framework-types'
 import { getLogger } from '../src/logger'
 
 describe('the `getLogger method`', () => {
@@ -118,168 +118,107 @@ describe('the `getLogger method`', () => {
   })
 
   context('when a logger instance is defined at config level', () => {
+    let config: BoosterConfig
+    const fakeLogger = {
+      debug: fake(),
+      info: fake(),
+      warn: fake(),
+      error: fake(),
+      logProcess: fake(),
+    }
+
+    const runLoggerOperations = (logger: Logger): void => {
+      logger.debug('a')
+      logger.info('b')
+      logger.warn('c')
+      logger.error('d')
+      logger.logProcess('e', () => 'f')
+    }
+
+    beforeEach(() => {
+      Object.values(fakeLogger).forEach((f) => f.resetHistory())
+      config = new BoosterConfig('test')
+      config.logger = fakeLogger
+    })
+
     context('when no prefix is configured', () => {
       it('uses the configured logger instance with the default prefix', () => {
-        const fakeConsoleDebug = fake()
-        const fakeConsoleInfo = fake()
-        const fakeConsoleWarn = fake()
-        const fakeConsoleError = fake()
-
-        const config = new BoosterConfig('test')
-        config.logger = {
-          debug: fakeConsoleDebug,
-          info: fakeConsoleInfo,
-          warn: fakeConsoleWarn,
-          error: fakeConsoleError,
-        }
         const logger = getLogger(config)
-        logger.debug('a')
-        logger.info('b')
-        logger.warn('c')
-        logger.error('d')
+        runLoggerOperations(logger)
 
-        expect(fakeConsoleDebug).to.have.been.calledOnceWith('[Booster]: ', 'a')
-        expect(fakeConsoleInfo).to.have.been.calledOnceWith('[Booster]: ', 'b')
-        expect(fakeConsoleWarn).to.have.been.calledOnceWith('[Booster]: ', 'c')
-        expect(fakeConsoleError).to.have.been.calledOnceWith('[Booster]: ', 'd')
+        expect(fakeLogger.debug).to.have.been.calledOnceWith('[Booster]: ', 'a')
+        expect(fakeLogger.info).to.have.been.calledWith('[Booster]: ', 'b')
+        expect(fakeLogger.warn).to.have.been.calledOnceWith('[Booster]: ', 'c')
+        expect(fakeLogger.error).to.have.been.calledOnceWith('[Booster]: ', 'd')
+        expect(fakeLogger.logProcess).to.have.been.calledWith('e')
       })
 
       context('and a location is set', () => {
         it('uses the configured logger instance with the default prefix and renders the location', () => {
-          const fakeConsoleDebug = fake()
-          const fakeConsoleInfo = fake()
-          const fakeConsoleWarn = fake()
-          const fakeConsoleError = fake()
-
-          const config = new BoosterConfig('test')
-          config.logger = {
-            debug: fakeConsoleDebug,
-            info: fakeConsoleInfo,
-            warn: fakeConsoleWarn,
-            error: fakeConsoleError,
-          }
           const logger = getLogger(config, 'test-location')
-          logger.debug('a')
-          logger.info('b')
-          logger.warn('c')
-          logger.error('d')
+          runLoggerOperations(logger)
 
-          expect(fakeConsoleDebug).to.have.been.calledOnceWith('[Booster]|test-location: ', 'a')
-          expect(fakeConsoleInfo).to.have.been.calledOnceWith('[Booster]|test-location: ', 'b')
-          expect(fakeConsoleWarn).to.have.been.calledOnceWith('[Booster]|test-location: ', 'c')
-          expect(fakeConsoleError).to.have.been.calledOnceWith('[Booster]|test-location: ', 'd')
+          expect(fakeLogger.debug).to.have.been.calledOnceWith('[Booster]|test-location: ', 'a')
+          expect(fakeLogger.info).to.have.been.calledWith('[Booster]|test-location: ', 'b')
+          expect(fakeLogger.warn).to.have.been.calledOnceWith('[Booster]|test-location: ', 'c')
+          expect(fakeLogger.error).to.have.been.calledOnceWith('[Booster]|test-location: ', 'd')
+          expect(fakeLogger.logProcess).to.have.been.calledWithMatch('e')
         })
       })
     })
 
     context('when a prefix is configured', () => {
       it('uses the configured logger instance with the configured prefix', () => {
-        const fakeConsoleDebug = fake()
-        const fakeConsoleInfo = fake()
-        const fakeConsoleWarn = fake()
-        const fakeConsoleError = fake()
-
-        const config = new BoosterConfig('test')
-        config.logger = {
-          debug: fakeConsoleDebug,
-          info: fakeConsoleInfo,
-          warn: fakeConsoleWarn,
-          error: fakeConsoleError,
-        }
         config.logPrefix = 'MyLogger'
         const logger = getLogger(config)
-        logger.debug('a')
-        logger.info('b')
-        logger.warn('c')
-        logger.error('d')
+        runLoggerOperations(logger)
 
-        expect(fakeConsoleDebug).to.have.been.calledOnceWith('[MyLogger]: ', 'a')
-        expect(fakeConsoleInfo).to.have.been.calledOnceWith('[MyLogger]: ', 'b')
-        expect(fakeConsoleWarn).to.have.been.calledOnceWith('[MyLogger]: ', 'c')
-        expect(fakeConsoleError).to.have.been.calledOnceWith('[MyLogger]: ', 'd')
+        expect(fakeLogger.debug).to.have.been.calledOnceWith('[MyLogger]: ', 'a')
+        expect(fakeLogger.info).to.have.been.calledWith('[MyLogger]: ', 'b')
+        expect(fakeLogger.warn).to.have.been.calledOnceWith('[MyLogger]: ', 'c')
+        expect(fakeLogger.error).to.have.been.calledOnceWith('[MyLogger]: ', 'd')
+        expect(fakeLogger.logProcess).to.have.been.calledWithMatch('e')
       })
     })
 
     context('when a `location` is provided via parameter', () => {
       it('uses the configured logger instance and sends the provided prefix', () => {
-        const fakeConsoleDebug = fake()
-        const fakeConsoleInfo = fake()
-        const fakeConsoleWarn = fake()
-        const fakeConsoleError = fake()
-
-        const config = new BoosterConfig('test')
-        config.logger = {
-          debug: fakeConsoleDebug,
-          info: fakeConsoleInfo,
-          warn: fakeConsoleWarn,
-          error: fakeConsoleError,
-        }
         const logger = getLogger(config, 'ParameterLogger')
-        logger.debug('a')
-        logger.info('b')
-        logger.warn('c')
-        logger.error('d')
+        runLoggerOperations(logger)
 
-        expect(fakeConsoleDebug).to.have.been.calledOnceWith('[Booster]|ParameterLogger: ', 'a')
-        expect(fakeConsoleInfo).to.have.been.calledOnceWith('[Booster]|ParameterLogger: ', 'b')
-        expect(fakeConsoleWarn).to.have.been.calledOnceWith('[Booster]|ParameterLogger: ', 'c')
-        expect(fakeConsoleError).to.have.been.calledOnceWith('[Booster]|ParameterLogger: ', 'd')
+        expect(fakeLogger.debug).to.have.been.calledOnceWith('[Booster]|ParameterLogger: ', 'a')
+        expect(fakeLogger.info).to.have.been.calledWith('[Booster]|ParameterLogger: ', 'b')
+        expect(fakeLogger.warn).to.have.been.calledOnceWith('[Booster]|ParameterLogger: ', 'c')
+        expect(fakeLogger.error).to.have.been.calledOnceWith('[Booster]|ParameterLogger: ', 'd')
+        expect(fakeLogger.logProcess).to.have.been.calledWithMatch('e')
       })
     })
 
-    context('when the `logPrefix` is overriden via parameter', () => {
+    context('when the `logPrefix` is overridden via parameter', () => {
       it('uses the configured logger instance and uses the `logPrefix` provided via parameter', () => {
-        const fakeConsoleDebug = fake()
-        const fakeConsoleInfo = fake()
-        const fakeConsoleWarn = fake()
-        const fakeConsoleError = fake()
-
-        const config = new BoosterConfig('test')
-        config.logger = {
-          debug: fakeConsoleDebug,
-          info: fakeConsoleInfo,
-          warn: fakeConsoleWarn,
-          error: fakeConsoleError,
-        }
         config.logPrefix = 'ConfigLogger'
         const logger = getLogger(config, undefined, 'ParameterLogger')
-        logger.debug('a')
-        logger.info('b')
-        logger.warn('c')
-        logger.error('d')
+        runLoggerOperations(logger)
 
-        expect(fakeConsoleDebug).to.have.been.calledOnceWith('[ParameterLogger]: ', 'a')
-        expect(fakeConsoleInfo).to.have.been.calledOnceWith('[ParameterLogger]: ', 'b')
-        expect(fakeConsoleWarn).to.have.been.calledOnceWith('[ParameterLogger]: ', 'c')
-        expect(fakeConsoleError).to.have.been.calledOnceWith('[ParameterLogger]: ', 'd')
+        expect(fakeLogger.debug).to.have.been.calledOnceWith('[ParameterLogger]: ', 'a')
+        expect(fakeLogger.info).to.have.been.calledWith('[ParameterLogger]: ', 'b')
+        expect(fakeLogger.warn).to.have.been.calledOnceWith('[ParameterLogger]: ', 'c')
+        expect(fakeLogger.error).to.have.been.calledOnceWith('[ParameterLogger]: ', 'd')
+        expect(fakeLogger.logProcess).to.have.been.calledWithMatch('e')
       })
     })
 
-    context('when the `logPrefix` is overriden via parameter and the `location` is provided via parameter', () => {
+    context('when the `logPrefix` is overridden via parameter and the `location` is provided via parameter', () => {
       it('uses the configured logger instance, uses the `logPrefix` provided via parameter and renders the location', () => {
-        const fakeConsoleDebug = fake()
-        const fakeConsoleInfo = fake()
-        const fakeConsoleWarn = fake()
-        const fakeConsoleError = fake()
-
-        const config = new BoosterConfig('test')
-        config.logger = {
-          debug: fakeConsoleDebug,
-          info: fakeConsoleInfo,
-          warn: fakeConsoleWarn,
-          error: fakeConsoleError,
-        }
         config.logPrefix = 'ConfigLogger'
         const logger = getLogger(config, 'ParameterLocation', 'ParameterLogger')
-        logger.debug('a')
-        logger.info('b')
-        logger.warn('c')
-        logger.error('d')
+        runLoggerOperations(logger)
 
-        expect(fakeConsoleDebug).to.have.been.calledOnceWith('[ParameterLogger]|ParameterLocation: ', 'a')
-        expect(fakeConsoleInfo).to.have.been.calledOnceWith('[ParameterLogger]|ParameterLocation: ', 'b')
-        expect(fakeConsoleWarn).to.have.been.calledOnceWith('[ParameterLogger]|ParameterLocation: ', 'c')
-        expect(fakeConsoleError).to.have.been.calledOnceWith('[ParameterLogger]|ParameterLocation: ', 'd')
+        expect(fakeLogger.debug).to.have.been.calledOnceWith('[ParameterLogger]|ParameterLocation: ', 'a')
+        expect(fakeLogger.info).to.have.been.calledWith('[ParameterLogger]|ParameterLocation: ', 'b')
+        expect(fakeLogger.warn).to.have.been.calledOnceWith('[ParameterLogger]|ParameterLocation: ', 'c')
+        expect(fakeLogger.error).to.have.been.calledOnceWith('[ParameterLogger]|ParameterLocation: ', 'd')
+        expect(fakeLogger.logProcess).to.have.been.calledWithMatch('e')
       })
     })
   })

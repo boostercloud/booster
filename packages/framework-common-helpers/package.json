@@ -35,8 +35,7 @@
   "dependencies": {
     "@boostercloud/framework-types": "workspace:^1.7.0",
     "child-process-promise": "^2.2.1",
-    "tslib": "^2.4.0",
-    "@effect-ts/core": "^0.60.4"
+    "tslib": "^2.4.0"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.7.0",
