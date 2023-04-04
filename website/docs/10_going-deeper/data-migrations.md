@@ -96,6 +96,37 @@ export class ProductMigration {
 
 In this example, the `changeNameFieldToDisplayName` function updates the `Product` entity from version 1 to version 2 by renaming the `name` field to `displayName`. Then, `addNewField` function updates the `Product` entity from version 2 to version 3 by adding a new field called `newField` to the entity's schema. Notice that at this point, your database could have snapshots set as v1, v2, or v3, so while it might be tempting to redefine the original migration to keep a single 1-to-3 migration, it's usually a good idea to keep the intermediate steps. This way Booster will be able to handle any scenario.
 
+### Migrating Multiple ReadModels at Once with "migrateAll"
+
+ReadModelSchemaMigrator includes the method "migrateAll" that enables you to migrate all ReadModels of a specific type in a single step. 
+
+To use the "migrateAll" method, simply pass the name of the ReadModel type you wish to migrate. The system will automatically migrate all ReadModels of that type that have a version less than the expected one.
+
+In addition, the "migrateAll" method of Booster persists the changes made to the database. This ensures that the changes in the structure of the ReadModels are permanently stored in the database.
+
+Furthermore, the "migrateAll" method also allows you to specify a second parameter that defines the size of the blocks in which the ReadModels are processed. If a number is passed, for example 10, the ReadModels will be read, migrated, and saved in blocks of 10.
+
+Example:
+
+```typescript
+import { Booster, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { ReadModelSchemaMigrator } from '@boostercloud/framework-core/dist/read-model-schema-migrator'
+
+@Command({
+  authorize: 'all',
+})
+export class MigrateAllReadModel {
+  public constructor(readonly readModelName: string) {}
+
+  public static async handle(command: MigrateAllReadModel, register: Register): Promise<string> {
+    const readModelSchemaMigrator = new ReadModelSchemaMigrator(Booster.config)
+    const result = await readModelSchemaMigrator.migrateAll(command.readModelName)
+    return `Migrated ${result} ${command.readModelName}`
+  }
+}
+```
+
 ## Data migrations
 
 Data migrations can be seen as background processes that can actively update the values of existing entities and read models in the database. They can be useful to perform data migrations that cannot be handled with schema migrations, for example when you need to update the values exposed by the GraphQL API, or to initialize new read models that are projections of previously existing entities.
