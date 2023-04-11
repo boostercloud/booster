@@ -586,6 +586,7 @@ describe('ReadModelStore', () => {
         for (const projectionMetadata of config.projections[AnImportantEntity.name]) {
           const readModelClassName = projectionMetadata.class.name
           expect(fakeApplyProjectionToReadModel).to.have.been.calledWith(
+            anEntitySnapshot,
             anEntityInstance,
             projectionMetadata,
             readModelClassName,

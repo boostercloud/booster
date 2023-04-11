@@ -6,7 +6,7 @@ import {
   InvalidParameterError,
   NonPersistedEntitySnapshotEnvelope,
   ReducerGlobalError,
-  SnapshotPersistHandlerGlobalError,
+  ReducerMetadata,
   UUID,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
@@ -75,15 +75,13 @@ export class EventStore {
       logger.debug('Storing snapshot in the event store:', snapshot)
       return await this.config.provider.events.storeSnapshot(snapshot, this.config)
     } catch (e) {
-      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-      const error = await globalErrorDispatcher.dispatch(new SnapshotPersistHandlerGlobalError(snapshot, e))
       logger.error(
         `The snapshot for entity ${snapshot.typeName} with ID ${
           snapshot.entityID
         } couldn't be stored (Tried on ${new Date()})`,
         snapshot,
         '\nError:',
-        error
+        e
       )
       return
     }
@@ -123,8 +121,12 @@ export class EventStore {
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
       const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
+      const reducerMetadata = this.config.reducers[migratedEventEnvelope.typeName]
       try {
-        const newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
+        const newEntity = this.reducerForEvent(reducerMetadata, migratedEventEnvelope.typeName)(
+          eventInstance,
+          snapshotInstance
+        )
 
         const newSnapshot: NonPersistedEntitySnapshotEnvelope = {
           version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
@@ -141,8 +143,9 @@ export class EventStore {
         return newSnapshot
       } catch (e) {
         const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-        const error = await globalErrorDispatcher.dispatch(new ReducerGlobalError(eventInstance, snapshotInstance, e))
-        throw error
+        throw await globalErrorDispatcher.dispatch(
+          new ReducerGlobalError(migratedEventEnvelope, eventInstance, snapshotInstance, reducerMetadata, e)
+        )
       }
     } catch (e) {
       logger.error('Error when calling reducer', e)
@@ -171,18 +174,16 @@ export class EventStore {
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
-  private reducerForEvent(eventName: string): Function {
+  private reducerForEvent(reducerMetadata: ReducerMetadata, eventName: string): Function {
     const logger = getLogger(this.config, 'EventStore#reducerForEvent')
-    const reducerMetadata = this.config.reducers[eventName]
     if (!reducerMetadata) {
       throw new InvalidParameterError(`No reducer registered for event ${eventName}`)
     } else {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const reducer = (reducerMetadata.class as any)[reducerMetadata.methodName]
-        logger.debug(
-          `Found reducer for event ${eventName}: "${reducerMetadata.class.name}.${reducerMetadata.methodName}"`
-        )
+        const methodName = reducerMetadata.methodName
+        const reducer = (reducerMetadata.class as any)[methodName]
+        logger.debug(`Found reducer for event ${eventName}: "${reducerMetadata.class.name}.${methodName}"`)
         return reducer
       } catch {
         throw new Error(`Couldn't load the Entity class ${reducerMetadata.class.name}`)
