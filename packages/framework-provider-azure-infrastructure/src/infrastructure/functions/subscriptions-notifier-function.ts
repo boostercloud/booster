@@ -4,7 +4,7 @@ import { SubscriptionsNotifierFunctionDefinition } from '../types/functionDefini
 export class SubscriptionsNotifierFunction {
   public constructor(readonly config: BoosterConfig) {}
 
-  public getFunctionDefinition(): Array<SubscriptionsNotifierFunctionDefinition> | undefined {
+  public getFunctionDefinition(): Array<SubscriptionsNotifierFunctionDefinition> {
     return Object.keys(this.config.readModels).map((readModel) => {
       return {
         name: `${readModel}-subscriptions-notifier`,

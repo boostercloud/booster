@@ -81,9 +81,7 @@ export class FunctionZip {
       messagesFunctionDefinition,
     ]
     const subscriptionsNotifierFunctionDefinition = new SubscriptionsNotifierFunction(config).getFunctionDefinition()
-    if (subscriptionsNotifierFunctionDefinition) {
-      featuresDefinitions = featuresDefinitions.concat(subscriptionsNotifierFunctionDefinition)
-    }
+    featuresDefinitions = featuresDefinitions.concat(subscriptionsNotifierFunctionDefinition)
     const scheduledFunctionsDefinition = new ScheduledFunctions(config).getFunctionDefinitions()
     if (scheduledFunctionsDefinition) {
       featuresDefinitions = featuresDefinitions.concat(scheduledFunctionsDefinition)
