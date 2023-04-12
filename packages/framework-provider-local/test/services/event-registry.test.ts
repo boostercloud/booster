@@ -8,7 +8,6 @@ import {
   createMockEventEnvelopeForEntity,
   createMockEntitySnapshotEnvelope,
 } from '../helpers/event-helper'
-import { createMockEventEnvelop, createMockEventEnvelopForEntity } from '../helpers/event-helper'
 import { date, random } from 'faker'
 import { EventRegistry } from '../../src/services'
 
