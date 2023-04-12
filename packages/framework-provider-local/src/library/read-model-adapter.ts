@@ -9,7 +9,7 @@ import {
   SortFor,
   UUID,
 } from '@boostercloud/framework-types'
-import { ReadModelRegistry } from '../services'
+import { GraphQLService, ReadModelRegistry } from '../services'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { queryRecordFor } from './searcher-adapter'
 
@@ -39,6 +39,7 @@ export async function fetchReadModel(
 }
 
 export async function storeReadModel(
+  graphQLService: GraphQLService,
   db: ReadModelRegistry,
   config: BoosterConfig,
   readModelName: string,
@@ -59,6 +60,12 @@ export async function storeReadModel(
     throw e
   }
   logger.debug('Read model stored')
+  try {
+    await graphQLService.handleNotificationSubscription([{ typeName: readModelName, value: readModel }])
+    logger.debug('Read model change notified')
+  } catch (e) {
+    logger.error('Error notifying subscription', readModel)
+  }
 }
 
 export async function searchReadModel(

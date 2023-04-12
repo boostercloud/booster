@@ -7,8 +7,8 @@ import {
   PaginatedEntityIdResult,
 } from '@boostercloud/framework-types'
 import { getLogger, unique } from '@boostercloud/framework-common-helpers'
-import { EventRegistry } from '..'
 import { buildFiltersForByFilters, buildFiltersForByTime, resultToEventSearchResponse } from './events-searcher-builder'
+import { EventRegistry } from '..'
 
 const DEFAULT_CREATED_AT_SORT_ORDER = -1
 const DEFAULT_KIND_FILTER = { kind: 'event' }

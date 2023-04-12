@@ -18,6 +18,7 @@ import {
 import { expect } from '../expect'
 import { createMockNonPersistedEventEnvelop, createMockEntitySnapshotEnvelope } from '../helpers/event-helper'
 import { random, date } from 'faker'
+import { EventRegistry } from '../../src/services'
 
 describe('events-adapter', () => {
   let mockConfig: BoosterConfig

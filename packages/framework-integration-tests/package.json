@@ -43,7 +43,6 @@
     "@types/node": "16.11.7",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
-    "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "apollo-cache-inmemory": "1.6.6",
@@ -83,7 +82,6 @@
     "ts-node": "^10.9.1",
     "ttypescript": "1.5.13",
     "typescript": "4.7.4",
-    "ws": "7.4.5",
     "sinon": "9.2.3",
     "eslint-plugin-unicorn": "~44.0.2"
   },
