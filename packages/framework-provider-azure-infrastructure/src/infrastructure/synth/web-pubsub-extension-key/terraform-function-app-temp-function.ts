@@ -5,7 +5,7 @@ import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
 import { WebsocketMessagesFunction } from '../../functions/websocket-messages-function'
 import { BoosterConfig } from '@boostercloud/framework-types'
 
-export class TerraformFunctionAppDummyFunction {
+export class TerraformFunctionAppTempFunction {
   static build(
     config: BoosterConfig,
     providerResource: AzurermProvider,
