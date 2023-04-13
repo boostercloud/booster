@@ -9,11 +9,9 @@ export async function rawGraphQLRequestToEnvelope(
   const logger = getLogger(config, 'graphql-adapter#rawGraphQLRequestToEnvelope')
   logger.debug('Received GraphQL request: ', context.req)
   const requestID = context.executionContext.invocationId
-  const connectionID = context.bindingData?.connectionContext?.connectionId
-  const eventType =
-    context.bindingData?.connectionContext?.eventType !== undefined
-      ? context.bindingData?.connectionContext?.eventName?.toUpperCase()
-      : 'MESSAGE'
+  const connectionContext = context.bindingData?.connectionContext
+  const connectionID = connectionContext?.connectionId
+  const eventType = connectionContext?.eventType === undefined ? 'MESSAGE' : connectionContext?.eventName?.toUpperCase()
 
   try {
     let graphQLValue = undefined
