@@ -62,7 +62,8 @@ export class GraphQLGenerator {
       const mutationGenerator = new GraphQLMutationGenerator(
         config.commandHandlers,
         typeInformer,
-        this.commandResolverBuilder.bind(this)
+        this.commandResolverBuilder.bind(this),
+        config
       )
 
       const subscriptionGenerator = new GraphQLSubscriptionGenerator(

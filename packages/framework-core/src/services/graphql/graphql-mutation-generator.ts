@@ -2,12 +2,16 @@ import { ResolverBuilder, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLObjectType } from 'graphql'
 import { GraphQLHandledFieldsGenerator } from './query-helpers/graphql-handled-fields-generator'
+import { GraphQLFieldConfigMap, GraphQLNonNull, GraphQLObjectType } from 'graphql'
+import { TypeMetadata } from '@boostercloud/metadata-booster'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 export class GraphQLMutationGenerator {
   public constructor(
     private readonly targetTypes: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly mutationResolver: ResolverBuilder
+    private readonly mutationResolver: ResolverBuilder,
+    private readonly config: BoosterConfig
   ) {}
 
   public generate(): GraphQLObjectType | undefined {
