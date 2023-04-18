@@ -260,7 +260,16 @@ Unit tests are executed when you type `rush test`. If you want to run the unit t
 
 ### Running integration tests
 
-Integration tests are run automatically in Github Actions when a PR is locked, but it would be recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using rush tool:
+Integration tests are triggered by repo admins to be run in Github Actions by commenting
+
+```text
+/integration sha=1234ab
+```
+
+Where `1234ab` is the SHA of the latest commit.
+
+
+Still, it is recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using rush tool:
 
 `rushx <script name> -v`
 
