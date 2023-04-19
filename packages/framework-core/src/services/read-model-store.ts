@@ -132,6 +132,7 @@ export class ReadModelStore {
       ...migratedReadModel?.boosterMetadata,
       version: currentReadModelVersion + 1,
       schemaVersion: schemaVersion,
+      lastUpdateAt: new Date().toISOString(),
     }
     logger.debug(
       `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,

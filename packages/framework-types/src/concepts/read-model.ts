@@ -6,6 +6,7 @@ export interface BoosterMetadata {
   version: number
   schemaVersion: number
   optimisticConcurrencyValue?: string | number
+  lastUpdateAt?: string
 }
 
 export interface ReadModelInterface {
