@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { beforeEach, describe } from 'mocha'
-import { restore, fake, replace, spy, useFakeTimers, SinonFakeTimers } from 'sinon'
+import { fake, replace, restore, SinonFakeTimers, spy, useFakeTimers } from 'sinon'
 import { ReadModelStore } from '../../src/services/read-model-store'
 import { createInstance } from '@boostercloud/framework-common-helpers'
 import {
-  Level,
   BoosterConfig,
-  UUID,
+  EntitySnapshotEnvelope,
+  Level,
+  OptimisticConcurrencyUnexpectedVersionError,
+  ProjectionMetadata,
+  ProjectionResult,
   ProviderLibrary,
   ReadModelAction,
-  OptimisticConcurrencyUnexpectedVersionError,
-  ProjectionResult,
   ReadModelInterface,
-  ProjectionMetadata,
-  EntitySnapshotEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { BoosterAuthorizer } from '../../src/booster-authorizer'
@@ -275,6 +275,7 @@ describe('ReadModelStore', () => {
             version: 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntity',
           },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, null)
@@ -282,7 +283,12 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'another',
           count: 123,
-          boosterMetadata: { version: 1, schemaVersion: 1, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+          boosterMetadata: {
+            version: 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntity',
+          },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
         expect(config.provider.readModels.store).to.have.been.calledWith(
@@ -292,7 +298,12 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'some',
             count: 123,
-            boosterMetadata: { version: 1, schemaVersion: 1, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+            boosterMetadata: {
+              version: 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectedEntity: 'AnImportantEntity',
+            },
           },
           0
         )
@@ -303,7 +314,12 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'another',
             count: 123,
-            boosterMetadata: { version: 1, schemaVersion: 1, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+            boosterMetadata: {
+              version: 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectedEntity: 'AnImportantEntity',
+            },
           },
           0
         )
@@ -334,14 +350,22 @@ describe('ReadModelStore', () => {
                 id: id,
                 kind: 'some',
                 count: 77,
-                boosterMetadata: { version: someReadModelStoredVersion, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+                boosterMetadata: {
+                  version: someReadModelStoredVersion,
+                  lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                  lastProjectedEntity: 'AnImportantEntity',
+                },
               }
             } else {
               return {
                 id: id,
                 kind: 'another',
                 count: 177,
-                boosterMetadata: { version: anotherReadModelStoredVersion, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+                boosterMetadata: {
+                  version: anotherReadModelStoredVersion,
+                  lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                  lastProjectedEntity: 'AnImportantEntity',
+                },
               }
             }
           })
@@ -360,7 +384,11 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 77,
-          boosterMetadata: { version: someReadModelStoredVersion, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+          boosterMetadata: {
+            version: someReadModelStoredVersion,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntity',
+          },
         })
         expect(SomeReadModel.someObserver).to.have.returned({
           id: 'joinColumnID',
@@ -370,13 +398,18 @@ describe('ReadModelStore', () => {
             version: someReadModelStoredVersion + 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntity',
           },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, {
           id: 'joinColumnID',
           kind: 'another',
           count: 177,
-          boosterMetadata: { version: anotherReadModelStoredVersion, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+          boosterMetadata: {
+            version: anotherReadModelStoredVersion,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntity',
+          },
         })
         expect(AnotherReadModel.anotherObserver).to.have.returned({
           id: 'joinColumnID',
@@ -386,6 +419,7 @@ describe('ReadModelStore', () => {
             version: anotherReadModelStoredVersion + 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntity',
           },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
@@ -400,6 +434,7 @@ describe('ReadModelStore', () => {
               version: someReadModelStoredVersion + 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectedEntity: 'AnImportantEntity',
             },
           },
           someReadModelStoredVersion
@@ -415,6 +450,7 @@ describe('ReadModelStore', () => {
               version: anotherReadModelStoredVersion + 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectedEntity: 'AnImportantEntity',
             },
           },
           anotherReadModelStoredVersion
@@ -477,7 +513,12 @@ describe('ReadModelStore', () => {
               id: 'joinColumnID',
               kind: 'some',
               count: 123,
-              boosterMetadata: { version: 1, schemaVersion: 1, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+              boosterMetadata: {
+                version: 1,
+                schemaVersion: 1,
+                lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                lastProjectedEntity: 'AnImportantEntity',
+              },
             },
             0,
           ])
@@ -511,7 +552,11 @@ describe('ReadModelStore', () => {
                   id: id,
                   kind: 'some',
                   count: 77,
-                  boosterMetadata: { version: someReadModelStoredVersion, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+                  boosterMetadata: {
+                    version: someReadModelStoredVersion,
+                    lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                    lastProjectedEntity: 'AnImportantEntityWithArray',
+                  },
                 }
               }
             }
@@ -532,7 +577,11 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 77,
-          boosterMetadata: { version: someReadModelStoredVersion, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+          boosterMetadata: {
+            version: someReadModelStoredVersion,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntityWithArray',
+          },
         })
         expect(SomeReadModel.someObserverArray).to.have.returned({
           id: 'joinColumnID',
@@ -542,6 +591,7 @@ describe('ReadModelStore', () => {
             version: someReadModelStoredVersion + 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntityWithArray',
           },
         })
         expect(SomeReadModel.someObserverArray).to.have.been.calledWithMatch(
@@ -553,7 +603,12 @@ describe('ReadModelStore', () => {
           id: 'anotherJoinColumnID',
           kind: 'some',
           count: 123,
-          boosterMetadata: { version: 1, schemaVersion: 1, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+          boosterMetadata: {
+            version: 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectedEntity: 'AnImportantEntityWithArray',
+          },
         })
 
         expect(config.provider.readModels.store).to.have.been.calledTwice
@@ -568,6 +623,7 @@ describe('ReadModelStore', () => {
               version: someReadModelStoredVersion + 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectedEntity: 'AnImportantEntityWithArray',
             },
           },
           someReadModelStoredVersion
@@ -579,7 +635,12 @@ describe('ReadModelStore', () => {
             id: 'anotherJoinColumnID',
             kind: 'some',
             count: 123,
-            boosterMetadata: { version: 1, schemaVersion: 1, lastUpdateAt: '1970-01-01T00:00:00.000Z' },
+            boosterMetadata: {
+              version: 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectedEntity: 'AnImportantEntityWithArray',
+            },
           },
           0
         )
