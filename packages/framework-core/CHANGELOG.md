@@ -1,6 +1,18 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 27 Feb 2023 23:02:14 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Apr 2023 21:05:26 GMT and should not be manually modified.
+
+## 1.7.1
+Wed, 19 Apr 2023 21:05:26 GMT
+
+### Patches
+
+- Add rush update to wf publish npm
+- Support UUID contains and beginsWith filters
+
+### Updates
+
+- Added tests for partition key generation functions and removed the unused `partitionKeyForIndexByEntity` function from the Azure provider
 
 ## 1.7.0
 Mon, 27 Feb 2023 23:02:14 GMT
