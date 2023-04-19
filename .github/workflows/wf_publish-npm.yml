@@ -49,6 +49,11 @@ jobs:
           node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
+      - name: Rush Update
+        uses: ./.github/actions/call-rush
+        with:
+          command: update
+
       - name: Rush Install
         uses: ./.github/actions/call-rush
         with:
