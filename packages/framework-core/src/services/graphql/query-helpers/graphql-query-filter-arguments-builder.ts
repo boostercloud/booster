@@ -152,7 +152,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         contains: { type: GraphQLString },
         isDefined: { type: GraphQLBoolean },
       }
-    // use `name`, `typeGroup` === 'Interface'
+    // use `name`, `typeGroup` === 'Interface'.
     if (name === 'Date')
       return {
         eq: { type: DateScalar },
