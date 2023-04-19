@@ -298,7 +298,19 @@ When you submit a PR to the Booster repository:
 - _Unit tests_ will be automatically run. PRs with non-passing tests can't be merged.
 - If tests pass, your code will be reviewed by at least two people from the core team. Clarifications or improvements might be asked, and they reserve the right to close any PR that do not meet the project quality standards, goals or philosophy, so it's always a good idea to discuss your plans in an issue or the Spectrum channel before committing to significant changes.
 - Code must be mergeable and all conflicts solved before merging it.
-- Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to **Lock conversation** in the pull request. The _integration tests_ will run and a new check will appear with an "In progress" status. After some time, if everything went well, the status check will become green and your PR is now ready to merge.
+- Once the review process is done, unit tests pass and conflicts are fixed, you still need to make the _Integration tests check_ to pass. In order to do that, you need to comment `/integration sha=1234ab` (where `1234ab` is the latest commit's SHA) in the pull request. The _integration tests_ will run. If everything went well, the bot will comment with a success, and your PR can be merged now.
+
+Once the PR is merged, the CICD process will publish the latest changes to NPM. When this finishes, as a maintainer, make sure to create a new GitHub release in the [releases page](https://github.com/boostercloud/booster/releases):
+
+![Screenshot 2023-04-19 at 12 23 01](https://user-images.githubusercontent.com/7448243/233060277-d3cdcdbb-29ee-4fab-95d8-0e122bac9ab6.png)
+
+In the release creation screen select the "Choose a tag" dropdown, and type a tag in the format `vA.B.C` (e.g `v1.8.0`) with a version that matches the project version that has been published (you can find this info in the `package.json` file under any folder in the `packages` directory) and click on "Create new tag"
+
+![Screenshot 2023-04-19 at 12 24 28](https://user-images.githubusercontent.com/7448243/233060995-9475fa93-110f-44f5-8077-63ec90aea011.png)
+
+Then name the release in the same way as your newly created tag, and click on "Generate release notes".
+
+Publish the release (not as draft!) and you're good to go.
 
 ### Branch naming conventions
 
