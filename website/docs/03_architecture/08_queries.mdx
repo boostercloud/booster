@@ -1,0 +1,121 @@
+#  Queries
+
+ReadModels offer read operations over reduced events. On the other hand, Queries provide a way to do custom read operations.
+
+Queries are classes decorated with the `@Query` decorator that have a `handle` method.
+
+```typescript
+import { Booster, Query } from '@boostercloud/framework-core'
+import { CartReadModel } from '../read-models/cart-read-model'
+
+@Query({
+  authorize: 'all',
+})
+export class CartsByCountry {
+  public constructor() {}
+
+  public static async handle(query: CartsByCountry): Promise<Record<string, Array<CartReadModel>>> {
+    const carts: Array<CartReadModel> = (await Booster.readModel(CartReadModel)
+      .filter({
+        shippingAddress: {
+          country: {
+            isDefined: true,
+          },
+        },
+      })
+      .paginatedVersion(false)
+      .search()) as Array<CartReadModel>
+
+    return carts.reduce((group: Record<string, Array<CartReadModel>>, cartReadModel: CartReadModel) => {
+      const country = cartReadModel.shippingAddress?.country || ''
+      group[country] = group[country] ?? []
+      group[country].push(cartReadModel)
+      return group
+    }, {})
+  }
+}
+```
+
+##  Queries naming convention
+
+We recommend use the `Query` suffix in your queries name.
+
+Despite you can place your queries in any directory, we strongly recommend you to put them in `<project-root>/src/queries`.
+
+```text
+<project-root>
+├── src
+│   ├── commands
+│   ├── common
+│   ├── config
+│   ├── entities
+│   ├── read-models
+│   ├── events
+│   ├── queries      <------ put them here
+│   └── index.ts
+```
+
+##  Creating a query
+
+The preferred way to create a query is by using the generator, e.g.
+
+```shell
+boost new:query ItemsInCountry --fields country:string
+```
+
+The generator will create a Typescript class under the queries directory `<project-root>/src/queries/items-in-country.ts`.
+
+Queries classes can also be created by hand and there are no restrictions. The structure of the data is totally open and can be as complex as you can manage in your projection functions.
+
+## The query handler function
+
+Each query class must have a method called `handle`. This function is the command handler, and it will be called by the framework every time one instance of this query is submitted. Inside the handler you can run validations, return errors and query entities to make decisions.
+
+### Validating data
+
+Booster uses the typed nature of GraphQL to ensure that types are correct before reaching the handler, so you don't have to validate types.
+
+####  Throw an error
+
+There are still business rules to be checked before proceeding with a query. For example, a given number must be between a threshold or a string must match a regular expression. In that case, it is enough just to throw an error in the handler. Booster will use the error's message as the response to make it descriptive.
+
+###  Registering events
+
+Within the query handler execution, it is not possible to register domain events. If you need to register events, then use a Command. For more details about events and the register parameter, see the [`Events`](chapters/03_booster-architecture#_2-events) section.
+
+##  Authorizing queries
+
+You can define who is authorized to access your queries. The Booster authorization feature is covered in [the auth section](chapters/04_features#authentication-and-authorization). So far, we have seen that you can make a query publicly accessible by authorizing `'all'` to query it, or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
+
+##  Querying
+
+For every query, Booster automatically creates the corresponding GraphQL query. For example, given this `CartTotalQuantityQuery`:
+
+```typescript
+@Query({
+  authorize: 'all',
+})
+export class CartTotalQuantityQuery {
+  public constructor(readonly cartId: UUID) {}
+
+  public static async handle(query: CartTotalQuantity): Promise<number> {
+    const cart = await Booster.entity(Cart, query.cartId)
+    if (!cart || !cart.cartItems || cart.cartItems.length === 0) {
+      return 0
+    }
+    return cart?.cartItems
+      .map((cartItem) => cartItem.quantity)
+      .reduce((accumulator, value) => {
+        return accumulator + value
+      }, 0)
+  }
+}
+```
+
+You will get the following GraphQL query and subscriptions:
+
+```graphQL
+query CartTotalQuantityQuery($cartId: ID!): Float!
+```
+
+> [!NOTE] Query subscriptions are not supported yet
