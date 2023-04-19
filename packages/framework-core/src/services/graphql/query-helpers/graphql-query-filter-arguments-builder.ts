@@ -148,6 +148,8 @@ export class GraphqlQueryFilterArgumentsBuilder {
         eq: { type: GraphQLID },
         ne: { type: GraphQLID },
         in: { type: GraphQLList(GraphQLID) },
+        beginsWith: { type: GraphQLString },
+        contains: { type: GraphQLString },
         isDefined: { type: GraphQLBoolean },
       }
     // use `name`, `typeGroup` === 'Interface'

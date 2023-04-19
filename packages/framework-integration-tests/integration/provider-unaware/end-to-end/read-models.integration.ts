@@ -795,6 +795,54 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].payment.id).to.be.eq(mockPaymentId)
       })
 
+      it('should retrieve ´a list of carts when filter by contains with UUID fields', async () => {
+        const partialMockCartId = mockCartId.slice(1, -1)
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              id: {
+                contains: partialMockCartId,
+              },
+            },
+          ],
+        }
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].id === mockCartId
+          }
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+      })
+
       it('should retrieve a list of carts when filter by null', async () => {
         const mockPaymentId: string = random.uuid()
         await client.mutate({
