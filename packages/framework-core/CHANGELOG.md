@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 19 Apr 2023 21:05:26 GMT and should not be manually modified.
+This log was last generated on Thu, 20 Apr 2023 17:20:40 GMT and should not be manually modified.
+
+## 1.8.0
+Thu, 20 Apr 2023 17:20:40 GMT
+
+### Minor changes
+
+- add query annotation
 
 ## 1.7.1
 Wed, 19 Apr 2023 21:05:26 GMT
