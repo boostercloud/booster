@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Booster } from '../booster'
 import {
-  CommandInterface,
-  CommandFilterHooks,
-  CommandRoleAccess,
-  Register,
   Class,
   CommandAuthorizer,
+  CommandFilterHooks,
+  CommandInterface,
+  CommandRoleAccess,
+  Register,
 } from '@boostercloud/framework-types'
 import { getClassMetadata } from './metadata'
 import { BoosterAuthorizer } from '../booster-authorizer'
@@ -26,19 +26,10 @@ export function Command(
         If you think that this is an error, try performing a clean build.`)
       }
 
-      let authorizer: CommandAuthorizer = BoosterAuthorizer.denyAccess
-      if (attributes.authorize === 'all') {
-        authorizer = BoosterAuthorizer.allowAccess
-      } else if (Array.isArray(attributes.authorize)) {
-        authorizer = BoosterAuthorizer.authorizeRoles.bind(null, attributes.authorize)
-      } else if (typeof attributes.authorize === 'function') {
-        authorizer = attributes.authorize
-      }
-
       const metadata = getClassMetadata(commandClass)
       config.commandHandlers[commandClass.name] = {
         class: commandClass,
-        authorizer,
+        authorizer: BoosterAuthorizer.build(attributes) as CommandAuthorizer,
         before: attributes.before ?? [],
         properties: metadata.fields,
         methods: metadata.methods,

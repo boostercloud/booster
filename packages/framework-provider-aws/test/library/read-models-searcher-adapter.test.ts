@@ -197,7 +197,6 @@ describe('Read models searcher adapter', () => {
           '#sku': 'sku',
           '#price': 'price',
         },
-        ExpressionAttributeValues: {},
       }
       const filters: FilterFor<Product> = {
         and: [

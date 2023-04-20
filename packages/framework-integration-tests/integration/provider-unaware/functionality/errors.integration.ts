@@ -10,6 +10,8 @@ import {
   commandHandlerErrorCartId,
   commandHandlerErrorCartMessage,
   commandHandlerErrorIgnoredCartId,
+  queryHandlerErrorCartId,
+  queryHandlerErrorCartMessage,
 } from '../../../src/constants'
 
 describe('Global error handler', async () => {
@@ -69,6 +71,24 @@ describe('Global error handler', async () => {
           mutation: gql`
             mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
               ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+      ).to.be.eventually.rejectedWith(expectedErrorMessage)
+    })
+  })
+
+  context('QueryHandler', async () => {
+    it('should update error object when handler fails', async () => {
+      const expectedErrorMessage = `GraphQL error: ${queryHandlerErrorCartMessage}-onQueryHandlerError-onError`
+      await expect(
+        client.mutate({
+          variables: {
+            cartId: queryHandlerErrorCartId,
+          },
+          mutation: gql`
+            query CartTotalQuantity($cartId: ID!) {
+              CartTotalQuantity(input: { cartId: $cartId })
             }
           `,
         })

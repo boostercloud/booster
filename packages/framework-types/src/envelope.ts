@@ -22,11 +22,16 @@ export interface Envelope {
   context?: ContextEnvelope
 }
 
-export interface CommandEnvelope extends Envelope {
+export interface TypedEnvelope extends Envelope {
   typeName: string
   version: number
+}
+
+export interface CommandEnvelope extends TypedEnvelope {
   value: CommandInput
 }
+
+export type QueryEnvelope = CommandEnvelope
 
 export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
@@ -34,9 +39,7 @@ export interface ScheduledCommandEnvelope extends Envelope {
 
 export type SuperKindType = 'domain' | 'notification' | 'booster'
 
-export interface EventStoreEntryEnvelope extends Envelope {
-  typeName: string
-  version: number
+export interface EventStoreEntryEnvelope extends TypedEnvelope {
   superKind: SuperKindType
   entityID: UUID
   entityTypeName: string

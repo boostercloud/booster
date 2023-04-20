@@ -9,6 +9,7 @@ Booster is the fastest way to create an application in the cloud. It is a new ki
 Booster follows an Event-Driven and a Domain-Driven Design approach in which you define your application in terms that are understandable by anyone in your company. From a bird’s eye view, your project is organized into:
 
 - **Commands**: Define what a user can request from the system (i.e: Add an item to the cart)
+- **Queries**: Define what a user can get from the system (i.e: Get cart items)
 - **Events**: Simple records of facts (i.e: User X added item Y to the cart Z)
 - **Entities**: Data about the things that the people in your company talk about (i.e: Orders, Customers, etc.)
 - **Handlers**: Code that processes commands, reacts to events to trigger other actions, or update the entities after new events happen.

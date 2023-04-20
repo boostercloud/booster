@@ -1,5 +1,6 @@
 export * from './authorizers'
 export * from './command'
+export * from './query'
 export * from './data-migration'
 export * from './entity'
 export * from './event'

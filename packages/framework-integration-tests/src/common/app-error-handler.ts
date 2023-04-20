@@ -1,12 +1,19 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { GlobalErrorHandler } from '@boostercloud/framework-core'
-import { CommandEnvelope, EntityInterface, EventInterface, ReadModelInterface } from '@boostercloud/framework-types'
+import {
+  CommandEnvelope,
+  EntityInterface,
+  EventInterface,
+  QueryEnvelope,
+  ReadModelInterface,
+} from '@boostercloud/framework-types'
 import {
   commandHandlerBeforeErrorCartId,
   commandHandlerErrorCartId,
   commandHandlerErrorIgnoredCartId,
   dispatchEventErrorCartId,
   projectionErrorCartId,
+  queryHandlerErrorCartId,
   reducerErrorCartId,
 } from '../constants'
 
@@ -21,6 +28,13 @@ export class AppErrorHandler {
     }
     if (command.value.cartId === commandHandlerBeforeErrorCartId) {
       return new Error(error.message + '-onBeforeCommandHandlerError')
+    }
+    return error
+  }
+
+  public static async onQueryHandlerError(error: Error, query: QueryEnvelope): Promise<Error | undefined> {
+    if (query.value.cartId === queryHandlerErrorCartId) {
+      return new Error(error.message + '-onQueryHandlerError')
     }
     return error
   }
