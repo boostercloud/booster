@@ -101,7 +101,14 @@ export class BoosterEventDispatcher {
             await eventHandler.handle(eventInstance, register)
           } catch (e) {
             const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
-            const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
+            const error = await globalErrorDispatcher.dispatch(
+              new EventHandlerGlobalError(
+                eventEnvelope,
+                eventInstance,
+                Reflect.getMetadata('booster:typeinfo', eventHandler),
+                e
+              )
+            )
             if (error) throw error
           }
           return RegisterHandler.handle(config, register)

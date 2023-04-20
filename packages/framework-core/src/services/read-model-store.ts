@@ -52,6 +52,7 @@ export class ReadModelStore {
           return retryIfError(
             () =>
               this.applyProjectionToReadModel(
+                entitySnapshotEnvelope,
                 entityInstance,
                 projectionMetadata,
                 readModelName,
@@ -90,6 +91,7 @@ export class ReadModelStore {
   }
 
   private async applyProjectionToReadModel(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope,
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface>,
     readModelName: string,
@@ -111,7 +113,9 @@ export class ReadModelStore {
         : this.projectionFunction(projectionMetadata)(entity, migratedReadModel || null)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-      const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
+      const error = await globalErrorDispatcher.dispatch(
+        new ProjectionGlobalError(entitySnapshotEnvelope, entity, migratedReadModel, projectionMetadata, e)
+      )
       if (error) throw error
     }
 
