@@ -102,7 +102,7 @@ describe('Queries end-to-end tests', () => {
               }
             `,
           }),
-        (result) => result?.data?.CartsByCountry.length !== 0 && result?.data?.CartsByCountry['spain'].length === 2
+        (result) => result?.data?.CartsByCountry?.length !== 0 && result?.data?.CartsByCountry['spain']?.length === 2
       )
 
       expect(response).not.to.be.null
