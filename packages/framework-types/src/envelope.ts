@@ -151,8 +151,10 @@ export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TR
 
 export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
+export type EventType = 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
+
 export interface GraphQLRequestEnvelope extends Envelope {
-  eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
+  eventType: EventType
   connectionID?: string
   value?: GraphQLOperation | GraphQLClientMessage
   token?: string

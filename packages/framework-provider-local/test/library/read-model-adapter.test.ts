@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
-import { ReadModelRegistry } from '../../src'
+import { GraphQLService, ReadModelRegistry } from '../../src'
 import {
   BoosterConfig,
   FilterFor,
@@ -8,6 +8,7 @@ import {
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
   SortFor,
+  UserApp,
   UUID,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
@@ -37,8 +38,18 @@ async function storeMock(
   mockConfig: BoosterConfig,
   mockReadModel: ReadModelEnvelope
 ): Promise<void> {
+  const mockUserApp: UserApp = {} as any
+  const graphQLService = new GraphQLService(mockUserApp)
+  stub(graphQLService, 'handleNotificationSubscription')
   // @ts-ignore
-  await storeReadModel(mockReadModelRegistry, mockConfig, mockReadModel.typeName, mockReadModel.value, 1)
+  await storeReadModel(
+    graphQLService,
+    mockReadModelRegistry,
+    mockConfig,
+    mockReadModel.typeName,
+    mockReadModel.value,
+    1
+  )
 }
 
 async function searchMock(

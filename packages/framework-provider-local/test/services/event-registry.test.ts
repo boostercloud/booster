@@ -3,13 +3,13 @@ import { EventEnvelope, EntitySnapshotEnvelope } from '@boostercloud/framework-t
 import { expect } from '../expect'
 import * as faker from 'faker'
 import { stub, restore } from 'sinon'
-import { EventRegistry } from '../../src/services'
 import {
   createMockEventEnvelope,
   createMockEventEnvelopeForEntity,
   createMockEntitySnapshotEnvelope,
 } from '../helpers/event-helper'
 import { date, random } from 'faker'
+import { EventRegistry } from '../../src/services'
 
 describe('the event registry', () => {
   let initialEventsCount: number
