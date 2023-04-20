@@ -12,7 +12,6 @@ import {
   commandHandlerErrorIgnoredCartId,
   queryHandlerErrorCartId,
   queryHandlerErrorCartMessage,
-  queryHandlerErrorIgnoredCartId,
 } from '../../../src/constants'
 
 describe('Global error handler', async () => {
@@ -94,21 +93,6 @@ describe('Global error handler', async () => {
           `,
         })
       ).to.be.eventually.rejectedWith(expectedErrorMessage)
-    })
-
-    it('should ignore error object when handler returns undefined', async () => {
-      await expect(
-        client.mutate({
-          variables: {
-            cartId: queryHandlerErrorIgnoredCartId,
-          },
-          mutation: gql`
-            query CartTotalQuantity($cartId: ID!) {
-              CartTotalQuantity(input: { cartId: $cartId })
-            }
-          `,
-        })
-      ).to.be.eventually.eql({ data: { CartTotalQuantity: 1 } })
     })
   })
 

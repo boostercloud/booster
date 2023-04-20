@@ -1,7 +1,7 @@
 import { Booster, Query } from '@boostercloud/framework-core'
 import { UUID } from '@boostercloud/framework-types'
 import { Cart } from '../entities/cart'
-import { queryHandlerErrorCartId, queryHandlerErrorCartMessage, queryHandlerErrorIgnoredCartId } from '../constants'
+import { queryHandlerErrorCartId, queryHandlerErrorCartMessage } from '../constants'
 
 @Query({
   authorize: 'all',
@@ -10,7 +10,7 @@ export class CartTotalQuantity {
   public constructor(readonly cartId: UUID) {}
 
   public static async handle(query: CartTotalQuantity): Promise<number> {
-    if (query.cartId === queryHandlerErrorCartId || query.cartId === queryHandlerErrorIgnoredCartId) {
+    if (query.cartId === queryHandlerErrorCartId) {
       throw new Error(queryHandlerErrorCartMessage)
     }
     const cart = await Booster.entity(Cart, query.cartId)

@@ -8,7 +8,6 @@ export const beforeHookQuantity = 21
 export const commandHandlerErrorCartId = 'commandHandlerErrorCartId'
 export const commandHandlerErrorIgnoredCartId = 'commandHandlerErrorIgnoredCartId'
 export const commandHandlerErrorCartMessage = 'commandHandlerErrorCartMessage'
-export const queryHandlerErrorIgnoredCartId = 'queryHandlerErrorIgnoredCartId'
 export const queryHandlerErrorCartMessage = 'queryHandlerErrorCartMessage'
 export const commandHandlerBeforeErrorCartId = 'commandHandlerBeforeErrorCartId'
 export const queryHandlerErrorCartId = 'queryHandlerErrorCartId'
