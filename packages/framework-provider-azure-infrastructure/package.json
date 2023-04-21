@@ -26,7 +26,7 @@
     "@boostercloud/framework-core": "workspace:^1.9.0",
     "@boostercloud/framework-provider-azure": "workspace:^1.9.0",
     "@boostercloud/framework-types": "workspace:^1.9.0",
-    "@cdktf/provider-azurerm": "4.0.5",
+    "@cdktf/provider-azurerm": "5.0.13",
     "@cdktf/provider-time": "4.0.0",
     "@types/archiver": "5.1.0",
     "@types/needle": "^2.0.4",
