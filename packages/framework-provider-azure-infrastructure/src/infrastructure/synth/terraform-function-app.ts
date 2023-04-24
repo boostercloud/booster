@@ -47,6 +47,9 @@ export class TerraformFunctionApp {
         },
       },
       functionsExtensionVersion: '~3', // keep it on version 3. Version 4 needs a migration process
+      timeouts: {
+        create: '120m'
+      }
     })
   }
 }

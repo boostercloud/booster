@@ -129,6 +129,6 @@ export class FunctionZip {
   }
 
   private static getZipDeployUrl(functionAppName: string): string {
-    return `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy`
+    return `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy?isAsync=true`
   }
 }

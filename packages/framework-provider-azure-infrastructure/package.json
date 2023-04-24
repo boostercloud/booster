@@ -32,7 +32,7 @@
     "@types/needle": "^2.0.4",
     "archiver": "5.3.0",
     "@azure/arm-resources": "^5.0.1",
-    "cdktf": "^0.14.3",
+    "cdktf": "^0.15.0",
     "cdktf-cli": "^0.14.3",
     "ink": "^3.0.5",
     "react": "^17.0.0",
