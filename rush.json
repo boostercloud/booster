@@ -435,18 +435,6 @@
       "projectFolder": "packages/framework-provider-azure-infrastructure"
     },
     {
-      "packageName": "@boostercloud/framework-provider-kubernetes",
-      "shouldPublish": true,
-      "versionPolicyName": "booster",
-      "projectFolder": "packages/framework-provider-kubernetes"
-    },
-    {
-      "packageName": "@boostercloud/framework-provider-kubernetes-infrastructure",
-      "shouldPublish": true,
-      "versionPolicyName": "booster",
-      "projectFolder": "packages/framework-provider-kubernetes-infrastructure"
-    },
-    {
       "packageName": "@boostercloud/framework-provider-local",
       "shouldPublish": true,
       "versionPolicyName": "booster",
