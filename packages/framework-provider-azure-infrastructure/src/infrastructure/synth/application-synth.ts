@@ -36,7 +36,7 @@ export class ApplicationSynth {
     this.terraformStackResource = terraformStackResource
   }
 
-  public synth(): ApplicationSynthStack {
+  public synth(zipFile: string): ApplicationSynthStack {
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
     const functionAppName = createFunctionResourceGroupName(resourceGroupName)
     const apiManagementName = createApiManagementName(resourceGroupName)
@@ -109,7 +109,8 @@ export class ApplicationSynth {
       cosmosdbDatabaseResource.name,
       apiManagementName,
       cosmosdbDatabaseResource.primaryKey,
-      this.config
+      this.config,
+      zipFile
     )
 
     const apiManagementResource = TerraformApiManagement.build(
@@ -199,6 +200,7 @@ export class ApplicationSynth {
       containers: containersResource,
       webPubSub: webPubSubResource,
       webPubSubHub: webPubSubHubResource,
+      azureProvider: azurermProvider,
     } as ApplicationSynthStack
   }
 }

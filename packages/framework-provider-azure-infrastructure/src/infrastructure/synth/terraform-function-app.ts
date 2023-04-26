@@ -17,7 +17,8 @@ export class TerraformFunctionApp {
     cosmosDatabaseName: string,
     apiManagementServiceName: string,
     cosmosDbConnectionString: string,
-    config: BoosterConfig
+    config: BoosterConfig,
+    zipFile: string
   ): windowsFunctionApp.WindowsFunctionApp {
     const id = toTerraformName(appPrefix, 'func')
     return new windowsFunctionApp.WindowsFunctionApp(terraformStackResource, id, {
@@ -27,7 +28,7 @@ export class TerraformFunctionApp {
       servicePlanId: servicePlanResource.id,
       appSettings: {
         WebPubSubConnectionString: webPubsubResource.primaryConnectionString,
-        WEBSITE_RUN_FROM_PACKAGE: '',
+        WEBSITE_RUN_FROM_PACKAGE: '1',
         WEBSITE_CONTENTSHARE: id,
         ...config.env,
         BOOSTER_ENV: config.environmentName,
@@ -47,9 +48,7 @@ export class TerraformFunctionApp {
         },
       },
       functionsExtensionVersion: '~3', // keep it on version 3. Version 4 needs a migration process
-      timeouts: {
-        create: '120m'
-      }
+      zipDeployFile: zipFile,
     })
   }
 }

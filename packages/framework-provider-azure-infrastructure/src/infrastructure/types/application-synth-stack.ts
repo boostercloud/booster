@@ -15,6 +15,7 @@ import {
 } from '@cdktf/provider-azurerm'
 import { TerraformResource, TerraformStack } from 'cdktf'
 import { FunctionDefinition } from './functionDefinition'
+import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
 
 export interface ApplicationSynthStack {
   appPrefix: string
@@ -35,6 +36,7 @@ export interface ApplicationSynthStack {
   containers: Array<cosmosdbSqlContainer.CosmosdbSqlContainer> | undefined
   webPubSub: webPubsub.WebPubsub | undefined
   webPubSubHub: webPubsubHub.WebPubsubHub | undefined
+  azureProvider: AzurermProvider | undefined
   functionDefinitions?: Array<FunctionDefinition>
   rocketStack?: Array<TerraformResource>
 }

@@ -807,7 +807,7 @@ importers:
       '@boostercloud/framework-provider-azure': workspace:^1.9.0
       '@boostercloud/framework-types': workspace:^1.9.0
       '@cdktf/provider-azurerm': 5.0.13
-      '@cdktf/provider-time': 4.0.0
+      '@cdktf/provider-time': 5.0.0
       '@effect-ts/core': ^0.60.4
       '@types/archiver': 5.1.0
       '@types/chai': 4.2.18
@@ -862,7 +862,7 @@ importers:
       '@boostercloud/framework-provider-azure': link:../framework-provider-azure
       '@boostercloud/framework-types': link:../framework-types
       '@cdktf/provider-azurerm': 5.0.13_tbaj2lfue7rm6xt7stqtoc76mu
-      '@cdktf/provider-time': 4.0.0_tbaj2lfue7rm6xt7stqtoc76mu
+      '@cdktf/provider-time': 5.0.0_tbaj2lfue7rm6xt7stqtoc76mu
       '@effect-ts/core': 0.60.5
       '@types/archiver': 5.1.0
       '@types/needle': 2.5.3
@@ -1674,7 +1674,7 @@ packages:
       '@aws-cdk/aws-logs': 1.193.0_fl7hneqefdk7a7rv75sucgtmwm
       '@aws-cdk/aws-s3': 1.193.0_s6ljqdn2iypvkcrzn7mbvz6gaq
       '@aws-cdk/aws-s3-assets': 1.193.0_fl7hneqefdk7a7rv75sucgtmwm
-      '@aws-cdk/aws-secretsmanager': 1.193.0_htsmq7wgkec2uefwunmqkzkjia
+      '@aws-cdk/aws-secretsmanager': 1.193.0_v64ruj6vqiurhxkiymesywpqdq
       '@aws-cdk/core': 1.193.0_jfsf2uupw3z2wi6nn7gnreoyte
       '@aws-cdk/region-info': 1.193.0
       constructs: 3.4.251
@@ -1896,7 +1896,7 @@ packages:
       '@aws-cdk/aws-route53-targets': 1.193.0_7vgqgy3ctbhuvfr7qo7bzlxkqy
       '@aws-cdk/aws-s3': 1.193.0_s6ljqdn2iypvkcrzn7mbvz6gaq
       '@aws-cdk/aws-s3-assets': 1.193.0_fl7hneqefdk7a7rv75sucgtmwm
-      '@aws-cdk/aws-secretsmanager': 1.193.0_htsmq7wgkec2uefwunmqkzkjia
+      '@aws-cdk/aws-secretsmanager': 1.193.0_v64ruj6vqiurhxkiymesywpqdq
       '@aws-cdk/aws-servicediscovery': 1.193.0_agjehwrl4wnqdjmvscrj7zvbaq
       '@aws-cdk/aws-sns': 1.193.0_s6ljqdn2iypvkcrzn7mbvz6gaq
       '@aws-cdk/aws-sqs': 1.193.0_wv5he25vlfitynxjm2o4t3p5vu
@@ -2142,7 +2142,7 @@ packages:
       '@aws-cdk/aws-lambda': 1.193.0_hjndse4uvjoh2z652h4gibqbfa
       '@aws-cdk/aws-s3': 1.193.0_s6ljqdn2iypvkcrzn7mbvz6gaq
       '@aws-cdk/aws-s3-notifications': 1.193.0_4jktmyq4rjkoyfb44azfit3a4u
-      '@aws-cdk/aws-secretsmanager': 1.193.0_htsmq7wgkec2uefwunmqkzkjia
+      '@aws-cdk/aws-secretsmanager': 1.193.0_v64ruj6vqiurhxkiymesywpqdq
       '@aws-cdk/aws-sns': 1.193.0_s6ljqdn2iypvkcrzn7mbvz6gaq
       '@aws-cdk/aws-sns-subscriptions': 1.193.0_7kzgzmrjzvracynar4gtrolizi
       '@aws-cdk/aws-sqs': 1.193.0_wv5he25vlfitynxjm2o4t3p5vu
@@ -2367,7 +2367,7 @@ packages:
       constructs: 3.4.251
     dev: false
 
-  /@aws-cdk/aws-secretsmanager/1.193.0_htsmq7wgkec2uefwunmqkzkjia:
+  /@aws-cdk/aws-secretsmanager/1.193.0_v64ruj6vqiurhxkiymesywpqdq:
     resolution: {integrity: sha512-7aPnYsEBhcdS9+xkYCVqHOrvV/uIhvlEJi8qo2kZL8tIlyI/IwCEuB9XpCd4arYIOQ1ZTsD7Yx2hqD/9vdacBA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -2377,12 +2377,18 @@ packages:
       '@aws-cdk/cx-api': 1.193.0
       constructs: ^3.3.69
     dependencies:
+      '@aws-cdk/aws-ec2': 1.193.0_aelxr2tctgck6ft5trqziwzmui
       '@aws-cdk/aws-iam': 1.193.0_h5z4mbysj2d57xhjje65guwzkq
+      '@aws-cdk/aws-kms': 1.193.0_wv5he25vlfitynxjm2o4t3p5vu
       '@aws-cdk/aws-lambda': 1.193.0_hjndse4uvjoh2z652h4gibqbfa
       '@aws-cdk/aws-sam': 1.193.0_h5z4mbysj2d57xhjje65guwzkq
       '@aws-cdk/core': 1.193.0_jfsf2uupw3z2wi6nn7gnreoyte
       '@aws-cdk/cx-api': 1.193.0
       constructs: 3.4.251
+    transitivePeerDependencies:
+      - '@aws-cdk/assets'
+      - '@aws-cdk/aws-logs'
+      - '@aws-cdk/aws-s3'
     dev: false
 
   /@aws-cdk/aws-servicediscovery/1.193.0_agjehwrl4wnqdjmvscrj7zvbaq:
@@ -3140,11 +3146,11 @@ packages:
       - encoding
       - supports-color
 
-  /@cdktf/provider-time/4.0.0_tbaj2lfue7rm6xt7stqtoc76mu:
-    resolution: {integrity: sha512-sebsvyH27FZ9Bg7lieykoAly8GJuVTSnQMc8YgO5DIua/8zEeP3Z66NC1x3DUsd2ihD/iqFT0zpOVq4EzlM3BA==}
+  /@cdktf/provider-time/5.0.0_tbaj2lfue7rm6xt7stqtoc76mu:
+    resolution: {integrity: sha512-ZHlaAAyGNT1w7csNwMewEa06cgRbKaxuhsjDF3Y3I7mMwL9lPsnM1AumneJyYbwO1cQrcPasgWuNa65hkS8zHg==}
     engines: {node: '>= 14.17.0'}
     peerDependencies:
-      cdktf: ^0.14.0
+      cdktf: ^0.15.0
       constructs: ^10.0.0
     dependencies:
       cdktf: 0.15.5_constructs@10.1.256
@@ -5013,7 +5019,10 @@ packages:
     peerDependencies:
       constructs: ^10.0.25
     dependencies:
+      archiver: 5.3.1
       constructs: 10.1.256
+      json-stable-stringify: 1.0.2
+      semver: 7.3.8
     bundledDependencies:
       - archiver
       - json-stable-stringify

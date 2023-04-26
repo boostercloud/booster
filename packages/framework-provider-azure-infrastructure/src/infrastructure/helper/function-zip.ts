@@ -41,6 +41,14 @@ export class FunctionZip {
     return { name: 'functions', path: destinationFile, fileName: originFile }
   }
 
+  static async copyBaseZip(config: BoosterConfig): Promise<string> {
+    const zipPath = await FunctionZip.createBaseZipFile(config, 'baseWebPubSubBinding')
+    const originFile = path.basename(zipPath)
+    const destinationFile = path.join(process.cwd(), originFile)
+    fs.copyFileSync(zipPath, destinationFile)
+    return destinationFile
+  }
+
   private static async getCredentials(resourceGroupName: string, functionAppName: string): Promise<User> {
     const credentials = await azureCredentials()
     const webSiteManagementClient = await createWebSiteManagementClient(credentials)
@@ -103,6 +111,7 @@ export class FunctionZip {
         name: functionDefinition.name + '/function.json',
       })
     })
+    this.appendHostConfig(archive)
     await archive.finalize()
 
     return new Promise((resolve, reject) => {
@@ -130,5 +139,67 @@ export class FunctionZip {
 
   private static getZipDeployUrl(functionAppName: string): string {
     return `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy?isAsync=true`
+  }
+
+  private static async createBaseZipFile(config: BoosterConfig, name: string): Promise<string> {
+    const output = fs.createWriteStream(path.join(os.tmpdir(), `${name}.zip`))
+    const archive = archiver('zip', {
+      zlib: { level: 9 }, // Sets the compression level.
+    })
+
+    archive.pipe(output)
+    archive.directory('.deploy-base', false)
+
+    this.appendBaseFunction(config, archive, name)
+    this.appendHostConfig(archive)
+    await archive.finalize()
+    return new Promise((resolve, reject) => {
+      output.on('close', () => {
+        resolve(output.path as string)
+      })
+
+      output.on('end', () => {
+        resolve(output.path as string)
+      })
+
+      archive.on('warning', (err: any) => {
+        if (err.code === 'ENOENT') {
+          resolve(output.path as string)
+        } else {
+          reject(err)
+        }
+      })
+
+      archive.on('error', (err: any) => {
+        reject(err)
+      })
+    })
+  }
+
+  private static appendBaseFunction(config: BoosterConfig, archive: archiver.Archiver, name: string): void {
+    const functionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
+    const content = JSON.stringify(
+      {
+        bindings: [...functionDefinition.config.bindings],
+      },
+      null,
+      2
+    )
+    archive.append(content, {
+      name: name + '/function.json',
+    })
+  }
+
+  private static appendHostConfig(archive: archiver.Archiver): void {
+    const hostConfig = {
+      version: '2.0',
+      extensionBundle: {
+        id: 'Microsoft.Azure.Functions.ExtensionBundle',
+        version: '[3.*, 4.0.0)',
+      },
+    }
+    archive.append(JSON.stringify(hostConfig, null, 2), {
+      name: 'host.json',
+    })
   }
 }

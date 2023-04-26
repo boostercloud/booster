@@ -14,7 +14,7 @@ export class TerraformSleep {
 
     const id = toTerraformName(appPrefix, 'sl')
     return new sleep.Sleep(terraformStackResource, id, {
-      createDuration: '3m',
+      createDuration: '1m',
       dependsOn: dependsOn,
       provider: timeProvider,
     })
