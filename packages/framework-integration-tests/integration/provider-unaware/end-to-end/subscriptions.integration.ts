@@ -1,4 +1,4 @@
-import { random } from 'faker'
+import { internet, random } from 'faker'
 import gql from 'graphql-tag'
 import { expect } from '../../helper/expect'
 import { Observable } from 'apollo-client/util/Observable'
@@ -7,17 +7,8 @@ import { FilterFor } from '@boostercloud/framework-types'
 import { DisconnectableApolloClient } from '@boostercloud/application-tester'
 import { applicationUnderTest } from './setup'
 import { beforeHookProductId } from '../../../src/constants'
-import * as path from 'path'
 
 describe('subscriptions', () => {
-  //TODO: Azure provider doesn't support subscription Interface so these tests are skipped for Azure
-  if (process.env.TESTED_PROVIDER === 'AZURE') {
-    console.log('****************** Warning **********************')
-    console.log(`${path.join(process.cwd(), 'subscriptions.integration.ts')} ignored`)
-    console.log('Azure provider does not implement the subscription Interface')
-    console.log('*************************************************')
-    return
-  }
   let countSubscriptions: () => Promise<number>
   let countConnections: () => Promise<number>
   before(async () => {
@@ -28,7 +19,6 @@ describe('subscriptions', () => {
   describe('the "unsubscribe" operation', () => {
     let client: DisconnectableApolloClient
     before(async () => {
-      // TODO: make tests cloud agnostic
       client = await applicationUnderTest.graphql.clientWithSubscriptions()
     })
     after(() => {
@@ -42,7 +32,7 @@ describe('subscriptions', () => {
       cartSubscription(client, random.uuid()).subscribe(() => {})
       const subscriptionObservable = cartSubscription(client, random.uuid()).subscribe(() => {})
 
-      // Wait for for the subscriptions to arrive
+      // Wait for the subscriptions to arrive
       await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 2)
 
       // Stop one of the subscription
@@ -67,7 +57,7 @@ describe('subscriptions', () => {
         cartSubscription(clientB, random.uuid()).subscribe(() => {})
         cartSubscription(clientB, random.uuid()).subscribe(() => {})
 
-        // Wait for for the subscriptions to arrive
+        // Wait for the subscriptions to arrive
         await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 3)
 
         // Now we close the socket of client B and check its 2 subscriptions were deleted
@@ -114,7 +104,7 @@ describe('subscriptions', () => {
       // Call the subscribe function to send the subscription to server
       observableOne.subscribe(() => {})
       observableTwo.subscribe(() => {})
-      // Wait for for the subscriptions to arrive
+      // Wait for the subscriptions to arrive
       await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 2)
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID)
@@ -148,7 +138,7 @@ describe('subscriptions', () => {
       const observable = cartFilteredSubscription(client, { id: { eq: cartID } })
       // Call the subscribe function to send the subscription to server
       observable.subscribe(() => {})
-      // Wait for for the subscriptions to arrive
+      // Wait for the subscriptions to arrive
       await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 1)
       // Check we receive data when the read model is modified
       await cartMutation(client, cartID)
@@ -242,6 +232,67 @@ describe('subscriptions', () => {
       expect(isWellFiltered).to.be.true
     })
   })
+
+  describe('readmodel authorization', () => {
+    context('with an anonymous user', () => {
+      let client: DisconnectableApolloClient
+
+      beforeEach(async () => {
+        client = await applicationUnderTest.graphql.clientWithSubscriptions()
+      })
+
+      afterEach(() => {
+        client.disconnect()
+      })
+
+      context('with a read model authorized for matching roles', () => {
+        it('should not be accessible', async () => {
+          const productId = random.uuid()
+
+          const observable = productSubscription(client, productId)
+          let error: undefined | { message: string }
+          observable.subscribe(
+            () => {},
+            (err: any) => {
+              error = err
+            }
+          )
+          await waitForIt(
+            () => Promise.resolve(error),
+            (error) => error !== undefined && error.message === 'GraphQL error: Access denied for this resource'
+          )
+        })
+      })
+    })
+
+    context('with a user with a role', () => {
+      let loggedClient: DisconnectableApolloClient
+
+      beforeEach(async () => {
+        const userToken = applicationUnderTest.token.forUser(internet.email(), 'UserWithEmail')
+        loggedClient = await applicationUnderTest.graphql.clientWithSubscriptions(userToken)
+      })
+
+      afterEach(() => {
+        loggedClient.disconnect()
+      })
+
+      context('with a read model authorized for matching roles', () => {
+        it('should be accessible', async () => {
+          const productId = random.uuid()
+
+          const originalSubscriptionsCount = await countSubscriptions()
+          const observable = productSubscription(loggedClient, productId)
+          observable.subscribe(() => {})
+          await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 1)
+          await productMutation(loggedClient, productId)
+          const result = await promisifyNextSubscriptionResult(observable)
+          const productReadModel = result.data.ProductReadModel
+          expect(productReadModel.id).to.equal(productId)
+        })
+      })
+    })
+  })
 })
 
 function cartSubscription(client: DisconnectableApolloClient, cartID: string): Observable<any> {
@@ -254,6 +305,23 @@ function cartSubscription(client: DisconnectableApolloClient, cartID: string): O
           cartItems {
             productId
             quantity
+          }
+        }
+      }
+    `,
+  })
+}
+
+function productSubscription(client: DisconnectableApolloClient, productId: string): Observable<any> {
+  return client.subscribe({
+    variables: { productId: productId },
+    query: gql`
+      subscription ProductReadModel($productId: ID!) {
+        ProductReadModel(id: $productId) {
+          id
+          price {
+            cents
+            currency
           }
         }
       }
@@ -319,6 +387,30 @@ async function cartMutation(
     mutation: gql`
       mutation ChangeCartItem($cartId: ID!, $productId: ID!) {
         ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: 2 })
+      }
+    `,
+  })
+}
+
+async function productMutation(client: DisconnectableApolloClient, productId: string): Promise<void> {
+  const sku = random.uuid()
+  await client.mutate({
+    variables: {
+      sku: sku,
+      productID: productId,
+    },
+    mutation: gql`
+      mutation CreateProduct($sku: String!, $productID: ID) {
+        CreateProduct(
+          input: {
+            sku: $sku
+            productID: $productID
+            priceInCents: 1.0
+            displayName: "product"
+            description: "product"
+            currency: "ANY"
+          }
+        )
       }
     `,
   })

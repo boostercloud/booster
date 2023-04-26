@@ -11,10 +11,27 @@ import {
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
-import { deleteReadModel, fetchReadModel, storeReadModel } from './library/read-model-adapter'
+import {
+  deleteReadModel,
+  fetchReadModel,
+  rawReadModelEventsToEnvelopes,
+  storeReadModel,
+} from './library/read-model-adapter'
 import { searchReadModel } from './library/searcher-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
-import { searchEvents, searchEntitiesIds } from './library/events-searcher-adapter'
+import { searchEntitiesIds, searchEvents } from './library/events-searcher-adapter'
+import {
+  deleteAllSubscriptions,
+  deleteSubscription,
+  fetchSubscriptions,
+  subscribeToReadModel,
+} from './library/subscription-adapter'
+import {
+  deleteConnectionData,
+  fetchConnectionData,
+  sendMessageToConnection,
+  storeConnectionData,
+} from './library/connections-adapter'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 
 let cosmosClient: CosmosClient
@@ -47,13 +64,13 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   readModels: {
     fetch: fetchReadModel.bind(null, cosmosClient),
     search: searchReadModel.bind(null, cosmosClient),
-    subscribe: undefined as any,
-    rawToEnvelopes: undefined as any,
-    fetchSubscriptions: undefined as any,
+    rawToEnvelopes: rawReadModelEventsToEnvelopes,
     store: storeReadModel.bind(null, cosmosClient),
     delete: deleteReadModel.bind(null, cosmosClient),
-    deleteSubscription: undefined as any,
-    deleteAllSubscriptions: undefined as any,
+    subscribe: subscribeToReadModel.bind(null, cosmosClient),
+    fetchSubscriptions: fetchSubscriptions.bind(null, cosmosClient),
+    deleteSubscription: deleteSubscription.bind(null, cosmosClient),
+    deleteAllSubscriptions: deleteAllSubscriptions.bind(null, cosmosClient),
   },
   // ProviderGraphQLLibrary
   graphQL: {
@@ -66,10 +83,10 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     requestFailed,
   },
   connections: {
-    storeData: notImplemented as any,
-    fetchData: notImplemented as any,
-    deleteData: notImplemented as any,
-    sendMessage: notImplemented as any,
+    storeData: storeConnectionData.bind(null, cosmosClient),
+    fetchData: fetchConnectionData.bind(null, cosmosClient),
+    deleteData: deleteConnectionData.bind(null, cosmosClient),
+    sendMessage: sendMessageToConnection,
   },
   // ScheduledCommandsLibrary
   scheduled: {
@@ -96,7 +113,5 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     return infrastructure.Infrastructure(rockets)
   },
 })
-
-function notImplemented(): void {}
 
 export * from './constants'

@@ -59,7 +59,7 @@ The following list is not exhaustive and the information may be deprecated. If y
 
 ## Public key based authentication
 
-The `JwksUriTokenVerifier` class uses the public key of the issuer to verify the token signature. This means that the issuer must provide a JWKS URI that can be used to verify the token signature. This is the most common way to verify tokens, but it's not the only one. If you want to use a different method, you can implement your own `TokenVerifier` class.
+The `PublicKeyTokenVerifier` class uses the public key of the issuer to verify the token signature. This means that the issuer must provide a JWKS URI that can be used to verify the token signature. This is the most common way to verify tokens, but it's not the only one. If you want to use a different method, you can implement your own `TokenVerifier` class.
 
 This is useful when the token issuer doesn't provide a JWKS URI, when you're implementing your own authentication mechanism or you're issuing self-signed tokens.
 

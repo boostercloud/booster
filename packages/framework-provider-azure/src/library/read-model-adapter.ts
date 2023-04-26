@@ -2,12 +2,14 @@ import { CosmosClient, ItemDefinition, RequestOptions } from '@azure/cosmos'
 import {
   BoosterConfig,
   OptimisticConcurrencyUnexpectedVersionError,
+  ReadModelEnvelope,
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
   UUID,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { AZURE_CONFLICT_ERROR_CODE, AZURE_PRECONDITION_FAILED_ERROR } from '../constants'
+import { RawEvent, SubscriptionContext } from './subscription-model'
 
 export async function fetchReadModel(
   db: CosmosClient,
@@ -126,4 +128,31 @@ export async function deleteReadModel(
     .item(readModel.id as string, readModel.id)
     .delete()
   logger.debug(`[ReadModelAdapter#deleteReadModel] Read model deleted. ID = ${readModel.id}`)
+}
+
+export async function rawReadModelEventsToEnvelopes(
+  config: BoosterConfig,
+  rawEvents: unknown
+): Promise<Array<ReadModelEnvelope>> {
+  const logger = getLogger(config, 'read-model-adapter#rawReadModelEventsToEnvelopes')
+  logger.debug(`Parsing raw read models ${JSON.stringify(rawEvents)}`)
+  if (isSubscriptionContext(rawEvents)) {
+    const typeName = rawEvents.executionContext.functionName.replace('-subscriptions-notifier', '')
+    return rawEvents.bindings.rawEvent.map((rawEvent: RawEvent) => {
+      const { _rid, _self, _st, _etag, _lsn, _ts, ...rest } = rawEvent
+      return {
+        typeName: typeName,
+        value: rest as ReadModelInterface,
+      }
+    })
+  }
+  logger.warn(`Unexpected events to be parsed ${JSON.stringify(rawEvents)}`)
+  return []
+}
+
+function isSubscriptionContext(rawRequest: unknown): rawRequest is SubscriptionContext {
+  return (
+    (rawRequest as SubscriptionContext).bindings !== undefined &&
+    (rawRequest as SubscriptionContext).bindings.rawEvent !== undefined
+  )
 }

@@ -6,12 +6,13 @@ import {
   InvalidProtocolError,
   GraphQLOperation,
   GraphQLRequestEnvelopeError,
+  graphQLWebsocketSubprotocolHeaders,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
-import { GraphQLResolverContext, graphQLWebsocketSubprotocolHeaders } from './services/graphql/common'
+import { GraphQLResolverContext } from './services/graphql/common'
 import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { BoosterTokenVerifier } from './booster-token-verifier'

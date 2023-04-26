@@ -23,7 +23,8 @@ export class ApplicationBuilder {
     await this.generateSynthFiles()
 
     const app = new App()
-    const azureStack = await this.synthApplication(app)
+    const destinationFile = await FunctionZip.copyBaseZip(this.config)
+    const azureStack = await this.synthApplication(app, destinationFile)
     const rocketBuilder = new RocketBuilder(this.config, azureStack.applicationStack, this.rockets)
     await rocketBuilder.synthRocket()
     app.synth()
@@ -49,10 +50,10 @@ export class ApplicationBuilder {
     logger.info('Zip file uploaded')
   }
 
-  private async synthApplication(app: App): Promise<AzureStack> {
+  private async synthApplication(app: App, destinationFile: string): Promise<AzureStack> {
     const logger = getLogger(this.config, 'ApplicationBuilder#synthApplication')
     logger.info('Synth...')
-    return new AzureStack(app, this.config.appName + this.config.environmentName)
+    return new AzureStack(app, this.config.appName + this.config.environmentName, destinationFile)
   }
 
   private mountFeatureDefinitions(azureStack: AzureStack): Array<FunctionDefinition> {
