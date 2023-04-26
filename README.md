@@ -48,8 +48,6 @@ All those things, and more, will be given to you by default and entirely for fre
 
 AWS and Azure integrations are thoroughly tested (with unit and integration tests running automatically before every release), and are currently used in production in projects of all-sized organizations, from startups to massive enterprises.
 
-Experimental support for Kubernetes exists, but it is not actively supported at the moment. If you're interested in Kubernetes support, let us know!
-
 # The "Booster Way"
 
 Booster Framework follows the next principles:
