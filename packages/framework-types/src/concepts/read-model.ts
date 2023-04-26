@@ -2,13 +2,15 @@ import { ReadModelAuthorizer, ReadModelFilterHooks, UUID } from '.'
 import { Class } from '../typelevel'
 import { PropertyMetadata } from '@boostercloud/metadata-booster'
 
+export interface BoosterMetadata {
+  version: number
+  schemaVersion: number
+  optimisticConcurrencyValue?: string | number
+}
+
 export interface ReadModelInterface {
   id: UUID
-  boosterMetadata?: {
-    version: number
-    schemaVersion: number
-    optimisticConcurrencyValue?: string | number
-  }
+  boosterMetadata?: BoosterMetadata
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Add Azure subscriptions",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

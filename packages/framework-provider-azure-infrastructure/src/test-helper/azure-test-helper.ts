@@ -1,5 +1,5 @@
 import { configuration } from '../infrastructure/helper/params'
-import { getResourceGroup, getCosmosConnectionStrings } from '../infrastructure/helper/az-cli-helper'
+import { getCosmosConnectionStrings, getResourceGroup } from '../infrastructure/helper/az-cli-helper'
 import { ResourceGroup } from '../infrastructure/types/resource-group'
 import { AzureCounters } from './azure-counters'
 import { AzureQueries } from './azure-queries'
@@ -28,7 +28,7 @@ export class AzureTestHelper {
     return new AzureTestHelper(
       {
         graphqlURL: await this.graphqlURL(resourceGroup),
-        websocketURL: await this.websocketURL(),
+        websocketURL: await this.websocketURL(resourceGroup, 'booster'),
       },
       new AzureCounters(appName, cosmosConnectionString),
       new AzureQueries(appName, cosmosConnectionString)
@@ -68,8 +68,7 @@ export class AzureTestHelper {
     return url
   }
 
-  // TODO: Currently websocket are not supported on Azure
-  private static async websocketURL(): Promise<string> {
-    return ''
+  private static async websocketURL(resourceGroup: ResourceGroup, hubName: string): Promise<string> {
+    return `wss://${resourceGroup.name}wps.webpubsub.azure.com:443/client/hubs/${hubName}`
   }
 }

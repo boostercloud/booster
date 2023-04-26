@@ -22,6 +22,18 @@ export type EventHandlerBinding = Binding & {
   [key: string]: any
 }
 
+export type SubscriptionBinding = Binding & {
+  hub: string
+  direction: 'out'
+}
+
+export type SocketsBinding = Binding & {
+  hub: string
+  direction: 'in'
+  eventType: string
+  eventName: string
+}
+
 export interface FunctionDefinition<T extends Binding = Binding> {
   name: string
   config: {
@@ -36,3 +48,7 @@ export type ScheduleFunctionDefinition = FunctionDefinition<ScheduleBinding>
 export type GraphQLFunctionDefinition = FunctionDefinition<GraphQLBinding>
 
 export type EventHandlerFunctionDefinition = FunctionDefinition<EventHandlerBinding>
+
+export type SubscriptionsNotifierFunctionDefinition = FunctionDefinition<EventHandlerBinding | SubscriptionBinding>
+
+export type SocketsFunctionDefinition = FunctionDefinition<GraphQLBinding | SocketsBinding>

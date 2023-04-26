@@ -1,21 +1,24 @@
 import { TerraformStack } from 'cdktf'
-import { ResourceGroup, StorageAccount } from '@cdktf/provider-azurerm'
+import { resourceGroup, storageAccount } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
+import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
 
 export class TerraformStorageAccount {
   static build(
-    terraformStack: TerraformStack,
-    resourceGroup: ResourceGroup,
+    providerResource: AzurermProvider,
+    terraformStackResource: TerraformStack,
+    resourceGroupResource: resourceGroup.ResourceGroup,
     appPrefix: string,
     resourceGroupName: string
-  ): StorageAccount {
+  ): storageAccount.StorageAccount {
     const id = toTerraformName(appPrefix, 'st')
-    return new StorageAccount(terraformStack, id, {
+    return new storageAccount.StorageAccount(terraformStackResource, id, {
       name: `${resourceGroupName}sa`,
-      resourceGroupName: resourceGroup.name,
-      location: resourceGroup.location,
+      resourceGroupName: resourceGroupResource.name,
+      location: resourceGroupResource.location,
       accountReplicationType: 'LRS',
       accountTier: 'Standard',
+      provider: providerResource,
     })
   }
 }
