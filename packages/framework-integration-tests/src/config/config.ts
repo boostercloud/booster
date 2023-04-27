@@ -29,12 +29,6 @@ Booster.configure('local', (config: BoosterConfig): void => {
   ]
 })
 
-Booster.configure('kubernetes', (config: BoosterConfig): void => {
-  config.appName = 'my-store'
-  config.providerPackage = '@boostercloud/framework-provider-kubernetes'
-  config.assets = ['assets', 'components', 'assetFile.txt']
-})
-
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-aws'

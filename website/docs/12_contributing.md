@@ -237,8 +237,6 @@ Unit tests are executed when you type `rush test`. If you want to run the unit t
 - `rushx test:provider-aws-infrastructure -v`: Run unit tests for the `framework-provider-aws-infrastructure` package.
 - `rushx test:provider-azure -v`: Run unit tests for the `framework-provider-azure` package.
 - `rushx test:provider-azure-infrastructure -v`: Run unit tests for the `framework-provider-azure-infrastructure` package.
-- `rushx test:provider-kubernetes -v`: Run unit tests for the `framework-provider-kubernetes` package.
-- `rushx test:provider-kubernetes-infrastructure -v`: Run unit tests for the `framework-provider-kubernetes-infrastructure` package.
 - `rushx test:provider-local -v`: Run unit tests for the `framework-provider-local` package.
 - `rushx test:provider-local-infrastructure -v`: Run unit tests for the `framework-provider-local-infrastructure` package.
 - `rushx test:types -v`: Run unit tests for the `framework-types` package.

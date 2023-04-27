@@ -54,27 +54,6 @@
       "cwd": "${workspaceFolder}",
     },
     {
-      "command": "rushx integration/k8s",
-      "name": "Integration Tests (k8s)",
-      "request": "launch",
-      "type": "node-terminal",
-      "cwd": "${workspaceFolder}",
-    },
-    {
-      "command": "rushx integration/k8s-deploy",
-      "name": "Integration Tests (k8s-deploy)",
-      "request": "launch",
-      "type": "node-terminal",
-      "cwd": "${workspaceFolder}",
-    },
-    {
-      "command": "rushx integration/k8s-nuke",
-      "name": "Integration Tests (k8s-nuke)",
-      "request": "launch",
-      "type": "node-terminal",
-      "cwd": "${workspaceFolder}",
-    },
-    {
       "command": "rushx integration/local",
       "name": "Integration Tests (local)",
       "request": "launch",

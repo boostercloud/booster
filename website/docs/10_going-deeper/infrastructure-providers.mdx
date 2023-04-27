@@ -9,10 +9,6 @@ Currently, the Booster framework provides two fully working provider packages:
 - **framework-provider-aws-\***
 - **framework-provider-azure-\***
 
-It also exists an experimental implementation for Kubernetes. Feel free to try it, but some features will be missing and the resources used are not designed for production:
-
-- **framework-provider-kubernetes-\***
-
 Booster uses sensible defaults, convention over configuration, and code inference to reduce dramatically the amount of configuration needed. However, there are some aspects that can't be inferred (like the application name) or the provider library used for each [environment](environment-configuration).
 
 ## Booster configuration
@@ -340,37 +336,3 @@ boost start -e local
 ```
 
 Where `local` is one of your defined environments with the `Booster.configure` call.
-
-
-## Kubernetes provider
-
-To configure Kubernetes as a provider you need to meet certain prerequisites:
-
-- Config the Kubernetes cluster beforehand in a cloud provider or on-premises.
-- Install **kubectl** and connect it to your Kubernetes cluster.
-- Install [Helm](https://helm.sh) version 3 or greater.
-- Check `@boostercloud/framework-provider-kubernetes` is listed in your app `package.json` dependencies.
-- Check `@boostercloud/framework-provider-kubernetes-infrastructure` is listed in your app `package.json` devDependencies.
-- Check both dependencies are installed, otherwise use `npm install` in the root of your project.
-
-Now go to your `config.ts` file, import the kubernetes provider library and set up your app environment.
-
-### Working with minikube
-
-[Minikube](https://minikube.sigs.k8s.io/docs/) allows you to use a Kubeneter cluster on your local environment.
-
-Once you have it installed, you just have to make sure that you configure the namespace for the current context. By default, the namespace has the following format: `booster-<app_name>-<environment_name>`. For example, if our app name were “myApp” and the environment “kubernetes-dev”, the namespace config command would be like:
-
-`kubectl config set-context --current --namespace=booster-myApp-kubernetes-dev`
-
-Ready! We can now boost deploy -e kubernetes-dev to deploy our application locally.
-
-```typescript
-import { Booster } from '@boostercloud/framework-core'
-import { BoosterK8sConfiguration } from '@boostercloud/framework-provider-kubernetes-infrastructure'
-
-Booster.configure('production', (config: BoosterK8sConfiguration): void => {
-  config.appName = 'my-app-name'
-  config.providerPackage = '@boostercloud/framework-provider-kubernetes'
-})
-```
