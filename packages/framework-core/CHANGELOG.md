@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 26 Apr 2023 15:55:21 GMT and should not be manually modified.
+This log was last generated on Thu, 27 Apr 2023 18:25:07 GMT and should not be manually modified.
+
+## 1.10.1
+Thu, 27 Apr 2023 18:25:07 GMT
+
+### Patches
+
+- Removed Kubernetes
 
 ## 1.10.0
 Wed, 26 Apr 2023 15:55:21 GMT
