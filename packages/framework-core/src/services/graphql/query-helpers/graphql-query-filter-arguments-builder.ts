@@ -8,7 +8,6 @@ import {
   GraphQLList,
   GraphQLScalarType,
   GraphQLString,
-  Thunk,
 } from 'graphql'
 import { getClassMetadata } from '../../../decorators/metadata'
 import { PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
@@ -16,6 +15,9 @@ import { GraphQLJSON } from 'graphql-scalars'
 import { AnyClass, UUID } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { DateScalar, isExternalType } from '../common'
+
+// TODO: Don't let this pass review.
+type Thunk<T> = (() => T) | T;
 
 export class GraphqlQueryFilterArgumentsBuilder {
   constructor(
@@ -126,7 +128,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         lt: { type: GraphQLFloat },
         gte: { type: GraphQLFloat },
         gt: { type: GraphQLFloat },
-        in: { type: GraphQLList(GraphQLFloat) },
+        in: { type: new GraphQLList(GraphQLFloat) },
         isDefined: { type: GraphQLBoolean },
       }
     if (typeGroup === 'String')
