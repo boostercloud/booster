@@ -1,10 +1,13 @@
-import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType, Thunk } from 'graphql'
+import { GraphQLEnumType, GraphQLFieldConfigArgumentMap, GraphQLInputObjectType } from 'graphql'
 import { PropertyMetadata } from '@boostercloud/metadata-booster'
 import { getClassMetadata } from '../../../decorators/metadata'
 import { buildGraphqlSimpleEnumFor, isExternalType } from '../common'
 import { GraphQLInputFieldConfigMap } from 'graphql/type/definition'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { AnyClass } from '@boostercloud/framework-types'
+
+// TODO: Don't let this pass review.
+type Thunk<T> = (() => T) | T;
 
 export class GraphqlQuerySortBuilder {
   private generatedSortByByTypeName: Record<string, GraphQLInputObjectType> = {}
