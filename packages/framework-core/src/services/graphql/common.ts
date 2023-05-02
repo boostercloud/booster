@@ -15,6 +15,7 @@ import {
   GraphQLObjectType,
   GraphQLType,
   Kind,
+  ValueNode,
 } from 'graphql'
 import { ReadModelPubSub } from '../pub-sub/read-model-pub-sub'
 import { PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
@@ -41,22 +42,26 @@ export interface GraphQLResolverContext {
   context?: ContextEnvelope
 }
 
-export const DateScalar = new GraphQLScalarType({
+function parseDate(inputValue: unknown): Date {
+  // TODO: Don't let this pass review.
+  const date = new Date(inputValue as string)
+  if (isNaN(date.getTime())) throw new Error(`Invalid date: ${inputValue}`)
+  return date
+}
+
+export const DateScalar = new GraphQLScalarType<Date, string>({
   name: 'Date',
   description: 'Date custom scalar type',
-  serialize(value) {
-    return value.toJSON()
+  serialize(value: unknown): string {
+    return (value as Date).toJSON()
   },
-  parseValue(value) {
-    const date = new Date(value)
-    if (isNaN(date.getTime())) throw new Error(`Invalid date: ${value}`)
-    return date
-  },
-  parseLiteral(ast) {
+  parseValue: parseDate,
+  parseLiteral(ast: ValueNode): Date {
     if (ast.kind === Kind.STRING) {
-      return new Date(ast.value)
+      return parseDate(ast.value)
     }
-    return null
+    // TODO: Don't let this pass review.
+    return (null as unknown as Date)
   },
 })
 

@@ -8,7 +8,7 @@ import {
   GraphQLRequestEnvelopeError,
   graphQLWebsocketSubprotocolHeaders,
 } from '@boostercloud/framework-types'
-import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
+import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError, OperationTypeNode } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
@@ -149,11 +149,12 @@ export class BoosterGraphQLDispatcher {
       }
 
       switch (operationData.operation) {
-        case 'query':
-        case 'mutation':
+        case OperationTypeNode.QUERY:
+        case OperationTypeNode.MUTATION:
           return await this.handleQueryOrMutation(queryDocument, resolverContext)
-        case 'subscription':
+        case OperationTypeNode.SUBSCRIPTION:
           return await this.handleSubscription(queryDocument, resolverContext)
+
       }
     } catch (e) {
       const error = e as Error

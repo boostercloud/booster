@@ -137,7 +137,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         lt: { type: GraphQLString },
         gte: { type: GraphQLString },
         gt: { type: GraphQLString },
-        in: { type: GraphQLList(GraphQLString) },
+        in: { type: new GraphQLList(GraphQLString) },
         beginsWith: { type: GraphQLString },
         contains: { type: GraphQLString },
         isDefined: { type: GraphQLBoolean },
@@ -147,7 +147,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
       return {
         eq: { type: GraphQLID },
         ne: { type: GraphQLID },
-        in: { type: GraphQLList(GraphQLID) },
+        in: { type: new GraphQLList(GraphQLID) },
         beginsWith: { type: GraphQLString },
         contains: { type: GraphQLString },
         isDefined: { type: GraphQLBoolean },
@@ -161,7 +161,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         lt: { type: DateScalar },
         gte: { type: DateScalar },
         gt: { type: DateScalar },
-        in: { type: GraphQLList(DateScalar) },
+        in: { type: new GraphQLList(DateScalar) },
         isDefined: { type: GraphQLBoolean },
       }
     if (typeGroup === 'Enum') {

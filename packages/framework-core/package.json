@@ -33,7 +33,7 @@
     "@boostercloud/framework-common-helpers": "workspace:^1.10.1",
     "@boostercloud/framework-types": "workspace:^1.10.1",
     "fp-ts": "^2.11.0",
-    "graphql": "^15.5.1",
+    "graphql": "16.6.0",
     "graphql-scalars": "^1.17.0",
     "graphql-subscriptions": "1.2.1",
     "inflected": "2.1.0",
