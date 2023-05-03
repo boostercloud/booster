@@ -154,7 +154,6 @@ export class BoosterGraphQLDispatcher {
           return await this.handleQueryOrMutation(queryDocument, resolverContext)
         case OperationTypeNode.SUBSCRIPTION:
           return await this.handleSubscription(queryDocument, resolverContext)
-
       }
     } catch (e) {
       const error = e as Error

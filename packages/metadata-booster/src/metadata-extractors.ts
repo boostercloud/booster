@@ -58,8 +58,8 @@ function hasQuestionTokenNode(node: Node<ts.Node> | undefined): boolean {
 
 function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
   const isNullable = type.isNullable() || hasQuestionTokenNode(node)
-  const name = type.getText(node)  // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
-  const isGetAccessor = Node.isGetAccessorDeclaration(node);
+  const name = type.getText(node) // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+  const isGetAccessor = Node.isGetAccessorDeclaration(node)
 
   if (5 < depth) {
     return {
@@ -73,19 +73,19 @@ function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
   }
 
   const typeGroupTuples: [(t: Type) => boolean, TypeGroup][] = [
-    [t => t.isString(), 'String'],
-    [t => t.isNumber(), 'Number'],
-    [t => t.isBoolean(), 'Boolean'],
-    [t => t.isEnum(), 'Enum'],
-    [t => t.isUnion(), 'Union'],
-    [t => t.isIntersection(), 'Intersection'],
-    [t => t.isClass(), 'Class'],
-    [t => t.isInterface(), 'Interface'],
-    [t => t.getAliasSymbol() != null, 'Type'],
-    [t => t.isArray(), 'Array'],
-    [t => t.getCallSignatures().length > 0, 'Function'],
+    [(t) => t.isString(), 'String'],
+    [(t) => t.isNumber(), 'Number'],
+    [(t) => t.isBoolean(), 'Boolean'],
+    [(t) => t.isEnum(), 'Enum'],
+    [(t) => t.isUnion(), 'Union'],
+    [(t) => t.isIntersection(), 'Intersection'],
+    [(t) => t.isClass(), 'Class'],
+    [(t) => t.isInterface(), 'Interface'],
+    [(t) => t.getAliasSymbol() != null, 'Type'],
+    [(t) => t.isArray(), 'Array'],
+    [(t) => t.getCallSignatures().length > 0, 'Function'],
     [isReadonlyArray, 'ReadonlyArray'],
-    [t => t.isObject(), 'Object'],
+    [(t) => t.isObject(), 'Object'],
   ]
 
   type = type.getNonNullableType()
