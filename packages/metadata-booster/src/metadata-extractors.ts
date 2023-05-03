@@ -34,8 +34,8 @@ export function getClassInfo(classNode: ts.ClassDeclaration & ts.Node, checker: 
 
   return {
     name: node.getNameOrThrow(),
-    fields: getInstanceProperties(node).map((p) => ({ name: p.getName(), typeInfo: getTypeInfo(p.getType(), p) })),
-    methods: node.getMethods().map((m) => ({ name: m.getName(), typeInfo: getTypeInfo(m.getReturnType(), m) })),
+    fields: getInstanceProperties(node).map((p) => ({ name: p.getName(), typeInfo: getTypeInfo(p.getType(), 0, p) })),
+    methods: node.getMethods().map((m) => ({ name: m.getName(), typeInfo: getTypeInfo(m.getReturnType(), 0, m) })),
   }
 }
 
@@ -56,46 +56,59 @@ function hasQuestionTokenNode(node: Node<ts.Node> | undefined): boolean {
   return false
 }
 
-function getTypeInfo(type: Type, node?: Node): TypeInfo {
+function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
+  const isNullable = type.isNullable() || hasQuestionTokenNode(node)
+  const name = type.getText(node)  // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+  const isGetAccessor = Node.isGetAccessorDeclaration(node);
+
+  if (5 < depth) {
+    return {
+      name,
+      typeName: null,
+      typeGroup: 'Other',
+      isNullable,
+      parameters: [],
+      isGetAccessor,
+    }
+  }
+
   const typeGroupTuples: [(t: Type) => boolean, TypeGroup][] = [
-    [(t) => t.isString(), 'String'],
-    [(t) => t.isNumber(), 'Number'],
-    [(t) => t.isBoolean(), 'Boolean'],
-    [(t) => t.isEnum(), 'Enum'],
-    [(t) => t.isUnion(), 'Union'],
-    [(t) => t.isIntersection(), 'Intersection'],
-    [(t) => t.isClass(), 'Class'],
-    [(t) => t.isInterface(), 'Interface'],
-    [(t) => t.getAliasSymbol() != null, 'Type'],
-    [(t) => t.isArray(), 'Array'],
-    [(t) => t.getCallSignatures().length > 0, 'Function'],
-    [(t) => isReadonlyArray(t), 'ReadonlyArray'],
-    [(t) => t.isObject(), 'Object'],
+    [t => t.isString(), 'String'],
+    [t => t.isNumber(), 'Number'],
+    [t => t.isBoolean(), 'Boolean'],
+    [t => t.isEnum(), 'Enum'],
+    [t => t.isUnion(), 'Union'],
+    [t => t.isIntersection(), 'Intersection'],
+    [t => t.isClass(), 'Class'],
+    [t => t.isInterface(), 'Interface'],
+    [t => t.getAliasSymbol() != null, 'Type'],
+    [t => t.isArray(), 'Array'],
+    [t => t.getCallSignatures().length > 0, 'Function'],
+    [isReadonlyArray, 'ReadonlyArray'],
+    [t => t.isObject(), 'Object'],
   ]
 
-  const hasQuestionToken = hasQuestionTokenNode(node)
-  const isNullable = type.isNullable() || hasQuestionToken
   type = type.getNonNullableType()
   const typeInfo: TypeInfo = {
-    name: type.getText(node), // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+    name,
     typeName: '',
     typeGroup: typeGroupTuples.find(([fn]) => fn(type))?.[1] || 'Other',
     isNullable,
     parameters: [],
-    isGetAccessor: Node.isGetAccessorDeclaration(node),
+    isGetAccessor,
   }
   switch (typeInfo.typeGroup) {
     case 'Enum':
-      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t))
+      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, depth + 1))
       break
     case 'Union':
-      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, node))
+      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, depth + 1, node))
       break
     case 'Intersection':
-      typeInfo.parameters = type.getIntersectionTypes().map((t) => getTypeInfo(t, node))
+      typeInfo.parameters = type.getIntersectionTypes().map((t) => getTypeInfo(t, depth + 1, node))
       break
     default:
-      typeInfo.parameters = type.getTypeArguments().map((a) => getTypeInfo(a, node))
+      typeInfo.parameters = type.getTypeArguments().map((a) => getTypeInfo(a, depth + 1, node))
   }
 
   // typeName is used for referencing the type in the metadata

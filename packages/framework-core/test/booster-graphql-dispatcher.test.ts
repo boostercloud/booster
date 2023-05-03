@@ -12,7 +12,6 @@ import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import * as gqlParser from 'graphql/language/parser'
 import * as gqlValidator from 'graphql/validation/validate'
 import * as gqlExecutor from 'graphql/execution/execute'
-import * as gqlSubscriptor from 'graphql/subscription/subscribe'
 import { GraphQLResolverContext } from '../src/services/graphql/common'
 import { NoopReadModelPubSub } from '../src/services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from '../src/services/graphql/websocket-protocol/graphql-websocket-protocol'
@@ -411,7 +410,6 @@ describe('the `BoosterGraphQLDispatcher`', () => {
               errors: [new GraphQLError('graphql error 1'), new GraphQLError('graphql error 2')],
             }
             replace(gqlExecutor, 'execute', fake.returns(graphQLErrorResult))
-            replace(gqlSubscriptor, 'subscribe', fake.returns(graphQLErrorResult))
           })
 
           it('calls the provider "handleGraphQLResult" with the error with a query', async () => {
