@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { commerce, finance, internet, lorem, random } from 'faker'
 import { expect } from 'chai'
-import gql from 'graphql-tag'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'

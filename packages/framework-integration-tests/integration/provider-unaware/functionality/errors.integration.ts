@@ -1,9 +1,7 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { applicationUnderTest } from './setup'
 import { internet, random } from 'faker'
 import { expect } from './expect'
-import gql from 'graphql-tag'
 import {
   commandHandlerBeforeErrorCartId,
   commandHandlerBeforeErrorCartMessage,

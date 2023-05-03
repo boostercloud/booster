@@ -1,4 +1,4 @@
-import { ApolloClient } from 'apollo-client'
+import { ApolloClient } from '@apollo/client'
 import { NormalizedCacheObject } from 'apollo-cache-inmemory'
 import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'

@@ -1,14 +1,9 @@
-import { ApolloClient } from 'apollo-client'
-import { InMemoryCache, NormalizedCacheObject } from 'apollo-cache-inmemory'
-import { HttpLink } from 'apollo-link-http'
+import { ApolloClient, ApolloClientOptions, ApolloLink, HttpLink, InMemoryCache, NormalizedCacheObject, split } from '@apollo/client'
 import fetch from 'cross-fetch'
-import { WebSocketLink } from 'apollo-link-ws'
-import { getMainDefinition } from 'apollo-utilities'
-import { ApolloLink, split } from 'apollo-link'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
-import { ApolloClientOptions } from 'apollo-client/ApolloClient'
 import { ProviderTestHelper } from './provider-test-helper'
+import { getMainDefinition } from '@apollo/client/utilities'
 
 type AuthToken = string | (() => string)
 
@@ -39,7 +34,7 @@ export class GraphQLHelper {
         const definition = getMainDefinition(query)
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
       },
-      new WebSocketLink(subscriptionClient),
+      this.getApolloHTTPLink(),
       this.getAuthLink(authToken).concat(this.getApolloHTTPLink())
     )
 
