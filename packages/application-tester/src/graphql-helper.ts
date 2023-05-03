@@ -1,4 +1,12 @@
-import { ApolloClient, ApolloClientOptions, ApolloLink, HttpLink, InMemoryCache, NormalizedCacheObject, split } from '@apollo/client'
+import {
+  ApolloClient,
+  ApolloClientOptions,
+  ApolloLink,
+  HttpLink,
+  InMemoryCache,
+  NormalizedCacheObject,
+  split,
+} from '@apollo/client'
 import fetch from 'cross-fetch'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
