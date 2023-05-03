@@ -1,12 +1,11 @@
 import { internet, random } from 'faker'
-import gql from 'graphql-tag'
 import { expect } from '../../helper/expect'
-import { Observable } from 'apollo-client/util/Observable'
 import { waitForIt } from '../../helper/sleep'
 import { FilterFor } from '@boostercloud/framework-types'
 import { DisconnectableApolloClient } from '@boostercloud/application-tester'
 import { applicationUnderTest } from './setup'
 import { beforeHookProductId } from '../../../src/constants'
+import { Observable, gql } from '@apollo/client'
 
 describe('subscriptions', () => {
   let countSubscriptions: () => Promise<number>
