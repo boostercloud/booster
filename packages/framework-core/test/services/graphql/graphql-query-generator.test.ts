@@ -263,7 +263,7 @@ describe('GraphQLQueryGenerator', () => {
                 })
 
                 it('When Number', () => {
-                  mockPropertyName = random.alphaNumeric(10)
+                  mockPropertyName = "_a" + random.alphaNumeric(10)
                   mockTargetType = Array
                   mockTargetTypeName = mockTargetType.name
                   mockPropertyType = Number
