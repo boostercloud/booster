@@ -57,8 +57,7 @@ function hasQuestionTokenNode(node: Node<ts.Node> | undefined): boolean {
 }
 
 function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
-  const isNullable = type.isNullable() || hasQuestionTokenNode(node)
-  const name = type.getText(node) // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+  const [name, isNullable] = getTypeInfoNameSafe()
   const isGetAccessor = Node.isGetAccessorDeclaration(node)
 
   if (5 < depth) {
@@ -150,6 +149,17 @@ function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
   if (typeInfo.typeName === '') throw new Error(`Could not extract typeName for type ${JSON.stringify(typeInfo)}`)
 
   return typeInfo
+
+  function getTypeInfoNameSafe(): [name: string, isNullable: boolean] {
+    const isNullable = type.isNullable() || hasQuestionTokenNode(node)
+    // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
+    const name = isNullable
+      // Since the update of packages of May, 4th 2023, this is adding "undefined" to nullables.
+      ? type.getText(node).replace(" | undefined", "")
+      : type.getText(node)
+  
+    return [name, isNullable]
+  }
 }
 
 function isReadonlyArray(t: Type): boolean {
