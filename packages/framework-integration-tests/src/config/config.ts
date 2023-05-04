@@ -74,7 +74,7 @@ Booster.configure('azure', (config: BoosterConfig): void => {
 
   config.appName = 'my-store-' + appNameSuffix
   config.providerPackage = '@boostercloud/framework-provider-azure'
-  config.assets = ['assets']
+  config.assets = ['assets', 'assetFile.txt', 'host.json']
   config.tokenVerifiers = [
     new PublicKeyTokenVerifier(
       'booster',

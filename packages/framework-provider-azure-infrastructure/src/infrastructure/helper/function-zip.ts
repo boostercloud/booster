@@ -111,7 +111,9 @@ export class FunctionZip {
         name: functionDefinition.name + '/function.json',
       })
     })
-    this.appendHostConfig(archive)
+    if (!fs.existsSync(path.join('.deploy', 'host.json'))) {
+      this.appendDefaultHostConfig(archive)
+    }
     await archive.finalize()
 
     return new Promise((resolve, reject) => {
@@ -151,7 +153,7 @@ export class FunctionZip {
     archive.directory('.deploy-base', false)
 
     this.appendBaseFunction(config, archive, name)
-    this.appendHostConfig(archive)
+    this.appendDefaultHostConfig(archive)
     await archive.finalize()
     return new Promise((resolve, reject) => {
       output.on('close', () => {
@@ -190,7 +192,7 @@ export class FunctionZip {
     })
   }
 
-  private static appendHostConfig(archive: archiver.Archiver): void {
+  private static appendDefaultHostConfig(archive: archiver.Archiver): void {
     const hostConfig = {
       version: '2.0',
       extensionBundle: {

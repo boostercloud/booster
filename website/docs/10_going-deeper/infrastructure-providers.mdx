@@ -316,6 +316,12 @@ Finally, you need to upload the source code. The main options are ([more info](h
 Remember to follow the **Azure Provider** steps in this page to set up your credentials correctly
 :::
 
+### Azure host.json file
+
+Azure Provider will generate a default `host.json` file if there is not a `host.json` entry in the `config.assets` array.
+
+If you want to use your own `host.json` file just add it to `config.assets` array and Booster will use yours.
+
 ## Local Provider
 
 All Booster projects come with a local development environment configured by default, so you can test your app before deploying it to the cloud.
