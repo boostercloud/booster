@@ -81,11 +81,11 @@ There are still business rules to be checked before proceeding with a query. For
 
 ###  Registering events
 
-Within the query handler execution, it is not possible to register domain events. If you need to register events, then use a Command. For more details about events and the register parameter, see the [`Events`](chapters/03_booster-architecture#_2-events) section.
+Within the query handler execution, it is not possible to register domain events. If you need to register events, then use a Command. For more details about events and the register parameter, see the [`Events`](/architecture/event) section.
 
 ##  Authorizing queries
 
-You can define who is authorized to access your queries. The Booster authorization feature is covered in [the auth section](chapters/04_features#authentication-and-authorization). So far, we have seen that you can make a query publicly accessible by authorizing `'all'` to query it, or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
+You can define who is authorized to access your queries. The Booster authorization feature is covered in [the auth section](/security/authentication). So far, we have seen that you can make a query publicly accessible by authorizing `'all'` to query it, or you can set specific roles providing an array of roles in this way: `authorize: [Admin]`.
 
 ##  Querying
 
