@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 27 Apr 2023 18:25:07 GMT and should not be manually modified.
+This log was last generated on Thu, 04 May 2023 12:25:58 GMT and should not be manually modified.
+
+## 1.10.2
+Thu, 04 May 2023 12:25:58 GMT
+
+### Patches
+
+- Create a host.json file and add it to the functionApp.zip file for Azure Provider only if there is not an existing one
 
 ## 1.10.1
 Thu, 27 Apr 2023 18:25:07 GMT
