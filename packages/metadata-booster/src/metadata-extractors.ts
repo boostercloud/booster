@@ -154,8 +154,8 @@ function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
     const isNullable = type.isNullable() || hasQuestionTokenNode(node)
     // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
     const name = isNullable
-      // Since the update of packages of May, 4th 2023, this is adding "undefined" to nullables.
-      ? type.getText(node).replace(" | undefined", "")
+      // Since the update of packages of May, 4th 2023, this is adding "undefined" and/or "null" to nullables.
+      ? type.getText(node).replace(" | undefined", "").replace(" | null", "")
       : type.getText(node)
   
     return [name, isNullable]
