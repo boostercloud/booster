@@ -23,7 +23,7 @@ describe('Global error handler', async () => {
 
   context('CommandHandler', async () => {
     it('should update error object when handler fails', async () => {
-      const expectedErrorMessage = `GraphQL error: ${commandHandlerErrorCartMessage}-onCommandHandlerError-onError`
+      const expectedErrorMessage = `${commandHandlerErrorCartMessage}-onCommandHandlerError-onError`
       await expect(
         client.mutate({
           variables: {
@@ -58,7 +58,7 @@ describe('Global error handler', async () => {
     })
 
     it('should update error object when onBefore fails', async () => {
-      const expectedErrorMessage = `GraphQL error: ${commandHandlerBeforeErrorCartMessage}-onBeforeCommandHandlerError-onError`
+      const expectedErrorMessage = `${commandHandlerBeforeErrorCartMessage}-onBeforeCommandHandlerError-onError`
       await expect(
         client.mutate({
           variables: {
@@ -78,7 +78,7 @@ describe('Global error handler', async () => {
 
   context('QueryHandler', async () => {
     it('should update error object when handler fails', async () => {
-      const expectedErrorMessage = `GraphQL error: ${queryHandlerErrorCartMessage}-onQueryHandlerError-onError`
+      const expectedErrorMessage = `${queryHandlerErrorCartMessage}-onQueryHandlerError-onError`
       await expect(
         client.mutate({
           variables: {

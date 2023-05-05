@@ -160,8 +160,8 @@ function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
   
     return [name, isNullable]
   }
-}
 
-function isReadonlyArray(t: Type): boolean {
-  return t.isObject() && (t.getSymbol()?.getName() || '') === 'ReadonlyArray'
+  function isReadonlyArray(t: Type): boolean {
+    return t.isObject() && (t.getSymbol()?.getName() || '') === 'ReadonlyArray'
+  }
 }
