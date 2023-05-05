@@ -373,7 +373,7 @@ Apart of using conventional commits for triggering releases, we use them to buil
 
 ## Code Style Guidelines
 
-The Booster project comes with a nice set of ESLint config files to help you follow a consistent style, and we really encourage to use it in your editor. You can also run the `rush run lint:fix` commands to try solving any linter problems automatically.
+The Booster project comes with a nice set of ESLint config files to help you follow a consistent style, and we really encourage to use it in your editor. You can also run the `rush lint:fix` commands to try solving any linter problems automatically.
 
 For everything else, the rule of thumb is: Try to be consistent with the code around yours, and if you're not sure, ask :-)
 
