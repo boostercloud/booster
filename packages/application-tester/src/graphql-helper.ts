@@ -7,6 +7,7 @@ import {
   NormalizedCacheObject,
   split,
 } from '@apollo/client'
+import { WebSocketLink } from '@apollo/client/link/ws'
 import fetch from 'cross-fetch'
 import * as WebSocket from 'ws'
 import { SubscriptionClient } from 'subscriptions-transport-ws'
@@ -21,7 +22,7 @@ export class GraphQLHelper {
   public client(authToken?: AuthToken): ApolloClient<NormalizedCacheObject> {
     return new ApolloClient({
       cache: new InMemoryCache(),
-      link: this.getAuthLink(authToken).concat(this.getApolloHTTPLink()),
+      link: this.getAuthLink(undefined, authToken).concat(this.getApolloHTTPLink()),
       defaultOptions: {
         query: {
           fetchPolicy: 'no-cache',
@@ -42,8 +43,8 @@ export class GraphQLHelper {
         const definition = getMainDefinition(query)
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
       },
-      this.getApolloHTTPLink(),
-      this.getAuthLink(authToken).concat(this.getApolloHTTPLink())
+      this.getAuthLink(subscriptionClient, authToken),
+      this.getApolloHTTPLink()      
     )
 
     return new DisconnectableApolloClient(subscriptionClient, {
@@ -64,7 +65,13 @@ export class GraphQLHelper {
     })
   }
 
-  private getAuthLink(authToken?: string | (() => string)): ApolloLink {
+  private getAuthLink(subscriptionClient?: SubscriptionClient, authToken?: string | (() => string)): ApolloLink {
+    console.log("CHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACHO")
+    if (subscriptionClient){
+      console.log("Retornando el wslink")
+      return new WebSocketLink(subscriptionClient);
+    }
+    console.log("Sad")
     return new ApolloLink((operation, forward) => {
       if (authToken) {
         const token = typeof authToken == 'function' ? authToken() : authToken
