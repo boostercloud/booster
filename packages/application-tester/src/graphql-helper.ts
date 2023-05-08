@@ -43,8 +43,8 @@ export class GraphQLHelper {
         const definition = getMainDefinition(query)
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
       },
-      this.getAuthLink(subscriptionClient, authToken),
-      this.getApolloHTTPLink()      
+      this.getAuthLink(subscriptionClient, authToken).concat(this.getApolloHTTPLink()),
+      this.getApolloHTTPLink()
     )
 
     return new DisconnectableApolloClient(subscriptionClient, {
@@ -66,12 +66,9 @@ export class GraphQLHelper {
   }
 
   private getAuthLink(subscriptionClient?: SubscriptionClient, authToken?: string | (() => string)): ApolloLink {
-    console.log("CHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACHO")
-    if (subscriptionClient){
-      console.log("Retornando el wslink")
-      return new WebSocketLink(subscriptionClient);
-    }
-    console.log("Sad")
+    if (subscriptionClient)
+      return new WebSocketLink(subscriptionClient)
+
     return new ApolloLink((operation, forward) => {
       if (authToken) {
         const token = typeof authToken == 'function' ? authToken() : authToken
