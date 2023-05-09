@@ -1,17 +1,18 @@
 import {
   BoosterConfig,
   EventEnvelope,
-  Register,
-  EventHandlerInterface,
-  UUID,
   EventHandlerGlobalError,
+  EventHandlerInterface,
+  EventInterface,
+  Register,
+  UUID,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
-import { createInstance, Promises, getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstance, getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { NotificationInterface } from 'framework-types/dist'
 
 export class BoosterEventDispatcher {
@@ -87,26 +88,49 @@ export class BoosterEventDispatcher {
     const logger = getLogger(config, 'BoosterEventDispatcher.dispatchEntityEventsToEventHandlers')
     for (const eventEnvelope of entityEventEnvelopes) {
       const eventHandlers = config.eventHandlers[eventEnvelope.typeName]
-      if (!eventHandlers || eventHandlers.length == 0) {
+      const globalEventHandler = config.globalEventHandler
+      if ((!eventHandlers || eventHandlers.length == 0) && !globalEventHandler) {
         logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
         continue
       }
-      const eventClass = config.events[eventEnvelope.typeName] ?? config.notifications[eventEnvelope.typeName]
-      await Promises.allSettledAndFulfilled(
-        eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
-          const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
-          const register = new Register(eventEnvelope.requestID, {}, RegisterHandler.flush, eventEnvelope.currentUser)
-          logger.debug('Calling "handle" method on event handler: ', eventHandler)
-          try {
-            await eventHandler.handle(eventInstance, register)
-          } catch (e) {
-            const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
-            const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
-            if (error) throw error
-          }
-          return RegisterHandler.handle(config, register)
-        })
-      )
+      const eventInstance = this.getEventInstance(config, eventEnvelope)
+      if (eventHandlers && eventHandlers.length > 0) {
+        await Promises.allSettledAndFulfilled(
+          eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
+            logger.debug('Calling "handle" method on event handler: ', eventHandler)
+            await this.callEventHandler(eventHandler, eventInstance, eventEnvelope, config)
+          })
+        )
+      }
+      if (globalEventHandler) {
+        logger.debug('Calling "handle" method on global event handler')
+        await this.callEventHandler(globalEventHandler, eventInstance, eventEnvelope, config)
+      }
     }
+  }
+
+  private static getEventInstance(
+    config: BoosterConfig,
+    eventEnvelope: EventEnvelope | NotificationInterface
+  ): EventInterface {
+    const eventClass = config.events[eventEnvelope.typeName] ?? config.notifications[eventEnvelope.typeName]
+    return createInstance(eventClass.class, eventEnvelope.value)
+  }
+
+  private static async callEventHandler(
+    eventHandler: EventHandlerInterface,
+    eventInstance: EventInterface,
+    eventEnvelope: EventEnvelope | NotificationInterface,
+    config: BoosterConfig
+  ): Promise<void> {
+    const register = new Register(eventEnvelope.requestID, {}, RegisterHandler.flush, eventEnvelope.currentUser)
+    try {
+      await eventHandler.handle(eventInstance, register)
+    } catch (e) {
+      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
+      const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
+      if (error) throw error
+    }
+    await RegisterHandler.handle(config, register)
   }
 }

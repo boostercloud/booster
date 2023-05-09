@@ -262,7 +262,7 @@ describe('BoosterEventDispatcher', () => {
         config.eventHandlers[SomeEvent.name] = []
       })
 
-      it('does nothing and does not throw if there are no event handlers', async () => {
+      it('does nothing and does not throw if there are no event handlers and no global handler', async () => {
         replace(RegisterHandler, 'handle', fake())
         const boosterEventDispatcher = BoosterEventDispatcher as any
         // We try first with null array of event handlers
@@ -274,10 +274,28 @@ describe('BoosterEventDispatcher', () => {
         // It should not throw any errors
       })
 
+      it('calls global handler for the current event if defined', async () => {
+        const fakeGlobalHandler = fake()
+        config.globalEventHandler = { handle: fakeGlobalHandler }
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventDispatcher = BoosterEventDispatcher as any
+        await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
+
+        const eventValue: any = someEvent.value
+        const anEventInstance = new SomeEvent(eventValue.id)
+        anEventInstance.entityID = eventValue.entityID
+
+        expect(fakeGlobalHandler).to.have.been.calledOnceWith(anEventInstance)
+      })
+
       it('calls all the handlers for the current event', async () => {
         const fakeHandler1 = fake()
         const fakeHandler2 = fake()
         config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+        const fakeGlobalHandler = fake()
+        config.globalEventHandler = { handle: fakeGlobalHandler }
 
         replace(RegisterHandler, 'handle', fake())
 
@@ -290,12 +308,16 @@ describe('BoosterEventDispatcher', () => {
 
         expect(fakeHandler1).to.have.been.calledOnceWith(anEventInstance)
         expect(fakeHandler2).to.have.been.calledOnceWith(anEventInstance)
+        expect(fakeGlobalHandler).to.have.been.calledOnceWith(anEventInstance)
       })
 
       it('calls all the handlers, even if the event is stored in the notifications field instead of the events one', async () => {
         const fakeHandler1 = fake()
         const fakeHandler2 = fake()
         config.eventHandlers[SomeNotification.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+        const fakeGlobalHandler = fake()
+        config.globalEventHandler = { handle: fakeGlobalHandler }
+
 
         replace(RegisterHandler, 'handle', fake())
 
@@ -306,6 +328,7 @@ describe('BoosterEventDispatcher', () => {
 
         expect(fakeHandler1).to.have.been.calledOnceWith(aNotificationInstance)
         expect(fakeHandler2).to.have.been.calledOnceWith(aNotificationInstance)
+        expect(fakeGlobalHandler).to.have.been.calledOnceWith(aNotificationInstance)
       })
 
       it('calls the register handler for all the published events', async () => {
@@ -324,7 +347,7 @@ describe('BoosterEventDispatcher', () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
 
-        expect(RegisterHandler.handle).to.have.been.calledTwice
+        expect(RegisterHandler.handle).to.have.been.calledThrice
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister1)
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister2)
       })

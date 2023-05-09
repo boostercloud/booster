@@ -775,6 +775,53 @@ describe('Events end-to-end tests', () => {
       })
     })
   })
+
+  describe('Global event handler', () => {
+    it('should update read model', async () => {
+      const mockLogEventId = UUID.generate()
+      await anonymousClient.mutate({
+        variables: {
+          logEventId: mockLogEventId,
+          value: 'test',
+        },
+        mutation: gql`
+          mutation LogEvent($logEventId: ID!, $value: String!) {
+            LogEvent(input: { logEventId: $logEventId, value: $value })
+          }
+        `,
+      })
+
+      const result = await waitForIt(
+        () => {
+          return anonymousClient.query({
+            variables: {
+              filter: {
+                id: {
+                  eq: mockLogEventId,
+                },
+              },
+            },
+            query: gql`
+              query ListLogEventReceivedTestReadModels($filter: ListLogEventReceivedTestReadModelFilter) {
+                ListLogEventReceivedTestReadModels(filter: $filter) {
+                  items {
+                    id
+                    value
+                  }
+                }
+              }
+            `,
+          })
+        },
+        (result) => {
+          const items = result?.data?.ListLogEventReceivedTestReadModels?.items
+          return items?.length === 1
+        }
+      )
+
+      expect(result?.data?.ListLogEventReceivedTestReadModels?.items[0].value).to.be.eq('test')
+    })
+  })
 })
 
 function queryByType(
