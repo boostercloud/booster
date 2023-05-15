@@ -1,0 +1,75 @@
+---
+description: Learn how to update entities and ReadModels
+---
+
+# TouchEntities
+
+Booster provides a way to refresh the value of an entity and update the corresponding ReadModels that depend on it.
+This functionality is useful when a new projection is added to a ReadModel and you want to apply it retroactively to the events that have already occurred.
+It is also helpful when there was an error when calculating a ReadModel or when the snapshot of an entity was not generated.
+
+To migrate an existing entity to a new version, you need to create a class with the @TouchEntity decorator.
+This class must have a static start method that takes a Register parameter and performs the logic to touch the entities of that class.
+For example, here is a class that migrates all the entities of the class Cart:
+
+```typescript
+import { Booster, BoosterEntityTouchFinished, BoosterTouchEntityHandler } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+import { TouchEntity } from '@boostercloud/framework-core/dist/decorators/touch-entity'
+import { Cart } from '../entities/cart'
+
+@TouchEntity({
+  order: 1,
+})
+export class CartTouchV1 {
+  public constructor() {}
+
+  public static async start(register: Register): Promise<void> {
+    const entitiesIdsResult = await Booster.entitiesIDs('Cart', 500, undefined)
+    const paginatedEntityIdResults = entitiesIdsResult.items
+    const carts = await Promise.all(
+      paginatedEntityIdResults.map(async (entity) => await Booster.entity(Cart, entity.entityID))
+    )
+    if (!carts || carts.length === 0) {
+      return
+    }
+    await Promise.all(
+      carts.map(async (cart) => {
+        const validCart = cart!
+        await BoosterTouchEntityHandler.touchEntity('Cart', validCart.id)
+        return validCart.id
+      })
+    )
+
+    register.events(new BoosterEntityTouchFinished('CartTouchV1'))
+  }
+}
+```
+
+This class will touch all the entities of the class Cart and emit an event of type BoosterEntityTouchFinished with the name of the class as payload.
+
+You can have multiple classes with different orders to perform sequential migrations.
+For example, you can have a CartTouchV2 class with order 2 that touches all the entities of Cart again after some changes in your code.
+
+To run your migration classes, you need to call the BoosterTouchEntityHandler.run() method from a command handler. For example:
+
+```typescript
+import { BoosterTouchEntityHandler, Command } from '@boostercloud/framework-core'
+import { Register } from '@boostercloud/framework-types'
+
+@Command({
+  authorize: 'all',
+})
+export class TouchCommand {
+  public constructor() {}
+
+  public static async handle(_command: TouchCommand, _register: Register): Promise<void> {
+    await BoosterTouchEntityHandler.run()
+  }
+}
+```
+
+This command will execute all your migration classes in order and update your entities and ReadModels accordingly.
+
+Please note that touching entities is an advanced feature that should be used with caution and only when necessary.
+It may affect your application performance and consistency if not used properly.

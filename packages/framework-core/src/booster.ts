@@ -29,6 +29,10 @@ import { BoosterDataMigrationFinished } from './core-concepts/data-migration/eve
 import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
 import { BoosterAuthorizer } from './booster-authorizer'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
+import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
+import { BoosterEntityTouchStarted } from './core-concepts/touch-entity/events/booster-entity-touch-started'
+import { BoosterEntityTouchFinished } from './core-concepts/touch-entity/events/booster-entity-touch-finished'
+import { BoosterTouchEntityEntity } from './core-concepts/touch-entity/entities/booster-touch-entity-entity'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -72,7 +76,6 @@ export class Booster {
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
     this.configureBoosterConcepts()
-    this.configureDataMigrations()
     this.loadTokenVerifierFromEnv()
     this.config.validate()
   }
@@ -158,6 +161,7 @@ export class Booster {
 
   private static configureBoosterConcepts(): void {
     this.configureDataMigrations()
+    this.configureTouchEntities()
   }
 
   private static configureDataMigrations(): void {
@@ -186,6 +190,35 @@ export class Booster {
     this.config.entities[BoosterDataMigrationEntity.name] = {
       class: BoosterDataMigrationEntity,
       eventStreamAuthorizer: BoosterAuthorizer.denyAccess,
+    }
+  }
+
+  private static configureTouchEntities(): void {
+    this.config.events[BoosterEntityTouched.name] = {
+      class: BoosterEntityTouched,
+    }
+
+    this.config.events[BoosterEntityTouchStarted.name] = {
+      class: BoosterEntityTouchStarted,
+    }
+
+    this.config.events[BoosterEntityTouchFinished.name] = {
+      class: BoosterEntityTouchFinished,
+    }
+
+    this.config.entities[BoosterTouchEntityEntity.name] = {
+      class: BoosterTouchEntityEntity,
+      eventStreamAuthorizer: BoosterAuthorizer.denyAccess,
+    }
+
+    this.config.reducers[BoosterEntityTouchStarted.name] = {
+      class: BoosterTouchEntityEntity,
+      methodName: 'started',
+    }
+
+    this.config.reducers[BoosterEntityTouchFinished.name] = {
+      class: BoosterTouchEntityEntity,
+      methodName: 'finished',
     }
   }
 

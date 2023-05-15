@@ -1,8 +1,10 @@
 import {
   BOOSTER_SUPER_KIND,
   BoosterConfig,
+  EntityInterface,
   EntitySnapshotEnvelope,
   EventEnvelope,
+  Instance,
   InvalidParameterError,
   NonPersistedEntitySnapshotEnvelope,
   ReducerGlobalError,
@@ -13,6 +15,7 @@ import { createInstance, getLogger } from '@boostercloud/framework-common-helper
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
+import { BoosterEntityTouched } from '../core-concepts/touch-entity/events/booster-entity-touched'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -112,8 +115,11 @@ export class EventStore {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
       if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
+        if (eventEnvelope.typeName === BoosterEntityTouched.name) {
+          return this.reduceEntityTouched(eventEnvelope, latestSnapshot)
+        }
         if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
-          return this.toBoosterEntityMigratedSnapshot(eventEnvelope)
+          return this.reduceEntityMigrated(eventEnvelope)
         }
       }
 
@@ -150,11 +156,30 @@ export class EventStore {
     }
   }
 
-  private toBoosterEntityMigratedSnapshot(eventEnvelope: EventEnvelope): NonPersistedEntitySnapshotEnvelope {
-    const logger = getLogger(this.config, 'EventStore#toBoosterEntityMigratedSnapshot')
-    const value = eventEnvelope.value as BoosterEntityMigrated
-    const entity = value.newEntity
-    const className = value.newEntityName
+  private reduceEntityMigrated(eventEnvelope: EventEnvelope): NonPersistedEntitySnapshotEnvelope {
+    const event = eventEnvelope.value as BoosterEntityMigrated
+    return this.toBoosterEntitySnapshot(eventEnvelope, event.newEntity, event.newEntityName)
+  }
+
+  private reduceEntityTouched(
+    eventEnvelope: EventEnvelope,
+    latestSnapshot: NonPersistedEntitySnapshotEnvelope | undefined
+  ): NonPersistedEntitySnapshotEnvelope {
+    const event = eventEnvelope.value as BoosterEntityTouched
+    const entityMetadata = this.config.entities[event.entityName]
+    if (!latestSnapshot) {
+      throw new Error(`Could not touch entity ${event.entityName} with id ${event.entityId}. Snapshot not found`)
+    }
+    const snapshotInstance = createInstance(entityMetadata.class, latestSnapshot.value)
+    return this.toBoosterEntitySnapshot(eventEnvelope, snapshotInstance, event.entityName)
+  }
+
+  private toBoosterEntitySnapshot(
+    eventEnvelope: EventEnvelope,
+    entity: Instance & EntityInterface,
+    className: string
+  ): NonPersistedEntitySnapshotEnvelope {
+    const logger = getLogger(this.config, 'EventStore#toBoosterEntitySnapshot')
     const boosterMigratedSnapshot: NonPersistedEntitySnapshotEnvelope = {
       version: this.config.currentVersionFor(className),
       kind: 'snapshot',
@@ -166,7 +191,7 @@ export class EventStore {
       value: entity,
       snapshottedEventCreatedAt: eventEnvelope.createdAt,
     }
-    logger.debug('BoosterEntityMigrated result: ', boosterMigratedSnapshot)
+    logger.debug('BoosterEntitySnapshot result: ', boosterMigratedSnapshot)
     return boosterMigratedSnapshot
   }
 

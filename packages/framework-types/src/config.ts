@@ -15,6 +15,7 @@ import {
   TokenVerifier,
   QueryMetadata,
   NotificationMetadata,
+  TouchEntityMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -70,6 +71,7 @@ export class BoosterConfig {
   public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
+  public readonly touchEntityHandlers: Record<TouchEntityName, TouchEntityMetadata> = {}
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
   public enableSubscriptions = true
 
@@ -223,3 +225,4 @@ type ConceptName = string
 type Version = number
 type ScheduledCommandName = string
 type DataMigrationName = string
+type TouchEntityName = string
