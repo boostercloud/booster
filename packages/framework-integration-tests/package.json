@@ -18,7 +18,8 @@
     "aws-sdk": "2.853.0",
     "graphql": "16.6.0",
     "tslib": "^2.4.0",
-    "@effect-ts/core": "^0.60.4"
+    "@effect-ts/core": "^0.60.4",
+    "express-unless": "2.1.3"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^1.11.0",
