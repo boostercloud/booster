@@ -34,8 +34,8 @@ export function getClassInfo(classNode: ts.ClassDeclaration & ts.Node, checker: 
 
   return {
     name: node.getNameOrThrow(),
-    fields: getInstanceProperties(node).map((p) => ({ name: p.getName(), typeInfo: getTypeInfo(p.getType(), 0, p) })),
-    methods: node.getMethods().map((m) => ({ name: m.getName(), typeInfo: getTypeInfo(m.getReturnType(), 0, m) })),
+    fields: getInstanceProperties(node).map((p) => ({ name: p.getName(), typeInfo: getTypeInfo(p.getType(), p) })),
+    methods: node.getMethods().map((m) => ({ name: m.getName(), typeInfo: getTypeInfo(m.getReturnType(), m) })),
   }
 }
 
@@ -56,101 +56,105 @@ function hasQuestionTokenNode(node: Node<ts.Node> | undefined): boolean {
   return false
 }
 
-function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
-  const [name, isNullable] = getTypeInfoNameSafe()
-  const isGetAccessor = Node.isGetAccessorDeclaration(node)
+function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
+  return go(tp, 0, nd)
 
-  if (5 < depth) {
-    return {
+  function go(type: Type, depth: number, node?: Node): TypeInfo {
+    const { name, isNullable } = getTypeInfoNameSafe(type, node)
+    const isGetAccessor = Node.isGetAccessorDeclaration(node)
+
+    if (5 < depth) {
+      return {
+        name,
+        typeName: null,
+        typeGroup: 'Other',
+        isNullable,
+        parameters: [],
+        isGetAccessor,
+      }
+    }
+
+    const typeGroupTuples: [(t: Type) => boolean, TypeGroup][] = [
+      [(t) => t.isString(), 'String'],
+      [(t) => t.isNumber(), 'Number'],
+      [(t) => t.isBoolean(), 'Boolean'],
+      [(t) => t.isEnum(), 'Enum'],
+      [(t) => t.isUnion(), 'Union'],
+      [(t) => t.isIntersection(), 'Intersection'],
+      [(t) => t.isClass(), 'Class'],
+      [(t) => t.isInterface(), 'Interface'],
+      [(t) => t.getAliasSymbol() != null, 'Type'],
+      [(t) => t.isArray(), 'Array'],
+      [(t) => t.getCallSignatures().length > 0, 'Function'],
+      [isReadonlyArray, 'ReadonlyArray'],
+      [(t) => t.isObject(), 'Object'],
+    ]
+
+    type = type.getNonNullableType()
+    const typeInfo: TypeInfo = {
       name,
-      typeName: null,
-      typeGroup: 'Other',
+      typeName: '',
+      typeGroup: typeGroupTuples.find(([fn]) => fn(type))?.[1] || 'Other',
       isNullable,
       parameters: [],
       isGetAccessor,
     }
+    switch (typeInfo.typeGroup) {
+      case 'Enum':
+        typeInfo.parameters = type.getUnionTypes().map((t) => go(t, depth + 1))
+        break
+      case 'Union':
+        typeInfo.parameters = type.getUnionTypes().map((t) => go(t, depth + 1, node))
+        break
+      case 'Intersection':
+        typeInfo.parameters = type.getIntersectionTypes().map((t) => go(t, depth + 1, node))
+        break
+      default:
+        typeInfo.parameters = type.getTypeArguments().map((a) => go(a, depth + 1, node))
+    }
+
+    // typeName is used for referencing the type in the metadata
+    switch (typeInfo.typeGroup) {
+      case 'String':
+      case 'Number':
+      case 'Boolean':
+        typeInfo.typeName = typeInfo.typeGroup
+        break
+      case 'Union':
+      case 'Intersection':
+        typeInfo.typeName = null
+        break
+      case 'Enum':
+      case 'Class':
+      case 'ReadonlyArray':
+      case 'Array':
+        // getSymbol() is used for complex types, in which cases getText() returns too much information (e.g. Map<User> instead of just Map)
+        typeInfo.typeName = type.getSymbol()?.getName() || ''
+        break
+      case 'Object':
+        typeInfo.typeName = type.getSymbol()?.getName() || ''
+        if (typeInfo.typeName === '__type') {
+          // This happens for literal objects like `{ a: string, b: { c: string } }`
+          typeInfo.typeName = 'Object'
+        }
+        break
+      case 'Interface':
+      case 'Type':
+      case 'Function':
+      case 'Other':
+        if (type.isEnumLiteral()) {
+          typeInfo.name = type.getSymbol()?.getName() || '' // e.g. "Small"
+        }
+        typeInfo.typeName = null
+        break
+    }
+
+    if (typeInfo.typeName === '') throw new Error(`Could not extract typeName for type ${JSON.stringify(typeInfo)}`)
+
+    return typeInfo
   }
-
-  const typeGroupTuples: [(t: Type) => boolean, TypeGroup][] = [
-    [(t) => t.isString(), 'String'],
-    [(t) => t.isNumber(), 'Number'],
-    [(t) => t.isBoolean(), 'Boolean'],
-    [(t) => t.isEnum(), 'Enum'],
-    [(t) => t.isUnion(), 'Union'],
-    [(t) => t.isIntersection(), 'Intersection'],
-    [(t) => t.isClass(), 'Class'],
-    [(t) => t.isInterface(), 'Interface'],
-    [(t) => t.getAliasSymbol() != null, 'Type'],
-    [(t) => t.isArray(), 'Array'],
-    [(t) => t.getCallSignatures().length > 0, 'Function'],
-    [isReadonlyArray, 'ReadonlyArray'],
-    [(t) => t.isObject(), 'Object'],
-  ]
-
-  type = type.getNonNullableType()
-  const typeInfo: TypeInfo = {
-    name,
-    typeName: '',
-    typeGroup: typeGroupTuples.find(([fn]) => fn(type))?.[1] || 'Other',
-    isNullable,
-    parameters: [],
-    isGetAccessor,
-  }
-  switch (typeInfo.typeGroup) {
-    case 'Enum':
-      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, depth + 1))
-      break
-    case 'Union':
-      typeInfo.parameters = type.getUnionTypes().map((t) => getTypeInfo(t, depth + 1, node))
-      break
-    case 'Intersection':
-      typeInfo.parameters = type.getIntersectionTypes().map((t) => getTypeInfo(t, depth + 1, node))
-      break
-    default:
-      typeInfo.parameters = type.getTypeArguments().map((a) => getTypeInfo(a, depth + 1, node))
-  }
-
-  // typeName is used for referencing the type in the metadata
-  switch (typeInfo.typeGroup) {
-    case 'String':
-    case 'Number':
-    case 'Boolean':
-      typeInfo.typeName = typeInfo.typeGroup
-      break
-    case 'Union':
-    case 'Intersection':
-      typeInfo.typeName = null
-      break
-    case 'Enum':
-    case 'Class':
-    case 'ReadonlyArray':
-    case 'Array':
-      // getSymbol() is used for complex types, in which cases getText() returns too much information (e.g. Map<User> instead of just Map)
-      typeInfo.typeName = type.getSymbol()?.getName() || ''
-      break
-    case 'Object':
-      typeInfo.typeName = type.getSymbol()?.getName() || ''
-      if (typeInfo.typeName === '__type') {
-        // This happens for literal objects like `{ a: string, b: { c: string } }`
-        typeInfo.typeName = 'Object'
-      }
-      break
-    case 'Interface':
-    case 'Type':
-    case 'Function':
-    case 'Other':
-      if (type.isEnumLiteral()) {
-        typeInfo.name = type.getSymbol()?.getName() || '' // e.g. "Small"
-      }
-      typeInfo.typeName = null
-      break
-  }
-
-  if (typeInfo.typeName === '') throw new Error(`Could not extract typeName for type ${JSON.stringify(typeInfo)}`)
-
-  return typeInfo
-
-  function getTypeInfoNameSafe(): [name: string, isNullable: boolean] {
+  
+  function getTypeInfoNameSafe(type: Type, node?: Node): { name: string, isNullable: boolean } {
     const isNullable = type.isNullable() || hasQuestionTokenNode(node)
     // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
     const name = isNullable
@@ -158,7 +162,7 @@ function getTypeInfo(type: Type, depth: number, node?: Node): TypeInfo {
         type.getText(node).replace(' | undefined', '').replace(' | null', '')
       : type.getText(node)
 
-    return [name, isNullable]
+    return { name, isNullable }
   }
 
   function isReadonlyArray(t: Type): boolean {
