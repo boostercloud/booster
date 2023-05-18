@@ -68,8 +68,7 @@ export class GraphQLHelper {
   }
 
   private getAuthLink(subscriptionClient?: SubscriptionClient, authToken?: string | (() => string)): ApolloLink {
-    if (subscriptionClient)
-      return new WebSocketLink(subscriptionClient)
+    if (subscriptionClient) return new WebSocketLink(subscriptionClient)
 
     return new ApolloLink((operation, forward) => {
       if (authToken) {
