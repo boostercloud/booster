@@ -86,37 +86,29 @@ describe('subscriptions', () => {
   })
 
   describe('when socket reconnects ', () => {
-    let client: DisconnectableApolloClient
+    let clients: DisconnectableApolloClient[]
+    const clientCount = 2
     before(async () => {
-      client = await applicationUnderTest.graphql.clientWithSubscriptions()
+      clients = await Promise.all([Array(clientCount)].map(_ => applicationUnderTest.graphql.clientWithSubscriptions()))
     })
     after(() => {
-      client.disconnect()
+      clients.forEach(c => c.disconnect())
     })
 
     it('keeps the same subscriptions', async () => {
       const cartID = random.uuid()
       const originalSubscriptionsCount = await countSubscriptions()
-      // Let's create two subscriptions to the same read model
-      const observableOne = cartSubscription(client, cartID)
-      const observableTwo = cartSubscription(client, cartID)
-      // Call the subscribe function to send the subscription to server
-      observableOne.subscribe(() => {})
-      observableTwo.subscribe(() => {})
-      // Wait for the subscriptions to arrive
-      await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 2)
-      // Check we receive data when the read model is modified
-      await cartMutation(client, cartID)
-      await expect(
-        Promise.all([promisifyNextSubscriptionResult(observableOne), promisifyNextSubscriptionResult(observableTwo)])
-      ).to.eventually.be.fulfilled
+      const observables = clients.map(c => cartSubscription(c, cartID))
+      observables.forEach(o => o.subscribe(() => {}));
+      await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + clientCount)
+      await verifySubscriptionsActive()
+      await Promise.all(clients.map(c => c.reconnect()))
+      await verifySubscriptionsActive()
 
-      // Now reconnect and see if we keep the having the same subscription and receive data
-      await client.reconnect()
-      await cartMutation(client, cartID)
-      await expect(
-        Promise.all([promisifyNextSubscriptionResult(observableOne), promisifyNextSubscriptionResult(observableTwo)])
-      ).to.eventually.be.fulfilled
+      async function verifySubscriptionsActive() {
+        await cartMutation(clients[0], cartID)
+        await expect(Promise.all(observables.map(promisifyNextSubscriptionResult))).to.eventually.be.fulfilled
+      }
     })
   })
 
