@@ -85,10 +85,6 @@ export class GraphQLHelper {
         this.providerTestHelper.outputs.websocketURL,
         {
           reconnect: true,
-          reconnectionAttempts: 3,
-          timeout: 5000,
-          minTimeout: 2500,
-          inactivityTimeout: 2500,
           connectionParams: () => {
             if (authToken) {
               const token = typeof authToken == 'function' ? authToken() : authToken
