@@ -153,8 +153,8 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
 
     return typeInfo
   }
-  
-  function getTypeInfoNameSafe(type: Type, node?: Node): { name: string, isNullable: boolean } {
+
+  function getTypeInfoNameSafe(type: Type, node?: Node): { name: string; isNullable: boolean } {
     const isNullable = type.isNullable() || hasQuestionTokenNode(node)
     // node is passed for better name printing: https://github.com/dsherret/ts-morph/issues/907
     const name = isNullable
