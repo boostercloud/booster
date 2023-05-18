@@ -37,14 +37,16 @@ export class GraphQLHelper {
    */
   public async clientWithSubscriptions(authToken?: AuthToken): Promise<DisconnectableApolloClient> {
     const subscriptionClient: SubscriptionClient = await this.subscriptionsClient(authToken)
+    console.log(this.providerTestHelper.outputs.graphqlURL)
+    console.log(this.providerTestHelper.outputs.websocketURL)
 
     const link = split(
       ({ query }) => {
         const definition = getMainDefinition(query)
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
       },
-      this.getAuthLink(subscriptionClient, authToken).concat(this.getApolloHTTPLink()),
-      this.getApolloHTTPLink()
+      this.getAuthLink(subscriptionClient, authToken),
+      this.getAuthLink(undefined, authToken).concat(this.getApolloHTTPLink())
     )
 
     return new DisconnectableApolloClient(subscriptionClient, {
@@ -84,6 +86,10 @@ export class GraphQLHelper {
         this.providerTestHelper.outputs.websocketURL,
         {
           reconnect: true,
+          reconnectionAttempts: 3,
+          timeout: 5000,
+          minTimeout: 2500,
+          inactivityTimeout: 2500,
           connectionParams: () => {
             if (authToken) {
               const token = typeof authToken == 'function' ? authToken() : authToken

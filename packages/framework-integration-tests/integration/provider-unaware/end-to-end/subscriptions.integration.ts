@@ -258,13 +258,45 @@ describe('subscriptions', () => {
           )
           await waitForIt(
             () => Promise.resolve(error),
-            (error) => error !== undefined && error.message === 'GraphQL error: Access denied for this resource'
+            (error) => error !== undefined && error.message === 'Access denied for this resource'
+          )
+        })
+      })
+    })
+    
+    context('with a user without the required role', () => {
+      let loggedClient: DisconnectableApolloClient
+
+      beforeEach(async () => {
+        const userToken = applicationUnderTest.token.forUser(internet.email(), 'UserThatHasNoBusinesWithProducts')
+        loggedClient = await applicationUnderTest.graphql.clientWithSubscriptions(userToken)
+      })
+
+      afterEach(() => {
+        loggedClient.disconnect()
+      })
+
+      context('with a read model authorized for matching roles', () => {
+        it('should not be accessible', async () => {
+          const productId = random.uuid()
+
+          const observable = productSubscription(loggedClient, productId)
+          let error: undefined | { message: string }
+          observable.subscribe(
+            () => {},
+            (err: any) => {
+              error = err
+            }
+          )
+          await waitForIt(
+            () => Promise.resolve(error),
+            (error) => error !== undefined && error.message === 'Access denied for this resource'
           )
         })
       })
     })
 
-    context('with a user with a role', () => {
+    context('with a user with the required role', () => {
       let loggedClient: DisconnectableApolloClient
 
       beforeEach(async () => {
