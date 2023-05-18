@@ -793,7 +793,7 @@ describe('Read models end-to-end tests', () => {
         expect(cartData[0].payment.id).to.be.eq(mockPaymentId)
       })
 
-      it('should retrieve ´a list of carts when filter by contains with UUID fields', async () => {
+      it('should retrieve a list of carts when filter by contains with UUID fields', async () => {
         const partialMockCartId = mockCartId.slice(1, -1)
         const filter = {
           and: [
@@ -839,6 +839,119 @@ describe('Read models end-to-end tests', () => {
         expect(cartData).to.be.an('array')
         expect(cartData.length).to.equal(1)
         expect(cartData[0].id).to.equal(mockCartId)
+      })
+
+      it('should retrieve a list of carts when filter by regex', async () => {
+        if (process.env.TESTED_PROVIDER !== 'AZURE' && process.env.TESTED_PROVIDER !== 'LOCAL') {
+          console.log('****************** Warning **********************')
+          console.log('Only Azure and Local provider implement the regex filter. Skipping')
+          console.log('*************************************************')
+          return
+        }
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              shippingAddress: {
+                firstName: {
+                  regex: `^${mockAddress.firstName.at(0)}.*`,
+                },
+              },
+            },
+          ],
+        }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
+      })
+
+      it('should retrieve a list of carts when filter by iRegex', async () => {
+        if (process.env.TESTED_PROVIDER !== 'AZURE' && process.env.TESTED_PROVIDER !== 'LOCAL') {
+          console.log('****************** Warning **********************')
+          console.log('Only Azure and Local provider implement the iRegex filter. Skipping')
+          console.log('*************************************************')
+          return
+        }
+        const firstLetter = mockAddress.firstName.at(0)
+        const inverseFirstLetter =
+          firstLetter === firstLetter?.toUpperCase() ? firstLetter?.toLowerCase() : firstLetter?.toUpperCase()
+        const filter = {
+          and: [
+            {
+              id: { eq: mockCartId },
+            },
+            {
+              shippingAddress: {
+                firstName: {
+                  iRegex: `^${inverseFirstLetter}.*`,
+                },
+              },
+            },
+          ],
+        }
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: filter,
+              },
+              query: gql`
+                query ListCartReadModels($filter: ListCartReadModelFilter) {
+                  ListCartReadModels(filter: $filter) {
+                    items {
+                      id
+                      shippingAddress {
+                        firstName
+                      }
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => {
+            const carts = result?.data?.ListCartReadModels?.items
+            return carts?.length >= 1 && carts[0].shippingAddress?.firstName === mockAddress.firstName
+          }
+        )
+
+        const cartData = queryResult.data.ListCartReadModels.items
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.equal(mockCartId)
+        expect(cartData[0].shippingAddress.firstName).to.be.eq(mockAddress.firstName)
       })
 
       it('should retrieve a list of carts when filter by null', async () => {

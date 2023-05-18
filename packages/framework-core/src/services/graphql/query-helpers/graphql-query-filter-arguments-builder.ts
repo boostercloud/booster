@@ -140,6 +140,8 @@ export class GraphqlQueryFilterArgumentsBuilder {
         in: { type: new GraphQLList(GraphQLString) },
         beginsWith: { type: GraphQLString },
         contains: { type: GraphQLString },
+        regex: { type: GraphQLString },
+        iRegex: { type: GraphQLString },
         isDefined: { type: GraphQLBoolean },
       }
     // use `name`, `typeGroup` === 'Class'

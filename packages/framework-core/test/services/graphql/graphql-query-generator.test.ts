@@ -411,9 +411,11 @@ describe('GraphQLQueryGenerator', () => {
                     'in',
                     'beginsWith',
                     'contains',
+                    'regex',
+                    'iRegex',
                     'isDefined',
                   ])
-                  expect(fieldsKeys.length).to.equal(10)
+                  expect(fieldsKeys.length).to.equal(12)
 
                   fieldsKeys.forEach((fieldKey) => {
                     expect(TypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined

@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 04 May 2023 12:25:58 GMT and should not be manually modified.
+This log was last generated on Fri, 05 May 2023 12:14:49 GMT and should not be manually modified.
+
+## 1.11.0
+Fri, 05 May 2023 12:14:49 GMT
+
+### Minor changes
+
+- Add regex and iRegex filters
 
 ## 1.10.2
 Thu, 04 May 2023 12:25:58 GMT

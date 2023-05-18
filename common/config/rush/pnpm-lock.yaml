@@ -1534,7 +1534,7 @@ packages:
       '@aws-cdk/aws-logs': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-s3-assets': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
-      '@aws-cdk/aws-secretsmanager': 1.199.0_w44itfkgshmd42wctbnkck4r7e
+      '@aws-cdk/aws-secretsmanager': 1.199.0_uxypjio4ejtfqgxognd5fibs2q
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       '@aws-cdk/region-info': 1.199.0
       constructs: 3.4.293
@@ -1753,8 +1753,8 @@ packages:
       '@aws-cdk/aws-route53-targets': 1.199.0_2ap25t3f2ak5h2qxfnvuyuxrga
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-s3-assets': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
-      '@aws-cdk/aws-secretsmanager': 1.199.0_w44itfkgshmd42wctbnkck4r7e
-      '@aws-cdk/aws-servicediscovery': 1.199.0_mcuiip26demcvhycudknexqcta
+      '@aws-cdk/aws-secretsmanager': 1.199.0_uxypjio4ejtfqgxognd5fibs2q
+      '@aws-cdk/aws-servicediscovery': 1.199.0_4axszbdsnc7kzhsa3r5g56z4bu
       '@aws-cdk/aws-sns': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-sqs': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-ssm': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
@@ -1996,7 +1996,7 @@ packages:
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-s3-notifications': 1.199.0_fufarp47blk4okwshjegj2wjg4
-      '@aws-cdk/aws-secretsmanager': 1.199.0_w44itfkgshmd42wctbnkck4r7e
+      '@aws-cdk/aws-secretsmanager': 1.199.0_uxypjio4ejtfqgxognd5fibs2q
       '@aws-cdk/aws-sns': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-sns-subscriptions': 1.199.0_x7skkdpav5hf4ncc76dwztyszi
       '@aws-cdk/aws-sqs': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
@@ -2219,7 +2219,7 @@ packages:
       constructs: 3.4.293
     dev: false
 
-  /@aws-cdk/aws-secretsmanager/1.199.0_w44itfkgshmd42wctbnkck4r7e:
+  /@aws-cdk/aws-secretsmanager/1.199.0_uxypjio4ejtfqgxognd5fibs2q:
     resolution: {integrity: sha512-Dj0+q7I9xRwg1hHowrHb9rxmicDGZVmQixFaFuBdsS5zNfBNdC6WJGWhDddJDZIPclip06fXBm/by4+l4XUpNw==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -2229,17 +2229,12 @@ packages:
       '@aws-cdk/cx-api': 1.199.0
       constructs: ^3.3.69
     dependencies:
-      '@aws-cdk/aws-ec2': 1.199.0_h6wh2dtuanu3t32m4bj2sle3ta
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
-      '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/aws-sam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       '@aws-cdk/cx-api': 1.199.0
       constructs: 3.4.293
-    transitivePeerDependencies:
-      - '@aws-cdk/aws-logs'
-      - '@aws-cdk/aws-s3'
     dev: false
 
   /@aws-cdk/aws-servicediscovery/1.199.0_mcuiip26demcvhycudknexqcta:
@@ -5603,10 +5598,6 @@ packages:
       es5-ext: 0.10.62
     dev: true
 
-  /eastasianwidth/0.2.0:
-    resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
-    dev: true
-
   /ecc-jsbn/0.1.2:
     resolution: {integrity: sha512-eh9O+hwRHNbG4BLTjEl3nw044CkGm5X6LoaCf7LPp7UU8Qrt47JYNi6nPX8xjW97TKGKm1ouctg0QSpZe9qrnw==}
     dependencies:
@@ -6492,14 +6483,6 @@ packages:
     dependencies:
       cross-spawn: 7.0.3
       signal-exit: 3.0.7
-    dev: true
-
-  /foreground-child/3.1.1:
-    resolution: {integrity: sha512-TMKDUnIte6bfb5nWv7V/caI169OHgvwjb7V4WkeUvbQQdjr5rWKqHFiKWb/fcOwB+CzBT+qbWjvj+DVwRskpIg==}
-    engines: {node: '>=14'}
-    dependencies:
-      cross-spawn: 7.0.3
-      signal-exit: 4.0.2
     dev: true
 
   /forever-agent/0.6.1:
@@ -7560,8 +7543,8 @@ packages:
     dependencies:
       '@panva/asn1.js': 1.0.0
 
-  /jose/4.14.3:
-    resolution: {integrity: sha512-YPM9Q+dmsna4CGWNn5+oHFsuXJdxvKAOVoNjpe2nje3odSoX5Xz4s71rP50vM8uUKJyQtMnEGPmbVCVR+G4W5g==}
+  /jose/4.14.4:
+    resolution: {integrity: sha512-j8GhLiKmUAh+dsFXlX1aJCbt5KMibuKb+d7j1JaOJG6s2UjX1PQlW+OKB/sD4a/5ZYF4RcmYmLSndOoU3Lt/3g==}
     dev: true
     optional: true
 
@@ -8760,15 +8743,15 @@ packages:
     resolution: {integrity: sha512-lIhsdPvJ2RneBm3nGBBhQchpe3Uka//xf7WPHTIglery8gnckvW7Bd9IaQzekzXJvWthCMyi/xVEyGW0RFPytw==}
     requiresBuild: true
     dependencies:
-      jose: 4.14.3
+      jose: 4.14.4
       lru-cache: 6.0.0
       object-hash: 2.2.0
       oidc-token-hash: 5.0.3
     dev: true
     optional: true
 
-  /optimism/0.16.2:
-    resolution: {integrity: sha512-zWNbgWj+3vLEjZNIh/okkY2EUfX+vB9TJopzIZwT1xxaMqC5hRLLraePod4c5n4He08xuXNH+zhKFFCu390wiQ==}
+  /optimism/0.10.3:
+    resolution: {integrity: sha512-9A5pqGoQk49H6Vhjb9kPgAeeECfUDF6aIICbMDL23kDLStBn1MWk3YvcZ4xWF9CsSf6XEgvRLkXy4xof/56vVw==}
     dependencies:
       '@wry/context': 0.7.1
       '@wry/trie': 0.3.2
