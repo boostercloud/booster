@@ -89,7 +89,9 @@ describe('subscriptions', () => {
     let clients: DisconnectableApolloClient[]
     const clientCount = 2
     before(async () => {
-      clients = await Promise.all([Array(clientCount)].map(_ => applicationUnderTest.graphql.clientWithSubscriptions()))
+      clients = []
+      for (let i = 0; i < clientCount; i++)
+        clients.push(await applicationUnderTest.graphql.clientWithSubscriptions())
     })
     after(() => {
       clients.forEach(c => c.disconnect())
