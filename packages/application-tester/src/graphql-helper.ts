@@ -37,8 +37,6 @@ export class GraphQLHelper {
    */
   public async clientWithSubscriptions(authToken?: AuthToken): Promise<DisconnectableApolloClient> {
     const subscriptionClient: SubscriptionClient = await this.subscriptionsClient(authToken)
-    console.log(this.providerTestHelper.outputs.graphqlURL)
-    console.log(this.providerTestHelper.outputs.websocketURL)
 
     const link = split(
       ({ query }) => {
