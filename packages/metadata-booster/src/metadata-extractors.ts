@@ -63,7 +63,13 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
     const { name, isNullable } = getTypeInfoNameSafe(type, node)
     const isGetAccessor = Node.isGetAccessorDeclaration(node)
 
-    if (5 < depth) {
+    /*
+      This metadata is used for DTOs, since some of the types
+      introduced in newer versions of packages are recursive,
+      without a depth limit this will go into an infinite loop.
+      Eight levels should be enough for any DTO.
+    */
+    if (8 < depth) {
       return {
         name,
         typeName: null,
