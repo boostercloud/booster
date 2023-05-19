@@ -22,7 +22,7 @@ export class GraphQLHelper {
   public client(authToken?: AuthToken): ApolloClient<NormalizedCacheObject> {
     return new ApolloClient({
       cache: new InMemoryCache(),
-      link: this.getAuthLink(undefined, authToken).concat(this.getApolloHTTPLink()),
+      link: this.getAuthLink(authToken).concat(this.getApolloHTTPLink()),
       defaultOptions: {
         query: {
           fetchPolicy: 'no-cache',
@@ -45,8 +45,8 @@ export class GraphQLHelper {
         const definition = getMainDefinition(query)
         return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
       },
-      this.getAuthLink(subscriptionClient, authToken),
-      this.getAuthLink(undefined, authToken).concat(this.getApolloHTTPLink())
+      new WebSocketLink(subscriptionClient),
+      this.getAuthLink(authToken).concat(this.getApolloHTTPLink())
     )
 
     return new DisconnectableApolloClient(subscriptionClient, {
@@ -67,9 +67,7 @@ export class GraphQLHelper {
     })
   }
 
-  private getAuthLink(subscriptionClient?: SubscriptionClient, authToken?: string | (() => string)): ApolloLink {
-    if (subscriptionClient) return new WebSocketLink(subscriptionClient)
-
+  private getAuthLink(authToken?: AuthToken): ApolloLink {
     return new ApolloLink((operation, forward) => {
       if (authToken) {
         const token = typeof authToken == 'function' ? authToken() : authToken
