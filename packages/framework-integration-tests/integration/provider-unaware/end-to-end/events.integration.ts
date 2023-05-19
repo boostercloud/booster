@@ -1,7 +1,5 @@
-import { ApolloClient, ApolloQueryResult } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, ApolloQueryResult, NormalizedCacheObject, gql } from '@apollo/client'
 import { internet, random } from 'faker'
-import gql from 'graphql-tag'
 import { expect } from '../../helper/expect'
 import { sleep, waitForIt } from '../../helper/sleep'
 import {
@@ -735,7 +733,7 @@ describe('Events end-to-end tests', () => {
         let cursor: Record<'id', string> | undefined = undefined
         let count = 9999
         let pages = 0
-        const items = []
+        const items: any[] = []
         while (count != 0) {
           const result: any = await anonymousClient.mutate({
             variables: {

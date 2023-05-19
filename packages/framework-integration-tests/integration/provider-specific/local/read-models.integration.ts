@@ -1,5 +1,4 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject } from '@apollo/client'
 import { changeCartItem, graphQLClient } from './utils'
 import { random } from 'faker'
 import { expect } from 'chai'

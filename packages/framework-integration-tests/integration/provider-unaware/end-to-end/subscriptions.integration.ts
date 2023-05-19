@@ -1,12 +1,11 @@
 import { internet, random } from 'faker'
-import gql from 'graphql-tag'
 import { expect } from '../../helper/expect'
-import { Observable } from 'apollo-client/util/Observable'
 import { waitForIt } from '../../helper/sleep'
 import { FilterFor } from '@boostercloud/framework-types'
 import { DisconnectableApolloClient } from '@boostercloud/application-tester'
 import { applicationUnderTest } from './setup'
 import { beforeHookProductId } from '../../../src/constants'
+import { Observable, gql } from '@apollo/client'
 
 describe('subscriptions', () => {
   let countSubscriptions: () => Promise<number>
@@ -87,37 +86,31 @@ describe('subscriptions', () => {
   })
 
   describe('when socket reconnects ', () => {
-    let client: DisconnectableApolloClient
+    let clients: DisconnectableApolloClient[]
+    const clientCount = 2
     before(async () => {
-      client = await applicationUnderTest.graphql.clientWithSubscriptions()
+      clients = []
+      for (let i = 0; i < clientCount; i++)
+        clients.push(await applicationUnderTest.graphql.clientWithSubscriptions())
     })
     after(() => {
-      client.disconnect()
+      clients.forEach(c => c.disconnect())
     })
 
     it('keeps the same subscriptions', async () => {
       const cartID = random.uuid()
       const originalSubscriptionsCount = await countSubscriptions()
-      // Let's create two subscriptions to the same read model
-      const observableOne = cartSubscription(client, cartID)
-      const observableTwo = cartSubscription(client, cartID)
-      // Call the subscribe function to send the subscription to server
-      observableOne.subscribe(() => {})
-      observableTwo.subscribe(() => {})
-      // Wait for the subscriptions to arrive
-      await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 2)
-      // Check we receive data when the read model is modified
-      await cartMutation(client, cartID)
-      await expect(
-        Promise.all([promisifyNextSubscriptionResult(observableOne), promisifyNextSubscriptionResult(observableTwo)])
-      ).to.eventually.be.fulfilled
+      const observables = clients.map(c => cartSubscription(c, cartID))
+      observables.forEach(o => o.subscribe(() => {}));
+      await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + clientCount)
+      await verifySubscriptionsActive()
+      await Promise.all(clients.map(c => c.reconnect()))
+      await verifySubscriptionsActive()
 
-      // Now reconnect and see if we keep the having the same subscription and receive data
-      await client.reconnect()
-      await cartMutation(client, cartID)
-      await expect(
-        Promise.all([promisifyNextSubscriptionResult(observableOne), promisifyNextSubscriptionResult(observableTwo)])
-      ).to.eventually.be.fulfilled
+      async function verifySubscriptionsActive() {
+        await cartMutation(clients[0], cartID)
+        await expect(Promise.all(observables.map(promisifyNextSubscriptionResult))).to.eventually.be.fulfilled
+      }
     })
   })
 
@@ -259,13 +252,45 @@ describe('subscriptions', () => {
           )
           await waitForIt(
             () => Promise.resolve(error),
-            (error) => error !== undefined && error.message === 'GraphQL error: Access denied for this resource'
+            (error) => error !== undefined && error.message === 'Access denied for this resource'
+          )
+        })
+      })
+    })
+    
+    context('with a user without the required role', () => {
+      let loggedClient: DisconnectableApolloClient
+
+      beforeEach(async () => {
+        const userToken = applicationUnderTest.token.forUser(internet.email(), 'UserThatHasNoBusinesWithProducts')
+        loggedClient = await applicationUnderTest.graphql.clientWithSubscriptions(userToken)
+      })
+
+      afterEach(() => {
+        loggedClient.disconnect()
+      })
+
+      context('with a read model authorized for matching roles', () => {
+        it('should not be accessible', async () => {
+          const productId = random.uuid()
+
+          const observable = productSubscription(loggedClient, productId)
+          let error: undefined | { message: string }
+          observable.subscribe(
+            () => {},
+            (err: any) => {
+              error = err
+            }
+          )
+          await waitForIt(
+            () => Promise.resolve(error),
+            (error) => error !== undefined && error.message === 'Access denied for this resource'
           )
         })
       })
     })
 
-    context('with a user with a role', () => {
+    context('with a user with the required role', () => {
       let loggedClient: DisconnectableApolloClient
 
       beforeEach(async () => {

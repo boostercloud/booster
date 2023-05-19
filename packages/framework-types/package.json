@@ -33,8 +33,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "dependencies": {
-    "@types/graphql": "14.5.0",
-    "graphql": "^15.5.1",
+    "graphql": "16.6.0",
     "tslib": "^2.4.0",
     "uuid": "8.3.2",
     "@effect-ts/core": "^0.60.4",

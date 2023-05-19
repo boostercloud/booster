@@ -1,9 +1,7 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { applicationUnderTest } from './setup'
 import { internet, random } from 'faker'
 import { expect } from './expect'
-import gql from 'graphql-tag'
 import {
   commandHandlerBeforeErrorCartId,
   commandHandlerBeforeErrorCartMessage,
@@ -25,7 +23,7 @@ describe('Global error handler', async () => {
 
   context('CommandHandler', async () => {
     it('should update error object when handler fails', async () => {
-      const expectedErrorMessage = `GraphQL error: ${commandHandlerErrorCartMessage}-onCommandHandlerError-onError`
+      const expectedErrorMessage = `${commandHandlerErrorCartMessage}-onCommandHandlerError-onError`
       await expect(
         client.mutate({
           variables: {
@@ -60,7 +58,7 @@ describe('Global error handler', async () => {
     })
 
     it('should update error object when onBefore fails', async () => {
-      const expectedErrorMessage = `GraphQL error: ${commandHandlerBeforeErrorCartMessage}-onBeforeCommandHandlerError-onError`
+      const expectedErrorMessage = `${commandHandlerBeforeErrorCartMessage}-onBeforeCommandHandlerError-onError`
       await expect(
         client.mutate({
           variables: {
@@ -80,7 +78,7 @@ describe('Global error handler', async () => {
 
   context('QueryHandler', async () => {
     it('should update error object when handler fails', async () => {
-      const expectedErrorMessage = `GraphQL error: ${queryHandlerErrorCartMessage}-onQueryHandlerError-onError`
+      const expectedErrorMessage = `${queryHandlerErrorCartMessage}-onQueryHandlerError-onError`
       await expect(
         client.mutate({
           variables: {
