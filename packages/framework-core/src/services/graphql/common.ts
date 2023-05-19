@@ -45,19 +45,16 @@ export interface GraphQLResolverContext {
 function parseDate(inputValue: unknown): Date {
   const result = safeParse()
   switch (result.type) {
-    case "success":
-      return result.date;
-    case "error":
-      throw new Error(result.message);
+    case 'success':
+      return result.date
+    case 'error':
+      throw new Error(result.message)
   }
 
-  function safeParse(): { type: "success"; date: Date } | { type: "error"; message: string } {
-    if (typeof inputValue === 'string')
-      return { type: "error", message: `Invalid date, not a string: ${inputValue}` }
+  function safeParse(): { type: 'success'; date: Date } | { type: 'error'; message: string } {
+    if (typeof inputValue !== 'string') return { type: 'error', message: `Invalid date, not a string: ${inputValue}` }
     const date = new Date(inputValue as string) // Verified that it's a string, so it's safe to cast.
-    return isNaN(date.getTime())
-      ? { type: "error", message: `Invalid date: ${inputValue}`}
-      : { type: "success", date }
+    return isNaN(date.getTime()) ? { type: 'error', message: `Invalid date: ${inputValue}` } : { type: 'success', date }
   }
 }
 
@@ -73,7 +70,7 @@ export const DateScalar = new GraphQLScalarType<Date, string>({
       return parseDate(ast.value)
     }
     // This should never happen, it's not safe, but the safeguards at the edges should guarantee this.
-    return (null as unknown as Date)
+    return null as unknown as Date
   },
 })
 
