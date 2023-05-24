@@ -1,6 +1,14 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 05 May 2023 12:14:49 GMT and should not be manually modified.
+This log was last generated on Wed, 24 May 2023 14:42:54 GMT and should not be manually modified.
+
+## 1.11.1
+Wed, 24 May 2023 14:42:54 GMT
+
+### Patches
+
+- Return ReadModel instance when querying by id
+- Updated GraphQL to latest version
 
 ## 1.11.0
 Fri, 05 May 2023 12:14:49 GMT
