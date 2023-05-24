@@ -13,7 +13,7 @@ import {
   SortFor,
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
-import { createInstances, getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstance, createInstances, getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
@@ -39,12 +39,13 @@ export class BoosterReadModelsReader {
     }
     const currentReadModel = await Booster.readModel(readModelMetadata.class).findById(key.id, key.sequenceKey)
     if (currentReadModel) {
+      const readModelInstance = createInstance(readModelMetadata.class, currentReadModel)
       const readModelName = readModelMetadata.class.name
       const readModelSchemaMigrator = new ReadModelSchemaMigrator(this.config)
-      if (Array.isArray(currentReadModel)) {
-        return [await readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel[0], readModelName)]
+      if (Array.isArray(readModelInstance)) {
+        return [await readModelSchemaMigrator.migrate(<ReadModelInterface>readModelInstance[0], readModelName)]
       }
-      return readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel, readModelName)
+      return readModelSchemaMigrator.migrate(<ReadModelInterface>readModelInstance, readModelName)
     }
     return currentReadModel
   }
