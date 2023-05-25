@@ -89,7 +89,7 @@ export class BoosterEventDispatcher {
     for (const eventEnvelope of entityEventEnvelopes) {
       const eventHandlers = config.eventHandlers[eventEnvelope.typeName]
       const globalEventHandler = config.globalEventHandler
-      if ((!eventHandlers || eventHandlers.length == 0) && !globalEventHandler) {
+      if (this.eventHandlersEmpty(eventHandlers, globalEventHandler)) {
         logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
         continue
       }
@@ -107,6 +107,13 @@ export class BoosterEventDispatcher {
         await this.callEventHandler(globalEventHandler, eventInstance, eventEnvelope, config)
       }
     }
+  }
+
+  private static eventHandlersEmpty(
+    eventHandlers: Array<EventHandlerInterface>,
+    globalEventHandler: EventHandlerInterface | undefined
+  ): boolean {
+    return (!eventHandlers || eventHandlers.length == 0) && !globalEventHandler
   }
 
   private static getEventInstance(
