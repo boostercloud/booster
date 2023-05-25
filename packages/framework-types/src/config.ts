@@ -62,7 +62,6 @@ export class BoosterConfig {
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
   public readonly queryHandlers: Record<QueryName, QueryMetadata> = {}
-  public globalEventHandler: EventHandlerInterface | undefined = undefined
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}

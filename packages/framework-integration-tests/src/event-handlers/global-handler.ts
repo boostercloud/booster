@@ -1,5 +1,5 @@
 import { EventInterface, NotificationInterface, Register } from '@boostercloud/framework-types'
-import { GlobalEventHandler } from '@boostercloud/framework-core/dist/decorators/global-event-handler'
+import { GlobalEventHandler } from '@boostercloud/framework-core'
 import { LogEventReceived } from '../events/log-event-received'
 import { LogEventReceivedTest } from '../events/log-event-received-test'
 

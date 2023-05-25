@@ -14,6 +14,7 @@ import { RegisterHandler } from './booster-register-handler'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { createInstance, getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { NotificationInterface } from 'framework-types/dist'
+import { GLOBAL_EVENT_HANDLER } from './decorators'
 
 export class BoosterEventDispatcher {
   /**
@@ -87,9 +88,12 @@ export class BoosterEventDispatcher {
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher.dispatchEntityEventsToEventHandlers')
     for (const eventEnvelope of entityEventEnvelopes) {
-      const eventHandlers = config.eventHandlers[eventEnvelope.typeName]
-      const globalEventHandler = config.globalEventHandler
-      if (this.eventHandlersEmpty(eventHandlers, globalEventHandler)) {
+      let eventHandlers = config.eventHandlers[eventEnvelope.typeName] || []
+      const globalEventHandler = config.eventHandlers[GLOBAL_EVENT_HANDLER]
+      if (globalEventHandler && Object.keys(globalEventHandler).length > 0) {
+        eventHandlers = eventHandlers.concat(globalEventHandler)
+      }
+      if (!eventHandlers || eventHandlers.length == 0) {
         logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
         continue
       }
@@ -102,20 +106,8 @@ export class BoosterEventDispatcher {
           })
         )
       }
-      if (globalEventHandler) {
-        logger.debug('Calling "handle" method on global event handler')
-        await this.callEventHandler(globalEventHandler, eventInstance, eventEnvelope, config)
-      }
     }
   }
-
-  private static eventHandlersEmpty(
-    eventHandlers: Array<EventHandlerInterface>,
-    globalEventHandler: EventHandlerInterface | undefined
-  ): boolean {
-    return (!eventHandlers || eventHandlers.length == 0) && !globalEventHandler
-  }
-
   private static getEventInstance(
     config: BoosterConfig,
     eventEnvelope: EventEnvelope | NotificationInterface
