@@ -276,7 +276,7 @@ describe('BoosterEventDispatcher', () => {
 
       it('calls global handler for the current event if defined', async () => {
         const fakeGlobalHandler = fake()
-        config.globalEventHandler = { handle: fakeGlobalHandler }
+        config.eventHandlers[SomeEvent.name] = [{ handle: fakeGlobalHandler }]
 
         replace(RegisterHandler, 'handle', fake())
 
@@ -293,9 +293,12 @@ describe('BoosterEventDispatcher', () => {
       it('calls all the handlers for the current event', async () => {
         const fakeHandler1 = fake()
         const fakeHandler2 = fake()
-        config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
         const fakeGlobalHandler = fake()
-        config.globalEventHandler = { handle: fakeGlobalHandler }
+        config.eventHandlers[SomeEvent.name] = [
+          { handle: fakeHandler1 },
+          { handle: fakeHandler2 },
+          { handle: fakeGlobalHandler },
+        ]
 
         replace(RegisterHandler, 'handle', fake())
 
@@ -314,10 +317,12 @@ describe('BoosterEventDispatcher', () => {
       it('calls all the handlers, even if the event is stored in the notifications field instead of the events one', async () => {
         const fakeHandler1 = fake()
         const fakeHandler2 = fake()
-        config.eventHandlers[SomeNotification.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
         const fakeGlobalHandler = fake()
-        config.globalEventHandler = { handle: fakeGlobalHandler }
-
+        config.eventHandlers[SomeNotification.name] = [
+          { handle: fakeHandler1 },
+          { handle: fakeHandler2 },
+          { handle: fakeGlobalHandler },
+        ]
 
         replace(RegisterHandler, 'handle', fake())
 
@@ -347,7 +352,7 @@ describe('BoosterEventDispatcher', () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         await boosterEventDispatcher.dispatchEntityEventsToEventHandlers([someEvent], config)
 
-        expect(RegisterHandler.handle).to.have.been.calledThrice
+        expect(RegisterHandler.handle).to.have.been.calledTwice
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister1)
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister2)
       })
