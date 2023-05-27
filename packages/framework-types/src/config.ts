@@ -71,6 +71,7 @@ export class BoosterConfig {
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
+  public enableSubscriptions = true
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
   public registerRocketFunction(id: string, func: RocketFunction): void {

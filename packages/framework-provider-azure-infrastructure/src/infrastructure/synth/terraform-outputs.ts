@@ -9,8 +9,8 @@ export class TerraformOutputs {
     appPrefix: string,
     resourceGroupResource: resourceGroup.ResourceGroup,
     graphQLApiManagementApiOperationResource: apiManagementApiOperation.ApiManagementApiOperation,
-    webPubsubResource: webPubsub.WebPubsub,
-    hubName: string
+    hubName: string,
+    webPubsubResource?: webPubsub.WebPubsub
   ): void {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
     const baseUrl = `https://${resourceGroupResource.name}apis.azure-api.net/${environment}`
@@ -24,9 +24,11 @@ export class TerraformOutputs {
       description: 'The base URL for sending GraphQL mutations and queries',
     })
 
-    new TerraformOutput(providerResource, 'websocketURL', {
-      value: `wss://${webPubsubResource.hostname}/client/hubs/${hubName}`,
-      description: 'The URL for the websocket communication. Used for subscriptions',
-    })
+    if (webPubsubResource) {
+      new TerraformOutput(providerResource, 'websocketURL', {
+        value: `wss://${webPubsubResource.hostname}/client/hubs/${hubName}`,
+        description: 'The URL for the websocket communication. Used for subscriptions',
+      })
+    }
   }
 }

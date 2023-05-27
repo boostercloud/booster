@@ -27,7 +27,6 @@ import {
   sendMessageToConnection,
   storeConnectionData,
 } from './library/connections-adapter'
-import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
 import {
   deleteAllSubscriptions,
   deleteSubscription,
@@ -37,6 +36,7 @@ import {
 import { WebSocketRegistry } from './services/web-socket-registry'
 import { connectionsDatabase, subscriptionDatabase } from './paths'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
+import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
 
 export * from './paths'
 export * from './services'

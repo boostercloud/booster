@@ -6,7 +6,7 @@ import { GraphQLStack } from './graphql-stack'
 import { ScheduledCommandStack } from './scheduled-commands-stack'
 import { RestApi } from '@aws-cdk/aws-apigateway'
 import { CfnApi, CfnStage } from '@aws-cdk/aws-apigatewayv2'
-import { baseURLForAPI } from '../params'
+import { APIs, baseURLForAPI } from '../params'
 import { setupPermissions } from './permissions'
 import { InfrastructureRocket } from '../../rockets/infrastructure-rocket'
 
@@ -21,10 +21,11 @@ export class ApplicationStackBuilder {
   public buildOn(app: App, rockets?: InfrastructureRocket[]): void {
     const stack = buildStack(app, this.config.resourceNames.applicationStack, this.props)
     const restAPI = this.buildRootRESTAPI(stack)
-    const websocketAPI = this.buildRootWebSocketAPI(stack)
-    const apis = {
+    const apis: APIs = {
       restAPI,
-      websocketAPI,
+    }
+    if (this.config.enableSubscriptions) {
+      apis.websocketAPI = this.buildRootWebSocketAPI(stack)
     }
 
     const readModelTables = new ReadModelsStack(this.config, stack).build()
@@ -32,7 +33,7 @@ export class ApplicationStackBuilder {
     const scheduledCommandStack = new ScheduledCommandStack(this.config, stack, apis).build()
     const eventsStack = new EventsStack(this.config, stack, apis).build()
 
-    setupPermissions(graphQLStack, eventsStack, readModelTables, websocketAPI, scheduledCommandStack)
+    setupPermissions(this.config, graphQLStack, eventsStack, readModelTables, apis.websocketAPI, scheduledCommandStack)
 
     // Load rockets
     rockets?.forEach((rocket) => rocket.mountStack(stack, this.config))

@@ -39,24 +39,27 @@ export class TerraformContainers {
         cosmosdbSqlDatabaseResource
       )
     )
-    const subscriptionsContainer = this.createSubscriptionsContainer(
-      providerResource,
-      appPrefix,
-      terraformStackResource,
-      config,
-      cosmosdbDatabaseResource,
-      cosmosdbSqlDatabaseResource
-    )
+    if (config.enableSubscriptions) {
+      const subscriptionsContainer = this.createSubscriptionsContainer(
+        providerResource,
+        appPrefix,
+        terraformStackResource,
+        config,
+        cosmosdbDatabaseResource,
+        cosmosdbSqlDatabaseResource
+      )
 
-    const connectionsContainer = this.createConnectionsContainer(
-      providerResource,
-      appPrefix,
-      terraformStackResource,
-      config,
-      cosmosdbDatabaseResource,
-      cosmosdbSqlDatabaseResource
-    )
-    return [cosmosdbSqlEventContainer, subscriptionsContainer, connectionsContainer].concat(readModels)
+      const connectionsContainer = this.createConnectionsContainer(
+        providerResource,
+        appPrefix,
+        terraformStackResource,
+        config,
+        cosmosdbDatabaseResource,
+        cosmosdbSqlDatabaseResource
+      )
+      return [cosmosdbSqlEventContainer, subscriptionsContainer, connectionsContainer].concat(readModels)
+    }
+    return [cosmosdbSqlEventContainer].concat(readModels)
   }
 
   private static createEventContainer(

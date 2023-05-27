@@ -78,18 +78,19 @@ export class FunctionZip {
   static buildAzureFunctions(config: BoosterConfig): Array<FunctionDefinition> {
     const graphqlFunctionDefinition = new GraphqlFunction(config).getFunctionDefinition()
     const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
-    const connectFunctionDefinition = new WebsocketConnectFunction(config).getFunctionDefinition()
-    const disconnectFunctionDefinition = new WebsocketDisconnectFunction(config).getFunctionDefinition()
-    const messagesFunctionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
-    let featuresDefinitions = [
-      graphqlFunctionDefinition,
-      eventHandlerFunctionDefinition,
-      connectFunctionDefinition,
-      disconnectFunctionDefinition,
-      messagesFunctionDefinition,
-    ]
-    const subscriptionsNotifierFunctionDefinition = new SubscriptionsNotifierFunction(config).getFunctionDefinition()
-    featuresDefinitions = featuresDefinitions.concat(subscriptionsNotifierFunctionDefinition)
+    let featuresDefinitions = [graphqlFunctionDefinition, eventHandlerFunctionDefinition]
+    if (config.enableSubscriptions) {
+      const messagesFunctionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
+      const disconnectFunctionDefinition = new WebsocketDisconnectFunction(config).getFunctionDefinition()
+      const connectFunctionDefinition = new WebsocketConnectFunction(config).getFunctionDefinition()
+      const subscriptionsNotifierFunctionDefinition = new SubscriptionsNotifierFunction(config).getFunctionDefinition()
+      const subscriptionsFeaturesDefinitions = [
+        connectFunctionDefinition,
+        disconnectFunctionDefinition,
+        messagesFunctionDefinition,
+      ]
+      featuresDefinitions.push(...subscriptionsFeaturesDefinitions, ...subscriptionsNotifierFunctionDefinition)
+    }
     const scheduledFunctionsDefinition = new ScheduledFunctions(config).getFunctionDefinitions()
     if (scheduledFunctionsDefinition) {
       featuresDefinitions = featuresDefinitions.concat(scheduledFunctionsDefinition)
@@ -152,7 +153,9 @@ export class FunctionZip {
     archive.pipe(output)
     archive.directory('.deploy-base', false)
 
-    this.appendBaseFunction(config, archive, name)
+    if (config.enableSubscriptions) {
+      this.appendBaseFunction(config, archive, name)
+    }
     this.appendDefaultHostConfig(archive)
     await archive.finalize()
     return new Promise((resolve, reject) => {

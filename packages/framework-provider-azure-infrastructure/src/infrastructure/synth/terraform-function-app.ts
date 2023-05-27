@@ -1,5 +1,5 @@
 import { TerraformStack } from 'cdktf'
-import { windowsFunctionApp, resourceGroup, storageAccount, webPubsub, servicePlan } from '@cdktf/provider-azurerm'
+import { resourceGroup, servicePlan, storageAccount, webPubsub, windowsFunctionApp } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
@@ -11,14 +11,14 @@ export class TerraformFunctionApp {
     resourceGroupResource: resourceGroup.ResourceGroup,
     servicePlanResource: servicePlan.ServicePlan,
     storageAccountResource: storageAccount.StorageAccount,
-    webPubsubResource: webPubsub.WebPubsub,
     appPrefix: string,
     functionAppName: string,
     cosmosDatabaseName: string,
     apiManagementServiceName: string,
     cosmosDbConnectionString: string,
     config: BoosterConfig,
-    zipFile: string
+    zipFile: string,
+    webPubsubResource?: webPubsub.WebPubsub
   ): windowsFunctionApp.WindowsFunctionApp {
     const id = toTerraformName(appPrefix, 'func')
     return new windowsFunctionApp.WindowsFunctionApp(terraformStackResource, id, {
@@ -27,7 +27,7 @@ export class TerraformFunctionApp {
       resourceGroupName: resourceGroupResource.name,
       servicePlanId: servicePlanResource.id,
       appSettings: {
-        WebPubSubConnectionString: webPubsubResource.primaryConnectionString,
+        WebPubSubConnectionString: webPubsubResource?.primaryConnectionString || '',
         WEBSITE_RUN_FROM_PACKAGE: '1',
         WEBSITE_CONTENTSHARE: id,
         ...config.env,
