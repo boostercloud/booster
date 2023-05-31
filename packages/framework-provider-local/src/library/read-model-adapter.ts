@@ -60,11 +60,13 @@ export async function storeReadModel(
     throw e
   }
   logger.debug('Read model stored')
-  try {
-    await graphQLService.handleNotificationSubscription([{ typeName: readModelName, value: readModel }])
-    logger.debug('Read model change notified')
-  } catch (e) {
-    logger.error('Error notifying subscription', readModel)
+  if (config.enableSubscriptions) {
+    try {
+      await graphQLService.handleNotificationSubscription([{ typeName: readModelName, value: readModel }])
+      logger.debug('Read model change notified')
+    } catch (e) {
+      logger.error('Error notifying subscription', readModel)
+    }
   }
 }
 

@@ -324,6 +324,11 @@ mutation {
 Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 :::
 
+:::note
+You can disable the creation of all the infrastructure and functionality needed to manage subscriptions by setting `config.enableSubscriptions=false` in your `Booster.config` block
+:::
+
+
 ## Adding before hooks to your read models
 
 When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive a `ReadModelRequestEnvelope` object representing the current request.

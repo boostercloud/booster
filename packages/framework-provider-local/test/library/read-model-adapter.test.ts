@@ -88,6 +88,7 @@ describe('read-models-adapter', () => {
   beforeEach(() => {
     mockConfig = new BoosterConfig('test')
     mockConfig.appName = 'nuke-button'
+    mockConfig.enableSubscriptions = true
 
     loggerDebugStub = stub()
     storeStub = stub()

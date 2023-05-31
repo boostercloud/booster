@@ -90,12 +90,15 @@ export class ApplicationSynth {
       this.config
     )
 
-    const webPubSubResource = TerraformWebPubsub.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      this.appPrefix
-    )
+    let webPubSubResource
+    if (this.config.enableSubscriptions) {
+      webPubSubResource = TerraformWebPubsub.build(
+        azurermProvider,
+        this.terraformStackResource,
+        resourceGroupResource,
+        this.appPrefix
+      )
+    }
 
     const functionAppResource = TerraformFunctionApp.build(
       azurermProvider,
@@ -103,14 +106,14 @@ export class ApplicationSynth {
       resourceGroupResource,
       servicePlanResource,
       storageAccountResource,
-      webPubSubResource,
       this.appPrefix,
       functionAppName,
       cosmosdbDatabaseResource.name,
       apiManagementName,
       cosmosdbDatabaseResource.primaryKey,
       this.config,
-      zipFile
+      zipFile,
+      webPubSubResource
     )
 
     const apiManagementResource = TerraformApiManagement.build(
@@ -151,34 +154,37 @@ export class ApplicationSynth {
       'graphql'
     )
 
-    const functionAppDataResource = TerraformWebPubSubExtensionKey.build(
-      this.config,
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      functionAppResource,
-      this.appPrefix
-    )
+    let webPubSubHubResource
 
-    const webPubSubHubResource = TerraformWebPubsubHub.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      webPubSubResource,
-      this.appPrefix,
-      functionAppResource,
-      functionAppDataResource,
-      hubName
-    )
+    if (webPubSubResource) {
+      const functionAppDataResource = TerraformWebPubSubExtensionKey.build(
+        this.config,
+        azurermProvider,
+        this.terraformStackResource,
+        resourceGroupResource,
+        functionAppResource,
+        this.appPrefix
+      )
 
+      webPubSubHubResource = TerraformWebPubsubHub.build(
+        azurermProvider,
+        this.terraformStackResource,
+        resourceGroupResource,
+        webPubSubResource,
+        this.appPrefix,
+        functionAppResource,
+        functionAppDataResource,
+        hubName
+      )
+    }
     TerraformOutputs.build(
       azurermProvider,
       this.terraformStackResource,
       this.appPrefix,
       resourceGroupResource,
       graphQLApiManagementApiOperationResource,
-      webPubSubResource,
-      hubName
+      hubName,
+      webPubSubResource
     )
 
     return {
