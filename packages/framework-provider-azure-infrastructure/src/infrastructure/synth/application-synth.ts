@@ -155,7 +155,8 @@ export class ApplicationSynth {
     )
 
     let webPubSubHubResource
-    if (this.config.enableSubscriptions) {
+
+    if (webPubSubResource) {
       const functionAppDataResource = TerraformWebPubSubExtensionKey.build(
         this.config,
         azurermProvider,
@@ -165,18 +166,16 @@ export class ApplicationSynth {
         this.appPrefix
       )
 
-      if (webPubSubResource) {
-        webPubSubHubResource = TerraformWebPubsubHub.build(
-          azurermProvider,
-          this.terraformStackResource,
-          resourceGroupResource,
-          webPubSubResource,
-          this.appPrefix,
-          functionAppResource,
-          functionAppDataResource,
-          hubName
-        )
-      }
+      webPubSubHubResource = TerraformWebPubsubHub.build(
+        azurermProvider,
+        this.terraformStackResource,
+        resourceGroupResource,
+        webPubSubResource,
+        this.appPrefix,
+        functionAppResource,
+        functionAppDataResource,
+        hubName
+      )
     }
     TerraformOutputs.build(
       azurermProvider,

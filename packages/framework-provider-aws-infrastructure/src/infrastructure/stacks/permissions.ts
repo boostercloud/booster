@@ -16,10 +16,13 @@ export const setupPermissions = (
   websocketAPI?: CfnApi,
   scheduledCommandStack?: ScheduledCommandStackMembers
 ): void => {
+  if (config.enableSubscriptions && !websocketAPI) {
+    throw new Error('WebsocketAPI undefined with enableSubscriptions enabled')
+  }
   const { graphQLLambda, subscriptionsStore, subscriptionNotifier, connectionsStore } = graphQLStack
   const { eventsLambda, eventsStore } = eventsStack
   const scheduledLambda = scheduledCommandStack?.scheduledLambda
-  if (config.enableSubscriptions && websocketAPI) {
+  if (websocketAPI) {
     const websocketManageConnectionsPolicy = createPolicyStatement(
       [
         Fn.join(':', [

@@ -325,7 +325,7 @@ Remember that, in case you want to subscribe to a read model that is restricted 
 :::
 
 :::note
-You can disable the creation of the artifacts needed to manage subscriptions by using `config.enableSubscriptions=false`.
+You can disable the creation of all the infrastructure and functionality needed to manage subscriptions by setting `config.enableSubscriptions=false` in your `Booster.config` block
 :::
 
 
