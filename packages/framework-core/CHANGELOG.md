@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 24 May 2023 14:42:54 GMT and should not be manually modified.
+This log was last generated on Wed, 31 May 2023 14:25:34 GMT and should not be manually modified.
+
+## 1.12.0
+Wed, 31 May 2023 14:25:34 GMT
+
+### Minor changes
+
+- Disable subscriptions
 
 ## 1.11.1
 Wed, 24 May 2023 14:42:54 GMT
