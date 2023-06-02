@@ -17,7 +17,7 @@ function configureInvocationsHandler(config: BoosterConfig) {
     enableTraceNotification: true,
     includeInternal: false,
     onStart: customTracer.onStart,
-    onEnd: customTracer.onStart,
+    onEnd: customTracer.onEnd,
   }
 }
 
