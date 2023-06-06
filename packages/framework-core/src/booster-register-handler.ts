@@ -16,8 +16,6 @@ import { BoosterEntityMigrated } from './core-concepts/data-migration/events/boo
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { Booster } from './booster'
-import { BoosterEntityTouchFinished } from './core-concepts/touch-entity/events/booster-entity-touch-finished'
-import { BoosterEntityTouchStarted } from './core-concepts/touch-entity/events/booster-entity-touch-started'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
 
 const boosterEventsTypesNames: Array<string> = [
@@ -25,8 +23,6 @@ const boosterEventsTypesNames: Array<string> = [
   BoosterDataMigrationStarted.name,
   BoosterDataMigrationFinished.name,
   BoosterEntityTouched.name,
-  BoosterEntityTouchStarted.name,
-  BoosterEntityTouchFinished.name,
 ]
 
 export class RegisterHandler {

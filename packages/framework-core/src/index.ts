@@ -6,9 +6,6 @@ export { BoosterDataMigrations } from './booster-data-migrations'
 export { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 export { BoosterDataMigrationEntity } from './core-concepts/data-migration/entities/booster-data-migration-entity'
 export { BoosterTouchEntityHandler } from './booster-touch-entity-handler'
-export { BoosterEntityTouchStarted } from './core-concepts/touch-entity/events/booster-entity-touch-started'
-export { BoosterEntityTouchFinished } from './core-concepts/touch-entity/events/booster-entity-touch-finished'
-export { BoosterTouchEntityEntity } from './core-concepts/touch-entity/entities/booster-touch-entity-entity'
 export {
   boosterEventDispatcher,
   boosterServeGraphQL,
