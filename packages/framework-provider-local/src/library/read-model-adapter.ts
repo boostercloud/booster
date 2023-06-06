@@ -9,7 +9,7 @@ import {
   SortFor,
   UUID,
 } from '@boostercloud/framework-types'
-import { GraphQLService, ReadModelRegistry } from '../services'
+import { GraphQLService, NedbError, ReadModelRegistry, UNIQUE_VIOLATED_ERROR_TYPE } from '../services'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { queryRecordFor } from './searcher-adapter'
 
@@ -44,17 +44,21 @@ export async function storeReadModel(
   config: BoosterConfig,
   readModelName: string,
   readModel: ReadModelInterface,
-  _expectedCurrentVersion: number
+  expectedCurrentVersion: number
 ): Promise<void> {
   const logger = getLogger(config, 'read-model-adapter#storeReadModel')
   logger.debug('Storing readModel ' + JSON.stringify(readModel))
   try {
-    await db.store({ typeName: readModelName, value: readModel } as ReadModelEnvelope)
+    await db.store({ typeName: readModelName, value: readModel } as ReadModelEnvelope, expectedCurrentVersion)
   } catch (e) {
-    const error = e as Error
+    const error = e as NedbError
     // The error will be thrown, but in case of a conditional check, we throw the expected error type by the core
-    // TODO: verify the name of the exception thrown in Local Provider
-    if (error.name == 'TODO') {
+    if (error.errorType == UNIQUE_VIOLATED_ERROR_TYPE) {
+      logger.warn(
+        `Unique violated storing ReadModel ${JSON.stringify(
+          readModel
+        )} and expectedCurrentVersion ${expectedCurrentVersion}`
+      )
       throw new OptimisticConcurrencyUnexpectedVersionError(error.message)
     }
     throw e

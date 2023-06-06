@@ -9,6 +9,10 @@ export function createMockReadModelEnvelope(): ReadModelEnvelope {
       age: random.number(40),
       foo: random.word(),
       bar: random.float(),
+      boosterMetadata: {
+        version: 1,
+        schemaVersion: 1,
+      },
     },
     typeName: random.word(),
   }
