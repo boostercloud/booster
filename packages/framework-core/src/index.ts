@@ -5,6 +5,7 @@ export * from './decorators'
 export { BoosterDataMigrations } from './booster-data-migrations'
 export { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 export { BoosterDataMigrationEntity } from './core-concepts/data-migration/entities/booster-data-migration-entity'
+export { BoosterTouchEntityHandler } from './booster-touch-entity-handler'
 export {
   boosterEventDispatcher,
   boosterServeGraphQL,
