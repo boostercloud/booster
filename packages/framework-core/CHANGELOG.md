@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 31 May 2023 14:25:34 GMT and should not be manually modified.
+This log was last generated on Wed, 07 Jun 2023 14:31:25 GMT and should not be manually modified.
+
+## 1.13.0
+Wed, 07 Jun 2023 14:31:25 GMT
+
+### Minor changes
+
+- Add touch entities
 
 ## 1.12.0
 Wed, 31 May 2023 14:25:34 GMT
