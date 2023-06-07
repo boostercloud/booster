@@ -111,7 +111,7 @@ export class EventStore {
   private async entityReducer(
     eventEnvelope: EventEnvelope,
     latestSnapshot?: NonPersistedEntitySnapshotEnvelope
-  ): Promise<NonPersistedEntitySnapshotEnvelope> {
+  ): Promise<NonPersistedEntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
       if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
@@ -164,12 +164,16 @@ export class EventStore {
   private reduceEntityTouched(
     eventEnvelope: EventEnvelope,
     latestSnapshot: NonPersistedEntitySnapshotEnvelope | undefined
-  ): NonPersistedEntitySnapshotEnvelope {
+  ): NonPersistedEntitySnapshotEnvelope | undefined {
+    const logger = getLogger(this.config, 'EventStore#reduceEntityTouched')
+    logger.debug('Reducing ', eventEnvelope, ' with latestSnapshot')
+    if (!latestSnapshot) {
+      logger.debug('Latest snapshot not found, returning')
+      return
+    }
+
     const event = eventEnvelope.value as BoosterEntityTouched
     const entityMetadata = this.config.entities[event.entityName]
-    if (!latestSnapshot) {
-      throw new Error(`Could not touch entity ${event.entityName} with id ${event.entityId}. Snapshot not found`)
-    }
     const snapshotInstance = createInstance(entityMetadata.class, latestSnapshot.value)
     return this.toBoosterEntitySnapshot(eventEnvelope, snapshotInstance, event.entityName)
   }
