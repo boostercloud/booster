@@ -27,12 +27,12 @@ describe('the `Trace` decorator', async () => {
     it('onStart and onEnd methods are called in the expected order', async () => {
       const executedMethods: Array<string> = []
       stub(CustomTracer, 'onStart').callsFake(
-        async (_config: BoosterConfig, _actionType: TraceActionTypes, _traceInfo: TraceInfo): Promise<void> => {
+        async (_config: BoosterConfig, _actionType: string, _traceInfo: TraceInfo): Promise<void> => {
           executedMethods.push('onStart')
         }
       )
       stub(CustomTracer, 'onEnd').callsFake(
-        async (_config: BoosterConfig, _actionType: TraceActionTypes, _traceInfo: TraceInfo): Promise<void> => {
+        async (_config: BoosterConfig, _actionType: string, _traceInfo: TraceInfo): Promise<void> => {
           executedMethods.push('onEnd')
         }
       )
@@ -62,7 +62,7 @@ class TestClass {
 }
 
 class CustomTracer {
-  static async onStart(_config: BoosterConfig, _actionType: TraceActionTypes, _traceInfo: TraceInfo): Promise<void> {}
+  static async onStart(_config: BoosterConfig, _actionType: string, _traceInfo: TraceInfo): Promise<void> {}
 
-  static async onEnd(_config: BoosterConfig, _actionType: TraceActionTypes, _traceInfo: TraceInfo): Promise<void> {}
+  static async onEnd(_config: BoosterConfig, _actionType: string, _traceInfo: TraceInfo): Promise<void> {}
 }

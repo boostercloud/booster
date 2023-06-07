@@ -16,12 +16,12 @@ import {
 } from '@boostercloud/framework-types'
 
 class MyTracer {
-  static async onStart(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): Promise<void> {
-    console.log(`Start ${TraceActionTypes[actionType]}: ${traceParameters.className}.${traceParameters.methodName}`)
+  static async onStart(config: BoosterConfig, actionType: string, traceParameters: TraceParameters): Promise<void> {
+    console.log(`Start ${actionType}: ${traceParameters.className}.${traceParameters.methodName}`)
   }
 
-  static async onEnd(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): Promise<void> {
-    console.log(`End ${TraceActionTypes[actionType]}: ${traceParameters.className}.${traceParameters.methodName}`)
+  static async onEnd(config: BoosterConfig, actionType: string, traceParameters: TraceParameters): Promise<void> {
+    console.log(`End ${actionType}: ${traceParameters.className}.${traceParameters.methodName}`)
   }
 }
 ```
@@ -53,7 +53,7 @@ import { MyTracer } from './my-tracer'
 const config: BoosterConfig = {
 // ...other configuration options...
   trace: {
-    enableTraceNotification: [TraceActionTypes.DISPATCH_EVENT, TraceActionTypes.MIGRATION_RUN],
+    enableTraceNotification: [TraceActionTypes.DISPATCH_EVENT, TraceActionTypes.MIGRATION_RUN, 'OTHER'],
     includeInternal: false,
     onStart: MyTracer.onStart,
     onEnd: MyTracer.onStart,
@@ -61,9 +61,10 @@ const config: BoosterConfig = {
 }
 ```
 
-In this example, only DISPATCH_EVENT and MIGRATION_RUN actions will trigger trace notifications.
+In this example, only DISPATCH_EVENT, MIGRATION_RUN and 'OTHER' actions will trigger trace notifications.
 
 ### TraceActionTypes
+
 The TraceActionTypes enum defines all the traceable actions in Booster's core:
 
 ```typescript
@@ -122,7 +123,7 @@ import { Trace } from '@boostercloud/framework-core'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 
 export class MyCustomClass {
-  @Trace()
+  @Trace('OTHER')
   public async myCustomMethod(config: BoosterConfig, logger: Logger): Promise<void> {
     logger.debug('This is my custom method')
     // Do some custom logic here...
@@ -130,6 +131,6 @@ export class MyCustomClass {
 }
 ```
 
-In the example above, we added the @Trace() decorator to the myCustomMethod method. This will cause the method to emit trace events when it's invoked, allowing you to trace the flow of your application and detect performance bottlenecks or errors.
+In the example above, we added the @Trace('OTHER') decorator to the myCustomMethod method. This will cause the method to emit trace events when it's invoked, allowing you to trace the flow of your application and detect performance bottlenecks or errors.
 
 Note that when you add the Trace Decorator to your own methods, you'll need to configure your Booster instance to use a tracer that implements the necessary methods to handle these events. 

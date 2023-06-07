@@ -42,7 +42,7 @@ export class ChangeCartItem {
     return input
   }
 
-  @Trace()
+  @Trace('CHANGE_CART_ITEM_HANDLER')
   public static async handle(command: ChangeCartItem, register: Register): Promise<void> {
     if (command.cartId === commandHandlerErrorCartId || command.cartId === commandHandlerErrorIgnoredCartId) {
       throw new Error(commandHandlerErrorCartMessage)

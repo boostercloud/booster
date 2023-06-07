@@ -2,8 +2,12 @@ import { BoosterConfig, TraceActionTypes, TraceInfo, TraceTypes, UUID } from '@b
 import { isTraceEnabled, notifyTrace } from '../trace-notifier'
 import { Booster } from '../../booster'
 
-export function Trace(actionType: TraceActionTypes = TraceActionTypes.CUSTOM, description?: string) {
-  return (target: unknown, member: string, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<any>>): PropertyDescriptor => {
+export function Trace(actionType: string = TraceActionTypes.CUSTOM, description?: string) {
+  return (
+    target: unknown,
+    member: string,
+    descriptor: TypedPropertyDescriptor<(...params: any[]) => Promise<any>>
+  ): PropertyDescriptor => {
     const originalMethod = descriptor.value!
     descriptor.value = async function (...args: Array<unknown>) {
       const config = Booster.config

@@ -1,5 +1,5 @@
 import { Booster, PublicKeyTokenVerifier } from '@boostercloud/framework-core'
-import { BoosterConfig, DecodedToken } from '@boostercloud/framework-types'
+import { BoosterConfig, DecodedToken, TraceActionTypes } from '@boostercloud/framework-types'
 import * as fs from 'fs'
 import * as path from 'path'
 import { CustomTracer } from '../common/custom-tracer'
@@ -13,7 +13,7 @@ class CustomPublicKeyTokenVerifier extends PublicKeyTokenVerifier {
 
 function configureInvocationsHandler(config: BoosterConfig) {
   config.traceConfiguration = {
-    enableTraceNotification: true,
+    enableTraceNotification: [TraceActionTypes.COMMAND_HANDLER, 'CHANGE_CART_ITEM_HANDLER'],
     includeInternal: false,
     onStart: CustomTracer.onStart,
     onEnd: CustomTracer.onEnd,
