@@ -8,8 +8,10 @@ import {
   EventInterface,
   InvalidVersionError,
   EntitySnapshotEnvelope,
+  TraceActionTypes,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+import { Trace } from './instrumentation'
 
 type SchemaMigrableEnvelope = CommandEnvelope | EventEnvelope | EntitySnapshotEnvelope
 type SchemaMigrableValue = CommandInterface | EventInterface | EntityInterface
@@ -17,6 +19,7 @@ type SchemaMigrableValue = CommandInterface | EventInterface | EntityInterface
 export class SchemaMigrator {
   public constructor(private config: BoosterConfig) {}
 
+  @Trace(TraceActionTypes.SCHEMA_MIGRATOR_MIGRATE)
   public async migrate<TMigrableEnvelope extends SchemaMigrableEnvelope>(
     conceptEnvelope: TMigrableEnvelope
   ): Promise<TMigrableEnvelope> {

@@ -5,6 +5,7 @@ import {
   InvalidParameterError,
   NotFoundError,
   CommandHandlerGlobalError,
+  TraceActionTypes,
 } from '@boostercloud/framework-types'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
@@ -12,6 +13,7 @@ import { applyBeforeFunctions } from './services/filter-helpers'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { SchemaMigrator } from './schema-migrator'
 import { GraphQLResolverContext } from './services/graphql/common'
+import { Trace } from './instrumentation'
 
 export class BoosterCommandDispatcher {
   private readonly globalErrorDispatcher: BoosterGlobalErrorDispatcher
@@ -20,6 +22,7 @@ export class BoosterCommandDispatcher {
     this.globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
   }
 
+  @Trace(TraceActionTypes.COMMAND_HANDLER)
   public async dispatchCommand(commandEnvelope: CommandEnvelope, context: GraphQLResolverContext): Promise<unknown> {
     const logger = getLogger(this.config, 'BoosterCommandDispatcher#dispatchCommand')
     logger.debug('Dispatching the following command envelope: ', commandEnvelope)

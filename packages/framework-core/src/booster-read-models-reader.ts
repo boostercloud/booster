@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  TraceActionTypes,
   AnyClass,
   BoosterConfig,
   FilterFor,
@@ -17,10 +18,12 @@ import { createInstance, createInstances, getLogger } from '@boostercloud/framew
 import { Booster } from './booster'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
+import { Trace } from './instrumentation'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig) {}
 
+  @Trace(TraceActionTypes.READ_MODEL_FIND_BY_ID)
   public async findById(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<ReadModelInterface | ReadOnlyNonEmptyArray<ReadModelInterface>> {
@@ -50,6 +53,7 @@ export class BoosterReadModelsReader {
     return currentReadModel
   }
 
+  @Trace(TraceActionTypes.GRAPHQL_READ_MODEL_SEARCH)
   public async search(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<Array<ReadModelInterface> | ReadModelListResult<ReadModelInterface>> {
@@ -71,6 +75,7 @@ export class BoosterReadModelsReader {
     )
   }
 
+  @Trace(TraceActionTypes.READ_MODEL_SEARCH)
   public async readModelSearch<TReadModel extends ReadModelInterface>(
     readModelClass: AnyClass,
     filters: FilterFor<unknown>,

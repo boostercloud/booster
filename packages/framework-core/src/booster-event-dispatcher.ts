@@ -1,26 +1,29 @@
 import {
+  TraceActionTypes,
   BoosterConfig,
   EventEnvelope,
-  Register,
-  EventHandlerInterface,
-  UUID,
   EventHandlerGlobalError,
+  EventHandlerInterface,
+  EventInterface,
+  Register,
+  UUID,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { EventsStreamingCallback, RawEventsParser } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
-import { createInstance, Promises, getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstance, getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { NotificationInterface } from 'framework-types/dist'
+import { Trace } from './instrumentation'
 
 export class BoosterEventDispatcher {
   /**
    * Entry point to dispatch events coming from the cloud provider.
    * @param rawEvents List of raw events from the cloud provider
    * @param config
-   * @param logger
    */
+  @Trace(TraceActionTypes.DISPATCH_EVENTS)
   public static async dispatch(rawEvents: unknown, config: BoosterConfig): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#dispatch')
     const eventStore = new EventStore(config)
@@ -80,6 +83,7 @@ export class BoosterEventDispatcher {
     await readModelStore.project(entitySnapshot)
   }
 
+  @Trace(TraceActionTypes.EVENT_HANDLERS_PROCESS)
   private static async dispatchEntityEventsToEventHandlers(
     entityEventEnvelopes: Array<EventEnvelope | NotificationInterface>,
     config: BoosterConfig
@@ -96,17 +100,27 @@ export class BoosterEventDispatcher {
         eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
           const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
           const register = new Register(eventEnvelope.requestID, {}, RegisterHandler.flush, eventEnvelope.currentUser)
-          logger.debug('Calling "handle" method on event handler: ', eventHandler)
-          try {
-            await eventHandler.handle(eventInstance, register)
-          } catch (e) {
-            const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
-            const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
-            if (error) throw error
-          }
+          logger.debug('Calling "handleEvent" method on event handler: ', eventHandler)
+          await this.handleEvent(eventHandler, eventInstance, register, config)
           return RegisterHandler.handle(config, register)
         })
       )
+    }
+  }
+
+  @Trace(TraceActionTypes.HANDLE_EVENT)
+  private static async handleEvent(
+    eventHandler: EventHandlerInterface,
+    eventInstance: EventInterface,
+    register: Register,
+    config: BoosterConfig
+  ) {
+    try {
+      await eventHandler.handle(eventInstance, register)
+    } catch (e) {
+      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
+      const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
+      if (error) throw error
     }
   }
 }
