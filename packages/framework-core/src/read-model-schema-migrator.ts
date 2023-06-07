@@ -11,7 +11,7 @@ import { Trace } from './instrumentation'
 export class ReadModelSchemaMigrator {
   public constructor(private config: BoosterConfig) {}
 
-  @Trace(TraceActionTypes.READ_MODEL_SCHEMA_MIGRATOR_RUN)
+  @Trace(TraceActionTypes.READ_MODEL_SCHEMA_MIGRATOR_MIGRATE)
   public async migrate<TMigratableReadModel extends ReadModelInterface>(
     readModel: TMigratableReadModel,
     readModelName: string

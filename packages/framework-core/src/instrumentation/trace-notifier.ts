@@ -1,18 +1,16 @@
-import { TraceActionTypes, TraceParameters, TraceTypes } from '@boostercloud/framework-types'
-import { Booster } from '../booster'
+import { BoosterConfig, TraceActionTypes, TraceInfo, TraceTypes } from '@boostercloud/framework-types'
 
 export async function notifyTrace(
   type: TraceTypes,
   actionType: TraceActionTypes,
-  parameters: TraceParameters
+  parameters: TraceInfo,
+  config: BoosterConfig
 ): Promise<void> {
-  const config = Booster.config
   const handler = type === TraceTypes.START ? config.traceConfiguration.onStart : config.traceConfiguration.onEnd
-  return handler(config, actionType, parameters)
+  return handler.call(handler, config, actionType, parameters)
 }
 
-export function isTracerConfigured(actionType: TraceActionTypes): boolean {
-  const config = Booster.config
+export function isTraceEnabled(actionType: TraceActionTypes, config: BoosterConfig): boolean {
   if (!config) {
     return false
   }

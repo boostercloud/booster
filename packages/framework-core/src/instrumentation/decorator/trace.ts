@@ -1,23 +1,24 @@
-import { TraceActionTypes, TraceParameters, TraceTypes, UUID } from '@boostercloud/framework-types'
-import { isTracerConfigured, notifyTrace } from '../trace-notifier'
+import { BoosterConfig, TraceActionTypes, TraceInfo, TraceTypes, UUID } from '@boostercloud/framework-types'
+import { isTraceEnabled, notifyTrace } from '../trace-notifier'
 import { Booster } from '../../booster'
 
 export function Trace(actionType: TraceActionTypes = TraceActionTypes.CUSTOM, description?: string) {
-  return (target: unknown, member: string, descriptor: PropertyDescriptor): PropertyDescriptor => {
-    const originalMethod = descriptor.value
+  return (target: unknown, member: string, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<any>>): PropertyDescriptor => {
+    const originalMethod = descriptor.value!
     descriptor.value = async function (...args: Array<unknown>) {
-      const tracerConfigured = isTracerConfigured(actionType)
+      const config = Booster.config
+      const tracerConfigured = isTraceEnabled(actionType, config)
       if (!tracerConfigured) {
         return await originalMethod.apply(this, args)
       }
-      const parameters = buildParameters(target, member, args, description, descriptor)
+      const parameters = buildParameters(target, member, args, description, descriptor, config)
       const startTime = new Date().getTime()
-      await notifyTrace(TraceTypes.START, actionType, parameters)
+      await notifyTrace(TraceTypes.START, actionType, parameters, config)
       try {
         return await originalMethod.apply(this, args)
       } finally {
         parameters.elapsedInvocationMillis = new Date().getTime() - startTime
-        await notifyTrace(TraceTypes.END, actionType, parameters)
+        await notifyTrace(TraceTypes.END, actionType, parameters, config)
       }
     }
     return descriptor
@@ -29,9 +30,9 @@ function buildParameters(
   member: string,
   args: unknown[],
   description: string | undefined,
-  descriptor: PropertyDescriptor
+  descriptor: PropertyDescriptor,
+  config: BoosterConfig
 ) {
-  const config = Booster.config
   let internal = undefined
   if (config && config.traceConfiguration.includeInternal) {
     internal = {
@@ -39,7 +40,7 @@ function buildParameters(
       descriptor: descriptor,
     }
   }
-  const parameters: TraceParameters = {
+  const parameters: TraceInfo = {
     className: getClassName(target),
     methodName: member,
     args: args,

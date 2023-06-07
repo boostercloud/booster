@@ -1,4 +1,4 @@
-import { Command } from '@boostercloud/framework-core'
+import { Command, Trace } from '@boostercloud/framework-core'
 import { CommandInput, Register, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItemChanged } from '../events/cart-item-changed'
 import {
@@ -42,6 +42,7 @@ export class ChangeCartItem {
     return input
   }
 
+  @Trace()
   public static async handle(command: ChangeCartItem, register: Register): Promise<void> {
     if (command.cartId === commandHandlerErrorCartId || command.cartId === commandHandlerErrorIgnoredCartId) {
       throw new Error(commandHandlerErrorCartMessage)

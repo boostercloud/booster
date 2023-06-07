@@ -6,8 +6,6 @@ import {
   EventHandlerInterface,
   EventMetadata,
   GlobalErrorHandlerMetadata,
-  EntityInterface,
-  DataMigrationMetadata,
   TokenVerifier,
   QueryMetadata,
   NotificationMetadata,
@@ -17,7 +15,6 @@ import {
   RoleMetadata,
   ScheduledCommandMetadata,
   SchemaMigrationMetadata,
-  TokenVerifier,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -94,8 +91,8 @@ export class BoosterConfig {
   public traceConfiguration: TraceConfiguration = {
     enableTraceNotification: false,
     includeInternal: false,
-    onStart: () => {},
-    onEnd: () => {},
+    onStart: async (): Promise<void> => {},
+    onEnd: async (): Promise<void> => {},
   }
 
   /** Environment variables set at deployment time on the target lambda functions */

@@ -1,16 +1,14 @@
-import { TraceParameters, BoosterConfig, TraceActionTypes, TraceTypes } from '@boostercloud/framework-types'
+import { TraceInfo, BoosterConfig, TraceActionTypes, TraceTypes } from '@boostercloud/framework-types'
 
 export class CustomTracer {
-  constructor() {}
-
-  onStart(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): void {
-    console.log(`${TraceTypes[TraceTypes.START]}_${TraceActionTypes[actionType]}`, traceParameters)
+  static async onStart(config: BoosterConfig, actionType: TraceActionTypes, traceInfo: TraceInfo): Promise<void> {
+    console.log(`${TraceTypes[TraceTypes.START]}_${TraceActionTypes[actionType]}`, traceInfo)
   }
 
-  onEnd(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): void {
+  static async onEnd(config: BoosterConfig, actionType: TraceActionTypes, traceInfo: TraceInfo): Promise<void> {
     console.log(
-      `${TraceTypes[TraceTypes.END]}_${TraceActionTypes[actionType]} (${traceParameters.elapsedInvocationMillis} ms)\n`,
-      traceParameters
+      `${TraceTypes[TraceTypes.END]}_${TraceActionTypes[actionType]} (${traceInfo.elapsedInvocationMillis} ms)\n`,
+      traceInfo
     )
   }
 }

@@ -12,12 +12,11 @@ class CustomPublicKeyTokenVerifier extends PublicKeyTokenVerifier {
 }
 
 function configureInvocationsHandler(config: BoosterConfig) {
-  const customTracer = new CustomTracer()
   config.traceConfiguration = {
     enableTraceNotification: true,
     includeInternal: false,
-    onStart: customTracer.onStart,
-    onEnd: customTracer.onEnd,
+    onStart: CustomTracer.onStart,
+    onEnd: CustomTracer.onEnd,
   }
 }
 

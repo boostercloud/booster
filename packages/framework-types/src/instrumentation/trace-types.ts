@@ -26,11 +26,11 @@ export enum TraceActionTypes {
   GRAPHQL_RUN_OPERATION,
   SCHEDULED_COMMAND_HANDLER,
   DISPATCH_SUBSCRIBER_NOTIFIER,
-  READ_MODEL_SCHEMA_MIGRATOR_RUN,
+  READ_MODEL_SCHEMA_MIGRATOR_MIGRATE,
   SCHEMA_MIGRATOR_MIGRATE,
 }
 
-export interface TraceParameters {
+export interface TraceInfo {
   className: string
   methodName: string
   args: Array<unknown>
@@ -43,13 +43,13 @@ export interface TraceParameters {
   description?: string
 }
 
-export interface traceHandler {
-  (config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): void
+export interface TraceHandler {
+  (config: BoosterConfig, actionType: TraceActionTypes, traceInfo: TraceInfo): Promise<void>
 }
 
 export interface TraceConfiguration {
   enableTraceNotification: boolean | Array<TraceActionTypes>
   includeInternal?: boolean
-  onStart: traceHandler
-  onEnd: traceHandler
+  onStart: TraceHandler
+  onEnd: TraceHandler
 }

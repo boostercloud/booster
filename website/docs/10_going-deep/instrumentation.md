@@ -16,11 +16,11 @@ import {
 } from '@boostercloud/framework-types'
 
 class MyTracer {
-  onStart(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): void {
+  static async onStart(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): Promise<void> {
     console.log(`Start ${TraceActionTypes[actionType]}: ${traceParameters.className}.${traceParameters.methodName}`)
   }
 
-  onEnd(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): void {
+  static async onEnd(config: BoosterConfig, actionType: TraceActionTypes, traceParameters: TraceParameters): Promise<void> {
     console.log(`End ${TraceActionTypes[actionType]}: ${traceParameters.className}.${traceParameters.methodName}`)
   }
 }
@@ -32,34 +32,31 @@ You can then configure the tracer in your Booster application's configuration:
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { MyTracer } from './my-tracer'
 
-const myTracer = new MyTracer()
 const config: BoosterConfig = {
 // ...other configuration options...
   trace: {
     enableTraceNotification: true,
-    verbose: false,
-    onStart: await myTracer.onStart,
-    onEnd: await myTracer.onStart,
+    onStart: MyTracer.onStart,
+    onEnd: MyTracer.onStart,
   }
 }
 ```
 
-In the configuration above, we've enabled trace notifications and specified our onStart and onEnd as the methods to use. Verbose disable will reduce the amount of information generated excluding the internal parameter in the response. 
+In the configuration above, we've enabled trace notifications and specified our onStart and onEnd as the methods to use. Verbose disable will reduce the amount of information generated excluding the internal parameter in the trace parameters. 
 
-By default, all traceable actions are disabled, but you can enable all of them or selectively enable only specific actions using an array of TraceActionTypes.
+Setting `enableTraceNotification: true` would enable the trace for all actions. You can either disable them by setting it to `false` or selectively enable only specific actions using an array of TraceActionTypes.
 
 ```typescript
 import { BoosterConfig, TraceActionTypes } from '@boostercloud/framework-types'
 import { MyTracer } from './my-tracer'
 
-const myTracer = new MyTracer()
 const config: BoosterConfig = {
 // ...other configuration options...
   trace: {
     enableTraceNotification: [TraceActionTypes.DISPATCH_EVENT, TraceActionTypes.MIGRATION_RUN],
-    verbose: false,
-    onStart: await myTracer.onStart,
-    onEnd: await myTracer.onStart,
+    includeInternal: false,
+    onStart: MyTracer.onStart,
+    onEnd: MyTracer.onStart,
   }
 }
 ```
@@ -95,11 +92,11 @@ export enum TraceActionTypes {
 }
 ```
 
-### TraceParameters
-The TraceParameters interface defines the data that is passed to the tracer's onBefore and onAfter methods:
+### TraceInfo
+The TraceInfo interface defines the data that is passed to the tracer's onBefore and onAfter methods:
 
 ```typescript
-export interface TraceParameters {
+export interface TraceInfo {
   className: string
   methodName: string
   args: Array<unknown>
@@ -113,9 +110,9 @@ export interface TraceParameters {
 }
 ```
 
-className and methodName identify the function that is being traced.
+`className` and `methodName` identify the function that is being traced.
 
-### Adding the Trace Decorator to Your Own Methods
+### Adding the Trace Decorator to Your own async methods
 In addition to using the Trace Decorator to receive notifications when events occur in Booster's core, you can also use it to trace your own methods. To add the Trace Decorator to your own methods, simply add @Trace() before your method declaration.
 
 Here's an example of how to use the Trace Decorator on a custom method:
@@ -126,7 +123,7 @@ import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 
 export class MyCustomClass {
   @Trace()
-  public myCustomMethod(config: BoosterConfig, logger: Logger): void {
+  public async myCustomMethod(config: BoosterConfig, logger: Logger): Promise<void> {
     logger.debug('This is my custom method')
     // Do some custom logic here...
   }
