@@ -63,13 +63,13 @@ export class ReadModelSchemaMigrator {
       migratedValue = await this.applyMigration(migratedValue, migrations.get(toVersion))
     }
 
-    const newReadModel = {
-      ...migratedValue,
+    const newReadModel = Object.assign(migratedValue, {
       boosterMetadata: {
         ...oldReadModel.boosterMetadata,
         schemaVersion: currentVersion,
       },
-    }
+    })
+
     logger.debug('ReadModel after schema migration:\n', newReadModel)
     return newReadModel
   }
