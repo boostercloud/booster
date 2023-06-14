@@ -275,7 +275,12 @@ describe('ReadModelStore', () => {
             version: 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntity',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserver',
+            },
           },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, null)
@@ -287,7 +292,12 @@ describe('ReadModelStore', () => {
             version: 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntity',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'AnotherReadModel.anotherObserver',
+            },
           },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
@@ -302,7 +312,12 @@ describe('ReadModelStore', () => {
               version: 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
-              lastProjectedEntity: 'AnImportantEntity',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserver',
+              },
             },
           },
           0
@@ -318,7 +333,12 @@ describe('ReadModelStore', () => {
               version: 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
-              lastProjectedEntity: 'AnImportantEntity',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'AnotherReadModel.anotherObserver',
+              },
             },
           },
           0
@@ -353,7 +373,12 @@ describe('ReadModelStore', () => {
                 boosterMetadata: {
                   version: someReadModelStoredVersion,
                   lastUpdateAt: '1970-01-01T00:00:00.000Z',
-                  lastProjectedEntity: 'AnImportantEntity',
+                  lastProjectionInfo: {
+                    entityId: 'importantEntityID',
+                    entityName: 'AnImportantEntity',
+                    entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                    projectionMethod: 'SomeReadModel.someObserver',
+                  },
                 },
               }
             } else {
@@ -364,7 +389,12 @@ describe('ReadModelStore', () => {
                 boosterMetadata: {
                   version: anotherReadModelStoredVersion,
                   lastUpdateAt: '1970-01-01T00:00:00.000Z',
-                  lastProjectedEntity: 'AnImportantEntity',
+                  lastProjectionInfo: {
+                    entityId: 'importantEntityID',
+                    entityName: 'AnImportantEntity',
+                    entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                    projectionMethod: 'AnotherReadModel.anotherObserver',
+                  },
                 },
               }
             }
@@ -387,7 +417,12 @@ describe('ReadModelStore', () => {
           boosterMetadata: {
             version: someReadModelStoredVersion,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntity',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserver',
+            },
           },
         })
         expect(SomeReadModel.someObserver).to.have.returned({
@@ -398,7 +433,12 @@ describe('ReadModelStore', () => {
             version: someReadModelStoredVersion + 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntity',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserver',
+            },
           },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, {
@@ -408,7 +448,12 @@ describe('ReadModelStore', () => {
           boosterMetadata: {
             version: anotherReadModelStoredVersion,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntity',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'AnotherReadModel.anotherObserver',
+            },
           },
         })
         expect(AnotherReadModel.anotherObserver).to.have.returned({
@@ -419,7 +464,12 @@ describe('ReadModelStore', () => {
             version: anotherReadModelStoredVersion + 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntity',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'AnotherReadModel.anotherObserver',
+            },
           },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
@@ -434,7 +484,12 @@ describe('ReadModelStore', () => {
               version: someReadModelStoredVersion + 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
-              lastProjectedEntity: 'AnImportantEntity',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserver',
+              },
             },
           },
           someReadModelStoredVersion
@@ -450,7 +505,12 @@ describe('ReadModelStore', () => {
               version: anotherReadModelStoredVersion + 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
-              lastProjectedEntity: 'AnImportantEntity',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'AnotherReadModel.anotherObserver',
+              },
             },
           },
           anotherReadModelStoredVersion
@@ -517,7 +577,12 @@ describe('ReadModelStore', () => {
                 version: 1,
                 schemaVersion: 1,
                 lastUpdateAt: '1970-01-01T00:00:00.000Z',
-                lastProjectedEntity: 'AnImportantEntity',
+                lastProjectionInfo: {
+                  entityId: 'importantEntityID',
+                  entityName: 'AnImportantEntity',
+                  entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                  projectionMethod: 'SomeReadModel.someObserver',
+                },
               },
             },
             0,
@@ -555,7 +620,12 @@ describe('ReadModelStore', () => {
                   boosterMetadata: {
                     version: someReadModelStoredVersion,
                     lastUpdateAt: '1970-01-01T00:00:00.000Z',
-                    lastProjectedEntity: 'AnImportantEntityWithArray',
+                    lastProjectionInfo: {
+                      entityId: 'importantEntityID',
+                      entityName: 'AnImportantEntityWithArray',
+                      entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                      projectionMethod: 'SomeReadModel.someObserverArray',
+                    },
                   },
                 }
               }
@@ -580,7 +650,12 @@ describe('ReadModelStore', () => {
           boosterMetadata: {
             version: someReadModelStoredVersion,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntityWithArray',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntityWithArray',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserverArray',
+            },
           },
         })
         expect(SomeReadModel.someObserverArray).to.have.returned({
@@ -591,7 +666,12 @@ describe('ReadModelStore', () => {
             version: someReadModelStoredVersion + 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntityWithArray',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntityWithArray',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserverArray',
+            },
           },
         })
         expect(SomeReadModel.someObserverArray).to.have.been.calledWithMatch(
@@ -607,7 +687,12 @@ describe('ReadModelStore', () => {
             version: 1,
             schemaVersion: 1,
             lastUpdateAt: '1970-01-01T00:00:00.000Z',
-            lastProjectedEntity: 'AnImportantEntityWithArray',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntityWithArray',
+              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserverArray',
+            },
           },
         })
 
@@ -623,7 +708,12 @@ describe('ReadModelStore', () => {
               version: someReadModelStoredVersion + 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
-              lastProjectedEntity: 'AnImportantEntityWithArray',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntityWithArray',
+                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserverArray',
+              },
             },
           },
           someReadModelStoredVersion
@@ -639,7 +729,12 @@ describe('ReadModelStore', () => {
               version: 1,
               schemaVersion: 1,
               lastUpdateAt: '1970-01-01T00:00:00.000Z',
-              lastProjectedEntity: 'AnImportantEntityWithArray',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntityWithArray',
+                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserverArray',
+              },
             },
           },
           0

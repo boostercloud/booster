@@ -57,7 +57,7 @@ export class ReadModelStore {
                 readModelName,
                 readModelID,
                 sequenceKey,
-                entitySnapshotEnvelope.entityTypeName
+                entitySnapshotEnvelope
               ),
             OptimisticConcurrencyUnexpectedVersionError,
             logger
@@ -96,7 +96,7 @@ export class ReadModelStore {
     readModelName: string,
     readModelID: UUID,
     sequenceKey?: SequenceKey,
-    entityTypeName?: string
+    lastProjectedEntity?: EntitySnapshotEnvelope
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#applyProjectionToReadModel')
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
@@ -135,7 +135,12 @@ export class ReadModelStore {
       version: currentReadModelVersion + 1,
       schemaVersion: schemaVersion,
       lastUpdateAt: new Date().toISOString(),
-      lastProjectedEntity: entityTypeName,
+      lastProjectionInfo: {
+        entityId: entity.id,
+        entityName: lastProjectedEntity?.entityTypeName,
+        entityUpdateAt: lastProjectedEntity?.createdAt,
+        projectionMethod: `${projectionMetadata.class.name}.${projectionMetadata.methodName}`,
+      },
     }
     logger.debug(
       `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,
