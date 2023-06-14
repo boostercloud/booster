@@ -155,7 +155,10 @@ export interface ProviderEventsLibrary {
    * @param config
    * @param parameters
    */
-  findDeletableEvent(config: BoosterConfig, parameters: EventDeleteParameters): Promise<Array<EventEnvelopeFromDatabase>>
+  findDeletableEvent(
+    config: BoosterConfig,
+    parameters: EventDeleteParameters
+  ): Promise<Array<EventEnvelopeFromDatabase>>
 
   /**
    * Find all snapshots to be removed based on the parameters
