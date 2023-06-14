@@ -137,13 +137,17 @@ export async function deleteReadModel(
   readModel: ReadModelInterface
 ): Promise<void> {
   const logger = getLogger(config, 'read-model-adapter#deleteReadModel')
-  logger.debug(`[ReadModelAdapter#deleteReadModel] Entering to Read model deleted. ID = ${readModel.id}`)
-  await db
-    .database(config.resourceNames.applicationStack)
-    .container(config.resourceNames.forReadModel(readModelName))
-    .item(readModel.id as string, readModel.id as string)
-    .delete()
-  logger.debug(`[ReadModelAdapter#deleteReadModel] Read model deleted. ID = ${readModel.id}`)
+  logger.debug(`Entering to Read model deleted. ${readModelName} ID = ${readModel.id}`)
+  try {
+    await db
+      .database(config.resourceNames.applicationStack)
+      .container(config.resourceNames.forReadModel(readModelName))
+      .item(readModel.id as string, readModel.id as string)
+      .delete()
+    logger.debug(`Read model deleted. ${readModelName} ID = ${readModel.id}`)
+  } catch (e) {
+    logger.warn(`Read model to delete ${readModelName} ID = ${readModel.id} not found`)
+  }
 }
 
 export async function rawReadModelEventsToEnvelopes(

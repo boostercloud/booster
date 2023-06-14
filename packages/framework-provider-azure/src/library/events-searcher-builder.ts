@@ -57,6 +57,7 @@ export function resultToEventSearchResponse(result: any[]): Array<EventSearchRes
       user: item.currentUser,
       createdAt: item.createdAt,
       value: item.value,
+      deletedAt: item.deletedAt,
     } as EventSearchResponse
   })
   return eventSearchResult ?? []

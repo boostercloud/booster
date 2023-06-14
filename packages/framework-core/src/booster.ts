@@ -4,6 +4,7 @@ import {
   BoosterConfig,
   Class,
   EntityInterface,
+  EventDeleteParameters,
   EventSearchParameters,
   EventSearchResponse,
   FinderByKeyFunction,
@@ -30,6 +31,7 @@ import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
 import { BoosterAuthorizer } from './booster-authorizer'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
+import { BoosterDeleteEventDispatcher } from './booster-delete-event-dispatcher'
 import { eventSearch } from './booster-event-search'
 import { BoosterHealthService } from './sensor'
 import { BoosterEventStreamConsumer } from './booster-event-stream-consumer'
@@ -116,6 +118,10 @@ export class Booster {
     afterCursor?: Record<string, string>
   ): Promise<PaginatedEntitiesIdsResult> {
     return await this.config.provider.events.searchEntitiesIDs(this.config, limit, afterCursor, entityTypeName)
+  }
+
+  public static async deleteEvent(parameters: EventDeleteParameters): Promise<boolean> {
+    return await BoosterDeleteEventDispatcher.deleteEvent(this.config, parameters)
   }
 
   /**

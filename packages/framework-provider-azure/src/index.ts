@@ -46,6 +46,7 @@ import {
   rawRequestToSensorHealth,
   databaseReadModelsHealthDetails,
 } from './library/health-adapter'
+import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -104,6 +105,10 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
+    findDeletableEvent: findDeletableEvent.bind(null, cosmosClient),
+    findDeletableSnapshot: findDeletableSnapshot.bind(null, cosmosClient),
+    deleteEvent: deleteEvent.bind(null, cosmosClient),
+    deleteSnapshot: deleteSnapshot.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {

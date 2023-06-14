@@ -1,0 +1,94 @@
+# Remove events
+
+> **Warning**: Esta es una funcionalidad experimental. Tenga en cuenta que esta funcionalidad solo es soportada por los
+proveedores de Azure y Local.
+
+Booster permite eliminar eventos pasados y sus entidades relacionadas así como actualizar los ReadModels afectados.
+
+Mediante el comando `Booster.deleteEvent` es posible indicar el evento que se desea eliminar. Para ello debe indicar:
+
+* entityID: El `id` de la entidad del evento a borrar
+* entityTypeName: El nombre del tipo de entidad del evento a borrar
+* createdAt: La fecha de creación del evento.
+
+Ejemplo:
+```typescript
+import { Booster, Command } from '@boostercloud/framework-core'
+import { EventDeleteParameters } from '@boostercloud/framework-types'
+
+@Command({
+  authorize: 'all',
+})
+export class HardDelete {
+  public constructor(readonly entityId: string, readonly entityTypeName: string, readonly createdAt: string) {}
+
+  public static async handle(command: HardDelete): Promise<boolean> {
+    const parameters: EventDeleteParameters = {
+      entityID: command.entityId,
+      entityTypeName: command.entityTypeName,
+      createdAt: command.createdAt,
+    }
+    return await Booster.deleteEvent(parameters)
+  }
+}
+```
+
+Al ejecutar este comando, Booster actualizará el evento seleccionado en la base de datos correspondiente con un valor
+vacío y una fecha de eliminación. De esta manera, quedará reflejado en el sistema que existió un evento que fué
+eliminado posteriormente. Los eventos eliminados son ignorados por Booster, pero se pueden consultar con los métodos
+correspondientes (`eventsByEntity` y `eventsByType`).
+
+Las entidades asociadas a un evento eliminado serán eliminadas permanentemente de la base de datos.
+
+En el caso de los ReadModels estos no son modificados ni eliminados automáticamente y queda en manos del usuario
+el obrar en consecuencia. Para ello, los métodos anotados con `@Project` de los ReadModels cuenta con un tercer parámetro
+`unProject` que permite definir una función que será ejecutada cuando la entidad definida en la proyección y con la `joinKey`
+definido en el mismo sea eliminado.
+
+Este tercer parámetro será una función estática con los mismos parámetros que tenga el método que estamos proyectando.
+
+Es posible usar el mismo método que se usa para proyectar para resolver las eliminaciones simplemente indicando este
+método como `unProject`
+
+Ejemplo:
+```typescript
+  @Projects(Pack, 'products', ProductReadModel.updateWithPack)
+  public static updateWithPack(
+    pack: Pack,
+    readModelID: UUID,
+    currentProductReadModel?: ProductReadModel,
+    projectionInfo?: ProjectionInfo
+  ): ProjectionResult<ProductReadModel> {
+    if (projectionInfo?.reason === ProjectionInfoReason.ENTITY_DELETED) {
+      return ReadModelAction.Delete
+    }
+    //   ... other code
+  }
+```
+
+En este caso, si la entidad `Pack` con la joinKey `products` es eliminada, el método `updateWithPack` será ejecutado e
+incluirá un último parámetro llamado `projectionInfo`. Este parámetro contiene el campo `reason` que en este caso
+valdrá `ENTITY_DELETED` para indicar que la entidad está siendo borrada.
+
+Otra opción es definir su propio método de borrado independiente del de proyección. En este caso, en caso de eliminación
+el método llamado será el nuevo método definido.
+
+Ejemplo:
+```typescript
+  @Projects(Product, 'id', ProductReadModel.unProjectWithProduct)
+  public static updateWithProduct(product: Product): ProjectionResult<ProductReadModel> {
+    // ... other code
+  }
+
+  public static unProjectWithProduct(
+    _product: Product,
+    _currentProductReadModel?: ProductReadModel,
+    _projectionInfo?: ProjectionInfo
+  ): ProjectionResult<ProductReadModel> {
+    return ReadModelAction.Delete
+  }
+```
+
+([See more details about how to delete a ReadModel in the docs](https://docs.boosterframework.com/architecture/read-model/#deleting-read-models))
+
+> **Warning**: Tenga en cuenta que estos cambios son definitivos y no es posible recuperar la información una vez realizada.

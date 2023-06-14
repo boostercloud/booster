@@ -5,6 +5,11 @@ import {
   HealthEnvelope,
   ProviderLibrary,
   RocketDescriptor,
+  HasInfrastructure,
+  ProviderLibrary,
+  RocketDescriptor,
+  EventEnvelopeFromDatabase,
+  EntitySnapshotEnvelopeFromDatabase,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
@@ -75,6 +80,18 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
       storeSnapshot: storeSnapshot.bind(null, dynamoDB),
+      findDeletableEvent: (async (): Promise<Array<EventEnvelopeFromDatabase>> => {
+        throw new Error('Not implemented yet')
+      }).bind(null, dynamoDB),
+      findDeletableSnapshot: (async (): Promise<Array<EntitySnapshotEnvelopeFromDatabase>> => {
+        throw new Error('Not implemented yet')
+      }).bind(null, dynamoDB),
+      deleteEvent: (async (): Promise<void> => {
+        throw new Error('Not implemented yet')
+      }).bind(null, dynamoDB),
+      deleteSnapshot: (async (): Promise<void> => {
+        throw new Error('Not implemented yet')
+      }).bind(null, dynamoDB),
     },
     // ProviderReadModelsLibrary
     readModels: {

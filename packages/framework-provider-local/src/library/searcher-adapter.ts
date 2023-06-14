@@ -49,8 +49,8 @@ function filterToQuery(filter: FilterFor<any>): QueryOperation<QueryValue> {
   return query
 }
 
-type QueryValue = number | string | boolean
-type QueryOperation<TValue> =
+export type QueryValue = number | string | boolean
+export type QueryOperation<TValue> =
   // In the case that the operation is `eq`, NeDB matches directly
   | TValue
   // For these, the value must be single as a result

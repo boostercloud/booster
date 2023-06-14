@@ -29,9 +29,14 @@ describe('The "searchEntitiesIDs" method', () => {
     const entityTypeName = 'entity'
     await searchEntitiesIds(mockEventRegistry as any, mockConfig, limit, afterCursor, entityTypeName)
 
-    expect(queryStub).to.have.been.calledWithExactly({ kind: 'event', entityTypeName: 'entity' }, -1, undefined, {
-      entityID: 1,
-    })
+    expect(queryStub).to.have.been.calledWithExactly(
+      { kind: 'event', entityTypeName: 'entity', deletedAt: { $exists: false } },
+      -1,
+      undefined,
+      {
+        entityID: 1,
+      }
+    )
   })
 
   it('Generate query for entityTypeName, limit has all fields', async () => {
@@ -39,8 +44,13 @@ describe('The "searchEntitiesIDs" method', () => {
     const entityTypeName = 'entity'
     await searchEntitiesIds(mockEventRegistry as any, mockConfig, limit, undefined, entityTypeName)
 
-    expect(queryStub).to.have.been.calledWithExactly({ kind: 'event', entityTypeName: 'entity' }, -1, undefined, {
-      entityID: 1,
-    })
+    expect(queryStub).to.have.been.calledWithExactly(
+      { kind: 'event', entityTypeName: 'entity', deletedAt: { $exists: false } },
+      -1,
+      undefined,
+      {
+        entityID: 1,
+      }
+    )
   })
 })

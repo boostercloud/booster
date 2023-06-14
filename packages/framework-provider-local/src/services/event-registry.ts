@@ -33,6 +33,24 @@ export class EventRegistry {
     return queryPromise
   }
 
+  public async replaceOrDeleteItem(id: string, newValue?: EventEnvelope | EntitySnapshotEnvelope): Promise<void> {
+    if (newValue) {
+      await new Promise((resolve, reject) =>
+        this.events.update({ _id: id }, newValue, { multi: true }, (err, numRemoved: number) => {
+          if (err) reject(err)
+          else resolve(numRemoved)
+        })
+      )
+    } else {
+      await new Promise((resolve, reject) =>
+        this.events.remove({ _id: id }, { multi: true }, (err, numRemoved: number) => {
+          if (err) reject(err)
+          else resolve(numRemoved)
+        })
+      )
+    }
+  }
+
   public async queryLatestSnapshot(query: object): Promise<EntitySnapshotEnvelope | undefined> {
     const results = await new Promise<EventStoreEntryEnvelope[]>((resolve, reject) =>
       this.events

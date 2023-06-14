@@ -16,6 +16,10 @@ import {
   ScheduledCommandEnvelope,
   SubscriptionEnvelope,
   HealthEnvelope,
+  SnapshotDeleteParameters,
+  EventDeleteParameters,
+  EventEnvelopeFromDatabase,
+  EntitySnapshotEnvelopeFromDatabase,
 } from './envelope'
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
@@ -144,6 +148,41 @@ export interface ProviderEventsLibrary {
     snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
     config: BoosterConfig
   ): Promise<EntitySnapshotEnvelope>
+
+  /**
+   * Find all events to be removed based on the parameters
+   *
+   * @param config
+   * @param parameters
+   */
+  findDeletableEvent(config: BoosterConfig, parameters: EventDeleteParameters): Promise<Array<EventEnvelopeFromDatabase>>
+
+  /**
+   * Find all snapshots to be removed based on the parameters
+   *
+   * @param config
+   * @param parameters
+   */
+  findDeletableSnapshot(
+    config: BoosterConfig,
+    parameters: SnapshotDeleteParameters
+  ): Promise<Array<EntitySnapshotEnvelopeFromDatabase>>
+
+  /**
+   * Delete events
+   *
+   * @param config
+   * @param events
+   */
+  deleteEvent(config: BoosterConfig, events: Array<EventEnvelopeFromDatabase>): Promise<void>
+
+  /**
+   * Delete snapshots
+   *
+   * @param config
+   * @param snapshots
+   */
+  deleteSnapshot(config: BoosterConfig, snapshots: Array<EntitySnapshotEnvelopeFromDatabase>): Promise<void>
 }
 
 export interface ProviderReadModelsLibrary {

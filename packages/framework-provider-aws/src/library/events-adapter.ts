@@ -48,11 +48,13 @@ export async function readEntityEventsSince(
       ScanIndexForward: true, // Ascending order (older timestamps first)
     })
     .promise()
+  const resultItems: Array<EventEnvelope> = result.Items as Array<EventEnvelope>
+  const validEvents = resultItems.filter((item) => !item.deletedAt)
   logger.debug(
     `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`,
-    result.Items
+    validEvents
   )
-  return result.Items as Array<EventEnvelope>
+  return validEvents
 }
 
 export async function readEntityLatestSnapshot(

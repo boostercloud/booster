@@ -70,6 +70,7 @@ export class BoosterConfig {
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
+  public readonly unProjections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
   public readonly readModelSequenceKeys: Record<EntityName, string> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}

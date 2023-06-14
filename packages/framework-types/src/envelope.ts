@@ -57,6 +57,7 @@ export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
 
 export interface EventEnvelope extends NonPersistedEventEnvelope {
   createdAt: string
+  deletedAt?: string
 }
 
 export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvelope {
@@ -102,6 +103,7 @@ export interface EventSearchResponse {
   user?: UserEnvelope
   createdAt: string
   value: EventInterface | NotificationInterface
+  deletedAt?: string
 }
 
 export interface ReadModelEnvelope {
@@ -208,4 +210,17 @@ export interface ContextEnvelope {
   }
   /** Provider-dependent raw request context object */
   rawContext: unknown
+}
+
+export type EventEnvelopeFromDatabase = EventEnvelope & { id: string }
+export type EntitySnapshotEnvelopeFromDatabase = EntitySnapshotEnvelope & { id: string }
+export interface EventDeleteParameters {
+  entityTypeName: string
+  entityID: string
+  createdAt: string
+}
+export interface SnapshotDeleteParameters {
+  entityID: UUID
+  entityTypeName: string
+  createdAt: string
 }

@@ -1,27 +1,30 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BoosterConfig,
-  ReadModelInterface,
-  ProjectionMetadata,
-  UUID,
   EntityInterface,
-  ReadModelAction,
+  EntitySnapshotEnvelope,
   OptimisticConcurrencyUnexpectedVersionError,
-  SequenceKey,
   ProjectionGlobalError,
   EntitySnapshotEnvelope,
   BoosterMetadata,
+  ProjectionInfo,
+  ProjectionInfoReason,
+  ProjectionMetadata,
+  ReadModelAction,
+  ReadModelInterface,
+  SequenceKey,
+  UUID,
 } from '@boostercloud/framework-types'
-import { Promises, retryIfError, createInstance, getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstance, getLogger, Promises, retryIfError } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { ReadModelSchemaMigrator } from '../read-model-schema-migrator'
 
 export class ReadModelStore {
   public constructor(readonly config: BoosterConfig) {}
 
-  public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope): Promise<void> {
+  public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope, deleteEvent = false): Promise<void> {
     const logger = getLogger(this.config, 'ReadModelStore#project')
-    const projections = this.config.projections[entitySnapshotEnvelope.entityTypeName]
+    const projections = this.getProjections(deleteEvent, entitySnapshotEnvelope)
     if (!projections) {
       logger.debug(
         `[ReadModelStore#project] No projections found for entity ${entitySnapshotEnvelope.entityTypeName}. Skipping...`
@@ -47,7 +50,8 @@ export class ReadModelStore {
             '[ReadModelStore#project] Projecting entity snapshot ',
             entitySnapshotEnvelope,
             ` to build new state of read model ${readModelName} with ID ${readModelID}`,
-            sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : ''
+            sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : '',
+            ` with deleteEvent: ${deleteEvent}`
           )
 
           return retryIfError(
@@ -57,7 +61,8 @@ export class ReadModelStore {
                 projectionMetadata,
                 readModelName,
                 readModelID,
-                sequenceKey,
+                deleteEvent,
+                sequenceKey
                 entitySnapshotEnvelope
               ),
             OptimisticConcurrencyUnexpectedVersionError,
@@ -66,6 +71,57 @@ export class ReadModelStore {
         })
       })
     )
+  }
+
+  private getProjections(
+    deletedProjection: boolean,
+    entitySnapshotEnvelope: EntitySnapshotEnvelope
+  ): Array<ProjectionMetadata<EntityInterface>> {
+    if (deletedProjection) {
+      const unProjections: Array<ProjectionMetadata<EntityInterface>> = this.entityUnProjections(entitySnapshotEnvelope)
+      const projections: Array<ProjectionMetadata<EntityInterface>> = this.entityProjections(entitySnapshotEnvelope)
+      if (projections?.length > 0) {
+        if (!unProjections) {
+          throw new Error(`Missing UnProjections for entity ${entitySnapshotEnvelope.entityTypeName}`)
+        }
+        const missingProjection = this.findFirstMissingProjection(projections, unProjections)
+        if (missingProjection) {
+          throw new Error(
+            `Missing UnProjection for ReadModel ${missingProjection.class.name} with joinKey ${missingProjection.joinKey} for entity ${entitySnapshotEnvelope.entityTypeName}`
+          )
+        }
+      }
+      return unProjections
+    }
+    return this.entityProjections(entitySnapshotEnvelope)
+  }
+
+  private entityProjections(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope
+  ): Array<ProjectionMetadata<EntityInterface>> {
+    return this.config.projections[entitySnapshotEnvelope.entityTypeName]
+  }
+
+  private entityUnProjections(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope
+  ): Array<ProjectionMetadata<EntityInterface>> {
+    return this.config.unProjections[entitySnapshotEnvelope.entityTypeName]
+  }
+
+  private findFirstMissingProjection(
+    sources: Array<ProjectionMetadata<EntityInterface>>,
+    to: Array<ProjectionMetadata<EntityInterface>>
+  ): ProjectionMetadata<EntityInterface> | undefined {
+    return sources.find((source: ProjectionMetadata<EntityInterface>) => !this.someProjection(to, source))
+  }
+
+  private someProjection(
+    sources: Array<ProjectionMetadata<EntityInterface>>,
+    to: ProjectionMetadata<EntityInterface>
+  ): boolean {
+    const contains = (source: ProjectionMetadata<EntityInterface>) =>
+      source.class.name === to.class.name && source.joinKey.toString() === to.joinKey.toString()
+    return sources.some(contains)
   }
 
   private joinKeyForProjection(
@@ -96,7 +152,8 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface>,
     readModelName: string,
     readModelID: UUID,
-    sequenceKey?: SequenceKey,
+    deleteEvent: boolean,
+    sequenceKey?: SequenceKey
     lastProjectedEntity?: EntitySnapshotEnvelope
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#applyProjectionToReadModel')
@@ -108,10 +165,13 @@ export class ReadModelStore {
     const currentReadModelVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
 
     let newReadModel: any
+    const projectionInfo: ProjectionInfo = {
+      reason: deleteEvent ? ProjectionInfoReason.ENTITY_DELETED : ProjectionInfoReason.ENTITY_PROJECTED,
+    }
     try {
       newReadModel = Array.isArray(entity[projectionMetadata.joinKey])
-        ? this.projectionFunction(projectionMetadata)(entity, readModelID, migratedReadModel || null)
-        : this.projectionFunction(projectionMetadata)(entity, migratedReadModel || null)
+        ? this.projectionFunction(projectionMetadata)(entity, readModelID, migratedReadModel || null, projectionInfo)
+        : this.projectionFunction(projectionMetadata)(entity, migratedReadModel || null, projectionInfo)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
       const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
