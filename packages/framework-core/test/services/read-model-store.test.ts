@@ -278,7 +278,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntity',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'SomeReadModel.someObserver',
             },
           },
@@ -295,7 +295,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntity',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'AnotherReadModel.anotherObserver',
             },
           },
@@ -315,7 +315,7 @@ describe('ReadModelStore', () => {
               lastProjectionInfo: {
                 entityId: 'importantEntityID',
                 entityName: 'AnImportantEntity',
-                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                 projectionMethod: 'SomeReadModel.someObserver',
               },
             },
@@ -336,7 +336,7 @@ describe('ReadModelStore', () => {
               lastProjectionInfo: {
                 entityId: 'importantEntityID',
                 entityName: 'AnImportantEntity',
-                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                 projectionMethod: 'AnotherReadModel.anotherObserver',
               },
             },
@@ -376,7 +376,7 @@ describe('ReadModelStore', () => {
                   lastProjectionInfo: {
                     entityId: 'importantEntityID',
                     entityName: 'AnImportantEntity',
-                    entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                    entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                     projectionMethod: 'SomeReadModel.someObserver',
                   },
                 },
@@ -392,7 +392,7 @@ describe('ReadModelStore', () => {
                   lastProjectionInfo: {
                     entityId: 'importantEntityID',
                     entityName: 'AnImportantEntity',
-                    entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                    entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                     projectionMethod: 'AnotherReadModel.anotherObserver',
                   },
                 },
@@ -420,7 +420,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntity',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'SomeReadModel.someObserver',
             },
           },
@@ -436,7 +436,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntity',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'SomeReadModel.someObserver',
             },
           },
@@ -451,7 +451,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntity',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'AnotherReadModel.anotherObserver',
             },
           },
@@ -467,7 +467,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntity',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'AnotherReadModel.anotherObserver',
             },
           },
@@ -487,7 +487,7 @@ describe('ReadModelStore', () => {
               lastProjectionInfo: {
                 entityId: 'importantEntityID',
                 entityName: 'AnImportantEntity',
-                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                 projectionMethod: 'SomeReadModel.someObserver',
               },
             },
@@ -508,7 +508,7 @@ describe('ReadModelStore', () => {
               lastProjectionInfo: {
                 entityId: 'importantEntityID',
                 entityName: 'AnImportantEntity',
-                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                 projectionMethod: 'AnotherReadModel.anotherObserver',
               },
             },
@@ -580,7 +580,7 @@ describe('ReadModelStore', () => {
                 lastProjectionInfo: {
                   entityId: 'importantEntityID',
                   entityName: 'AnImportantEntity',
-                  entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                  entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                   projectionMethod: 'SomeReadModel.someObserver',
                 },
               },
@@ -623,7 +623,7 @@ describe('ReadModelStore', () => {
                     lastProjectionInfo: {
                       entityId: 'importantEntityID',
                       entityName: 'AnImportantEntityWithArray',
-                      entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                      entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                       projectionMethod: 'SomeReadModel.someObserverArray',
                     },
                   },
@@ -653,7 +653,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntityWithArray',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'SomeReadModel.someObserverArray',
             },
           },
@@ -669,7 +669,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntityWithArray',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'SomeReadModel.someObserverArray',
             },
           },
@@ -690,7 +690,7 @@ describe('ReadModelStore', () => {
             lastProjectionInfo: {
               entityId: 'importantEntityID',
               entityName: 'AnImportantEntityWithArray',
-              entityUpdateAt: '1970-01-01T00:00:00.000Z',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
               projectionMethod: 'SomeReadModel.someObserverArray',
             },
           },
@@ -711,7 +711,7 @@ describe('ReadModelStore', () => {
               lastProjectionInfo: {
                 entityId: 'importantEntityID',
                 entityName: 'AnImportantEntityWithArray',
-                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                 projectionMethod: 'SomeReadModel.someObserverArray',
               },
             },
@@ -732,7 +732,7 @@ describe('ReadModelStore', () => {
               lastProjectionInfo: {
                 entityId: 'importantEntityID',
                 entityName: 'AnImportantEntityWithArray',
-                entityUpdateAt: '1970-01-01T00:00:00.000Z',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
                 projectionMethod: 'SomeReadModel.someObserverArray',
               },
             },

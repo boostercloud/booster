@@ -10,7 +10,7 @@ export interface BoosterMetadata {
   lastProjectionInfo?: {
     entityId: string
     entityName: string
-    entityUpdateAt: string
+    entityUpdatedAt: string
     projectionMethod: string
   }
 }

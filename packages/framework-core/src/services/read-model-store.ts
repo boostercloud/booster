@@ -10,6 +10,7 @@ import {
   SequenceKey,
   ProjectionGlobalError,
   EntitySnapshotEnvelope,
+  BoosterMetadata,
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError, createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
@@ -138,10 +139,10 @@ export class ReadModelStore {
       lastProjectionInfo: {
         entityId: entity.id,
         entityName: lastProjectedEntity?.entityTypeName,
-        entityUpdateAt: lastProjectedEntity?.createdAt,
+        entityUpdatedAt: lastProjectedEntity?.createdAt,
         projectionMethod: `${projectionMetadata.class.name}.${projectionMetadata.methodName}`,
       },
-    }
+    } as BoosterMetadata
     logger.debug(
       `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,
       newReadModel
