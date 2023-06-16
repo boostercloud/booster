@@ -1,7 +1,5 @@
 import { expect } from 'chai'
-import gql from 'graphql-tag'
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { applicationUnderTest } from '../end-to-end/setup'
 
 describe('schemas', async () => {
