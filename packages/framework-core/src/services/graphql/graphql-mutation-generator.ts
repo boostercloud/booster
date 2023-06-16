@@ -2,8 +2,6 @@ import { ResolverBuilder, TargetTypesMap } from './common'
 import { GraphQLTypeInformer } from './graphql-type-informer'
 import { GraphQLObjectType } from 'graphql'
 import { GraphQLHandledFieldsGenerator } from './query-helpers/graphql-handled-fields-generator'
-import { GraphQLFieldConfigMap, GraphQLNonNull, GraphQLObjectType } from 'graphql'
-import { TypeMetadata } from '@boostercloud/metadata-booster'
 import { BoosterConfig } from '@boostercloud/framework-types'
 
 export class GraphQLMutationGenerator {
@@ -18,7 +16,8 @@ export class GraphQLMutationGenerator {
     const graphqlGenerateHandledFields = new GraphQLHandledFieldsGenerator(
       this.targetTypes,
       this.typeInformer,
-      this.mutationResolver
+      this.mutationResolver,
+      this.config
     )
     const mutations = graphqlGenerateHandledFields.generateFields()
     if (Object.keys(mutations).length === 0) {

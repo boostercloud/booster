@@ -18,6 +18,7 @@ import { GraphQLEnumValueConfig, GraphQLEnumValueConfigMap } from 'graphql/type/
 import { DateScalar } from '../../../src/services/graphql/common'
 
 describe('GraphQLTypeInformer', () => {
+  const nonExposed = ['ignoredParameter']
   let sut: GraphQLTypeInformer
   const logger: Logger = {
     debug() {},
@@ -49,7 +50,8 @@ describe('GraphQLTypeInformer', () => {
         otherParameter: readonly Parameters[],
         somePromiseParameter: Promise<string>,
         somePromiseParameter2: Promise<number>,
-        somePromiseParameter3: Promise<number | undefined> | undefined
+        somePromiseParameter3: Promise<number | undefined> | undefined,
+        ignoredParameter: number
       ) {
         this.someProperty = someProperty
         this.someParameters = someParameters
@@ -61,12 +63,12 @@ describe('GraphQLTypeInformer', () => {
     }
 
     it('should return expected GraphQL Type', () => {
-      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
       expect(result.toString()).to.be.deep.equal('TestClass')
     })
 
     it('should process complex ReadonlyArray', () => {
-      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
       const someParametersValue =
         result instanceof GraphQLObjectType ? result.getFields()['someParameters'].type : undefined
       const otherParameterValue =
@@ -78,7 +80,7 @@ describe('GraphQLTypeInformer', () => {
     })
 
     it('should process Promises', () => {
-      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
       const somePromiseParameter =
         result instanceof GraphQLObjectType ? result.getFields()['somePromiseParameter'].type : undefined
       expect(somePromiseParameter).to.be.deep.equal(new GraphQLNonNull(GraphQLString))
@@ -88,6 +90,13 @@ describe('GraphQLTypeInformer', () => {
       const somePromiseParameter3 =
         result instanceof GraphQLObjectType ? result.getFields()['somePromiseParameter3'].type : undefined
       expect(somePromiseParameter3).to.be.deep.equal(GraphQLFloat)
+    })
+
+    it('should ignore nonExposed', () => {
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
+      const somePromiseParameter =
+        result instanceof GraphQLObjectType ? result.getFields()['ignoredParameter'] : undefined
+      expect(somePromiseParameter).to.be.undefined
     })
 
     describe('Get or create GraphQLType', () => {

@@ -71,7 +71,8 @@ export class GraphQLGenerator {
         typeInformer,
         this.subscriptionByIDResolverBuilder.bind(this, config),
         this.subscriptionResolverBuilder.bind(this, config),
-        generatedFiltersByTypeName
+        generatedFiltersByTypeName,
+        config
       )
 
       this.schema = new GraphQLSchema({

@@ -10,7 +10,7 @@ const STRING_PROPERTY_FILTER = 'StringPropertyFilter'
 const ENUM = 'ENUM'
 const ORDER_PROPERTY = 'orderProperty'
 
-describe('schemas', async () => {
+describe('schema sort', async () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
@@ -49,6 +49,79 @@ describe('schemas', async () => {
       inputFields = type.inputFields
     })
 
+    it('NonExposed properties are not included', () => {
+      const fieldsNames = inputFields.map((field: any) => field.name)
+      expect(fieldsNames).to.have.members([
+        'readOnlyProperty',
+        'privateProperty',
+        'publicProperty',
+        'id',
+        'date',
+        'array0',
+        'array1',
+        'unionArrays',
+        'unionWithNull',
+        'unionWithUndefined',
+        'unionWithAny',
+        'unionWithObject',
+        'unionWithUnknown',
+        'func0',
+        'any0',
+        'unknown0',
+        'record',
+        'generic',
+        'child',
+        'optionalString',
+        'optionalNull',
+        'optionalUndefined',
+        'optionalUnknown',
+        'optionalAny',
+        'optionalRecord',
+        'optionalGeneric',
+        'optionalChild',
+        'readonlyArray',
+      ])
+    })
+
+    it('For read only property', () => {
+      const expectedResult = {
+        __typename: __INPUT_VALUE,
+        name: 'readOnlyProperty',
+        type: {
+          __typename: __TYPE,
+          name: ORDER_PROPERTY,
+          kind: ENUM,
+        },
+      }
+      expect(inputFields[0]).to.be.eql(expectedResult)
+    })
+
+    it('For private property', () => {
+      const expectedResult = {
+        __typename: __INPUT_VALUE,
+        name: 'privateProperty',
+        type: {
+          __typename: __TYPE,
+          name: ORDER_PROPERTY,
+          kind: ENUM,
+        },
+      }
+      expect(inputFields[1]).to.be.eql(expectedResult)
+    })
+
+    it('For public property', () => {
+      const expectedResult = {
+        __typename: __INPUT_VALUE,
+        name: 'publicProperty',
+        type: {
+          __typename: __TYPE,
+          name: ORDER_PROPERTY,
+          kind: ENUM,
+        },
+      }
+      expect(inputFields[2]).to.be.eql(expectedResult)
+    })
+
     it('For id (UUID)', () => {
       const expectedResult = {
         __typename: __INPUT_VALUE,
@@ -59,7 +132,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[0]).to.be.eql(expectedResult)
+      expect(inputFields[3]).to.be.eql(expectedResult)
     })
 
     it('For dates', () => {
@@ -72,7 +145,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[1]).to.be.eql(expectedResult)
+      expect(inputFields[4]).to.be.eql(expectedResult)
     })
 
     it('For string arrays defined with brackets', () => {
@@ -85,7 +158,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[2]).to.be.eql(expectedResult)
+      expect(inputFields[5]).to.be.eql(expectedResult)
     })
 
     it('For string arrays defined with Array', () => {
@@ -98,7 +171,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[3]).to.be.eql(expectedResult)
+      expect(inputFields[6]).to.be.eql(expectedResult)
     })
 
     it('For union arrays', () => {
@@ -111,7 +184,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[4]).to.be.eql(expectedResult)
+      expect(inputFields[7]).to.be.eql(expectedResult)
     })
 
     it('For union with null', () => {
@@ -124,7 +197,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[5]).to.be.eql(expectedResult)
+      expect(inputFields[8]).to.be.eql(expectedResult)
     })
 
     it('For union with undefined', () => {
@@ -137,7 +210,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[6]).to.be.eql(expectedResult)
+      expect(inputFields[9]).to.be.eql(expectedResult)
     })
 
     it('For union with any', () => {
@@ -150,7 +223,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[7]).to.be.eql(expectedResult)
+      expect(inputFields[10]).to.be.eql(expectedResult)
     })
 
     it('For union with object', () => {
@@ -163,7 +236,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[8]).to.be.eql(expectedResult)
+      expect(inputFields[11]).to.be.eql(expectedResult)
     })
 
     it('For union with unknown', () => {
@@ -176,7 +249,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[9]).to.be.eql(expectedResult)
+      expect(inputFields[12]).to.be.eql(expectedResult)
     })
 
     it('For functions', () => {
@@ -189,7 +262,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[10]).to.be.eql(expectedResult)
+      expect(inputFields[13]).to.be.eql(expectedResult)
     })
 
     it('For any', () => {
@@ -202,7 +275,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[11]).to.be.eql(expectedResult)
+      expect(inputFields[14]).to.be.eql(expectedResult)
     })
 
     it('For unknown', () => {
@@ -215,7 +288,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[12]).to.be.eql(expectedResult)
+      expect(inputFields[15]).to.be.eql(expectedResult)
     })
 
     it('For record', () => {
@@ -228,22 +301,22 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[13]).to.be.eql(expectedResult)
+      expect(inputFields[16]).to.be.eql(expectedResult)
     })
 
     it('For generic', async () => {
       // @ts-ignore
-      expect(inputFields[14].name).to.be.eql('generic')
+      expect(inputFields[17].name).to.be.eql('generic')
       // @ts-ignore
-      expect(inputFields[14].__typename).to.be.eql(__INPUT_VALUE)
+      expect(inputFields[17].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[14].type.name).to.be.eql(ORDER_PROPERTY)
+      expect(inputFields[17].type.name).to.be.eql(ORDER_PROPERTY)
       // @ts-ignore
-      expect(inputFields[14].type.kind).to.be.eql(ENUM)
+      expect(inputFields[17].type.kind).to.be.eql(ENUM)
       // @ts-ignore
-      expect(inputFields[14].type.__typename).to.be.eql(__TYPE)
+      expect(inputFields[17].type.__typename).to.be.eql(__TYPE)
       // @ts-ignore
-      expect(inputFields[14].type.inputFileds).to.be.undefined
+      expect(inputFields[17].type.inputFileds).to.be.undefined
     })
 
     it('For base class', () => {
@@ -256,7 +329,7 @@ describe('schemas', async () => {
           kind: INPUT_OBJECT,
         },
       }
-      expect(inputFields[15]).to.be.eql(expectedResult)
+      expect(inputFields[18]).to.be.eql(expectedResult)
     })
 
     it('For optional string', () => {
@@ -269,7 +342,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[16]).to.be.eql(expectedResult)
+      expect(inputFields[19]).to.be.eql(expectedResult)
     })
 
     it('For optional null', () => {
@@ -282,7 +355,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[17]).to.be.eql(expectedResult)
+      expect(inputFields[20]).to.be.eql(expectedResult)
     })
 
     it('For optional undefined', () => {
@@ -295,7 +368,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[18]).to.be.eql(expectedResult)
+      expect(inputFields[21]).to.be.eql(expectedResult)
     })
 
     it('For optional unknown', () => {
@@ -308,7 +381,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[19]).to.be.eql(expectedResult)
+      expect(inputFields[22]).to.be.eql(expectedResult)
     })
 
     it('For optional any', () => {
@@ -321,7 +394,7 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[20]).to.be.eql(expectedResult)
+      expect(inputFields[23]).to.be.eql(expectedResult)
     })
 
     it('For optional record', () => {
@@ -334,22 +407,22 @@ describe('schemas', async () => {
           kind: ENUM,
         },
       }
-      expect(inputFields[21]).to.be.eql(expectedResult)
+      expect(inputFields[24]).to.be.eql(expectedResult)
     })
 
     it('For optional generic', async () => {
       // @ts-ignore
-      expect(inputFields[22].name).to.be.eql('optionalGeneric')
+      expect(inputFields[25].name).to.be.eql('optionalGeneric')
       // @ts-ignore
-      expect(inputFields[22].__typename).to.be.eql(__INPUT_VALUE)
+      expect(inputFields[25].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[22].type.name).to.be.eql(ORDER_PROPERTY)
+      expect(inputFields[25].type.name).to.be.eql(ORDER_PROPERTY)
       // @ts-ignore
-      expect(inputFields[22].type.kind).to.be.eql(ENUM)
+      expect(inputFields[25].type.kind).to.be.eql(ENUM)
       // @ts-ignore
-      expect(inputFields[22].type.__typename).to.be.eql(__TYPE)
+      expect(inputFields[25].type.__typename).to.be.eql(__TYPE)
       // @ts-ignore
-      expect(inputFields[22].type.inputFileds).to.be.undefined
+      expect(inputFields[25].type.inputFileds).to.be.undefined
     })
 
     it('For optional base class', async () => {
@@ -380,25 +453,25 @@ describe('schemas', async () => {
       inputFields = queryResult.data.__type.inputFields
 
       // @ts-ignore
-      expect(inputFields[23].name).to.be.eql('optionalChild')
+      expect(inputFields[26].name).to.be.eql('optionalChild')
       // @ts-ignore
-      expect(inputFields[23].__typename).to.be.eql(__INPUT_VALUE)
+      expect(inputFields[26].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[23].type.kind).to.be.eql(INPUT_OBJECT)
+      expect(inputFields[26].type.kind).to.be.eql(INPUT_OBJECT)
       // @ts-ignore
-      expect(inputFields[23].type.name).to.be.eql('BaseClassPropertyFilter')
+      expect(inputFields[26].type.name).to.be.eql('BaseClassPropertyFilter')
       // @ts-ignore
-      expect(inputFields[23].type.inputFields[0].name).to.be.eql('base')
+      expect(inputFields[26].type.inputFields[0].name).to.be.eql('base')
       // @ts-ignore
-      expect(inputFields[23].type.inputFields[0].__typename).to.be.eql(__INPUT_VALUE)
+      expect(inputFields[26].type.inputFields[0].__typename).to.be.eql(__INPUT_VALUE)
       // @ts-ignore
-      expect(inputFields[23].type.inputFields[0].type.kind).to.be.eql(INPUT_OBJECT)
+      expect(inputFields[26].type.inputFields[0].type.kind).to.be.eql(INPUT_OBJECT)
       // @ts-ignore
-      expect(inputFields[23].type.inputFields[0].type.name).to.be.eql(STRING_PROPERTY_FILTER)
+      expect(inputFields[26].type.inputFields[0].type.name).to.be.eql(STRING_PROPERTY_FILTER)
       // @ts-ignore
-      expect(inputFields[23].type.inputFields[0].type.__typename).to.be.eql(__TYPE)
+      expect(inputFields[26].type.inputFields[0].type.__typename).to.be.eql(__TYPE)
       // @ts-ignore
-      expect(inputFields[23].type.__typename).to.be.eql(__TYPE)
+      expect(inputFields[26].type.__typename).to.be.eql(__TYPE)
     })
 
     it('For readonly array', () => {
@@ -411,7 +484,7 @@ describe('schemas', async () => {
           name: ORDER_PROPERTY,
         },
       }
-      expect(inputFields[24]).to.be.eql(expectedResult)
+      expect(inputFields[27]).to.be.eql(expectedResult)
     })
   })
 })

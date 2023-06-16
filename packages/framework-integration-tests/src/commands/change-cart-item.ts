@@ -1,5 +1,4 @@
-import { Command, ignore } from '@boostercloud/framework-core'
-import { Command, Trace } from '@boostercloud/framework-core'
+import { Command, NonExposed, Trace } from "@boostercloud/framework-core";
 import { CommandInput, Register, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItemChanged } from '../events/cart-item-changed'
 import {
@@ -23,7 +22,7 @@ export class ChangeCartItem {
     readonly cartId: UUID,
     readonly productId: UUID,
     readonly quantity: number,
-    @ignore readonly test: number
+    @NonExposed readonly test: number
   ) {}
 
   public static async beforeFn(input: CommandInput, currentUser?: UserEnvelope): Promise<CommandInput> {

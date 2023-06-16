@@ -329,6 +329,35 @@ You can disable the creation of all the infrastructure and functionality needed 
 :::
 
 
+## Non exposing properties and parameters
+
+By default, all properties and parameters of the command constructor and/or read model are accessible through GraphQL. It is possible to not expose any of them adding the `@NonExposed` annotation to the constructor property or parameter.
+
+Example
+```typescript
+@ReadModel({
+  authorize: 'all',
+})
+export class CartReadModel {
+  @NonExposed
+  private internalProperty: number
+
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    readonly checks: number,
+    public shippingAddress?: Address,
+    public payment?: Payment,
+    public cartItemsIds?: Array<string>,
+    @NonExposed readonly internalParameter?: number
+  ) {
+    ...
+  }
+  
+  ...
+}
+```
+
 ## Adding before hooks to your read models
 
 When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive a `ReadModelRequestEnvelope` object representing the current request.
