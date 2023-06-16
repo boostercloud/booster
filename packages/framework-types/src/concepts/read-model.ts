@@ -6,6 +6,13 @@ export interface BoosterMetadata {
   version: number
   schemaVersion: number
   optimisticConcurrencyValue?: string | number
+  lastUpdateAt?: string
+  lastProjectionInfo?: {
+    entityId: string
+    entityName: string
+    entityUpdatedAt: string
+    projectionMethod: string
+  }
 }
 
 export interface ReadModelInterface {
