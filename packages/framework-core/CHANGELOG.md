@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 07 Jun 2023 15:41:28 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jun 2023 08:48:46 GMT and should not be manually modified.
+
+## 1.14.1
+Fri, 16 Jun 2023 08:48:46 GMT
+
+### Patches
+
+- Add last update to read models
 
 ## 1.14.0
 Wed, 07 Jun 2023 15:41:28 GMT
