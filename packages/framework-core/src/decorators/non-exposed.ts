@@ -24,6 +24,10 @@ function getFieldName(
   if (methodName) {
     return methodName
   }
+  if (!parameterIndex) {
+    throw new Error(`We could not get field name information in ${target} for method ${methodName}`)
+  }
+
   const argumentNames = getFunctionArguments(target)
-  return argumentNames[parameterIndex!]
+  return argumentNames[parameterIndex]
 }

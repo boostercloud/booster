@@ -92,5 +92,5 @@ export function nonExcludedFields(
   fields: Array<PropertyMetadata>,
   excludeProps?: Array<string>
 ): Array<PropertyMetadata> {
-  return excludeProps ? fields.filter((field: PropertyMetadata) => !excludeProps.includes(field.name)) : [...fields]
+  return excludeProps ? fields.filter((field: PropertyMetadata) => !excludeProps.includes(field.name)) : fields
 }
