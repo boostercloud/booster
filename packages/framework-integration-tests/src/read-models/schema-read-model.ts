@@ -1,19 +1,24 @@
-import { Projects, ReadModel } from '@boostercloud/framework-core'
+import { NonExposed, Projects, ReadModel } from '@boostercloud/framework-core'
 import { Cart, MigratedCart } from '../entities/cart'
 import { ProjectionResult, UUID } from '@boostercloud/framework-types'
 
 class GenericClass<T> {
-  constructor(readonly genericValue: T) {}
+  constructor(readonly genericValue: T, @NonExposed nonExposedGenericeParameter?: number) {}
 }
 
 class BaseClass {
-  constructor(readonly base: string) {}
+  constructor(readonly base: string, @NonExposed nonExposedBaseParameter?: number) {}
 }
 
 @ReadModel({
   authorize: 'all',
 })
 export class SchemaReadModel {
+  readonly readOnlyProperty?: string = '1'
+  private privateProperty?: string = '1'
+  public publicProperty?: string = '1'
+  @NonExposed nonExposedProperty?: number
+
   constructor(
     readonly id: UUID,
     readonly date: Date,
@@ -39,8 +44,13 @@ export class SchemaReadModel {
     readonly optionalRecord?: Record<string, string>,
     readonly optionalGeneric?: GenericClass<Cart>,
     readonly optionalChild?: BaseClass,
-    readonly readonlyArray?: ReadonlyArray<string>
-  ) {}
+    readonly readonlyArray?: ReadonlyArray<string>,
+    @NonExposed nonExposedParameter?: number
+  ) {
+    console.log(this.readOnlyProperty)
+    console.log(this.privateProperty)
+    console.log(this.publicProperty)
+  }
 
   @Projects(Cart, 'id')
   public static ignoreChange(

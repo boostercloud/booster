@@ -13,20 +13,22 @@ import {
 import { getClassMetadata } from '../../../decorators/metadata'
 import { PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
 import { GraphQLJSON } from 'graphql-scalars'
-import { AnyClass, UUID } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
-import { DateScalar, isExternalType } from '../common'
+import { DateScalar, isExternalType, nonExcludedFields } from '../common'
 
 export class GraphqlQueryFilterArgumentsBuilder {
   constructor(
     private readonly typeInformer: GraphQLTypeInformer,
-    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {},
+    private readonly config: BoosterConfig
   ) {}
 
-  public generateFilterArguments(type: AnyClass): GraphQLFieldConfigArgumentMap {
+  public generateFilterArguments(type: AnyClass, excludeProps: Array<string>): GraphQLFieldConfigArgumentMap {
     const metadata = getClassMetadata(type)
     const args: GraphQLFieldConfigArgumentMap = {}
-    metadata.fields
+    const finalFields: Array<PropertyMetadata> = nonExcludedFields(metadata.fields, excludeProps)
+    finalFields
       .filter((field: PropertyMetadata) => !field.typeInfo.isGetAccessor)
       .forEach((prop: PropertyMetadata) => {
         args[prop.name] = {
@@ -52,8 +54,8 @@ export class GraphqlQueryFilterArgumentsBuilder {
       let nestedProperties: ThunkObjMap<GraphQLInputFieldConfig> = {}
       const metadata = getClassMetadata(prop.typeInfo.type)
       if (metadata.fields.length === 0) return GraphQLJSON
-
-      this.typeInformer.generateGraphQLTypeForClass(prop.typeInfo.type, true)
+      const excludeProps = this.config.nonExposedGraphQLMetadataKey[prop.name]
+      this.typeInformer.generateGraphQLTypeForClass(prop.typeInfo.type, excludeProps, true)
 
       for (const prop of metadata.fields) {
         const property = { [prop.name]: { type: this.generateFilterFor(prop) } }

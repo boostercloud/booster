@@ -2,12 +2,14 @@ import { GraphQLFieldConfigMap, GraphQLNonNull } from 'graphql'
 import { ResolverBuilder, TargetTypeMetadata, TargetTypesMap } from '../common'
 import { TypeMetadata } from '@boostercloud/metadata-booster'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 export class GraphQLHandledFieldsGenerator {
   constructor(
     private readonly targetTypes: TargetTypesMap,
     private readonly typeInformer: GraphQLTypeInformer,
-    private readonly resolver: ResolverBuilder
+    private readonly resolver: ResolverBuilder,
+    private readonly config: BoosterConfig
   ) {}
 
   public generateFields(allowVoidReturn = true): GraphQLFieldConfigMap<any, any> {
@@ -33,7 +35,13 @@ export class GraphQLHandledFieldsGenerator {
     if (metadata.properties.length === 0) return undefined
     return {
       input: {
-        type: new GraphQLNonNull(this.typeInformer.generateGraphQLTypeForClass(metadata.class, true)),
+        type: new GraphQLNonNull(
+          this.typeInformer.generateGraphQLTypeForClass(
+            metadata.class,
+            this.config.nonExposedGraphQLMetadataKey[metadata.class.name],
+            true
+          )
+        ),
       },
     }
   }

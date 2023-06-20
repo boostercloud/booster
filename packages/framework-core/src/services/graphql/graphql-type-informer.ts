@@ -14,8 +14,8 @@ import {
   GraphQLType,
 } from 'graphql'
 import { GraphQLJSON } from 'graphql-scalars'
-import { ClassMetadata, ClassType, TypeMetadata } from '@boostercloud/metadata-booster'
-import { DateScalar, isExternalType } from './common'
+import { ClassMetadata, ClassType, PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
+import { DateScalar, isExternalType, nonExcludedFields } from './common'
 import { Logger } from '@boostercloud/framework-types'
 
 export class GraphQLTypeInformer {
@@ -23,13 +23,13 @@ export class GraphQLTypeInformer {
 
   constructor(private logger: Logger) {}
 
-  public generateGraphQLTypeForClass(type: ClassType, inputType: true): GraphQLInputType
-  public generateGraphQLTypeForClass(type: ClassType, inputType?: false): GraphQLOutputType
-  public generateGraphQLTypeForClass(type: ClassType, inputType: boolean): GraphQLType
-  public generateGraphQLTypeForClass(type: ClassType, inputType = false): GraphQLType {
+  public generateGraphQLTypeForClass(type: ClassType, excludeProps: Array<string>, inputType: true): GraphQLInputType
+  public generateGraphQLTypeForClass(type: ClassType, excludeProps: Array<string>, inputType?: false): GraphQLOutputType
+  public generateGraphQLTypeForClass(type: ClassType, excludeProps: Array<string>, inputType: boolean): GraphQLType
+  public generateGraphQLTypeForClass(type: ClassType, excludeProps: Array<string>, inputType = false): GraphQLType {
     this.logger.debug(`Generate GraphQL ${inputType ? 'input' : 'output'} type for class ${type.name}`)
     const metadata = getClassMetadata(type)
-    return this.getOrCreateObjectType(metadata, inputType)
+    return this.getOrCreateObjectType(metadata, inputType, excludeProps)
   }
 
   public getOrCreateGraphQLType(typeMetadata: TypeMetadata, inputType: true): GraphQLInputType
@@ -102,19 +102,28 @@ export class GraphQLTypeInformer {
     return new GraphQLList(GraphQLPropType)
   }
 
-  private getOrCreateObjectType(classMetadata: ClassMetadata, inputType: boolean): GraphQLType {
+  private getOrCreateObjectType(
+    classMetadata: ClassMetadata,
+    inputType: boolean,
+    excludeProps: Array<string>
+  ): GraphQLType {
     const typeName = classMetadata.name + (inputType ? 'Input' : '')
     if (typeName && this.graphQLTypes[typeName]) return this.graphQLTypes[typeName]
-    const createdGraphQLType = this.createObjectType(classMetadata, inputType)
+    const createdGraphQLType = this.createObjectType(classMetadata, inputType, excludeProps)
     if (typeName) this.graphQLTypes[typeName] = createdGraphQLType
     return createdGraphQLType
   }
 
-  private createObjectType(classMetadata: ClassMetadata, inputType: boolean): GraphQLType {
+  private createObjectType(
+    classMetadata: ClassMetadata,
+    inputType: boolean,
+    excludeProps?: Array<string>
+  ): GraphQLType {
+    const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
     if (inputType) {
       return new GraphQLInputObjectType({
         name: classMetadata.name + 'Input',
-        fields: classMetadata.fields?.reduce((obj, prop) => {
+        fields: finalFields?.reduce((obj, prop) => {
           this.logger.debug(`Get or create GraphQL input type for property ${prop.name}`)
           return {
             ...obj,
@@ -125,7 +134,7 @@ export class GraphQLTypeInformer {
     }
     return new GraphQLObjectType({
       name: classMetadata.name,
-      fields: classMetadata.fields?.reduce((obj, prop) => {
+      fields: finalFields?.reduce((obj, prop) => {
         this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
         return {
           ...obj,

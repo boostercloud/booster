@@ -73,6 +73,7 @@ export class BoosterConfig {
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
   public enableSubscriptions = true
+  public readonly nonExposedGraphQLMetadataKey: Record<string, Array<string>> = {}
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
   public registerRocketFunction(id: string, func: RocketFunction): void {

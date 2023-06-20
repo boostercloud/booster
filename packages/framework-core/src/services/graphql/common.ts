@@ -87,3 +87,10 @@ export const buildGraphqlSimpleEnumFor = (enumName: string, values: Array<string
     }, {} as GraphQLEnumValueConfigMap),
   })
 }
+
+export function nonExcludedFields(
+  fields: Array<PropertyMetadata>,
+  excludeProps?: Array<string>
+): Array<PropertyMetadata> {
+  return excludeProps ? fields.filter((field: PropertyMetadata) => !excludeProps.includes(field.name)) : fields
+}
