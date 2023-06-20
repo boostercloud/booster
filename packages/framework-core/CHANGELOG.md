@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 16 Jun 2023 08:48:46 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Jun 2023 10:05:41 GMT and should not be manually modified.
+
+## 1.15.0
+Tue, 20 Jun 2023 10:05:41 GMT
+
+### Minor changes
+
+- Add NonExposed decorator to hide GraphQL fields
 
 ## 1.14.1
 Fri, 16 Jun 2023 08:48:46 GMT
