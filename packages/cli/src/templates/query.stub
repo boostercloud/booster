@@ -12,7 +12,7 @@ export class {{{ name }}} {
     {{/fields}}
   ) {}
 
-  public static async handle(query: {{{ name }}}): Promise<string> {
+  public static async handle(query: {{{ name }}}, queryInfo?: QueryInfo): Promise<string> {
     /* YOUR CODE HERE */
   }
 }

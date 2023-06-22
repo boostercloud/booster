@@ -52,7 +52,7 @@ function generateImports(info: QueryInfo): Array<ImportDeclaration> {
   const queryFieldTypes = info.fields.map((f) => f.type)
   const queryUsesUUID = queryFieldTypes.some((type) => type == 'UUID')
 
-  const componentsFromBoosterTypes = ['Register']
+  const componentsFromBoosterTypes = ['QueryInfo']
   if (queryUsesUUID) {
     componentsFromBoosterTypes.push('UUID')
   }

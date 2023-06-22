@@ -4,6 +4,7 @@ import { expect } from '../../helper/expect'
 import { applicationUnderTest } from './setup'
 import { waitForIt } from '../../helper/sleep'
 import { UUID } from '@boostercloud/framework-types'
+import { beforeHookQueryID, beforeHookQueryMultiply } from '../../../src/constants'
 
 describe('Queries end-to-end tests', () => {
   context('with public queries', () => {
@@ -106,6 +107,41 @@ describe('Queries end-to-end tests', () => {
       expect(response).not.to.be.null
       expect(response?.data?.CartsByCountry['spain'].length).to.be.eq(2)
       expect(response?.data?.CartsByCountry['india'].length).to.be.eq(1)
+    })
+
+    it('before hook multiply the value by beforeHookQueryMultiply', async () => {
+      const cartId = beforeHookQueryID
+      const quantity = random.number({ min: 1 })
+      await client.mutate({
+        variables: {
+          cartId: cartId,
+          productId: random.uuid(),
+          quantity: quantity,
+        },
+        mutation: gql`
+          mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+            ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+          }
+        `,
+      })
+
+      const response = await waitForIt(
+        () =>
+          client.query({
+            variables: {
+              cartId: cartId,
+            },
+            query: gql`
+              query CartTotalQuantity($cartId: ID!) {
+                CartTotalQuantity(input: { cartId: $cartId })
+              }
+            `,
+          }),
+        (result) => result?.data?.CartTotalQuantity != 0
+      )
+
+      expect(response).not.to.be.null
+      expect(response?.data?.CartTotalQuantity).to.be.eq(beforeHookQueryMultiply * quantity)
     })
   })
 
