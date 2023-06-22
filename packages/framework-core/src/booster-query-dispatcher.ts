@@ -4,10 +4,13 @@ import {
   NotFoundError,
   QueryEnvelope,
   QueryHandlerGlobalError,
+  QueryInfo,
+  QueryInput,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { GraphQLResolverContext } from './services/graphql/common'
+import { applyBeforeFunctions } from './services/filter-helpers'
 
 export class BoosterQueryDispatcher {
   private readonly globalErrorDispatcher: BoosterGlobalErrorDispatcher
@@ -35,9 +38,21 @@ export class BoosterQueryDispatcher {
 
     let result: unknown
     try {
-      const queryInstance = createInstance(queryClass, queryEnvelope.value)
+      const queryInfo: QueryInfo = {
+        requestID: queryEnvelope.requestID,
+        responseHeaders: context.responseHeaders,
+        currentUser: queryEnvelope.currentUser,
+        context: queryEnvelope.context,
+      }
+      const queryInput: QueryInput = await applyBeforeFunctions(
+        queryEnvelope.value,
+        queryMetadata.before,
+        queryEnvelope.currentUser
+      )
+      const queryInstance = createInstance(queryClass, queryInput)
+
       logger.debug('Calling "handle" method on query: ', queryClass)
-      result = await queryClass.handle(queryInstance)
+      result = await queryClass.handle(queryInstance, queryInfo)
     } catch (err) {
       const e = err as Error
       const error = await this.globalErrorDispatcher.dispatch(new QueryHandlerGlobalError(queryEnvelope, e))

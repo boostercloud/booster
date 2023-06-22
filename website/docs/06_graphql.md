@@ -459,6 +459,25 @@ function beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput
 
 As you can see, we just check if the `cartUserId` is equal to the `currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
 
+## Adding before hooks to your queries
+
+You can use `before` hooks also in your queries, and [they work as the Read Models ones](#Adding-before-hooks-to-your-read-models), with a slight difference: **we don't modify `filters` but `inputs` (the parameters sent with a query)**. Apart from that, it's pretty much the same, here's an example:
+
+```typescript
+@Query({
+  authorize: 'all',
+  before: [CartTotalQuantity.beforeFn],
+})
+export class CartTotalQuantity {
+  public constructor(readonly cartId: UUID, @NonExposed readonly multiply: number) {}
+
+  public static async beforeFn(input: QueryInput, currentUser?: UserEnvelope): Promise<QueryInput> {
+    input.multiply = 100
+    return input
+  }
+}
+```
+
 ## Reading events
 
 You can also fetch events directly if you need. To do so, there are two kind of queries that have the following structure:

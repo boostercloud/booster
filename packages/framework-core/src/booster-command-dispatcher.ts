@@ -6,6 +6,7 @@ import {
   NotFoundError,
   CommandHandlerGlobalError,
   TraceActionTypes,
+  CommandInput,
 } from '@boostercloud/framework-types'
 import { RegisterHandler } from './booster-register-handler'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
@@ -50,7 +51,7 @@ export class BoosterCommandDispatcher {
       migratedCommandEnvelope.context
     )
     try {
-      const commandInput = await applyBeforeFunctions(
+      const commandInput: CommandInput = await applyBeforeFunctions(
         migratedCommandEnvelope.value,
         commandMetadata.before,
         migratedCommandEnvelope.currentUser
