@@ -134,11 +134,6 @@ export async function storeSnapshot(
     await dynamoDB
       .put({
         TableName: config.resourceNames.eventsStore,
-        ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
-        ExpressionAttributeValues: {
-          ':partitionKey': partitionKey,
-          ':sortKey': sortKey,
-        },
         Item: {
           ...persistableSnapshot,
           [eventsStoreAttributes.partitionKey]: partitionKey,
