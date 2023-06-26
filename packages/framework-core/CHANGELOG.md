@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 22 Jun 2023 15:57:36 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jun 2023 14:20:43 GMT and should not be manually modified.
+
+## 1.16.1
+Mon, 26 Jun 2023 14:20:43 GMT
+
+### Patches
+
+- ensure aws storeSnapshot is idempotent
 
 ## 1.16.0
 Thu, 22 Jun 2023 15:57:36 GMT
