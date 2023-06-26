@@ -114,50 +114,37 @@ export async function storeSnapshot(
   snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
   config: BoosterConfig
 ): Promise<EntitySnapshotEnvelope> {
-  try {
-    const logger = getLogger(config, 'EventsAdapter#storeSnapshot')
-    logger.debug('Storing the following snapshot:', snapshotEnvelope)
+  const logger = getLogger(config, 'EventsAdapter#storeSnapshot')
+  logger.debug('Storing the following snapshot:', snapshotEnvelope)
 
-    const partitionKey = partitionKeyForEntitySnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
-    /**
-     * The sort key of the snapshot matches the sort key of the last event that generated it.
-     * Entity snapshots can be potentially created by competing processes, and this way
-     * of storing the data makes snapshot creation an idempotent operation, allowing us to
-     * aggressively cache snapshots. If the snapshot already exists, it will be silently overwritten.
-     */
-    const sortKey = snapshotEnvelope.snapshottedEventCreatedAt
-    const persistableSnapshot = {
-      ...snapshotEnvelope,
-      createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
-      persistedAt: new Date().toISOString(),
-    }
-    await dynamoDB
-      .put({
-        TableName: config.resourceNames.eventsStore,
-        ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
-        ExpressionAttributeValues: {
-          ':partitionKey': partitionKey,
-          ':sortKey': sortKey,
-        },
-        Item: {
-          ...persistableSnapshot,
-          [eventsStoreAttributes.partitionKey]: partitionKey,
-          [eventsStoreAttributes.sortKey]: sortKey,
-          [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
-            snapshotEnvelope.entityTypeName,
-            snapshotEnvelope.kind
-          ),
-        },
-      })
-      .promise()
-    return persistableSnapshot
-  } catch (e) {
-    const error = e as Error
-    if (error.name == 'ConditionalCheckFailedException') {
-      throw new OptimisticConcurrencyUnexpectedVersionError(error.message)
-    }
-    throw e
+  const partitionKey = partitionKeyForEntitySnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
+  /**
+   * The sort key of the snapshot matches the sort key of the last event that generated it.
+   * Entity snapshots can be potentially created by competing processes, and this way
+   * of storing the data makes snapshot creation an idempotent operation, allowing us to
+   * aggressively cache snapshots. If the snapshot already exists, it will be silently overwritten.
+   */
+  const sortKey = snapshotEnvelope.snapshottedEventCreatedAt
+  const persistableSnapshot = {
+    ...snapshotEnvelope,
+    createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+    persistedAt: new Date().toISOString(),
   }
+  await dynamoDB
+    .put({
+      TableName: config.resourceNames.eventsStore,
+      Item: {
+        ...persistableSnapshot,
+        [eventsStoreAttributes.partitionKey]: partitionKey,
+        [eventsStoreAttributes.sortKey]: sortKey,
+        [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
+          snapshotEnvelope.entityTypeName,
+          snapshotEnvelope.kind
+        ),
+      },
+    })
+    .promise()
+  return persistableSnapshot
 }
 
 async function persistEvent(
