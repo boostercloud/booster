@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 26 Jun 2023 14:20:43 GMT and should not be manually modified.
+This log was last generated on Thu, 29 Jun 2023 10:29:53 GMT and should not be manually modified.
+
+## 1.17.0
+Thu, 29 Jun 2023 10:29:53 GMT
+
+### Minor changes
+
+- Add Local Provider concurrency
 
 ## 1.16.1
 Mon, 26 Jun 2023 14:20:43 GMT
