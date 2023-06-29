@@ -55,16 +55,24 @@ async function insertReadModel(
       id: readModel?.id?.toString(),
     } as ItemDefinition
 
-    await db
+    const { resource } = await db
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.forReadModel(readModelName))
       .items.create(itemModel)
-    logger.debug('[ReadModelAdapter#insertReadModel] Read model inserted')
+    logger.debug(
+      `Read model ${readModelName} inserted with id ${readModel.id} and metadata ${JSON.stringify(
+        resource?.boosterMetadata
+      )}`
+    )
   } catch (err) {
     const error = err as Error & { code?: unknown }
     // In case of conflict (The ID provided for a resource on a PUT or POST operation has been taken by an existing resource) we should retry it
     if (error?.code == AZURE_CONFLICT_ERROR_CODE) {
-      logger.debug('[ReadModelAdapter#insertReadModel] Read model insert failed with a conflict failure')
+      logger.warn(
+        `Read model ${readModelName} insert failed with a conflict failure with id ${
+          readModel.id
+        } and metadata ${JSON.stringify(readModel.boosterMetadata)}`
+      )
       throw new OptimisticConcurrencyUnexpectedVersionError(error?.message)
     }
     logger.error('[ReadModelAdapter#insertReadModel] Read model insert failed without a conflict failure')
@@ -84,16 +92,24 @@ async function updateReadModel(
     accessCondition: { condition: readModel.boosterMetadata?.optimisticConcurrencyValue || '*', type: 'IfMatch' },
   } as RequestOptions
   try {
-    await db
+    const { resource } = await db
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.forReadModel(readModelName))
       .items.upsert(readModel, options)
-    logger.debug('[ReadModelAdapter#updateReadModel] Read model updated')
+    logger.debug(
+      `Read model ${readModelName} updated with id ${readModel.id} and metadata ${JSON.stringify(
+        resource?.boosterMetadata
+      )}`
+    )
   } catch (err) {
     const error = err as Error & { code?: unknown }
     // If there is a precondition failure then we should retry it
     if (error?.code == AZURE_PRECONDITION_FAILED_ERROR) {
-      logger.debug('[ReadModelAdapter#updateReadModel] Read model update failed with a pre-condition failure')
+      logger.warn(
+        `Read model ${readModelName} update failed with a pre-condition failure with id ${
+          readModel.id
+        } and metadata ${JSON.stringify(readModel.boosterMetadata)}`
+      )
       throw new OptimisticConcurrencyUnexpectedVersionError(error?.message)
     }
     logger.error('[ReadModelAdapter#updateReadModel] Read model update failed without a pre-condition failure')

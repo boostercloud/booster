@@ -41,9 +41,9 @@ async function storeMock(
   const mockUserApp: UserApp = {} as any
   const graphQLService = new GraphQLService(mockUserApp)
   stub(graphQLService, 'handleNotificationSubscription')
-  // @ts-ignore
   await storeReadModel(
     graphQLService,
+    // @ts-ignore
     mockReadModelRegistry,
     mockConfig,
     mockReadModel.typeName,
@@ -187,7 +187,7 @@ describe('read-models-adapter', () => {
     })
 
     it('should call read model registry store', () => {
-      expect(storeStub).to.have.been.calledWithExactly(mockReadModel)
+      expect(storeStub).to.have.been.calledWithExactly(mockReadModel, 1)
     })
 
     it('should log the right debug message', () => {
