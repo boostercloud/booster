@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 29 Jun 2023 10:29:53 GMT and should not be manually modified.
+This log was last generated on Fri, 30 Jun 2023 13:15:00 GMT and should not be manually modified.
+
+## 1.18.0
+Fri, 30 Jun 2023 13:15:00 GMT
+
+### Minor changes
+
+- Fix GraphQL dependency
 
 ## 1.17.0
 Thu, 29 Jun 2023 10:29:53 GMT
