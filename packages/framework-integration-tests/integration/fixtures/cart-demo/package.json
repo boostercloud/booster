@@ -24,7 +24,8 @@
     "@types/node": "whatever",
     "@boostercloud/framework-provider-aws-infrastructure": "whatever",
     "ttypescript": "whatever",
-    "@boostercloud/metadata-booster": "whatever"
+    "@boostercloud/metadata-booster": "whatever",
+    "graphql": "^16.6.0"
   },
   "engines": {
     "node": ">=14.0.0"

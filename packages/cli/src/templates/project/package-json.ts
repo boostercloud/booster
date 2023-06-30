@@ -32,7 +32,8 @@ export const template = `{
     "typescript": "4.7.4",
     "ts-node": "9.1.1",
     "@types/node": "16.11.7",
-    "ttypescript": "1.5.13"
+    "ttypescript": "1.5.13",
+    "graphql": "^16.6.0"
   },
   "engines": {
     "node": ">=14.0.0"
