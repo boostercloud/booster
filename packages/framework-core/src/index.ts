@@ -12,8 +12,10 @@ export {
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,
   boosterRocketDispatcher,
+  boosterHealth,
 } from './booster'
 export * from './services/token-verifiers'
 export * from './instrumentation/index'
+export * from './decorators/health-sensor'
 
 export const Booster: BoosterApp = boosterModule.Booster

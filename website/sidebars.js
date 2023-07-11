@@ -96,6 +96,17 @@ const sidebars = {
             'going-deeper/rockets/rocket-webhook',
           ]
         },
+        {
+          type: 'category',
+          label: 'Sensors',
+          link: {
+            type: 'doc',
+            id: 'going-deeper/sensor'
+          },
+          items: [
+            'going-deeper/health/sensor-health',
+          ]
+        },
         'going-deeper/testing',
         'going-deeper/data-migrations',
         'going-deeper/touch-entities',

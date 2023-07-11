@@ -15,6 +15,7 @@ import { User } from '@azure/arm-appservice'
 import { WebsocketConnectFunction } from '../functions/websocket-connect-function'
 import { WebsocketDisconnectFunction } from '../functions/websocket-disconnect-function'
 import { WebsocketMessagesFunction } from '../functions/websocket-messages-function'
+import { SensorHealthFunction } from '../functions/sensor-health-function'
 
 export class FunctionZip {
   static async deployZip(
@@ -78,7 +79,12 @@ export class FunctionZip {
   static buildAzureFunctions(config: BoosterConfig): Array<FunctionDefinition> {
     const graphqlFunctionDefinition = new GraphqlFunction(config).getFunctionDefinition()
     const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
-    let featuresDefinitions = [graphqlFunctionDefinition, eventHandlerFunctionDefinition]
+    const sensorHealthHandlerFunctionDefinition = new SensorHealthFunction(config).getFunctionDefinition()
+    let featuresDefinitions = [
+      graphqlFunctionDefinition,
+      eventHandlerFunctionDefinition,
+      sensorHealthHandlerFunctionDefinition,
+    ]
     if (config.enableSubscriptions) {
       const messagesFunctionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
       const disconnectFunctionDefinition = new WebsocketDisconnectFunction(config).getFunctionDefinition()

@@ -4,6 +4,7 @@ export {
   boosterEventDispatcher,
   boosterServeGraphQL,
   boosterNotifySubscribers,
+  boosterHealth,
   boosterTriggerScheduledCommand,
   boosterRocketDispatcher,
 } from '@boostercloud/framework-core'

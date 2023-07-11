@@ -15,6 +15,7 @@ import {
   ReadModelListResult,
   ScheduledCommandEnvelope,
   SubscriptionEnvelope,
+  HealthEnvelope,
 } from './envelope'
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
@@ -29,10 +30,22 @@ export interface ProviderLibrary {
   scheduled: ScheduledCommandsLibrary
   infrastructure: () => ProviderInfrastructure
   rockets: ProviderRocketLibrary
+  sensor: ProviderSensorLibrary
 }
 
 export interface ProviderRocketLibrary {
   rawToEnvelopes(config: BoosterConfig, request: unknown): RocketEnvelope
+}
+
+export interface ProviderSensorLibrary {
+  databaseEventsHealthDetails(config: BoosterConfig): Promise<unknown>
+  databaseReadModelsHealthDetails(config: BoosterConfig): Promise<unknown>
+  isDatabaseEventUp(config: BoosterConfig): Promise<boolean>
+  areDatabaseReadModelsUp(config: BoosterConfig): Promise<boolean>
+  databaseUrls(config: BoosterConfig): Promise<Array<string>>
+  isGraphQLFunctionUp(config: BoosterConfig): Promise<boolean>
+  graphQLFunctionUrl(config: BoosterConfig): Promise<string>
+  rawRequestToHealthEnvelope(rawRequest: unknown): HealthEnvelope
 }
 
 export interface ProviderEventsLibrary {
