@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 30 Jun 2023 13:15:00 GMT and should not be manually modified.
+This log was last generated on Tue, 18 Jul 2023 10:04:58 GMT and should not be manually modified.
+
+## 1.18.1
+Tue, 18 Jul 2023 10:04:58 GMT
+
+### Patches
+
+- fix getter on migrations
 
 ## 1.18.0
 Fri, 30 Jun 2023 13:15:00 GMT
