@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "fix getter on migrations",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
