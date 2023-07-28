@@ -10,15 +10,23 @@ export type SimpleRegistryTypes = ConnectionData | SubscriptionEnvelope
 
 export class WebSocketRegistry {
   public datastore
+  public isLoaded = false
 
   constructor(connectionsDatabase: string) {
-    this.datastore = new DataStore({ filename: connectionsDatabase, autoload: true })
-    this.addIndexes()
+    this.datastore = new DataStore({ filename: connectionsDatabase })
   }
 
-  addIndexes(): void {
+  async loadDatabaseIfNeeded(): Promise<void> {
+    if (!this.isLoaded) {
+      this.isLoaded = true
+      await this.datastore.loadDatabaseAsync()
+      await this.addIndexes()
+    }
+  }
+
+  async addIndexes(): Promise<void> {
     const maxDurationInSeconds = 2 * 24 * 60 * 60 // 2 days
-    this.datastore.ensureIndex({ fieldName: 'expirationTime', expireAfterSeconds: maxDurationInSeconds })
+    this.datastore.ensureIndexAsync({ fieldName: 'expirationTime', expireAfterSeconds: maxDurationInSeconds })
   }
 
   getCursor(query: object, createdAt = 1, projections?: unknown) {
@@ -26,6 +34,7 @@ export class WebSocketRegistry {
   }
 
   public async query(query: object, createdAt = 1, limit?: number, projections?: unknown): Promise<unknown> {
+    await this.loadDatabaseIfNeeded()
     let cursor = this.getCursor(query, createdAt, projections)
     if (limit) {
       cursor = cursor.limit(Number(limit))
@@ -34,18 +43,22 @@ export class WebSocketRegistry {
   }
 
   public async store(envelope: SimpleRegistryTypes): Promise<void> {
+    await this.loadDatabaseIfNeeded()
     await this.datastore.insertAsync(envelope)
   }
 
   public async delete(query: unknown): Promise<number> {
+    await this.loadDatabaseIfNeeded()
     return await this.datastore.removeAsync(query, { multi: true })
   }
 
   public async deleteAll(): Promise<number> {
+    await this.loadDatabaseIfNeeded()
     return await this.datastore.removeAsync({}, { multi: true })
   }
 
   public async count(query?: object): Promise<number> {
+    await this.loadDatabaseIfNeeded()
     return await this.datastore.countAsync(query)
   }
 }

@@ -12,9 +12,18 @@ export const UNIQUE_VIOLATED_ERROR_TYPE = 'uniqueViolated'
 
 export class ReadModelRegistry {
   public readonly readModels
+  public isLoaded = false
+
   constructor() {
-    this.readModels = new DataStore({ filename: readModelsDatabase, autoload: true })
-    this.readModels.ensureIndex({ fieldName: 'uniqueKey', unique: true, sparse: true })
+    this.readModels = new DataStore({ filename: readModelsDatabase })
+  }
+
+  async loadDatabaseIfNeeded(): Promise<void> {
+    if (!this.isLoaded) {
+      this.isLoaded = true
+      await this.readModels.loadDatabaseAsync()
+      await this.readModels.ensureIndexAsync({ fieldName: 'uniqueKey', unique: true, sparse: true })
+    }
   }
 
   public async query(
@@ -23,6 +32,7 @@ export class ReadModelRegistry {
     skip?: number,
     limit?: number
   ): Promise<Array<ReadModelEnvelope>> {
+    await this.loadDatabaseIfNeeded()
     let cursor = this.readModels.findAsync(query)
     const sortByList = this.toLocalSortFor(sortBy)
     if (sortByList) {
@@ -38,6 +48,7 @@ export class ReadModelRegistry {
   }
 
   public async store(readModel: ReadModelEnvelope, expectedCurrentVersion: number): Promise<void> {
+    await this.loadDatabaseIfNeeded()
     const uniqueReadModel: ReadModelEnvelope & { uniqueKey?: string } = readModel
     uniqueReadModel.uniqueKey = `${readModel.typeName}_${readModel.value.id}_${readModel.value.boosterMetadata?.version}`
     if (uniqueReadModel.value.boosterMetadata?.version === 1) {
@@ -47,10 +58,12 @@ export class ReadModelRegistry {
   }
 
   private async insert(readModel: ReadModelEnvelope): Promise<void> {
+    await this.loadDatabaseIfNeeded()
     await this.readModels.insertAsync(readModel)
   }
 
   private async update(readModel: ReadModelEnvelope, expectedCurrentVersion: number): Promise<void> {
+    await this.loadDatabaseIfNeeded()
     const { numAffected } = await this.readModels.updateAsync(
       {
         typeName: readModel.typeName,
@@ -72,6 +85,7 @@ export class ReadModelRegistry {
   }
 
   public async deleteById(id: UUID, typeName: string): Promise<number> {
+    await this.loadDatabaseIfNeeded()
     return await this.readModels.removeAsync({ typeName: typeName, 'value.id': id }, { multi: false })
   }
 

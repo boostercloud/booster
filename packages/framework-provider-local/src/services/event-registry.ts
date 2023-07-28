@@ -4,10 +4,18 @@ import { eventsDatabase } from '../paths'
 const DataStore = require('@seald-io/nedb')
 
 export class EventRegistry {
-  private readonly events
+  public readonly events
+  public isLoaded = false
 
   constructor() {
-    this.events = new DataStore({ filename: eventsDatabase, autoload: true })
+    this.events = new DataStore({ filename: eventsDatabase })
+  }
+
+  async loadDatabaseIfNeeded(): Promise<void> {
+    if (!this.isLoaded) {
+      this.isLoaded = true
+      await this.events.loadDatabaseAsync()
+    }
   }
 
   getCursor(query: object, createdAt = 1, projections?: unknown) {
@@ -21,6 +29,7 @@ export class EventRegistry {
     limit?: number,
     projections?: unknown
   ): Promise<EventStoreEntryEnvelope[]> {
+    await this.loadDatabaseIfNeeded()
     let cursor = this.getCursor(query, createdAt, projections)
     if (limit) {
       cursor = cursor.limit(Number(limit))
@@ -29,6 +38,7 @@ export class EventRegistry {
   }
 
   public async queryLatestSnapshot(query: object): Promise<EntitySnapshotEnvelope | undefined> {
+    await this.loadDatabaseIfNeeded()
     const cursor = this.events.findAsync({ ...query, kind: 'snapshot' }).sort({ snapshottedEventCreatedAt: -1 }) // Sort in descending order (newer timestamps first)
     const results = await cursor.execAsync()
     if (results.length <= 0) {
@@ -38,14 +48,17 @@ export class EventRegistry {
   }
 
   public async store(storableObject: EventEnvelope | EntitySnapshotEnvelope): Promise<void> {
+    await this.loadDatabaseIfNeeded()
     await this.events.insertAsync(storableObject)
   }
 
   public async deleteAll(): Promise<number> {
+    await this.loadDatabaseIfNeeded()
     return await this.events.removeAsync({}, { multi: true })
   }
 
   public async count(query?: object): Promise<number> {
+    await this.loadDatabaseIfNeeded()
     return await this.events.countAsync(query)
   }
 }
