@@ -393,6 +393,12 @@
       "projectFolder": "packages/cli"
     },
     {
+      "packageName": "@boostercloud/create",
+      "shouldPublish": true,
+      "versionPolicyName": "booster",
+      "projectFolder": "packages/create"
+    },
+    {
       "packageName": "@boostercloud/framework-common-helpers",
       "shouldPublish": true,
       "versionPolicyName": "booster",

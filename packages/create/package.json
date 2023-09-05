@@ -1,0 +1,41 @@
+{
+  "name": "@boostercloud/create",
+  "version": "1.18.1",
+  "description": "Create a new Booster project",
+  "author": "Boosterin Labs SLU",
+  "homepage": "https://boosterframework.com",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "scripts": {
+    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "build": "tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test:core": "npm run test",
+    "test": "cross-env BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\" 2>&1"
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^1.18.1",
+    "@types/mocha": "8.2.2",
+    "@types/node": "16.11.7",
+    "cross-env": "7.0.3",
+    "nyc": "^15.1.0",
+    "mocha": "8.4.0"
+  }
+}

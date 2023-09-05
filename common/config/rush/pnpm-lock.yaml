@@ -187,6 +187,22 @@ importers:
       ts-node: 10.9.1_t4lrjbt3sxauai4t5o275zsepa
       typescript: 4.7.4
 
+  ../../packages/create:
+    specifiers:
+      '@boostercloud/eslint-config': workspace:^1.18.1
+      '@types/mocha': 8.2.2
+      '@types/node': 16.11.7
+      cross-env: 7.0.3
+      mocha: 8.4.0
+      nyc: ^15.1.0
+    devDependencies:
+      '@boostercloud/eslint-config': link:../../tools/eslint-config
+      '@types/mocha': 8.2.2
+      '@types/node': 16.11.7
+      cross-env: 7.0.3
+      mocha: 8.4.0
+      nyc: 15.1.0
+
   ../../packages/framework-common-helpers:
     specifiers:
       '@boostercloud/eslint-config': workspace:^1.18.1
