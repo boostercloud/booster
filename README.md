@@ -7,7 +7,7 @@
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 ![Integration tests](https://github.com/boostercloud/booster/actions/workflows/integration-tests.yml/badge.svg)
 [![Discord](https://img.shields.io/discord/763753198388510780.svg?label=&logo=discord&logoColor=ffffff&color=7389D8&labelColor=6A7EC2)](https://discord.gg/bDY8MKx)
-[![Docs](https://img.shields.io/badge/Docs-Booster-blue)](https://docs.booster.cloud)
+[![Docs](https://img.shields.io/badge/Docs-Booster-blue)](https://docs.boosterframework.com)
 ---
 
 # What is Booster Framework?
@@ -67,7 +67,7 @@ Booster Framework follows the next principles:
 You can join the conversation and start contributing in any of the following ways:
 * [Say hello in Discord](https://discord.gg/bDY8MKx)
 * [Create a new issue in Github](https://github.com/boostercloud/booster/issues/new/choose)
-* [Try the framework and let us know how you liked it!](https://docs.booster.cloud/#/chapters/02_getting-started)
+* [Try the framework and let us know how you liked it!](https://docs.boosterframework.com/category/getting-started)
 
 Please refer to [`CONTRIBUTING.md`](./CONTRIBUTING.md) for more details. Pull requests are welcome. For major changes, please
 open an issue first to discuss what you would like to change.
@@ -79,7 +79,7 @@ The Booster Framework is licensed under the Apache License, Version 2.0. See the
 # Resources
 
 * [Website](https://boosterframework.com)
-* [Documentation](https://docs.booster.cloud)
+* [Documentation](https://docs.boosterframework.com)
 * [Step-by-step guides and examples](docs/examples)
 * [Join the conversation in Discord](https://discord.gg/k7b4B8CDtT)
 * [Twitter](https://twitter.com/boostthecloud)

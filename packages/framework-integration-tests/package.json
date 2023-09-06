@@ -2,8 +2,8 @@
   "name": "@boostercloud/framework-integration-tests",
   "description": "Example project for Booster",
   "version": "1.18.1",
-  "author": "Booster Cloud",
-  "homepage": "https://booster.cloud",
+  "author": "Boosterin Labs SLU",
+  "homepage": "https://boosterframework.com",
   "publishConfig": {
     "access": "restricted"
   },
