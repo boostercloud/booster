@@ -8,10 +8,12 @@
   "publishConfig": {
     "access": "public"
   },
-  "main": "dist/index.js",
   "files": [
     "dist"
   ],
+  "bin": {
+    "create": "./dist/create.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/boostercloud/booster.git"
@@ -36,6 +38,7 @@
     "@types/node": "16.11.7",
     "cross-env": "7.0.3",
     "nyc": "^15.1.0",
-    "mocha": "8.4.0"
+    "mocha": "8.4.0",
+    "typescript": "4.7.4"
   }
 }

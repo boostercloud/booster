@@ -9,6 +9,10 @@
       "path": "packages/cli"
     },
     {
+      "name": "📦 @boostercloud/create",
+      "path": "packages/create"
+    },
+    {
       "name": "📦 @boostercloud/framework-common-helpers",
       "path": "packages/framework-common-helpers"
     },

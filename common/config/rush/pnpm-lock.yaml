@@ -195,6 +195,7 @@ importers:
       cross-env: 7.0.3
       mocha: 8.4.0
       nyc: ^15.1.0
+      typescript: 4.7.4
     devDependencies:
       '@boostercloud/eslint-config': link:../../tools/eslint-config
       '@types/mocha': 8.2.2
@@ -202,6 +203,7 @@ importers:
       cross-env: 7.0.3
       mocha: 8.4.0
       nyc: 15.1.0
+      typescript: 4.7.4
 
   ../../packages/framework-common-helpers:
     specifiers:
