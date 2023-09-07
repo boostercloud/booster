@@ -171,7 +171,7 @@ export class BoosterConfig {
 
       For more information, check out the docs:
 
-      https://docs.booster.cloud/chapters/05_going-deeper?id=configuration-and-environments
+      https://docs.boosterframework.com/going-deeper/environment-configuration
     `)
     this._provider = provider
   }

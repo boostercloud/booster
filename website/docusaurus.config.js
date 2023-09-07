@@ -121,7 +121,7 @@ const config = {
           items: [
             {
               label: 'Docs',
-              to: 'https://docs.booster.cloud/',
+              to: 'https://docs.boosterframework.com/',
             },
             {
               label: 'YouTube',

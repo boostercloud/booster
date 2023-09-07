@@ -124,10 +124,10 @@ describe('new', (): void => {
 
         describe('define homepage', () => { 
           it('with --homepage', async () => {
-            const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
+            const config = { ...defaultProjectInitializerConfig, homepage: 'boosterframework.com' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--homepage',"'booster.cloud'"], {} as IConfig).run()
+            await new Project.default([projectName,'--homepage',"'boosterframework.com'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -137,10 +137,10 @@ describe('new', (): void => {
           })
 
           it('with -H', async () => {
-            const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
+            const config = { ...defaultProjectInitializerConfig, homepage: 'boosterframework.com' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-H',"'booster.cloud'"], {} as IConfig).run()
+            await new Project.default([projectName,'-H',"'boosterframework.com'"], {} as IConfig).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -320,7 +320,7 @@ describe('new', (): void => {
                 '--version','1.0.0',
                 '--author',"'John Doe'",
                 '--description',"'a new description'",
-                '--homepage','booster.cloud',
+                '--homepage','boosterframework.com',
                 '--repository','github.com/boostercloud/booster.git',
                 '--license','GPL',
                 '--providerPackageName',defaultProvider,
@@ -339,7 +339,7 @@ describe('new', (): void => {
                   '-v','1.0.0',
                   '-a',"'John Doe'",
                   '-d',"'a new description'",
-                  '-H','booster.cloud',
+                  '-H','boosterframework.com',
                   '-r','github.com/boostercloud/booster.git',
                   '-l','GPL',
                   '-p',defaultProvider,

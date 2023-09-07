@@ -5,8 +5,8 @@
   "keywords": [
     "framework-types"
   ],
-  "author": "Booster Cloud",
-  "homepage": "https://booster.cloud",
+  "author": "Boosterin Labs SLU",
+  "homepage": "https://boosterframework.com",
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"

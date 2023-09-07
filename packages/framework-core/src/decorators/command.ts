@@ -63,7 +63,7 @@ export function Returns<TReturn>(
 
     For more information, check out the docs:
 
-    https://docs.booster.cloud/chapters/03_booster-architecture?id=returning-a-valuehttps://docs.booster.cloud/chapters/03_booster-architecture?id=returning-a-value
+    https://docs.boosterframework.com/architecture/command#returning-a-value
   `)
   return (commandClass) => {}
 }
