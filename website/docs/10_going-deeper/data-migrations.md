@@ -158,7 +158,7 @@ export class CartIdDataMigrateV2 {
     "typescript": "4.5.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
-    "ttypescript": "1.5.13",
+    "ttypescript": "1.5.15",
     "@boostercloud/metadata-booster": "0.30.2"
   },
 ```

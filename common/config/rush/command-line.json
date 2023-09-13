@@ -15,8 +15,7 @@
       "commandKind": "bulk",
       "name": "test",
       "summary": "Runs unit tests for all packages",
-      "enableParallelism": true,
-      "allowWarningsInSuccessfulBuild": true
+      "enableParallelism": true
     },
     {
       "commandKind": "bulk",
