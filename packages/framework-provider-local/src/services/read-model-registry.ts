@@ -14,7 +14,7 @@ export class ReadModelRegistry {
   public readonly readModels: DataStore<ReadModelEnvelope> = new DataStore(readModelsDatabase)
   constructor() {
     this.readModels.loadDatabase()
-    this.readModels.ensureIndex({ fieldName: 'uniqueKey', unique: true })
+    this.readModels.ensureIndex({ fieldName: 'uniqueKey', unique: true, sparse: true })
   }
 
   public async query(
