@@ -1,6 +1,21 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 18 Jul 2023 10:04:58 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Sep 2023 14:53:03 GMT and should not be manually modified.
+
+## 1.19.0
+Wed, 13 Sep 2023 14:53:03 GMT
+
+### Minor changes
+
+- Update booster dependencies
+
+### Patches
+
+- Fix local provider index
+
+### Updates
+
+- Fixed broken links to the documentation
 
 ## 1.18.1
 Tue, 18 Jul 2023 10:04:58 GMT
