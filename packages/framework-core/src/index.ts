@@ -8,6 +8,8 @@ export { BoosterDataMigrationEntity } from './core-concepts/data-migration/entit
 export { BoosterTouchEntityHandler } from './booster-touch-entity-handler'
 export {
   boosterEventDispatcher,
+  boosterProduceEventStream,
+  boosterConsumeEventStream,
   boosterServeGraphQL,
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,

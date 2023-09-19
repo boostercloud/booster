@@ -113,6 +113,7 @@ const sidebars = {
         'going-deeper/custom-templates',
         'going-deeper/framework-packages',
         'going-deeper/instrumentation',
+        'going-deeper/azure-scale'
       ],
     },
     'frequently-asked-questions',

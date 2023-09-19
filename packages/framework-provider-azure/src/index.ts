@@ -33,6 +33,9 @@ import {
   storeConnectionData,
 } from './library/connections-adapter'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
+import { produceEventsStream } from './library/events-stream-producer-adapter'
+import { EventHubProducerClient, RetryMode } from '@azure/event-hubs'
+import { dedupEventStream, rawEventsStreamToEnvelopes } from './library/events-stream-consumer-adapter'
 import {
   areDatabaseReadModelsUp,
   databaseUrl,
@@ -51,6 +54,25 @@ if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefi
   cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
 }
 
+let producer: EventHubProducerClient
+const eventHubConnectionString = process.env[environmentVarNames.eventHubConnectionString]
+const eventHubName = process.env[environmentVarNames.eventHubName]
+if (
+  typeof eventHubConnectionString === 'undefined' ||
+  typeof eventHubName === 'undefined' ||
+  eventHubConnectionString === '' ||
+  eventHubName === ''
+) {
+  producer = {} as any
+} else {
+  producer = new EventHubProducerClient(eventHubConnectionString, eventHubName, {
+    retryOptions: {
+      maxRetries: 5,
+      mode: RetryMode.Exponential,
+    },
+  })
+}
+
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependencies that are deployed in the lambda functions. The infrastructure
  * package is only used during the deploy.
@@ -63,6 +85,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
+    rawStreamToEnvelopes: rawEventsStreamToEnvelopes,
+    dedupEventStream: dedupEventStream.bind(null, cosmosClient),
+    produce: produceEventsStream.bind(null, producer),
     store: storeEvents.bind(null, cosmosClient),
     storeSnapshot: storeSnapshot.bind(null, cosmosClient),
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),

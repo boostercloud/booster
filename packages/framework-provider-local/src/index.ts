@@ -71,6 +71,9 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
+    rawStreamToEnvelopes: notImplemented as any,
+    dedupEventStream: notImplemented as any,
+    produce: notImplemented as any,
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
@@ -141,3 +144,5 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     return infrastructure.Infrastructure(rocketDescriptors)
   },
 })
+
+function notImplemented(): void {}

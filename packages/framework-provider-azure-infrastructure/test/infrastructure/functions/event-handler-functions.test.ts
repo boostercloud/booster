@@ -2,6 +2,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { describe } from 'mocha'
 import { EventHandlerFunction } from '../../../src/infrastructure/functions/event-handler-function'
 import { expect } from '../../expect'
+import { EventHandlerFunctionDefinition } from '../../../src'
 
 describe('Creating event-handler-functions', () => {
   const config = new BoosterConfig('test')
@@ -9,7 +10,7 @@ describe('Creating event-handler-functions', () => {
   config.resourceNames.eventsStore = 'eventsStore'
 
   it('create the expected EventHandlerFunctionDefinition', () => {
-    const definition = new EventHandlerFunction(config).getFunctionDefinition()
+    const definition: EventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
     expect(definition).not.to.be.null
     expect(definition.name).to.be.equal('eventHandler')
     expect(definition.config.bindings[0].type).to.be.equal('cosmosDBTrigger')

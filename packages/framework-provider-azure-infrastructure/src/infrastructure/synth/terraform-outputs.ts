@@ -1,37 +1,27 @@
-import { TerraformOutput, TerraformStack } from 'cdktf'
-import { apiManagementApiOperation, resourceGroup, webPubsub } from '@cdktf/provider-azurerm'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { TerraformOutput } from 'cdktf'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformOutputs {
-  static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    appPrefix: string,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    graphQLApiManagementApiOperationResource: apiManagementApiOperation.ApiManagementApiOperation,
-    sensorHealthApiManagementApiOperationResource: apiManagementApiOperation.ApiManagementApiOperation,
-    hubName: string,
-    webPubsubResource?: webPubsub.WebPubsub
-  ): void {
+  static build(applicationSynthStack: ApplicationSynthStack): void {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
-    const baseUrl = `https://${resourceGroupResource.name}apis.azure-api.net/${environment}`
+    const baseUrl = `https://${applicationSynthStack.resourceGroupName}apis.azure-api.net/${environment}`
 
-    new TerraformOutput(providerResource, 'httpURL', {
+    new TerraformOutput(applicationSynthStack.azureProvider, 'httpURL', {
       value: baseUrl,
       description: 'The base URL for all the auth endpoints',
     })
-    new TerraformOutput(providerResource, 'graphqlURL', {
-      value: baseUrl + graphQLApiManagementApiOperationResource.urlTemplate,
+    new TerraformOutput(applicationSynthStack.azureProvider, 'graphqlURL', {
+      value: baseUrl + applicationSynthStack.graphQLApiManagementApiOperation?.urlTemplate,
       description: 'The base URL for sending GraphQL mutations and queries',
     })
-    new TerraformOutput(providerResource, 'sensorHealthURL', {
-      value: baseUrl + sensorHealthApiManagementApiOperationResource.urlTemplate,
+    new TerraformOutput(applicationSynthStack.azureProvider, 'sensorHealthURL', {
+      value: baseUrl + applicationSynthStack.sensorHealthApiManagementApiOperationResource.urlTemplate,
       description: 'The base URL for getting health information',
     })
 
-    if (webPubsubResource) {
-      new TerraformOutput(providerResource, 'websocketURL', {
-        value: `wss://${webPubsubResource.hostname}/client/hubs/${hubName}`,
+    if (applicationSynthStack.webPubSub) {
+      new TerraformOutput(applicationSynthStack.azureProvider, 'websocketURL', {
+        value: `wss://${applicationSynthStack.webPubSub.hostname}/client/hubs/${applicationSynthStack.eventHubName}`,
         description: 'The URL for the websocket communication. Used for subscriptions',
       })
     }

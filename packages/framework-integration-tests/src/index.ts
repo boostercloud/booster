@@ -7,6 +7,8 @@ export {
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,
   boosterRocketDispatcher,
+  boosterProduceEventStream,
+  boosterConsumeEventStream,
 } from '@boostercloud/framework-core'
 
 Booster.start(__dirname)

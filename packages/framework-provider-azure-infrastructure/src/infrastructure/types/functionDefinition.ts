@@ -28,6 +28,19 @@ export type EventHandlerBinding = Binding & {
   [key: string]: any
 }
 
+export type EventHubInputBinding = Binding & {
+  eventHubName: string
+  connection: string
+  cardinality: string
+  consumerGroup: string
+  dataType: string
+}
+
+export type EventHubOutBinding = Binding & {
+  connection: string
+  eventHubName: string
+}
+
 export type SubscriptionBinding = Binding & {
   hub: string
   direction: 'out'
@@ -56,6 +69,10 @@ export type GraphQLFunctionDefinition = FunctionDefinition<GraphQLBinding>
 export type HttpFunctionDefinition = FunctionDefinition<HttpBinding>
 
 export type EventHandlerFunctionDefinition = FunctionDefinition<EventHandlerBinding>
+
+export type EventStreamProducerHandlerFunctionDefinition = FunctionDefinition<EventHandlerBinding | EventHubOutBinding>
+
+export type EventStreamConsumerHandlerFunctionDefinition = FunctionDefinition<EventHubInputBinding>
 
 export type SubscriptionsNotifierFunctionDefinition = FunctionDefinition<EventHandlerBinding | SubscriptionBinding>
 

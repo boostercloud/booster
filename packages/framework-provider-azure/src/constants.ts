@@ -19,10 +19,17 @@ export const connectionsStoreAttributes = {
   ttl: 'expirationTime',
 } as const
 
+export const dedupAttributes = {
+  partitionKey: 'primaryKey',
+  ttl: 'expirationTime',
+} as const
+
 export const environmentVarNames = {
   restAPIURL: 'BOOSTER_REST_API_URL',
   websocketAPIURL: 'BOOSTER_WEBSOCKET_API_URL',
   cosmosDbConnectionString: 'COSMOSDB_CONNECTION_STRING',
+  eventHubConnectionString: 'EVENTHUB_CONNECTION_STRING',
+  eventHubName: 'EVENTHUB_NAME',
 } as const
 
 // Azure special error codes

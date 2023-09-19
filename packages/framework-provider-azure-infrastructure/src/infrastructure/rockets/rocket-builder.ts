@@ -45,7 +45,12 @@ export class RocketBuilder {
   private async uploadRocketFile(rocketZipResource: RocketZipResource, resourceGroupName: string): Promise<void> {
     const logger = getLogger(this.config, 'RocketBuilder#uploadRocketFile')
     logger.info('Uploading rockets zip file: ', rocketZipResource.functionAppName, rocketZipResource.zip.fileName)
-    await FunctionZip.deployZip(rocketZipResource.functionAppName, resourceGroupName, rocketZipResource.zip)
+    await FunctionZip.deployZip(
+      this.config,
+      rocketZipResource.functionAppName,
+      resourceGroupName,
+      rocketZipResource.zip
+    )
     logger.info('Rocket zip files uploaded', rocketZipResource.functionAppName, rocketZipResource.zip.fileName)
   }
 

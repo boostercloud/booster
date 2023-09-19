@@ -16,13 +16,19 @@ import { WebsocketConnectFunction } from '../functions/websocket-connect-functio
 import { WebsocketDisconnectFunction } from '../functions/websocket-disconnect-function'
 import { WebsocketMessagesFunction } from '../functions/websocket-messages-function'
 import { SensorHealthFunction } from '../functions/sensor-health-function'
+import { getLogger } from '@boostercloud/framework-common-helpers'
+import { EventStreamConsumerFunction } from '../functions/event-stream-consumer-function'
+import { EventStreamProducerFunction } from '../functions/event-stream-producer-function'
 
 export class FunctionZip {
   static async deployZip(
+    config: BoosterConfig,
     functionAppName: string,
     resourceGroupName: string,
     zipResource: ZipResource
   ): Promise<ZipResource> {
+    const logger = getLogger(config, 'function-zip#deployZip')
+    logger.info('Uploading zip file')
     const credentials = await FunctionZip.getCredentials(resourceGroupName, functionAppName)
     await FunctionZip.deployFunctionPackage(
       zipResource.path,
@@ -30,6 +36,7 @@ export class FunctionZip {
       credentials.publishingPassword ?? '',
       credentials.name ?? ''
     )
+    logger.info('Zip file uploaded')
     return zipResource
   }
 
@@ -77,14 +84,21 @@ export class FunctionZip {
   }
 
   static buildAzureFunctions(config: BoosterConfig): Array<FunctionDefinition> {
+    const logger = getLogger(config, 'function-zip#buildAzureFunctions')
+    logger.info('Generating Azure functions')
+
     const graphqlFunctionDefinition = new GraphqlFunction(config).getFunctionDefinition()
-    const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
     const sensorHealthHandlerFunctionDefinition = new SensorHealthFunction(config).getFunctionDefinition()
-    let featuresDefinitions = [
-      graphqlFunctionDefinition,
-      eventHandlerFunctionDefinition,
-      sensorHealthHandlerFunctionDefinition,
-    ]
+    let featuresDefinitions = [graphqlFunctionDefinition, sensorHealthHandlerFunctionDefinition]
+    if (config.eventStreamConfiguration.enabled) {
+      // If event stream then we build an EventHub event trigger
+      const eventStreamProducerFunctionDefinition = new EventStreamProducerFunction(config).getFunctionDefinition()
+      featuresDefinitions.push(eventStreamProducerFunctionDefinition)
+    } else {
+      // If no event stream then we build a CosmosDB event trigger
+      const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
+      featuresDefinitions.push(eventHandlerFunctionDefinition)
+    }
     if (config.enableSubscriptions) {
       const messagesFunctionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
       const disconnectFunctionDefinition = new WebsocketDisconnectFunction(config).getFunctionDefinition()
@@ -101,6 +115,20 @@ export class FunctionZip {
     if (scheduledFunctionsDefinition) {
       featuresDefinitions = featuresDefinitions.concat(scheduledFunctionsDefinition)
     }
+    logger.info('Azure functions generated')
+    return featuresDefinitions
+  }
+
+  static buildAzureConsumerFunctions(config: BoosterConfig): Array<FunctionDefinition> {
+    const featuresDefinitions = []
+    if (!config.eventStreamConfiguration.enabled) {
+      return []
+    }
+    const logger = getLogger(config, 'function-zip#buildAzureConsumerFunctions')
+    logger.info('Generating Azure Consumer functions')
+    const eventStreamHandlerFunctionDefinition = new EventStreamConsumerFunction(config).getFunctionDefinition()
+    featuresDefinitions.push(eventStreamHandlerFunctionDefinition)
+    logger.info('Azure Consumer functions generated')
     return featuresDefinitions
   }
 
