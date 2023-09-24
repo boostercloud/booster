@@ -203,7 +203,7 @@ describe('Read models searcher adapter', () => {
           { days: { isDefined: true } },
           { mainItem: { isDefined: false } },
           { mainItem: { sku: { isDefined: true } } },
-          { mainItem: { sku: { price: { isDefined: true } } } },
+          { mainItem: { price: { isDefined: true } } },
         ],
       }
 
