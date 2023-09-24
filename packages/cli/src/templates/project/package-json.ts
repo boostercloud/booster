@@ -31,8 +31,8 @@ export const template = `{
     "prettier":  "2.3.0",
     "typescript": "4.7.4",
     "ts-node": "9.1.1",
-    "ttypescript": "1.5.15",
     "@types/node": "^18.15.3",
+    "ts-patch": "2.0.2",
     "graphql": "^16.6.0"
   },
   "engines": {
@@ -45,7 +45,7 @@ export const template = `{
   "scripts": {
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "build": "ttsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo"
   },
   "types": "lib/index.d.ts"
