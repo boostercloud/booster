@@ -6,7 +6,7 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "target": "es2019",
+    "target": "ES2019",
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
@@ -18,5 +18,5 @@
     "lib": ["ES2019", "ES2020"],
     "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "integration/**/*"],
 }
