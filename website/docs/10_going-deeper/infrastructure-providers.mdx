@@ -342,3 +342,13 @@ boost start -e local
 ```
 
 Where `local` is one of your defined environments with the `Booster.configure` call.
+
+### Cleaning Local Data for New Changes
+When making changes to your entities and events, you might need to reset the local environment to accommodate these changes. The application creates a `.booster` folder to store relevant information. To clean the local data and reset the environment:
+
+1. Locate the `.booster` folder in your project directory.
+2. Delete the contents of the `.booster` folder or the folder itself.
+
+This action will clear the local data and allow you to proceed with your new changes effectively.
+
+
