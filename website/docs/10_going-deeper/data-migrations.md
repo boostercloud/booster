@@ -8,7 +8,7 @@ Migrations are a mechanism for updating or transforming the schemas of events an
 
 * **Schema migrations** are used to incrementally upgrade an event or entity from a past version to the next. They are applied lazily, meaning that they are performed on-the-fly whenever an event or entity is loaded. This allows you to make changes to your data model without having to manually update all existing artifacts, and makes it possible to apply changes without running lenghty migration processes.
 
-* **Data migrations**, on the other hand, behave as background processes that can actively change the existing values in the database for existing entities and read models. They are particularly useful for data migrations that cannot be performed automatically with schema migrations, or for updating existing read models after a schema change. **Note that Data migrations are only available in the Azure provider at the moment.**
+* **Data migrations**, on the other hand, behave as background processes that can actively change the existing values in the database for existing entities and read models. They are particularly useful for data migrations that cannot be performed automatically with schema migrations, or for updating existing read models after a schema change.
 
 Together, schema and data migrations provide a flexible and powerful toolset for managing the evolution of your data model over time.
 
@@ -110,7 +110,7 @@ Inside your `@DataMigration` classes, you can use the `BoosterDataMigrations.mig
 
 **Note that Data migrations are only available in the Azure provider at the moment.**
 
-Here is an example of how you might use the `@DataMigration` decorator and the `Booster.migrateEntity` method to update the quantity of the first item in a cart:
+Here is an example of how you might use the `@DataMigration` decorator and the `Booster.migrateEntity` method to update the quantity of the first item in a cart (**Notice that at the time of writing this document, the method `Booster.entitiesIDs` used in the following example is only available in the Azure provider, so you may need to approach the migration differently in AWS.**):
 
 ```typescript
 @DataMigration({
