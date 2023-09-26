@@ -1,18 +1,16 @@
 import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
 import {
-  EventEnvelope,
   BoosterConfig,
-  UUID,
   EntitySnapshotEnvelope,
-  NonPersistedEventEnvelope,
+  EventEnvelope,
   NonPersistedEntitySnapshotEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent, partitionKeyForSnapshot } from './partition-keys'
 import { Context } from '@azure/functions'
 
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
 
 export function rawEventsToEnvelopes(context: Context): Array<EventEnvelope> {
@@ -88,43 +86,13 @@ export async function readEntityLatestSnapshot(
   }
 }
 
-export async function storeEvents(
-  cosmosDb: CosmosClient,
-  eventEnvelopes: Array<NonPersistedEventEnvelope>,
-  config: BoosterConfig
-): Promise<Array<EventEnvelope>> {
-  const logger = getLogger(config, 'events-adapter#storeEvents')
-  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
-  const persistableEvents = []
-  for (const eventEnvelope of eventEnvelopes) {
-    const persistableEvent: EventEnvelope = {
-      ...eventEnvelope,
-      createdAt: new Date().toISOString(),
-    }
-    await cosmosDb
-      .database(config.resourceNames.applicationStack)
-      .container(config.resourceNames.eventsStore)
-      .items.create({
-        ...persistableEvent,
-        [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-          eventEnvelope.entityTypeName,
-          eventEnvelope.entityID
-        ),
-        [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
-      })
-    persistableEvents.push(persistableEvent)
-  }
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
-  return persistableEvents
-}
-
 export async function storeSnapshot(
   cosmosDb: CosmosClient,
   snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
   config: BoosterConfig
 ): Promise<EntitySnapshotEnvelope> {
   const logger = getLogger(config, 'events-adapter#storeSnapshot')
-  logger.debug('[EventsAdapter#storeSnapshot] Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
+  logger.debug('Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
 
   const partitionKey = partitionKeyForSnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
   /**

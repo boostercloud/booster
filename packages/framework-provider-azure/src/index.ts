@@ -46,6 +46,7 @@ import {
   rawRequestToSensorHealth,
   databaseReadModelsHealthDetails,
 } from './library/health-adapter'
+import { storeEvents } from './library/events-store-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {

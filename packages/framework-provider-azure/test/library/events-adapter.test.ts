@@ -116,29 +116,4 @@ describe('Events adapter', () => {
       )
     })
   })
-
-  describe('The "storeEvents" method', () => {
-    it('Publishes the eventEnvelopes passed via parameter', async () => {
-      await EventsAdapter.storeEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
-
-      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
-      expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
-      ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
-      expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.create
-      ).to.have.been.calledWithExactly(
-        match({
-          ...mockEvents[0],
-          [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-            mockEvents[0].entityTypeName,
-            mockEvents[0].entityID
-          ),
-          [eventsStoreAttributes.sortKey]: match.defined,
-        })
-      )
-    })
-  })
 })
