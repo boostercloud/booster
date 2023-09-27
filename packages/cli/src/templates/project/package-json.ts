@@ -46,7 +46,7 @@ export const template = `{
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "ttsc -b tsconfig.json",
-    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo"
   },
   "types": "lib/index.d.ts"
 }`
