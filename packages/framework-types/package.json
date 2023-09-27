@@ -68,7 +68,8 @@
     "typescript": "4.7.4",
     "prettier": "2.3.0",
     "eslint-plugin-unicorn": "~44.0.2",
-    "graphql": "^16.6.0"
+    "graphql": "^16.6.0",
+    "rimraf": "^5.0.0"
   },
   "pnpm": {
     "overrides": {
