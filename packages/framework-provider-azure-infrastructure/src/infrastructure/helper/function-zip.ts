@@ -200,7 +200,7 @@ export class FunctionZip {
       version: '2.0',
       extensionBundle: {
         id: 'Microsoft.Azure.Functions.ExtensionBundle',
-        version: '[3.*, 4.0.0)',
+        version: '[4.*, 5.0.0)',
       },
     }
     archive.append(JSON.stringify(hostConfig, null, 2), {
