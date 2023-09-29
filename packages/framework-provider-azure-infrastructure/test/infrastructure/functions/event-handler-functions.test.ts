@@ -8,18 +8,18 @@ describe('Creating event-handler-functions', () => {
   config.resourceNames.applicationStack = 'applicationStack'
   config.resourceNames.eventsStore = 'eventsStore'
 
-  it('create the expected EventHandlerFunctionDefiniton', () => {
+  it('create the expected EventHandlerFunctionDefinition', () => {
     const definition = new EventHandlerFunction(config).getFunctionDefinition()
     expect(definition).not.to.be.null
     expect(definition.name).to.be.equal('eventHandler')
     expect(definition.config.bindings[0].type).to.be.equal('cosmosDBTrigger')
     expect(definition.config.bindings[0].name).to.be.equal('rawEvent')
     expect(definition.config.bindings[0].direction).to.be.equal('in')
-    expect(definition.config.bindings[0].leaseCollectionName).to.be.equal('leases')
-    expect(definition.config.bindings[0].connectionStringSetting).to.be.equal('COSMOSDB_CONNECTION_STRING')
+    expect(definition.config.bindings[0].leaseContainerName).to.be.equal('leases')
+    expect(definition.config.bindings[0].connection).to.be.equal('COSMOSDB_CONNECTION_STRING')
     expect(definition.config.bindings[0].databaseName).to.be.equal('new-booster-app-app')
-    expect(definition.config.bindings[0].collectionName).to.be.equal('new-booster-app-app-events-store')
-    expect(definition.config.bindings[0].createLeaseCollectionIfNotExists).to.be.equal('true')
+    expect(definition.config.bindings[0].containerName).to.be.equal('new-booster-app-app-events-store')
+    expect(definition.config.bindings[0].createLeaseContainerIfNotExists).to.be.equal('true')
     expect(definition.config.scriptFile).to.be.equal('../dist/index.js')
     expect(definition.config.entryPoint).to.be.equal('boosterEventDispatcher')
   })
