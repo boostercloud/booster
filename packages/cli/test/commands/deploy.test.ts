@@ -12,6 +12,7 @@ import * as packageManagerImpl from '../../src/services/package-manager/live.imp
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
 import { makeTestPackageManager } from '../services/package-manager/test.impl'
+import { root } from '../configRoot'
 
 // With this trick we can test non exported symbols
 const rewire = require('rewire')
@@ -90,6 +91,7 @@ describe('deploy', () => {
   describe('run', () => {
     context('when no environment provided', async () => {
       test
+        .loadConfig({ root })
         .stdout()
         .command(['deploy'])
         .it('shows no environment provided error', (ctx) => {
