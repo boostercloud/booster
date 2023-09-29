@@ -1,6 +1,6 @@
 import { initializeEnvironment, currentEnvironment } from '../../src/services/environment'
 import { logger } from '../../src/services/logger'
-import { restore, replace, fake, stub } from 'sinon'
+import { restore, replace, fake } from 'sinon'
 import { expect } from '../expect'
 
 describe('environment service', (): void => {
@@ -21,7 +21,6 @@ describe('environment service', (): void => {
   describe('currentEnvironment', (): void => {
     it('get current environment: testing', async () => {
       process.env.BOOSTER_ENV = 'testing'
-      stub(process.env, 'BOOSTER_ENV').value('testing')
       expect(currentEnvironment()).to.be.equal('testing')
     })
 
@@ -39,11 +38,9 @@ describe('environment service', (): void => {
     describe('process.env.BOOSTER_ENV set', (): void => {
       beforeEach(() => {
         process.env.BOOSTER_ENV = 'testing'
-        stub(process.env, 'BOOSTER_ENV').value('testing')
       })
 
       it('set environment in param: no log message', async () => {
-        stub(process.env, 'BOOSTER_ENV').value('testing')
         initializeEnvironment(logger, 'production')
         expect(logger.error).to.not.have.been.calledWithMatch(logMessage)
         expect(process.env.BOOSTER_ENV).to.be.equal('production')
