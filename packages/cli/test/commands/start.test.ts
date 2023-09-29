@@ -1,6 +1,5 @@
 import { expect } from '../expect'
 import { restore, fake, replace } from 'sinon'
-import rewire = require('rewire')
 import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import * as Start from '../../src/commands/start'
 import * as providerService from '../../src/services/provider-service'
@@ -10,7 +9,9 @@ import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
+import { root } from '../configRoot'
 
+import rewire = require('rewire')
 const start = rewire('../../src/commands/start')
 const runTasks = start.__get__('runTasks')
 
@@ -44,6 +45,7 @@ describe('start', () => {
   describe('run', () => {
     context('when no environment provided', async () => {
       test
+        .loadConfig({ root })
         .stdout()
         .command(['start'])
         .it('shows no environment provided error', (ctx) => {

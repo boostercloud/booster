@@ -11,7 +11,7 @@ import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
-
+import { root } from '../configRoot'
 const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')
 const runTasks = nuke.__get__('runTasks')
@@ -118,6 +118,7 @@ describe('nuke', () => {
   describe('run', () => {
     context('when no environment provided', async () => {
       test
+        .loadConfig({ root })
         .stdout()
         .command(['nuke'])
         .it('shows no environment provided error', (ctx) => {
