@@ -700,7 +700,7 @@ importers:
 
   ../../packages/framework-provider-azure:
     specifiers:
-      '@azure/cosmos': ^3.17.0
+      '@azure/cosmos': ^4.0.0
       '@azure/functions': ^1.2.2
       '@azure/identity': ~2.1.0
       '@azure/web-pubsub': ~1.1.0
@@ -735,7 +735,7 @@ importers:
       tslib: ^2.4.0
       typescript: 4.7.4
     dependencies:
-      '@azure/cosmos': 3.17.3
+      '@azure/cosmos': 4.0.0
       '@azure/functions': 1.2.3
       '@azure/identity': 2.1.0
       '@azure/web-pubsub': 1.1.1
@@ -775,7 +775,7 @@ importers:
     specifiers:
       '@azure/arm-appservice': ^13.0.0
       '@azure/arm-resources': ^5.0.1
-      '@azure/cosmos': ^3.17.0
+      '@azure/cosmos': ^4.0.0
       '@azure/identity': ~2.1.0
       '@boostercloud/eslint-config': workspace:^1.19.0
       '@boostercloud/framework-common-helpers': workspace:^1.19.0
@@ -831,7 +831,7 @@ importers:
     dependencies:
       '@azure/arm-appservice': 13.0.3
       '@azure/arm-resources': 5.2.0
-      '@azure/cosmos': 3.17.3
+      '@azure/cosmos': 4.0.0
       '@azure/identity': 2.1.0
       '@boostercloud/framework-common-helpers': link:../framework-common-helpers
       '@boostercloud/framework-core': link:../framework-core
@@ -1600,7 +1600,7 @@ packages:
       '@aws-cdk/aws-codecommit': 1.204.0_scjupxxta56mdpzkdveav52ufq
       '@aws-cdk/aws-codestarnotifications': 1.204.0_add7c2jq5lcc6idtuigbkwnzeu
       '@aws-cdk/aws-ec2': 1.204.0_r4d2a6r7lnkv26zjzkdsvuam2a
-      '@aws-cdk/aws-ecr': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
+      '@aws-cdk/aws-ecr': 1.204.0_4bnk2gpayjo75fecjckge2dkni
       '@aws-cdk/aws-ecr-assets': 1.204.0_scjupxxta56mdpzkdveav52ufq
       '@aws-cdk/aws-events': 1.204.0_w2xl3dexbzdynnzeafah4cuzfm
       '@aws-cdk/aws-iam': 1.204.0_add7c2jq5lcc6idtuigbkwnzeu
@@ -1815,7 +1815,7 @@ packages:
       constructs: ^3.3.69
     dependencies:
       '@aws-cdk/assets': 1.204.0_uszt2j4mor3yrbm3tre3az4zvy
-      '@aws-cdk/aws-ecr': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
+      '@aws-cdk/aws-ecr': 1.204.0_4bnk2gpayjo75fecjckge2dkni
       '@aws-cdk/aws-iam': 1.204.0_add7c2jq5lcc6idtuigbkwnzeu
       '@aws-cdk/aws-s3': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
       '@aws-cdk/core': 1.204.0_hol6usdabdbzhugfw355k4ebam
@@ -1825,7 +1825,7 @@ packages:
       - '@aws-cdk/aws-events'
     dev: false
 
-  /@aws-cdk/aws-ecr/1.204.0_bi2u42js5xhxqcsg5gqefde4xi:
+  /@aws-cdk/aws-ecr/1.204.0_4bnk2gpayjo75fecjckge2dkni:
     resolution: {integrity: sha512-oCts9e+ackWoFHeyn/3oKm3X1lSizleWNNXHp5WGM38lpNVrtCLMKSShu5iXJBhqRH2Mz1AcA4fDMWhe8DvJFA==}
     engines: {node: '>= 14.15.0'}
     deprecated: |-
@@ -1841,11 +1841,8 @@ packages:
     dependencies:
       '@aws-cdk/aws-events': 1.204.0_w2xl3dexbzdynnzeafah4cuzfm
       '@aws-cdk/aws-iam': 1.204.0_add7c2jq5lcc6idtuigbkwnzeu
-      '@aws-cdk/aws-kms': 1.204.0_cttdkzy7hngahjug7jmkfylr2y
       '@aws-cdk/core': 1.204.0_hol6usdabdbzhugfw355k4ebam
       constructs: 3.4.344
-    transitivePeerDependencies:
-      - '@aws-cdk/cx-api'
     dev: false
 
   /@aws-cdk/aws-ecs/1.204.0_iu2vquo67t63xu6vdymsg3ufny:
@@ -1871,7 +1868,7 @@ packages:
       '@aws-cdk/aws-certificatemanager': 1.204.0_xtqk4litqxecxsqs3sd6ajo2ja
       '@aws-cdk/aws-cloudwatch': 1.204.0_w2xl3dexbzdynnzeafah4cuzfm
       '@aws-cdk/aws-ec2': 1.204.0_r4d2a6r7lnkv26zjzkdsvuam2a
-      '@aws-cdk/aws-ecr': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
+      '@aws-cdk/aws-ecr': 1.204.0_4bnk2gpayjo75fecjckge2dkni
       '@aws-cdk/aws-ecr-assets': 1.204.0_scjupxxta56mdpzkdveav52ufq
       '@aws-cdk/aws-elasticloadbalancing': 1.204.0_s2iwowsvskkmujjbrmx4g5hlsi
       '@aws-cdk/aws-elasticloadbalancingv2': 1.204.0_xbmlyikxd4zabyotfrt4oo4gli
@@ -2217,7 +2214,7 @@ packages:
       '@aws-cdk/aws-cloudwatch': 1.204.0_w2xl3dexbzdynnzeafah4cuzfm
       '@aws-cdk/aws-codeguruprofiler': 1.204.0_w2xl3dexbzdynnzeafah4cuzfm
       '@aws-cdk/aws-ec2': 1.204.0_r4d2a6r7lnkv26zjzkdsvuam2a
-      '@aws-cdk/aws-ecr': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
+      '@aws-cdk/aws-ecr': 1.204.0_4bnk2gpayjo75fecjckge2dkni
       '@aws-cdk/aws-ecr-assets': 1.204.0_scjupxxta56mdpzkdveav52ufq
       '@aws-cdk/aws-efs': 1.204.0_r4d2a6r7lnkv26zjzkdsvuam2a
       '@aws-cdk/aws-events': 1.204.0_w2xl3dexbzdynnzeafah4cuzfm
@@ -2930,8 +2927,8 @@ packages:
       tslib: 2.6.2
     dev: false
 
-  /@azure/cosmos/3.17.3:
-    resolution: {integrity: sha512-wBglkQ6Irjv5Vo2iw8fd6eYj60WYRSSg4/0DBkeOP6BwQ4RA91znsOHd6s3qG6UAbNgYuzC9Nnq07vlFFZkHEw==}
+  /@azure/cosmos/4.0.0:
+    resolution: {integrity: sha512-/Z27p1+FTkmjmm8jk90zi/HrczPHw2t8WecFnsnTe4xGocWl0Z4clP0YlLUTJPhRLWYa5upwD9rMvKJkS1f1kg==}
     engines: {node: '>=14.0.0'}
     dependencies:
       '@azure/abort-controller': 1.1.0
@@ -5905,7 +5902,7 @@ packages:
     dependencies:
       semver: 7.5.4
       shelljs: 0.8.5
-      typescript: 5.3.0-dev.20230924
+      typescript: 5.3.0-dev.20230929
 
   /duration/0.2.2:
     resolution: {integrity: sha512-06kgtea+bGreF5eKYgI/36A6pLXggY7oR4p1pq4SmdFBn1ReOL5D8RhG64VrqfTTKNucqqtBAwEj8aB88mcqrg==}
@@ -10761,8 +10758,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  /typescript/5.3.0-dev.20230924:
-    resolution: {integrity: sha512-eoURpy2KdMkio8jVtNbZp5BOuoOJV1FEQyaWK8gqq+8EzVoBKWyt50tDsblDeSIcstigCWujQGhVhOPu5bkDbg==}
+  /typescript/5.3.0-dev.20230929:
+    resolution: {integrity: sha512-PI76o79R5fqKK17Khk6QYvlC5W5JnKMms7ojq4MhQ0P0jmCsiUrDLRRwJ9Cs5GhMVGoA5Qb87U//Xpztc0ICsw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
