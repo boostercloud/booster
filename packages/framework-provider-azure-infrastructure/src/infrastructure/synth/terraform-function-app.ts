@@ -47,7 +47,7 @@ export class TerraformFunctionApp {
           nodeVersion: '~18',
         },
       },
-      functionsExtensionVersion: '~3', // keep it on version 3. Version 4 needs a migration process
+      functionsExtensionVersion: '~4', // keep it on version 3. Version 4 needs a migration process
       zipDeployFile: zipFile,
     })
   }
