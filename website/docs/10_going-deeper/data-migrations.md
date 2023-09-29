@@ -147,7 +147,7 @@ export class CartIdDataMigrateV2 {
 
 ```json
 "devDependencies": {
-    "rimraf": "^3.0.1",
+    "rimraf": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
     "eslint": "7.26.0",

@@ -42,6 +42,7 @@
     "typescript": "4.7.4",
     "prettier": "2.3.0",
     "sinon": "9.2.3",
+    "rimraf": "^5.0.0",
     "eslint-plugin-unicorn": "~44.0.2"
   },
   "scripts": {
