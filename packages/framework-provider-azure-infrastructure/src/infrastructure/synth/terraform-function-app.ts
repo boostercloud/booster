@@ -44,7 +44,7 @@ export class TerraformFunctionApp {
       provider: providerResource,
       siteConfig: {
         applicationStack: {
-          nodeVersion: '~14',
+          nodeVersion: '~18',
         },
       },
       functionsExtensionVersion: '~3', // keep it on version 3. Version 4 needs a migration process
