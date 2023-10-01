@@ -1,9 +1,9 @@
 {
   "name": "@boostercloud/framework-core",
-  "version": "1.7.0",
+  "version": "1.19.0",
   "description": "Library for your Booster apps",
-  "author": "Booster Cloud",
-  "homepage": "https://booster.cloud",
+  "author": "Boosterin Labs SLU",
+  "homepage": "https://boosterframework.com",
   "license": "Apache-2.0",
   "publishConfig": {
     "access": "public"
@@ -29,31 +29,33 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
+  "peerDependencies": {
+    "graphql": "^16.6.0"
+  },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "workspace:^1.7.0",
-    "@boostercloud/framework-types": "workspace:^1.7.0",
+    "@boostercloud/framework-common-helpers": "workspace:^1.19.0",
+    "@boostercloud/framework-types": "workspace:^1.19.0",
     "fp-ts": "^2.11.0",
-    "graphql": "^15.5.1",
     "graphql-scalars": "^1.17.0",
-    "graphql-subscriptions": "1.2.1",
+    "graphql-subscriptions": "2.0.0",
     "inflected": "2.1.0",
     "iterall": "1.3.0",
-    "jsonwebtoken": "8.5.1",
-    "jwks-rsa": "2.0.3",
+    "jsonwebtoken": "9.0.1",
+    "jwks-rsa": "3.0.1",
     "reflect-metadata": "0.1.13",
     "tslib": "^2.4.0",
     "validator": "13.7.0",
     "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
-    "@boostercloud/metadata-booster": "workspace:^1.7.0",
-    "@boostercloud/eslint-config": "workspace:^1.7.0",
+    "@boostercloud/metadata-booster": "workspace:^1.19.0",
+    "@boostercloud/eslint-config": "workspace:^1.19.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/faker": "5.1.5",
     "@types/inflected": "1.1.29",
-    "@types/jsonwebtoken": "^8.5.8",
-    "@types/mocha": "8.2.2",
+    "@types/jsonwebtoken": "9.0.1",
+    "@types/mocha": "10.0.1",
     "@types/node": "16.11.7",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
@@ -68,22 +70,23 @@
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "3.4.0",
     "faker": "5.1.0",
-    "mocha": "8.4.0",
+    "mocha": "10.2.0",
     "mock-jwks": "1.0.3",
     "nock": "11.8.2",
     "nyc": "^15.1.0",
     "prettier": "2.3.0",
-    "rimraf": "3.0.2",
+    "rimraf": "^5.0.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
     "ts-node": "^10.9.1",
     "typescript": "4.7.4",
-    "eslint-plugin-unicorn": "~44.0.2"
+    "eslint-plugin-unicorn": "~44.0.2",
+    "graphql": "^16.6.0"
   },
   "pnpm": {
     "overrides": {
       "pac-resolver@<5.0.0": ">=5.0.0",
-      "underscore@>=1.3.2 <1.12.1": ">=1.12.1",
+      "underscore@>=1.3.2 <1.12.1": ">=1.13.6",
       "node-fetch@<2.6.7": ">=2.6.7",
       "ws@>=7.0.0 <7.4.6": ">=7.4.6",
       "nanoid@>=3.0.0 <3.1.31": ">=3.1.31",

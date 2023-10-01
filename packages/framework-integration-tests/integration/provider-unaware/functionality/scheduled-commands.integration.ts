@@ -1,7 +1,7 @@
-import gql from 'graphql-tag'
 import { expect } from 'chai'
 import { waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
+import { gql } from '@apollo/client'
 
 describe('Scheduled commands', () => {
   it('scheduled command ran and created a product', async () => {

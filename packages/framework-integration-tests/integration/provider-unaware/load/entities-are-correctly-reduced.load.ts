@@ -1,7 +1,5 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { internet, random } from 'faker'
-import gql from 'graphql-tag'
 
 import { waitForIt } from '../../helper/sleep'
 import { applicationUnderTest, scriptExecutor } from './setup'

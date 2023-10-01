@@ -1,4 +1,5 @@
 @import 'fonts.css';
+@import './styles/index.css';
 
 :root, * {
   font-family: 'IamwriterquattroS';
@@ -11,6 +12,207 @@
   --ifm-color-primary-light: #1a1aff;
   --ifm-color-primary-lighter: #2626ff;
   --ifm-color-primary-lightest: #4d4dff;
+  --privategpt-color: #5C00E2;
+  --privategpt-width: 56rem;
+  --privategpt-max-width: 100%;
+  --privategpt-color-lightest: #f1e8fe;
+}
+
+.bc-layout {
+  min-height: calc(100vh - 60px);
+  background-color: white;
+  padding-top: 4rem;
+  padding-bottom: 6rem;
+}
+
+.bc-layout > * {
+  transition: all;
+  transition-duration: 0.5s;
+}
+
+.bc-searchbar-icon {
+  width: 22.25px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.bc-thumbs-container {
+  display: flex;
+  margin-bottom: 2rem;
+}
+
+.bc-thumbs-button {
+  margin: 0.3rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid var(--privategpt-color);
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bc-thumbs-button:disabled {
+  background-color: var(--privategpt-color-lightest);
+}
+
+.bc-thumbs-button:hover {
+  background-color: var(--privategpt-color-lightest);
+}
+
+.bc-thumbs-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.bc-searchbar { 
+  display: flex;
+  gap: 1rem;
+  padding: 1rem;
+  position: relative;
+  border-radius: 50px;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+  border-color: var(--privategpt-color);
+  border-width: 1px;
+  border-style: solid;
+}
+
+.max-width-100 {
+  max-width: 100%;
+}
+
+.bc-input {
+  outline: none;
+  border: none;
+  flex: 1;
+  color: black;
+  font-weight: bold;
+  font-size: medium;
+}
+
+.bc-input:disabled {
+  background-color: white;
+}
+
+.bc-reset-button {
+  border: none;
+  background: none;
+  flex-shrink: 0;
+}
+
+.bc-reset-icon {
+  height: 15px;
+}
+
+.bc-input::placeholder {
+  color: gray;
+  font-weight: normal;
+}
+
+.bc-chat-embedded {
+  background-color: white;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+  height: fit-content;
+  border-radius: 1rem;
+  padding: 1rem;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.bc-quick-questions-panel {
+  padding: 30px 0px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+}
+
+.bc-quick-question {
+  border-radius: 50px;
+  font-size: 0.85rem;
+  color: var(--privategpt-color);
+  border-color: var(--privategpt-color);
+  border-width: 1px;
+  padding: 6px 15px;
+  background-color: white;
+}
+
+.bc-quick-question:hover {
+  background-color: var(--privategpt-color-lightest);
+}
+
+.bc-chat:first-child {
+  margin-top: var(--ifm-paragraph-margin-bottom)
+}
+
+.--loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-top: 1.5rem;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+}
+
+.bc-loader {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+  margin: 15px auto;
+  position: relative;
+  color: var(--privategpt-color);
+  box-sizing: border-box;
+  animation: animloader 1s linear infinite alternate;
+}
+
+@keyframes animloader {
+  0% {
+    box-shadow: -38px -12px ,  -14px 0,  14px 0, 38px 0;
+  }
+  33% {
+    box-shadow: -38px 0px, -14px -12px,  14px 0, 38px 0;
+  }
+  66% {
+    box-shadow: -38px 0px , -14px 0, 14px -12px, 38px 0;
+  }
+  100% {
+    box-shadow: -38px 0 , -14px 0, 14px 0 , 38px -12px;
+  }
+}
+
+.bc-chat-popup {
+  bottom: -200rem;
+  padding: 20px 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: #2A27E2 2px solid;
+  background-color: white;
+  border-radius: 10px;
+  transition: all 0.5s ease-in-out;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+}
+
+.bc-chat-popup p {
+  margin-bottom: 0;
+}
+
+.bc-beta-disclaimer {
+  margin-top: 8px;
+  text-align: center;
+  font-size: 0.65rem;
+  width: var(--privategpt-width);
+  max-width: var(--privategpt-max-width);
+  color: var(--privategpt-color);
 }
 
 svg {
@@ -22,4 +224,25 @@ svg {
   max-width: unset;
 }
 
-@import './styles/index.css';
+.navbar_custom_item--button {
+  margin-right: 1rem;
+  border: none;
+  background: none;
+  padding: 0;
+}
+
+.navbar_custom_item--image {
+  height: 15px;
+}
+
+@media screen and (min-width: 769px) and (max-width: 997px) {
+  .navbar_custom_item--button {
+    margin-right: 11rem
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .navbar_custom_item--button {
+    margin-right: 3rem
+  }
+}

@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
+  TraceActionTypes,
   AnyClass,
   BoosterConfig,
   FilterFor,
@@ -13,14 +14,16 @@ import {
   SortFor,
   SubscriptionEnvelope,
 } from '@boostercloud/framework-types'
-import { createInstances, getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstance, createInstances, getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
+import { Trace } from './instrumentation'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig) {}
 
+  @Trace(TraceActionTypes.READ_MODEL_FIND_BY_ID)
   public async findById(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<ReadModelInterface | ReadOnlyNonEmptyArray<ReadModelInterface>> {
@@ -39,16 +42,18 @@ export class BoosterReadModelsReader {
     }
     const currentReadModel = await Booster.readModel(readModelMetadata.class).findById(key.id, key.sequenceKey)
     if (currentReadModel) {
+      const readModelInstance = createInstance(readModelMetadata.class, currentReadModel)
       const readModelName = readModelMetadata.class.name
       const readModelSchemaMigrator = new ReadModelSchemaMigrator(this.config)
-      if (Array.isArray(currentReadModel)) {
-        return [await readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel[0], readModelName)]
+      if (Array.isArray(readModelInstance)) {
+        return [await readModelSchemaMigrator.migrate(<ReadModelInterface>readModelInstance[0], readModelName)]
       }
-      return readModelSchemaMigrator.migrate(<ReadModelInterface>currentReadModel, readModelName)
+      return readModelSchemaMigrator.migrate(<ReadModelInterface>readModelInstance, readModelName)
     }
     return currentReadModel
   }
 
+  @Trace(TraceActionTypes.GRAPHQL_READ_MODEL_SEARCH)
   public async search(
     readModelRequest: ReadModelRequestEnvelope<ReadModelInterface>
   ): Promise<Array<ReadModelInterface> | ReadModelListResult<ReadModelInterface>> {
@@ -70,6 +75,7 @@ export class BoosterReadModelsReader {
     )
   }
 
+  @Trace(TraceActionTypes.READ_MODEL_SEARCH)
   public async readModelSearch<TReadModel extends ReadModelInterface>(
     readModelClass: AnyClass,
     filters: FilterFor<unknown>,

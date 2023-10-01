@@ -1,4 +1,4 @@
-import { ReadModelInterface } from '.'
+import { QueryInput, ReadModelInterface } from '.'
 import { UserEnvelope, ReadModelRequestEnvelope } from '../envelope'
 import { CommandInput } from './command'
 
@@ -16,3 +16,9 @@ export type ReadModelBeforeFunction<TReadModel extends ReadModelInterface = Read
   readModelRequestEnvelope: ReadModelRequestEnvelope<TReadModel>,
   currentUser?: UserEnvelope
 ) => Promise<ReadModelRequestEnvelope<TReadModel>>
+
+export interface QueryFilterHooks {
+  readonly before?: Array<QueryBeforeFunction>
+}
+
+export type QueryBeforeFunction = (input: QueryInput, currentUser?: UserEnvelope) => Promise<QueryInput>

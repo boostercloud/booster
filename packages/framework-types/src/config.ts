@@ -1,25 +1,27 @@
 import {
-  ReducerMetadata,
-  SchemaMigrationMetadata,
-  EntityMetadata,
-  RoleMetadata,
   CommandMetadata,
-  ProjectionMetadata,
-  ReadModelMetadata,
+  DataMigrationMetadata,
+  EntityInterface,
+  EntityMetadata,
   EventHandlerInterface,
-  ScheduledCommandMetadata,
   EventMetadata,
   GlobalErrorHandlerMetadata,
-  EntityInterface,
-  DataMigrationMetadata,
   TokenVerifier,
+  QueryMetadata,
   NotificationMetadata,
+  ProjectionMetadata,
+  ReadModelMetadata,
+  ReducerMetadata,
+  RoleMetadata,
+  ScheduledCommandMetadata,
+  SchemaMigrationMetadata,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rockets'
 import { Logger } from '.'
+import { TraceConfiguration } from './instrumentation/trace-types'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -60,6 +62,7 @@ export class BoosterConfig {
   public readonly entities: Record<EntityName, EntityMetadata> = {}
   public readonly reducers: Record<EventName, ReducerMetadata> = {}
   public readonly commandHandlers: Record<CommandName, CommandMetadata> = {}
+  public readonly queryHandlers: Record<QueryName, QueryMetadata> = {}
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
@@ -69,6 +72,8 @@ export class BoosterConfig {
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
+  public enableSubscriptions = true
+  public readonly nonExposedGraphQLMetadataKey: Record<string, Array<string>> = {}
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
   public registerRocketFunction(id: string, func: RocketFunction): void {
@@ -82,6 +87,13 @@ export class BoosterConfig {
   }
   public getRegisteredRocketFunction(id: string): RocketFunction | undefined {
     return this.rocketFunctionMap[id]
+  }
+
+  public traceConfiguration: TraceConfiguration = {
+    enableTraceNotification: false,
+    includeInternal: false,
+    onStart: async (): Promise<void> => {},
+    onEnd: async (): Promise<void> => {},
   }
 
   /** Environment variables set at deployment time on the target lambda functions */
@@ -159,7 +171,7 @@ export class BoosterConfig {
 
       For more information, check out the docs:
 
-      https://docs.booster.cloud/chapters/05_going-deeper?id=configuration-and-environments
+      https://docs.boosterframework.com/going-deeper/environment-configuration
     `)
     this._provider = provider
   }
@@ -213,6 +225,7 @@ interface ResourceNames {
 type EntityName = string
 type EventName = string
 type CommandName = string
+type QueryName = string
 type ReadModelName = string
 type RoleName = string
 type ConceptName = string

@@ -7,7 +7,7 @@ import {
   storeSnapshot,
 } from './library/events-adapter'
 import { requestSucceeded, requestFailed } from './library/api-adapter'
-import { EventRegistry, ReadModelRegistry } from './services'
+import { EventRegistry, GraphQLService, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
@@ -21,18 +21,36 @@ import {
 } from './library/read-model-adapter'
 import { searchEntitiesIds, searchEvents } from './library/events-search-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import {
+  deleteConnectionData,
+  fetchConnectionData,
+  sendMessageToConnection,
+  storeConnectionData,
+} from './library/connections-adapter'
+import {
+  deleteAllSubscriptions,
+  deleteSubscription,
+  fetchSubscriptions,
+  subscribeToReadModel,
+} from './library/subscription-adapter'
+import { WebSocketRegistry } from './services/web-socket-registry'
+import { connectionsDatabase, subscriptionDatabase } from './paths'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
+import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
 
 export * from './paths'
 export * from './services'
 
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
+const connectionRegistry = new WebSocketRegistry(connectionsDatabase)
+const subscriptionRegistry = new WebSocketRegistry(subscriptionDatabase)
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
+const graphQLService = new GraphQLService(userApp)
 
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependencies that are deployed in the lambda functions. The infrastructure
- * package is only used during the deploy.
+ * package is only used during the deployment.
  */
 export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
   return require(packageName)
@@ -51,21 +69,15 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   },
   // ProviderReadModelsLibrary
   readModels: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelopes: rawReadModelEventsToEnvelopes,
     fetch: fetchReadModel.bind(null, readModelRegistry),
     search: searchReadModel.bind(null, readModelRegistry),
-    store: storeReadModel.bind(null, readModelRegistry),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store: storeReadModel.bind(null, graphQLService, readModelRegistry),
     delete: deleteReadModel.bind(null, readModelRegistry),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchSubscriptions: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deleteSubscription: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deleteAllSubscriptions: undefined as any,
+    subscribe: subscribeToReadModel.bind(null, subscriptionRegistry),
+    fetchSubscriptions: fetchSubscriptions.bind(null, subscriptionRegistry),
+    deleteSubscription: deleteSubscription.bind(null, subscriptionRegistry),
+    deleteAllSubscriptions: deleteAllSubscriptions.bind(null, subscriptionRegistry),
   },
   // ProviderGraphQLLibrary
   graphQL: {
@@ -78,14 +90,10 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     requestFailed,
   },
   connections: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    storeData: notImplemented as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchData: notImplemented as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deleteData: notImplemented as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendMessage: notImplemented as any,
+    storeData: storeConnectionData.bind(null, connectionRegistry),
+    fetchData: fetchConnectionData.bind(null, connectionRegistry),
+    deleteData: deleteConnectionData.bind(null, connectionRegistry),
+    sendMessage: sendMessageToConnection.bind(null, new WebSocketServerAdapter(graphQLService, userApp.Booster.config)),
   },
   // ScheduledCommandsLibrary
   scheduled: {
@@ -112,5 +120,3 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     return infrastructure.Infrastructure(rocketDescriptors)
   },
 })
-
-function notImplemented(): void {}

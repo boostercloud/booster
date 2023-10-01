@@ -38,7 +38,13 @@ export async function searchReadModel(
       ...params,
       FilterExpression: buildFilterExpression(filters),
       ExpressionAttributeNames: buildExpressionAttributeNames(filters),
-      ExpressionAttributeValues: buildExpressionAttributeValues(filters),
+    }
+    const expressionAttributeValues = buildExpressionAttributeValues(filters)
+    if (expressionAttributeValues && Object.keys(expressionAttributeValues).length > 0) {
+      params = {
+        ...params,
+        ExpressionAttributeValues: expressionAttributeValues,
+      }
     }
   }
 

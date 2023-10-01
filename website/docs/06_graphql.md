@@ -324,6 +324,40 @@ mutation {
 Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 :::
 
+:::note
+You can disable the creation of all the infrastructure and functionality needed to manage subscriptions by setting `config.enableSubscriptions=false` in your `Booster.config` block
+:::
+
+
+## Non exposing properties and parameters
+
+By default, all properties and parameters of the command constructor and/or read model are accessible through GraphQL. It is possible to not expose any of them adding the `@NonExposed` annotation to the constructor property or parameter.
+
+Example
+```typescript
+@ReadModel({
+  authorize: 'all',
+})
+export class CartReadModel {
+  @NonExposed
+  private internalProperty: number
+
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    readonly checks: number,
+    public shippingAddress?: Address,
+    public payment?: Payment,
+    public cartItemsIds?: Array<string>,
+    @NonExposed readonly internalParameter?: number
+  ) {
+    ...
+  }
+  
+  ...
+}
+```
+
 ## Adding before hooks to your read models
 
 When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive a `ReadModelRequestEnvelope` object representing the current request.
@@ -424,6 +458,25 @@ function beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput
 ```
 
 As you can see, we just check if the `cartUserId` is equal to the `currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
+
+## Adding before hooks to your queries
+
+You can use `before` hooks also in your queries, and [they work as the Read Models ones](#Adding-before-hooks-to-your-read-models), with a slight difference: **we don't modify `filters` but `inputs` (the parameters sent with a query)**. Apart from that, it's pretty much the same, here's an example:
+
+```typescript
+@Query({
+  authorize: 'all',
+  before: [CartTotalQuantity.beforeFn],
+})
+export class CartTotalQuantity {
+  public constructor(readonly cartId: UUID, @NonExposed readonly multiply: number) {}
+
+  public static async beforeFn(input: QueryInput, currentUser?: UserEnvelope): Promise<QueryInput> {
+    input.multiply = 100
+    return input
+  }
+}
+```
 
 ## Reading events
 
@@ -646,17 +699,26 @@ query {
 
 #### String filters
 
-| Filter     |  Value   |                Description |
-| :--------- | :------: | -------------------------: |
-| eq         |  String  |                   Equal to |
-| ne         |  String  |               Not equal to |
-| gt         |  String  |               Greater than |
-| gte        |  String  |      Greater or equal than |
-| lt         |  String  |                 Lower than |
-| lte        |  String  |        Lower or equal than |
-| in         | [String] |      Exists in given array |
-| beginsWith |  String  | Starts with a given substr |
-| contains   |  String  |    Contains a given substr |
+| Filter     |  Value   |                         Description |
+|:-----------| :------: |------------------------------------:|
+| eq         |  String  |                            Equal to |
+| ne         |  String  |                        Not equal to |
+| gt         |  String  |                        Greater than |
+| gte        |  String  |               Greater or equal than |
+| lt         |  String  |                          Lower than |
+| lte        |  String  |                 Lower or equal than |
+| in         | [String] |               Exists in given array |
+| beginsWith |  String  |          Starts with a given substr |
+| contains   |  String  |             Contains a given substr |
+| regex*     |  String  |                  Regular expression |
+| iRegex*    |  String  | Case insensitive Regular expression |
+
+**NOTE**: 
+
+:::note
+`regex` and `iRegex` are supported by Azure and Local Provider only
+:::
+
 
 Example:
 

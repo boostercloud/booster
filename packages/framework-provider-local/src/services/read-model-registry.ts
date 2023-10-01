@@ -6,10 +6,15 @@ interface LocalSortedFor {
   [key: string]: number
 }
 
+export type NedbError = Error & { [key: string | number | symbol]: unknown }
+
+export const UNIQUE_VIOLATED_ERROR_TYPE = 'uniqueViolated'
+
 export class ReadModelRegistry {
   public readonly readModels: DataStore<ReadModelEnvelope> = new DataStore(readModelsDatabase)
   constructor() {
     this.readModels.loadDatabase()
+    this.readModels.ensureIndex({ fieldName: 'uniqueKey', unique: true, sparse: true })
   }
 
   public async query(
@@ -35,18 +40,46 @@ export class ReadModelRegistry {
         else resolve(docs)
       })
     )
-
     return queryPromise as Promise<Array<ReadModelEnvelope>>
   }
 
-  public async store(readModel: ReadModelEnvelope): Promise<void> {
+  public async store(readModel: ReadModelEnvelope, expectedCurrentVersion: number): Promise<void> {
+    const uniqueReadModel: ReadModelEnvelope & { uniqueKey?: string } = readModel
+    uniqueReadModel.uniqueKey = `${readModel.typeName}_${readModel.value.id}_${readModel.value.boosterMetadata?.version}`
+    if (uniqueReadModel.value.boosterMetadata?.version === 1) {
+      return this.insert(readModel)
+    }
+    return this.update(uniqueReadModel, expectedCurrentVersion)
+  }
+
+  private insert(readModel: ReadModelEnvelope): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.readModels.insert(readModel, (err: unknown) => {
+        err ? reject(err) : resolve()
+      })
+    })
+  }
+
+  private update(readModel: ReadModelEnvelope, expectedCurrentVersion: number): Promise<void> {
     return new Promise((resolve, reject) => {
       this.readModels.update(
-        //use nedb dot notation value.id to match the record (see https://github.com/louischatriot/nedb#finding-documents)
-        { typeName: readModel.typeName, 'value.id': readModel.value.id },
+        {
+          typeName: readModel.typeName,
+          'value.id': readModel.value.id,
+          'value.boosterMetadata.version': expectedCurrentVersion,
+        },
         readModel,
-        { upsert: true },
-        (err) => {
+        { upsert: false, returnUpdatedDocs: true },
+        (err: unknown, numAffected: number) => {
+          if (numAffected === 0) {
+            const error: NedbError = new Error(
+              `Can't update readModel ${JSON.stringify(
+                readModel
+              )} with expectedCurrentVersion = ${expectedCurrentVersion} . Optimistic concurrency error`
+            ) as NedbError
+            error.errorType = UNIQUE_VIOLATED_ERROR_TYPE
+            reject(error)
+          }
           err ? reject(err) : resolve()
         }
       )

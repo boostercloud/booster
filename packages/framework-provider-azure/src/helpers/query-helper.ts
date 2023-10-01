@@ -104,12 +104,14 @@ function buildOperation(
           return `CONTAINS(${propName}, ${holder(index)})`
         case 'beginsWith':
           return `STARTSWITH(${propName}, ${holder(index)})`
-        case 'includes': {
+        case 'includes':
           return `ARRAY_CONTAINS(${propName}, ${holder(index)}, true)`
-        }
-        case 'isDefined': {
+        case 'isDefined':
           return value ? `IS_DEFINED(${propName})` : `NOT IS_DEFINED(${propName})`
-        }
+        case 'regex':
+          return `RegexMatch(${propName}, ${holder(index)})`
+        case 'iRegex':
+          return `RegexMatch(${propName}, ${holder(index)}, 'i')`
         default:
           if (typeof value === 'object') {
             return buildOperation(operation, value, usedPlaceholders, propName)

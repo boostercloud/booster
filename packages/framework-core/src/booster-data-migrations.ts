@@ -1,4 +1,5 @@
 import {
+  TraceActionTypes,
   DataMigrationInterface,
   DataMigrationMetadata,
   DataMigrationStatus,
@@ -14,8 +15,10 @@ import { BoosterDataMigrationEntity } from './core-concepts/data-migration/entit
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { Booster } from './index'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
+import { Trace } from './instrumentation'
 
 export class BoosterDataMigrations {
+  @Trace(TraceActionTypes.MIGRATION_RUN)
   public static async run(): Promise<boolean> {
     const config = Booster.config
     const logger = getLogger(config, 'BoosterDataMigrationDispatcher#dispatch')

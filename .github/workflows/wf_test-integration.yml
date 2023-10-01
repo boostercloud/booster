@@ -13,7 +13,7 @@ on:
         required: false
         type: string
       azure-region:
-        default: 'Central US'
+        default: 'East US'
         required: false
         type: string
       azure-publisher-email:

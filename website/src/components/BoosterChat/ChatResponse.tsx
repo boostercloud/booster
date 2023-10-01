@@ -1,13 +1,21 @@
 import React, { FC, useEffect, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+import { AnalyticsClient } from '../Analytics/analytics-client'
+import { ThumbsComponent } from './ThumbsComponent'
 
 interface ChatResponseProps {
+  questionId: string | null
   loading: boolean
   response: string | null
+  hasFinished: Boolean
 }
 
-export const ChatResponse: FC<ChatResponseProps> = ({ loading, response }) => {
+export const ChatResponse: FC<ChatResponseProps> = ({ questionId, loading, response, hasFinished }) => {
   const [displayPopup, setDisplayPopup] = useState(false)
+
+  useEffect(() => {
+    AnalyticsClient.start()
+  }, [])
 
   useEffect(() => {
     if (!response?.length || loading) {
@@ -34,15 +42,24 @@ export const ChatResponse: FC<ChatResponseProps> = ({ loading, response }) => {
 
   return (
     <>
-      <div className="bc-chat">
+      <div className={"bc-chat-embedded"} >
         <ReactMarkdown>{response}</ReactMarkdown>
       </div>
-      <div className="bc-chat-popup" style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
-        <ReactMarkdown>
-          Not the answer you expected? We will be greatful to answer your question on the
-          [#booster-help](https://discord.com/channels/763753198388510780/1019895895325675550) channel on Discord 🤗
-        </ReactMarkdown>
-      </div>
+      {!hasFinished ? null :
+        <div>
+          {!questionId ? null :
+            <ThumbsComponent questionId={questionId} />
+          }
+          <div className={"bc-chat-popup"} style={{ bottom: displayPopup ? '2rem' : '-20rem' }}>
+            <p>
+              Not the answer you expected? This is still a beta version, and the quality of the answers may vary depending on the language, spelling, and other factors. You can check out the documentation, and remember that you can also use our
+              <a href={'https://discord.com/channels/763753198388510780/1019895895325675550'} target="_blank" onClick={() => AnalyticsClient.trackEvent('UESXT8VI')}> #booster-help </a>
+              Discord channel 🤗
+            </p>
+          </div>
+        </div>
+      }
     </>
   )
 }
+

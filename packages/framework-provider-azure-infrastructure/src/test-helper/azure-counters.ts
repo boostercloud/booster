@@ -7,14 +7,12 @@ export class AzureCounters {
     this.appName = appName
     this.db = new CosmosClient(cosmosConnectionString)
   }
-  //TODO: Azure Does not support Subscriptions
   public async subscriptions(): Promise<number> {
-    return 0
+    return this.countTableItems('subscriptions-store')
   }
 
-  //TODO: Azure Does not support Subscriptions
   public async connections(): Promise<number> {
-    return 0
+    return this.countTableItems('connections-store')
   }
 
   public async events(): Promise<number> {
@@ -31,5 +29,9 @@ export class AzureCounters {
   private async itemsCount(table: string, query: string): Promise<number> {
     const { resources } = await this.db.database(`${this.appName}-app`).container(table).items.query(query).fetchAll()
     return resources[0]?.total
+  }
+
+  private async countTableItems(tableName: string): Promise<number> {
+    return this.itemsCount(`${this.appName}-app-${tableName}`, 'SELECT COUNT(1) as total FROM c') ?? -1
   }
 }

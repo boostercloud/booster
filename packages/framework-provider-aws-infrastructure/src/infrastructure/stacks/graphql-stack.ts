@@ -1,6 +1,6 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { Fn, RemovalPolicy, Stack } from '@aws-cdk/core'
-import { CfnAuthorizer, CfnIntegration, CfnIntegrationResponse, CfnRoute } from '@aws-cdk/aws-apigatewayv2'
+import { CfnApi, CfnIntegration, CfnIntegrationResponse, CfnRoute } from '@aws-cdk/aws-apigatewayv2'
 import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
 import * as params from '../params'
 import { APIs } from '../params'
@@ -13,9 +13,9 @@ import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
 
 export interface GraphQLStackMembers {
   graphQLLambda: Function
-  subscriptionNotifier: Function
-  subscriptionsStore: Table
-  connectionsStore: Table
+  subscriptionNotifier?: Function
+  subscriptionsStore?: Table
+  connectionsStore?: Table
 }
 
 export class GraphQLStack {
@@ -29,18 +29,20 @@ export class GraphQLStack {
   public build(): GraphQLStackMembers {
     const graphQLLambda = this.buildLambda('graphql-handler', this.config.serveGraphQLHandler)
     const readModelsEventSources = this.buildEventSourcesForTables(this.readModelTables)
-    const subscriptionNotifier = this.buildLambda(
-      'subscriptions-notifier',
-      this.config.notifySubscribersHandler,
-      readModelsEventSources
-    )
-
-    this.buildWebsocketRoutes(graphQLLambda)
     this.buildRESTRoutes(graphQLLambda)
-    const subscriptionsStore = this.buildSubscriptionsTable()
-    const connectionsStore = this.buildConnectionsTable()
+    if (this.config.enableSubscriptions) {
+      const subscriptionNotifier = this.buildLambda(
+        'subscriptions-notifier',
+        this.config.notifySubscribersHandler,
+        readModelsEventSources
+      )
+      this.buildWebsocketRoutes(graphQLLambda, this.apis.websocketAPI as CfnApi)
+      const subscriptionsStore = this.buildSubscriptionsTable()
+      const connectionsStore = this.buildConnectionsTable()
+      return { graphQLLambda, subscriptionNotifier, subscriptionsStore, connectionsStore }
+    }
 
-    return { graphQLLambda, subscriptionNotifier, subscriptionsStore, connectionsStore }
+    return { graphQLLambda }
   }
 
   private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
@@ -62,18 +64,18 @@ export class GraphQLStack {
     return readModelTables.map((table) => new DynamoEventSource(table, params.stream()))
   }
 
-  private buildWebsocketRoutes(graphQLLambda: Function): void {
-    const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda)
+  private buildWebsocketRoutes(graphQLLambda: Function, websocketAPI: CfnApi): void {
+    const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda, websocketAPI)
 
-    this.buildRoute('$connect', lambdaIntegration)
-    this.buildRoute('$default', lambdaIntegration)
-    this.buildRoute('$disconnect', lambdaIntegration)
+    this.buildRoute('$connect', lambdaIntegration, websocketAPI)
+    this.buildRoute('$default', lambdaIntegration, websocketAPI)
+    this.buildRoute('$disconnect', lambdaIntegration, websocketAPI)
   }
 
-  private buildLambdaIntegration(lambda: Function): CfnIntegration {
+  private buildLambdaIntegration(lambda: Function, websocketAPI: CfnApi): CfnIntegration {
     const localID = 'graphql-handler-integration'
     const integration = new CfnIntegration(this.stack, localID, {
-      apiId: this.apis.websocketAPI.ref,
+      apiId: websocketAPI.ref,
       integrationType: 'AWS_PROXY',
       integrationUri: Fn.join('', [
         'arn:',
@@ -85,29 +87,25 @@ export class GraphQLStack {
         '/invocations',
       ]),
     })
-    integration.addDependsOn(this.apis.websocketAPI)
+    integration.addDependsOn(websocketAPI)
 
     const integrationResponseLocalId = 'graphql-handler-integration-response'
     const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
       integrationId: integration.ref,
-      apiId: this.apis.websocketAPI.ref,
+      apiId: websocketAPI.ref,
       integrationResponseKey: '$default',
     })
     integrationResponse.addDependsOn(integration)
     return integration
   }
 
-  private buildRoute(routeKey: string, integration: CfnIntegration, authorizer?: CfnAuthorizer): CfnRoute {
+  private buildRoute(routeKey: string, integration: CfnIntegration, websocketAPI: CfnApi): CfnRoute {
     const localID = `route-${routeKey}`
     const route = new CfnRoute(this.stack, localID, {
-      apiId: this.apis.websocketAPI.ref,
+      apiId: websocketAPI.ref,
       routeKey: routeKey,
       target: Fn.join('/', ['integrations', integration.ref]),
     })
-    if (authorizer) {
-      route.authorizationType = 'CUSTOM'
-      route.authorizerId = authorizer.ref
-    }
     route.addDependsOn(integration)
     return route
   }

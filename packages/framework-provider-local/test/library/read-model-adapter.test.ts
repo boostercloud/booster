@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { createStubInstance, fake, SinonStub, SinonStubbedInstance, replace, stub } from 'sinon'
-import { ReadModelRegistry } from '../../src'
+import { GraphQLService, ReadModelRegistry } from '../../src'
 import {
   BoosterConfig,
   FilterFor,
@@ -8,6 +8,7 @@ import {
   ReadModelInterface,
   ReadOnlyNonEmptyArray,
   SortFor,
+  UserApp,
   UUID,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
@@ -37,8 +38,18 @@ async function storeMock(
   mockConfig: BoosterConfig,
   mockReadModel: ReadModelEnvelope
 ): Promise<void> {
-  // @ts-ignore
-  await storeReadModel(mockReadModelRegistry, mockConfig, mockReadModel.typeName, mockReadModel.value, 1)
+  const mockUserApp: UserApp = {} as any
+  const graphQLService = new GraphQLService(mockUserApp)
+  stub(graphQLService, 'handleNotificationSubscription')
+  await storeReadModel(
+    graphQLService,
+    // @ts-ignore
+    mockReadModelRegistry,
+    mockConfig,
+    mockReadModel.typeName,
+    mockReadModel.value,
+    1
+  )
 }
 
 async function searchMock(
@@ -77,6 +88,7 @@ describe('read-models-adapter', () => {
   beforeEach(() => {
     mockConfig = new BoosterConfig('test')
     mockConfig.appName = 'nuke-button'
+    mockConfig.enableSubscriptions = true
 
     loggerDebugStub = stub()
     storeStub = stub()
@@ -175,7 +187,7 @@ describe('read-models-adapter', () => {
     })
 
     it('should call read model registry store', () => {
-      expect(storeStub).to.have.been.calledWithExactly(mockReadModel)
+      expect(storeStub).to.have.been.calledWithExactly(mockReadModel, 1)
     })
 
     it('should log the right debug message', () => {

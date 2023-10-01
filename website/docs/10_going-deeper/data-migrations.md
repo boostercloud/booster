@@ -106,9 +106,11 @@ Data migrations are not run automatically, you need to invoke the `BoosterDataMi
 
 Take into account that, depending on your cloud provider implementation, data migrations are executed in the context of a lambda or function app, so it's advisable to design these functions in a way that allow to re-run them in case of failures (i.e. lambda timeouts). In order to tell Booster that your migration has been applied successfully, at the end of each `DataMigration.start` method, you must emit a `BoosterDataMigrationFinished` event manually.
 
-Inside your `@DataMigration` classes, you can use the `Booster.migrateEntity` method to update the data for a specific entity. This method takes the old entity name, the old entity ID, and the new entity data as arguments. It will also generate an internal `BoosterEntityMigrated` event before performing the migration.
+Inside your `@DataMigration` classes, you can use the `BoosterDataMigrations.migrateEntity` method to update the data for a specific entity. This method takes the old entity name, the old entity ID, and the new entity data as arguments. It will also generate an internal `BoosterEntityMigrated` event before performing the migration.
 
-Here is an example of how you might use the `@DataMigration` decorator and the `Booster.migrateEntity` method to update the quantity of the first item in a cart:
+**Note that Data migrations are only available in the Azure provider at the moment.**
+
+Here is an example of how you might use the `@DataMigration` decorator and the `Booster.migrateEntity` method to update the quantity of the first item in a cart (**Notice that at the time of writing this document, the method `Booster.entitiesIDs` used in the following example is only available in the Azure provider, so you may need to approach the migration differently in AWS.**):
 
 ```typescript
 @DataMigration({
@@ -129,7 +131,7 @@ export class CartIdDataMigrateV2 {
         carts.map(async (cart) => {
           cart.cartItems[0].quantity = 100
           const newCart = new Cart(cart.id, cart.cartItems, cart.shippingAddress, cart.checks)
-          await Booster.migrateEntity('Cart', validCart.id, newCart)
+          await BoosterDataMigrations.migrateEntity('Cart', validCart.id, newCart)
           return validCart.id
       })
     )
@@ -145,20 +147,20 @@ export class CartIdDataMigrateV2 {
 
 ```json
 "devDependencies": {
-    "rimraf": "^3.0.1",
+    "rimraf": "^5.0.0",
     "@typescript-eslint/eslint-plugin": "4.22.1",
     "@typescript-eslint/parser": "4.22.1",
     "eslint": "7.26.0",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-prettier": "3.4.0",
-    "mocha": "8.4.0",
-    "@types/mocha": "8.2.2",
+    "mocha": "10.2.0",
+    "@types/mocha": "10.0.1",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
     "typescript": "4.5.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
-    "ttypescript": "1.5.13",
+    "ttypescript": "1.5.15",
     "@boostercloud/metadata-booster": "0.30.2"
   },
 ```

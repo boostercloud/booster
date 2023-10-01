@@ -49,7 +49,7 @@ describe('Local provider graphql-adapter', () => {
       await rawGraphQLRequestToEnvelope(mockConfig, mockRequest)
 
       expect(mockConfig.logger?.debug).to.have.been.calledOnceWith(
-        '[Booster]|graphql-adapter#rawGraphQLRequestToEnvelope: ',
+        '[Booster]|graphql-adapter#expressHttpMessageToEnvelope: ',
         'Received GraphQL request: \n- Headers: ',
         mockRequest.headers,
         '\n- Body: ',

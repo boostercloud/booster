@@ -1,5 +1,7 @@
 // Both used in Cart entity and read-model-integration.ts
 export const beforeHookProductId = 'before-hook-product-id'
+export const beforeHookQueryID = 'before-hook-query-id'
+export const beforeHookQueryMultiply = 10
 export const throwExceptionId = 'throw-exception-id'
 export const beforeHookException = 'Before hook throwing exception'
 export const beforeHookMutationID = 'mutation-but-with-input-changes'
@@ -8,7 +10,9 @@ export const beforeHookQuantity = 21
 export const commandHandlerErrorCartId = 'commandHandlerErrorCartId'
 export const commandHandlerErrorIgnoredCartId = 'commandHandlerErrorIgnoredCartId'
 export const commandHandlerErrorCartMessage = 'commandHandlerErrorCartMessage'
+export const queryHandlerErrorCartMessage = 'queryHandlerErrorCartMessage'
 export const commandHandlerBeforeErrorCartId = 'commandHandlerBeforeErrorCartId'
+export const queryHandlerErrorCartId = 'queryHandlerErrorCartId'
 export const commandHandlerBeforeErrorCartMessage = 'commandHandlerBeforeErrorCartMessage'
 export const dispatchEventErrorCartId = 'dispatchEventErrorCartId'
 export const dispatchErrorCartMessage = 'dispatchErrorCartMessage'

@@ -16,11 +16,13 @@ import { BoosterEntityMigrated } from './core-concepts/data-migration/events/boo
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { Booster } from './booster'
+import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
 
 const boosterEventsTypesNames: Array<string> = [
   BoosterEntityMigrated.name,
   BoosterDataMigrationStarted.name,
   BoosterDataMigrationFinished.name,
+  BoosterEntityTouched.name,
 ]
 
 export class RegisterHandler {
@@ -82,6 +84,9 @@ export class RegisterHandler {
   ): string {
     if (eventTypeName === BoosterEntityMigrated.name) {
       return (event as BoosterEntityMigrated).oldEntityName
+    }
+    if (eventTypeName === BoosterEntityTouched.name) {
+      return (event as BoosterEntityTouched).entityName
     }
     if (eventTypeName in config.notifications) {
       return config.eventToTopic[eventTypeName] ?? 'defaultTopic'

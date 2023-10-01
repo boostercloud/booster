@@ -10,6 +10,7 @@ import { PolicyStatement } from '@aws-cdk/aws-iam'
 import { Fn } from '@aws-cdk/core'
 import { GraphQLStackMembers } from '../../../src/infrastructure/stacks/graphql-stack'
 import { EventsStackMembers } from '../../../src/infrastructure/stacks/events-stack'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 describe('permissions', () => {
   afterEach(() => {
@@ -43,6 +44,10 @@ describe('permissions', () => {
 
     let fnJoinStub: SinonStub
     let fnRefStub: SinonStub
+
+    const config = new BoosterConfig('test')
+    config.appName = 'testing-app'
+    config.userProjectRootPath = '.'
 
     beforeEach(() => {
       mockSubscriptionsStoreArn = random.alphaNumeric(10)
@@ -99,7 +104,7 @@ describe('permissions', () => {
         eventsLambda: mockEventsLambda,
       }
 
-      setupPermissions(graphQLStackMembers, eventsStackMembers, mockReadModelTables, mockWebsocketAPI)
+      setupPermissions(config, graphQLStackMembers, eventsStackMembers, mockReadModelTables, mockWebsocketAPI)
     })
 
     describe('GraphQL Lambda', () => {

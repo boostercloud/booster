@@ -1,11 +1,10 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject } from '@apollo/client'
 import { changeCartItem, graphQLClient } from './utils'
 import { random } from 'faker'
 import { expect } from 'chai'
 import * as DataStore from 'nedb'
 import { sandboxPath } from './constants'
-import util = require('util')
+import * as util from 'util'
 import * as path from 'path'
 import { waitForIt } from '../../helper/sleep'
 

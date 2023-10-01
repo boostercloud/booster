@@ -16,12 +16,13 @@
   },
   "dependencies": {
     "@apollo/client": "^3.7.8",
-    "@docusaurus/core": "2.3.1",
-    "@docusaurus/preset-classic": "2.3.1",
+    "@docusaurus/core": "^2.4.0",
+    "@docusaurus/preset-classic": "^2.4.0",
     "@mdx-js/react": "^1.6.22",
     "autoprefixer": "^10.4.13",
     "clsx": "^1.2.1",
     "docusaurus-plugin-fathom": "^1.1.0",
+    "fathom-client": "^3.5.0",
     "graphql": "^16.6.0",
     "graphql-ws": "^5.11.3",
     "postcss": "^8.4.19",
@@ -29,11 +30,12 @@
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-markdown": "^8.0.5",
+    "react-modal": "^3.16.1",
     "subscriptions-transport-ws": "^0.11.0",
     "tailwindcss": "^3.2.4"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "2.3.1",
+    "@docusaurus/module-type-aliases": "^2.4.0",
     "@tsconfig/docusaurus": "^1.0.5",
     "typescript": "^4.7.4"
   },

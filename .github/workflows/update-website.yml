@@ -1,0 +1,28 @@
+name: Website Update
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'website/**'
+
+jobs:
+  update-website:
+    runs-on: ubuntu-latest
+    env:
+        AUTH0_CLIENT_ID: ${{ secrets.AUTH0_CLIENT_ID }}
+        AUTH0_CLIENT_SECRET: ${{ secrets.AUTH0_CLIENT_SECRET }}
+        AUTH0_AUDIENCE: ${{ secrets.AUTH0_PRIVATEGPT_AUDIENCE }}
+        AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Run Booster update script
+        run: bash .github/actions/update-website/action.sh
+        env:
+          AI_BOOSTER_URL: ${{ secrets.AI_BOOSTER_URL }}
+      - name: Run ChatGPT Plugin update script
+        run: bash .github/actions/update-website/plugin-action.sh
+        env:
+          AUTH0_CHATGPT_PLUGIN_AUDIENCE: ${{ secrets.AUTH0_CHATGPT_PLUGIN_AUDIENCE }}

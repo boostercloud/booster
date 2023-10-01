@@ -50,7 +50,7 @@ const config = {
   themeConfig: {
     fathomAnalytics: {
       siteId: 'LHRTIPFZ',
-      customDomain: 'https://tools.eventsource.cloud',
+      customDomain: 'https://tl1.boosterframework.com',
     },
     colorMode: {
       defaultMode: 'light',
@@ -64,14 +64,14 @@ const config = {
       items: [
         {
           type: 'doc',
-          docId: 'introduction',
+          docId: 'ai-assistant',
           position: 'left',
           label: 'Docs',
         },
         {
           href: 'https://github.com/boostercloud/booster',
           label: 'GitHub',
-          position: 'right',
+          position: 'left',
           customProps: {
             trackingEvent: 'UXDJRQQB',
           },
@@ -79,10 +79,16 @@ const config = {
         {
           href: 'https://discord.gg/bDY8MKx',
           label: 'Discord',
-          position: 'right',
+          position: 'left',
           customProps: {
             trackingEvent: 'D38YB2Q1',
           },
+        },
+        {
+          type: 'custom-navbar-item',
+          position: 'right',
+          imageURL: '/img/privateGptLogo.svg',
+          altText: 'PrivateGPT',
         },
       ],
     },
@@ -115,7 +121,7 @@ const config = {
           items: [
             {
               label: 'Docs',
-              to: 'https://docs.booster.cloud/',
+              to: 'https://docs.boosterframework.com/',
             },
             {
               label: 'YouTube',
@@ -176,7 +182,7 @@ const config = {
         },
       }
     },
-    require.resolve('docusaurus-plugin-fathom')
+    require.resolve('docusaurus-plugin-fathom'),
   ],
 }
 

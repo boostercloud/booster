@@ -22,11 +22,16 @@ export interface Envelope {
   context?: ContextEnvelope
 }
 
-export interface CommandEnvelope extends Envelope {
+export interface TypedEnvelope extends Envelope {
   typeName: string
   version: number
+}
+
+export interface CommandEnvelope extends TypedEnvelope {
   value: CommandInput
 }
+
+export type QueryEnvelope = CommandEnvelope
 
 export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
@@ -34,9 +39,7 @@ export interface ScheduledCommandEnvelope extends Envelope {
 
 export type SuperKindType = 'domain' | 'notification' | 'booster'
 
-export interface EventStoreEntryEnvelope extends Envelope {
-  typeName: string
-  version: number
+export interface EventStoreEntryEnvelope extends TypedEnvelope {
   superKind: SuperKindType
   entityID: UUID
   entityTypeName: string
@@ -148,8 +151,10 @@ export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TR
 
 export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
+export type EventType = 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
+
 export interface GraphQLRequestEnvelope extends Envelope {
-  eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
+  eventType: EventType
   connectionID?: string
   value?: GraphQLOperation | GraphQLClientMessage
   token?: string

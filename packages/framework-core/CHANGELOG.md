@@ -1,6 +1,153 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 27 Feb 2023 23:02:14 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Sep 2023 14:53:03 GMT and should not be manually modified.
+
+## 1.19.0
+Wed, 13 Sep 2023 14:53:03 GMT
+
+### Minor changes
+
+- Update booster dependencies
+
+### Patches
+
+- Fix local provider index
+
+### Updates
+
+- Fixed broken links to the documentation
+
+## 1.18.1
+Tue, 18 Jul 2023 10:04:58 GMT
+
+### Patches
+
+- fix getter on migrations
+
+## 1.18.0
+Fri, 30 Jun 2023 13:15:00 GMT
+
+### Minor changes
+
+- Fix GraphQL dependency
+
+## 1.17.0
+Thu, 29 Jun 2023 10:29:53 GMT
+
+### Minor changes
+
+- Add Local Provider concurrency
+
+## 1.16.1
+Mon, 26 Jun 2023 14:20:43 GMT
+
+### Patches
+
+- ensure aws storeSnapshot is idempotent
+
+## 1.16.0
+Thu, 22 Jun 2023 15:57:36 GMT
+
+### Minor changes
+
+- Add queryInfo and hooks to query decorator
+
+## 1.15.0
+Tue, 20 Jun 2023 10:05:41 GMT
+
+### Minor changes
+
+- Add NonExposed decorator to hide GraphQL fields
+
+## 1.14.1
+Fri, 16 Jun 2023 08:48:46 GMT
+
+### Patches
+
+- Add last update to read models
+
+## 1.14.0
+Wed, 07 Jun 2023 15:41:28 GMT
+
+### Minor changes
+
+- add tracer
+
+## 1.13.0
+Wed, 07 Jun 2023 14:31:25 GMT
+
+### Minor changes
+
+- Add touch entities
+
+## 1.12.0
+Wed, 31 May 2023 14:25:34 GMT
+
+### Minor changes
+
+- Disable subscriptions
+
+## 1.11.1
+Wed, 24 May 2023 14:42:54 GMT
+
+### Patches
+
+- Return ReadModel instance when querying by id
+- Updated GraphQL to latest version
+
+## 1.11.0
+Fri, 05 May 2023 12:14:49 GMT
+
+### Minor changes
+
+- Add regex and iRegex filters
+
+## 1.10.2
+Thu, 04 May 2023 12:25:58 GMT
+
+### Patches
+
+- Create a host.json file and add it to the functionApp.zip file for Azure Provider only if there is not an existing one
+
+## 1.10.1
+Thu, 27 Apr 2023 18:25:07 GMT
+
+### Patches
+
+- Removed Kubernetes
+
+## 1.10.0
+Wed, 26 Apr 2023 15:55:21 GMT
+
+### Minor changes
+
+- Add Azure subscriptions
+
+## 1.9.0
+Thu, 20 Apr 2023 22:02:42 GMT
+
+### Minor changes
+
+- Local subscriptions
+
+## 1.8.0
+Thu, 20 Apr 2023 17:20:40 GMT
+
+### Minor changes
+
+- add query annotation
+
+## 1.7.1
+Wed, 19 Apr 2023 21:05:26 GMT
+
+### Patches
+
+- Add rush update to wf publish npm
+- Support UUID contains and beginsWith filters
+
+### Updates
+
+- Added tests for partition key generation functions and removed the unused `partitionKeyForIndexByEntity` function from the Azure provider
 
 ## 1.7.0
 Mon, 27 Feb 2023 23:02:14 GMT

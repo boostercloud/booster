@@ -85,9 +85,6 @@ export class AWSTestHelper {
       return output.OutputKey === 'websocketURL'
     })?.OutputValue
 
-    if (!url) {
-      throw 'Unable to get the Base Websocket URL from the current stack'
-    }
-    return url
+    return url || ''
   }
 }

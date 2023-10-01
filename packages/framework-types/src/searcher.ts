@@ -167,6 +167,8 @@ interface ScalarOperators<TType> extends BooleanOperators<TType> {
 interface StringOperators<TType> extends ScalarOperators<TType> {
   beginsWith?: TType
   contains?: TType
+  regex?: TType
+  iRegex?: TType
 }
 
 interface ArrayOperators<TElementType> {
