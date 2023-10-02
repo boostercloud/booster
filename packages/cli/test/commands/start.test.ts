@@ -9,7 +9,6 @@ import { test } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
-import { root } from '../configRoot'
 
 import rewire = require('rewire')
 const start = rewire('../../src/commands/start')
@@ -45,7 +44,7 @@ describe('start', () => {
   describe('run', () => {
     context('when no environment provided', async () => {
       test
-        .loadConfig({ root })
+        .loadConfig({ root: __dirname })
         .stdout()
         .command(['start'])
         .it('shows no environment provided error', (ctx) => {
