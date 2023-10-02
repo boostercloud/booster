@@ -37,7 +37,12 @@ describe('environment service', (): void => {
 
     describe('process.env.BOOSTER_ENV set', (): void => {
       beforeEach(() => {
-        process.env.BOOSTER_ENV = 'testing'
+        process.env.BOOSTER_ENV = ''
+        replace(process.env, 'BOOSTER_ENV', 'testing')
+      })
+
+      afterEach(() => {
+        restore()
       })
 
       it('set environment in param: no log message', async () => {
