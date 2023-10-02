@@ -234,7 +234,7 @@ To start contributing to the project you would need to set up the project in you
 
 - Add your contribution
 
-- Make sure everything works by [executing the unit tests](#running-unit-tests): `rush rest`
+- Make sure everything works by [executing the unit tests](#running-unit-tests): `rush test`
 
 > **DISCLAIMER**: The integration test process changed, feel free to chime in into our Discord for more info
 
