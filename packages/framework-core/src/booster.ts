@@ -30,6 +30,7 @@ import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
 import { BoosterAuthorizer } from './booster-authorizer'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
+import { eventSearch } from './booster-event-search'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -103,12 +104,7 @@ export class Booster {
   }
 
   public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {
-    const events: Array<EventSearchResponse> = await this.config.provider.events.search(this.config, request)
-    return events.map((event) => {
-      const eventMetadata = this.config.events[event.type]
-      event.value = createInstance(eventMetadata.class, event.value)
-      return event
-    })
+    return eventSearch(this.config, request)
   }
 
   public static async entitiesIDs(
