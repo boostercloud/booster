@@ -176,13 +176,13 @@ sense of continuation to the whole paragraph. If not, when people read the parag
 
 For example, read this paragraph and try to hear your internal voice:
 
-> Entities are created on the fly, by reducing the whole event stream. You shouldn't assume that they are stored anywhere.  Booster does create
-automatic snapshots to make the reduction process efficient. You are the one in charge of writing the reducer function.
+> Entities are created on the fly, by reducing the whole event stream. You shouldn't assume that they are stored anywhere. Booster does create
+> automatic snapshots to make the reduction process efficient. You are the one in charge of writing the reducer function.
 
 And now read this one:
 
-> Entities are created on the fly by reducing the whole event stream. While you shouldn't assume that they are stored anywhere,  Booster does create automatic
-snapshots to make the reduction process efficient. In any case, this is opaque to you and the only thing you should care is to provide the reducer function.
+> Entities are created on the fly by reducing the whole event stream. While you shouldn't assume that they are stored anywhere, Booster does create automatic
+> snapshots to make the reduction process efficient. In any case, this is opaque to you and the only thing you should care is to provide the reducer function.
 
 Did you feel the difference? The latter makes you feel that everything is connected, it is more cohesive.
 
@@ -234,7 +234,7 @@ To start contributing to the project you would need to set up the project in you
 
 - Add your contribution
 
-- Make sure everything works by [executing the unit tests](#running-unit-tests): `rush rest`
+- Make sure everything works by [executing the unit tests](#running-unit-tests): `rush test`
 
 > **DISCLAIMER**: The integration test process changed, feel free to chime in into our Discord for more info
 
@@ -267,7 +267,6 @@ Integration tests are triggered by repo admins to be run in Github Actions by co
 ```
 
 Where `1234ab` is the SHA of the latest commit.
-
 
 Still, it is recommendable to run them locally before submitting a PR for review. You can find several scripts in `packages/framework-integration-tests/package.json` to run different test suites. You can run them using rush tool:
 
