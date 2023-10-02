@@ -75,7 +75,7 @@ async function insertReadModel(
       )
       throw new OptimisticConcurrencyUnexpectedVersionError(error?.message)
     }
-    logger.error('[ReadModelAdapter#insertReadModel] Read model insert failed without a conflict failure')
+    logger.error('[ReadModelAdapter#insertReadModel] Read model insert failed without a conflict failure', error)
     throw error
   }
 }
