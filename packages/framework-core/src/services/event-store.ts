@@ -136,6 +136,10 @@ export class EventStore {
 
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
       const eventMetadata = this.config.events[eventEnvelope.typeName]
+      if (!eventMetadata) {
+        logger.error(`No event registered for event ${eventEnvelope.typeName}`)
+        throw new InvalidParameterError(`No event registered for event ${eventEnvelope.typeName}`)
+      }
       const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
