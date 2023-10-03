@@ -1,19 +1,18 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Fn, RemovalPolicy, Stack } from '@aws-cdk/core'
-import { CfnApi, CfnIntegration, CfnIntegrationResponse, CfnRoute } from '@aws-cdk/aws-apigatewayv2'
-import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
+import { Fn, RemovalPolicy, Stack } from 'aws-cdk-lib'
+import { CfnApi, CfnIntegration, CfnIntegrationResponse, CfnRoute } from 'aws-cdk-lib/aws-apigatewayv2'
+import { Code, Function as AWSFunction, IEventSource } from 'aws-cdk-lib/aws-lambda'
 import * as params from '../params'
 import { APIs } from '../params'
-import { ServicePrincipal } from '@aws-cdk/aws-iam'
-import { AuthorizationType, LambdaIntegration } from '@aws-cdk/aws-apigateway'
-import { Cors } from '@aws-cdk/aws-apigateway/lib/cors'
-import { AttributeType, BillingMode, ProjectionType, Table } from '@aws-cdk/aws-dynamodb'
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam'
+import { Cors, AuthorizationType, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway'
+import { AttributeType, BillingMode, ProjectionType, Table } from 'aws-cdk-lib/aws-dynamodb'
 import { connectionsStoreAttributes, subscriptionsStoreAttributes } from '@boostercloud/framework-provider-aws'
-import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
+import { DynamoEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 
 export interface GraphQLStackMembers {
-  graphQLLambda: Function
-  subscriptionNotifier?: Function
+  graphQLLambda: AWSFunction
+  subscriptionNotifier?: AWSFunction
   subscriptionsStore?: Table
   connectionsStore?: Table
 }
@@ -45,8 +44,8 @@ export class GraphQLStack {
     return { graphQLLambda }
   }
 
-  private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
-    const lambda = new Function(this.stack, name, {
+  private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): AWSFunction {
+    const lambda = new AWSFunction(this.stack, name, {
       ...params.lambda(this.config, this.stack, this.apis),
       functionName: `${this.config.resourceNames.applicationStack}-${name}`,
       handler: handler,
@@ -64,7 +63,7 @@ export class GraphQLStack {
     return readModelTables.map((table) => new DynamoEventSource(table, params.stream()))
   }
 
-  private buildWebsocketRoutes(graphQLLambda: Function, websocketAPI: CfnApi): void {
+  private buildWebsocketRoutes(graphQLLambda: AWSFunction, websocketAPI: CfnApi): void {
     const lambdaIntegration = this.buildLambdaIntegration(graphQLLambda, websocketAPI)
 
     this.buildRoute('$connect', lambdaIntegration, websocketAPI)
@@ -72,7 +71,7 @@ export class GraphQLStack {
     this.buildRoute('$disconnect', lambdaIntegration, websocketAPI)
   }
 
-  private buildLambdaIntegration(lambda: Function, websocketAPI: CfnApi): CfnIntegration {
+  private buildLambdaIntegration(lambda: AWSFunction, websocketAPI: CfnApi): CfnIntegration {
     const localID = 'graphql-handler-integration'
     const integration = new CfnIntegration(this.stack, localID, {
       apiId: websocketAPI.ref,
@@ -82,12 +81,12 @@ export class GraphQLStack {
         Fn.ref('AWS::Partition'),
         ':apigateway:',
         Fn.ref('AWS::Region'),
-        ':lambda:path/2015-03-31/functions/',
+        ':lambda:path/2015-03-31/AWSFunctions/',
         lambda.functionArn,
         '/invocations',
       ]),
     })
-    integration.addDependsOn(websocketAPI)
+    integration.addDependency(websocketAPI)
 
     const integrationResponseLocalId = 'graphql-handler-integration-response'
     const integrationResponse = new CfnIntegrationResponse(this.stack, integrationResponseLocalId, {
@@ -95,7 +94,7 @@ export class GraphQLStack {
       apiId: websocketAPI.ref,
       integrationResponseKey: '$default',
     })
-    integrationResponse.addDependsOn(integration)
+    integrationResponse.addDependency(integration)
     return integration
   }
 
@@ -106,11 +105,11 @@ export class GraphQLStack {
       routeKey: routeKey,
       target: Fn.join('/', ['integrations', integration.ref]),
     })
-    route.addDependsOn(integration)
+    route.addDependency(integration)
     return route
   }
 
-  private buildRESTRoutes(graphQLLambda: Function): void {
+  private buildRESTRoutes(graphQLLambda: AWSFunction): void {
     this.apis.restAPI.root
       .addResource('graphql', {
         defaultCorsPreflightOptions: {

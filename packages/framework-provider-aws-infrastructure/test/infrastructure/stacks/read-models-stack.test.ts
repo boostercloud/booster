@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../../expect'
 import { describe } from 'mocha'
-import { Stack, App } from '@aws-cdk/core'
+import { Stack, App } from 'aws-cdk-lib'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 
 import { ReadModelsStack } from '../../../src/infrastructure/stacks/read-models-stack'
-import { Table } from '@aws-cdk/aws-dynamodb'
+import { Table } from 'aws-cdk-lib/aws-dynamodb'
 
 describe('ReadModelsStack', () => {
   describe('the `build` method', () => {

@@ -1,4 +1,4 @@
-import { Effect, PolicyStatement } from '@aws-cdk/aws-iam'
+import { Effect, PolicyStatement } from 'aws-cdk-lib/aws-iam'
 
 export const createPolicyStatement = (
   resources?: string[],

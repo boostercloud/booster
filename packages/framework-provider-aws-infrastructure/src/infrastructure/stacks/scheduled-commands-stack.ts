@@ -1,12 +1,12 @@
 import { BoosterConfig, ScheduledCommandEnvelope, ScheduleInterface } from '@boostercloud/framework-types'
-import { Stack } from '@aws-cdk/core'
-import { Rule, Schedule, RuleTargetInput } from '@aws-cdk/aws-events'
-import { LambdaFunction } from '@aws-cdk/aws-events-targets'
-import { Code, Function, IEventSource } from '@aws-cdk/aws-lambda'
+import { Stack } from 'aws-cdk-lib'
+import { Rule, Schedule, RuleTargetInput } from 'aws-cdk-lib/aws-events'
+import { LambdaFunction } from 'aws-cdk-lib/aws-events-targets'
+import { Code, Function as AWSFunction, IEventSource } from 'aws-cdk-lib/aws-lambda'
 import * as params from '../params'
 import { APIs } from '../params'
 export interface ScheduledCommandStackMembers {
-  scheduledLambda: Function
+  scheduledLambda: AWSFunction
 }
 
 export class ScheduledCommandStack {
@@ -25,8 +25,8 @@ export class ScheduledCommandStack {
     return undefined
   }
 
-  private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): Function {
-    return new Function(this.stack, name, {
+  private buildLambda(name: string, handler: string, eventSources?: Array<IEventSource>): AWSFunction {
+    return new AWSFunction(this.stack, name, {
       ...params.lambda(this.config, this.stack, this.apis),
       functionName: `${this.config.resourceNames.applicationStack}-${name}`,
       handler: handler,
@@ -35,7 +35,7 @@ export class ScheduledCommandStack {
     })
   }
 
-  private scheduleLambda(lambda: Function): void {
+  private scheduleLambda(lambda: AWSFunction): void {
     Object.keys(this.config.scheduledCommandHandlers).forEach((scheduledCommandName) => {
       const scheduledCommandMetadata = this.config.scheduledCommandHandlers[scheduledCommandName]
       const input: Partial<ScheduledCommandEnvelope> = {

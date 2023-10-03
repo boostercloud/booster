@@ -1,5 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Stack } from '@aws-cdk/core'
+import { Stack } from 'aws-cdk-lib'
 import { RocketUtils } from './rocket-utils'
 
 export interface InfrastructureRocket {

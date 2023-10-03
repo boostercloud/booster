@@ -1,7 +1,7 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { RemovalPolicy, Stack } from '@aws-cdk/core'
-import * as dynamodb from '@aws-cdk/aws-dynamodb'
-import { StreamViewType } from '@aws-cdk/aws-dynamodb'
+import { RemovalPolicy, Stack } from 'aws-cdk-lib'
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
+import { StreamViewType } from 'aws-cdk-lib/aws-dynamodb'
 
 export class ReadModelsStack {
   public constructor(private readonly config: BoosterConfig, private readonly stack: Stack) {}

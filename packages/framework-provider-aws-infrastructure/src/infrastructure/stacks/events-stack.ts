@@ -1,16 +1,16 @@
-import { Code, Function } from '@aws-cdk/aws-lambda'
+import { Code, Function as AWSFunction } from 'aws-cdk-lib/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Stack, RemovalPolicy } from '@aws-cdk/core'
-import * as dynamodb from '@aws-cdk/aws-dynamodb'
+import { Stack, RemovalPolicy } from 'aws-cdk-lib'
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
 import { eventsStoreAttributes } from '@boostercloud/framework-provider-aws'
 import * as params from '../params'
-import { DynamoEventSource } from '@aws-cdk/aws-lambda-event-sources'
+import { DynamoEventSource } from 'aws-cdk-lib/aws-lambda-event-sources'
 import { APIs } from '../params'
-import { Table, StreamViewType } from '@aws-cdk/aws-dynamodb'
+import { Table, StreamViewType } from 'aws-cdk-lib/aws-dynamodb'
 
 export interface EventsStackMembers {
   eventsStore: dynamodb.Table
-  eventsLambda: Function
+  eventsLambda: AWSFunction
 }
 
 export class EventsStack {
@@ -74,9 +74,9 @@ export class EventsStack {
     return table
   }
 
-  private buildEventsLambda(eventsStream: Table): Function {
+  private buildEventsLambda(eventsStream: Table): AWSFunction {
     const localID = 'events-main'
-    return new Function(this.stack, localID, {
+    return new AWSFunction(this.stack, localID, {
       ...params.lambda(this.config, this.stack, this.apis),
       functionName: this.config.resourceNames.applicationStack + '-' + localID,
       handler: this.config.eventDispatcherHandler,

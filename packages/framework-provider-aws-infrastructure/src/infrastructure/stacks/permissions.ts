@@ -1,11 +1,11 @@
-import { Table } from '@aws-cdk/aws-dynamodb'
-import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
-import { Fn } from '@aws-cdk/core'
+import { Table } from 'aws-cdk-lib/aws-dynamodb'
+import { CfnApi } from 'aws-cdk-lib/aws-apigatewayv2'
+import { Fn } from 'aws-cdk-lib'
 import { createPolicyStatement } from './policies'
 import { GraphQLStackMembers } from './graphql-stack'
 import { ScheduledCommandStackMembers } from './scheduled-commands-stack'
 import { EventsStackMembers } from './events-stack'
-import { Function } from '@aws-cdk/aws-lambda'
+import { Function as AWSFunction } from 'aws-cdk-lib/aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
 
 export const setupPermissions = (
@@ -66,7 +66,7 @@ export const setupPermissions = (
   }
 }
 
-function grantFullAccessToEventStore(store: Table, lambda: Function): void {
+function grantFullAccessToEventStore(store: Table, lambda: AWSFunction): void {
   lambda.addToRolePolicy(
     createPolicyStatement(
       [store.tableArn],
@@ -81,7 +81,7 @@ function grantFullAccessToEventStore(store: Table, lambda: Function): void {
   )
 }
 
-function grantFullAccessToSubscriptionsStore(store: Table, lambda: Function): void {
+function grantFullAccessToSubscriptionsStore(store: Table, lambda: AWSFunction): void {
   lambda.addToRolePolicy(
     createPolicyStatement(
       [store.tableArn],
@@ -96,7 +96,7 @@ function grantFullAccessToSubscriptionsStore(store: Table, lambda: Function): vo
   )
 }
 
-function grantFullAccessToReadModels(readModelTables: Array<Table>, lambda: Function): void {
+function grantFullAccessToReadModels(readModelTables: Array<Table>, lambda: AWSFunction): void {
   const tableARNs = readModelTables.map((table): string => table.tableArn)
   if (tableARNs.length > 0) {
     lambda.addToRolePolicy(
@@ -111,7 +111,7 @@ function grantFullAccessToReadModels(readModelTables: Array<Table>, lambda: Func
   }
 }
 
-function grantReadAccessToReadModels(readModelTables: Array<Table>, lambda: Function): void {
+function grantReadAccessToReadModels(readModelTables: Array<Table>, lambda: AWSFunction): void {
   const tableARNs = readModelTables.map((table): string => table.tableArn)
   if (tableARNs.length > 0) {
     lambda.addToRolePolicy(createPolicyStatement(tableARNs, ['dynamodb:Query*', 'dynamodb:Scan*']))

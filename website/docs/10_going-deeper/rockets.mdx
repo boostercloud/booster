@@ -34,7 +34,7 @@ npm install --save-dev @boostercloud/framework-provider-aws-infrastructure @boos
 In the case of AWS we use the [AWS CDK for TypeScript](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-typescript.html), so you'll also need to import the AWS CDK package:
 
 ```sh
-npm install --save-dev @aws-cdk/core
+npm install --save-dev aws-cdk-lib/core
 ```
 
 The basic structure of an *Infrastructure Rocket* project is quite simple as you can see here:
@@ -53,7 +53,7 @@ rocket-your-rocket-name-aws-infrastructure
 ```typescript
 import { RocketUtils } from '@boostercloud/framework-provider-aws-infrastructure'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { Stack } from '@aws-cdk/core'
+import { Stack } from 'aws-cdk-lib/core'
 import { YourRocketParams } from '.'
 
 export class YourMainClass {

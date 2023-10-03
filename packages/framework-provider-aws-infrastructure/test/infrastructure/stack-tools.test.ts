@@ -1,4 +1,4 @@
-import { StreamViewType } from '@aws-cdk/aws-dynamodb'
+import { StreamViewType } from 'aws-cdk-lib/aws-dynamodb'
 import { InfrastructureRocket } from '../../src'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { fake, mock, replace, restore, spy } from 'sinon'

@@ -5,8 +5,7 @@ import { replace, restore, fake, mock, match } from 'sinon'
 import { BoosterConfig, Logger } from '@boostercloud/framework-types'
 import { deploy } from '../../src/infrastructure/deploy'
 import { InfrastructureRocket } from '../../src/rockets/infrastructure-rocket'
-import { EnvironmentUtils } from '@aws-cdk/cx-api'
-import { SdkProvider } from 'aws-cdk'
+import { EnvironmentUtils } from 'aws-cdk-lib/cx-api'
 import * as StackTools from '../../src/infrastructure/stack-tools'
 
 const testEnvironment = {
@@ -18,7 +17,6 @@ config.logger = {
   info: fake(),
 } as unknown as Logger
 config.userProjectRootPath = '.'
-
 describe('the deployment module', () => {
   beforeEach(() => {
     replace(SdkProvider.prototype, 'forEnvironment', fake.returns(mock()))

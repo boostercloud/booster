@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from '../../expect'
 import { BoosterConfig, UUID } from '@boostercloud/framework-types'
-import { App, StackProps, Stack } from '@aws-cdk/core'
-import { Function } from '@aws-cdk/aws-lambda'
-import { RestApi } from '@aws-cdk/aws-apigateway'
-import { CfnApi } from '@aws-cdk/aws-apigatewayv2'
+import { App, StackProps, Stack } from 'aws-cdk-lib'
+import { Function } from 'aws-cdk-lib/aws-lambda'
+import { RestApi } from 'aws-cdk-lib/aws-apigateway'
+import { CfnApi } from 'aws-cdk-lib/aws-apigatewayv2'
 import { InfrastructureRocket } from '../../../src/rockets/infrastructure-rocket'
 import { fake } from 'sinon'
 
