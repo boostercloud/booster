@@ -18,5 +18,5 @@
     "lib": ["ES2019", "ES2020"],
     "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },
-  "include": ["src/**/*", "integration/**/*"],
+  "include": ["src/**/*"]
 }
