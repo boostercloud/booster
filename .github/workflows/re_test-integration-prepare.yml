@@ -20,13 +20,17 @@ on:
 jobs:
   prepare-integration-tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        node: [14, 16, 18]
+    name: unit tests on Node ${{ matrix.node }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-        
       - uses: actions/setup-node@v3
         with:
-          node-version: 16.14
+          node-version: ${{ matrix.node }}
 
       # If this was triggered by a /integration command, check out merge commit
       - name: Fork based /integration checkout
