@@ -43,7 +43,7 @@ export const template = `{
   "main": "dist/index.js",
   "repository": "{{{repository}}}",
   "scripts": {
-    "prepare: "ts-patch install -s",
+    "prepare": "ts-patch install -s",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json",
