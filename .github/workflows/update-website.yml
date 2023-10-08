@@ -17,7 +17,7 @@ jobs:
         AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Run Booster update script
         run: bash .github/actions/update-website/action.sh
         env:
