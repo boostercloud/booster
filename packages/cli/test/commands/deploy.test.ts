@@ -90,6 +90,7 @@ describe('deploy', () => {
   describe('run', () => {
     context('when no environment provided', async () => {
       test
+        .loadConfig({ root: __dirname })
         .stdout()
         .command(['deploy'])
         .it('shows no environment provided error', (ctx) => {
