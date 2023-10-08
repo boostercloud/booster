@@ -23,7 +23,7 @@
     "ts-node": "whatever",
     "@types/node": "whatever",
     "@boostercloud/framework-provider-aws-infrastructure": "whatever",
-    "ttypescript": "whatever",
+    "ts-patch": "whatever",
     "@boostercloud/metadata-booster": "whatever",
     "graphql": "^16.6.0"
   },
@@ -35,9 +35,10 @@
   "main": "dist/index.js",
   "repository": "repository_placeholder",
   "scripts": {
+    "prepare": "ts-patch install -s",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "build": "ttsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo"
   },
   "types": "lib/index.d.ts"

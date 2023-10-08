@@ -24,7 +24,7 @@
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json",
-    "clean": "npx rimraf ./dist tsconfig.tsbuildinfo",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
     "test": ""
   },
