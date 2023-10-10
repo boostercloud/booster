@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 03 Oct 2023 21:18:09 GMT and should not be manually modified.
+This log was last generated on Tue, 10 Oct 2023 12:54:54 GMT and should not be manually modified.
+
+## 1.20.0
+Tue, 10 Oct 2023 12:54:54 GMT
+
+### Minor changes
+
+- Fix event api for events and notifications not found
 
 ## 1.19.1
 Tue, 03 Oct 2023 21:18:09 GMT
