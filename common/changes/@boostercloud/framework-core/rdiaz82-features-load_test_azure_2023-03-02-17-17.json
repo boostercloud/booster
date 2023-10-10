@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Enabled load tests for Azure",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

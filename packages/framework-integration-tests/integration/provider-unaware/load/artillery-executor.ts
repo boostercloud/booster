@@ -1,7 +1,6 @@
 import * as fs from 'fs'
 import * as yaml from 'yaml'
 import * as path from 'path'
-import { ProviderTestHelper } from '@boostercloud/application-tester'
 import { CloudFormation } from 'aws-sdk'
 import { Stack } from 'aws-sdk/clients/cloudformation'
 import { runCommand } from '@boostercloud/framework-common-helpers'
@@ -20,11 +19,7 @@ interface OverrideOptions {
 
 export class ArtilleryExecutor {
   private readonly serverlessArtilleryStackPrefix = 'serverless-artillery'
-  constructor(
-    private scriptsFolder: string,
-    private readonly providerTestHelper: ProviderTestHelper,
-    private readonly stage = 'booster'
-  ) {}
+  constructor(private scriptsFolder: string, private readonly graphqlURL: string, private readonly stage = 'booster') {}
 
   public async ensureDeployed(): Promise<void> {
     let slsartStack: Stack | undefined
@@ -59,7 +54,7 @@ export class ArtilleryExecutor {
   private getScriptContent(scriptName: string, options: OverrideOptions): string {
     const scriptPath = path.join(this.scriptsFolder, scriptName)
     const parsedScript = yaml.parse(fs.readFileSync(scriptPath).toString())
-    parsedScript.config.target = this.providerTestHelper.outputs.graphqlURL
+    parsedScript.config.target = this.graphqlURL
 
     if (options.phases) {
       parsedScript.config.phases = options.phases
