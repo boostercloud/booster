@@ -11,10 +11,12 @@ import {
   EventSearchResponse,
   ProviderLibrary,
   UUID,
+  NotificationInterface,
 } from '@boostercloud/framework-types'
 import { EventStore } from '../src/services/event-store'
 import { random } from 'faker'
 import { JwksUriTokenVerifier } from '../src/services/token-verifiers'
+import { afterEach } from 'mocha'
 
 describe('the `Booster` class', () => {
   afterEach(() => {
@@ -136,6 +138,20 @@ describe('the `Booster` class', () => {
         return this.id
       }
     }
+
+    afterEach(() => {
+      restore()
+      Booster.configureCurrentEnv((config) => {
+        config.appName = ''
+        for (const propName in config.events) {
+          delete config.events[propName]
+        }
+        for (const propName in config.notifications) {
+          delete config.notifications[propName]
+        }
+      })
+    })
+
     it('has an instance method', async () => {
       const searchResult: EventSearchResponse[] = [
         {
@@ -187,6 +203,111 @@ describe('the `Booster` class', () => {
             break
           case BestEvent.name:
             eventValue = event.value as BestEvent
+            expect(eventValue.getId()).to.not.throw
+            break
+          default:
+            break
+        }
+      }
+
+      expect(providerEventsSearch).to.have.been.calledOnce
+    })
+
+    it('has a plain object if event class does not exist', async () => {
+      const searchResult: EventSearchResponse[] = [
+        {
+          requestID: random.uuid(),
+          type: TestEvent.name,
+          entity: random.alpha(),
+          entityID: random.uuid(),
+          createdAt: random.alphaNumeric(),
+          value: {
+            id: '1',
+            entityID: () => UUID.generate(),
+          } as EventInterface,
+        },
+        {
+          requestID: random.uuid(),
+          type: BestEvent.name,
+          entity: random.alpha(),
+          entityID: random.uuid(),
+          createdAt: random.alphaNumeric(),
+          value: {
+            id: '1',
+            entityID: () => UUID.generate(),
+          } as EventInterface,
+        },
+      ]
+      const providerEventsSearch = fake.returns(searchResult)
+      Booster.configureCurrentEnv((config) => {
+        config.provider = {
+          events: {
+            search: providerEventsSearch,
+          },
+        } as unknown as ProviderLibrary
+        config.events[TestEvent.name] = { class: TestEvent }
+      })
+
+      const eventFilterByType: EventParametersFilterByType = {
+        type: TestEvent.name,
+      }
+
+      const events = await Booster.events(eventFilterByType)
+
+      for (const event of events) {
+        let eventValue
+        switch (event.type) {
+          case TestEvent.name:
+            eventValue = event.value as TestEvent
+            expect(eventValue.getId()).to.not.throw
+            break
+          case BestEvent.name:
+            eventValue = event.value as BestEvent
+            expect(eventValue.getId).to.be.undefined
+            break
+          default:
+            break
+        }
+      }
+
+      expect(providerEventsSearch).to.have.been.calledOnce
+    })
+
+    it('has a plain object if notification class does not exist', async () => {
+      const searchResult: EventSearchResponse[] = [
+        {
+          requestID: random.uuid(),
+          type: TestEvent.name,
+          entity: random.alpha(),
+          entityID: random.uuid(),
+          createdAt: random.alphaNumeric(),
+          value: {
+            id: '1',
+            entityID: () => UUID.generate(),
+          } as NotificationInterface,
+        },
+      ]
+      const providerEventsSearch = fake.returns(searchResult)
+      Booster.configureCurrentEnv((config) => {
+        config.provider = {
+          events: {
+            search: providerEventsSearch,
+          },
+        } as unknown as ProviderLibrary
+        config.notifications[TestEvent.name] = { class: TestEvent }
+      })
+
+      const eventFilterByType: EventParametersFilterByType = {
+        type: TestEvent.name,
+      }
+
+      const events = await Booster.events(eventFilterByType)
+
+      for (const event of events) {
+        let eventValue
+        switch (event.type) {
+          case TestEvent.name:
+            eventValue = event.value as TestEvent
             expect(eventValue.getId()).to.not.throw
             break
           default:
