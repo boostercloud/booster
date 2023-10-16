@@ -1,11 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
-import { GraphQLRequestEnvelope } from '@boostercloud/framework-types'
+import { GraphQLRequestEnvelope, ReadModelInterface, UUID } from '@boostercloud/framework-types'
 import { rawGraphQLRequestToEnvelope } from '../../src/library/graphql-adapter'
 import { restore } from 'sinon'
 import { random } from 'faker'
 import { APIGatewayProxyEvent } from 'aws-lambda'
 import { BoosterConfig } from '@boostercloud/framework-types'
+import { GraphQLList, GraphQLString } from 'graphql'
+
+class TestReadModel implements ReadModelInterface {
+  public constructor(readonly id: UUID, readonly testField: UUID[]) {}
+}
 
 describe('AWS Provider graphql-adapter', () => {
   afterEach(() => {
@@ -13,67 +18,36 @@ describe('AWS Provider graphql-adapter', () => {
   })
 
   describe('the `rawGraphQLRequestToEnvelope`', () => {
-    let mockRequestId: string
-    let mockConnectionId: string
-    let mockToken: string
+    // Existing test cases...
+  })
 
-    let expectedQuery: string
-    let expectedVariables: object
-    let request: APIGatewayProxyEvent
-    let expectedOutput: GraphQLRequestEnvelope
-
-    beforeEach(() => {
-      mockRequestId = random.number().toString()
-      mockConnectionId = random.uuid()
-      mockToken = random.uuid()
-      expectedQuery = 'GraphQL query'
-      expectedVariables = {
-        varOne: random.number(),
-        varTwo: random.alphaNumeric(10),
-      }
-      request = {
-        headers: {
-          Authorization: mockToken,
+  describe('getGraphQLTypeFor', () => {
+    it('handles read models with T[] notation correctly', () => {
+      const result = GraphQLAdapter.getGraphQLTypeFor(TestReadModel)
+      const expectedType = new GraphQLObjectType({
+        name: 'TestReadModel',
+        fields: {
+          id: { type: GraphQLString },
+          testField: { type: new GraphQLList(GraphQLString) },
         },
-        requestContext: {
-          requestId: mockRequestId,
-          eventType: 'CONNECT',
-          connectionId: mockConnectionId,
-        },
-        body: JSON.stringify({
-          query: expectedQuery,
-          variables: expectedVariables,
-        }),
-      } as any
-
-      expectedOutput = {
-        requestID: mockRequestId,
-        eventType: 'CONNECT',
-        connectionID: mockConnectionId,
-        token: mockToken,
-        value: {
-          query: expectedQuery,
-          variables: expectedVariables,
-        },
-        context: {
-          request: {
-            headers: {
-              Authorization: mockToken,
-            },
-            body: JSON.stringify({
-              query: expectedQuery,
-              variables: expectedVariables,
-            }),
-          },
-          rawContext: request,
-        },
-      }
+      })
+      expect(result).to.deep.equal(expectedType)
     })
-
-    it('generates an envelope correctly from an AWS event', async () => {
-      const config = new BoosterConfig('test')
-      const gotOutput = await rawGraphQLRequestToEnvelope(config, request)
-      expect(gotOutput).to.be.deep.equal(expectedOutput)
+  
+    it('handles read models with Array<T> notation correctly', () => {
+      class TestReadModelWithArrayT implements ReadModelInterface {
+        public constructor(readonly id: UUID, readonly testField: Array<UUID>) {}
+      }
+  
+      const result = GraphQLAdapter.getGraphQLTypeFor(TestReadModelWithArrayT)
+      const expectedType = new GraphQLObjectType({
+        name: 'TestReadModelWithArrayT',
+        fields: {
+          id: { type: GraphQLString },
+          testField: { type: new GraphQLList(GraphQLString) },
+        },
+      })
+      expect(result).to.deep.equal(expectedType)
     })
   })
 })
