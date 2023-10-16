@@ -6,7 +6,6 @@ rules:
 - "All docstrings and comments should be up to date."
 - "Do not include large chunks of commented-out code."
 - "Ensure that error logs use traceback during exceptions."
-- "Avoid using `import pdb; pdb.set_trace()` in production code."
 - "Remove debug logs and print statements from production code."
 - "Avoid manually modifying the CHANGELOG.md file."
 
