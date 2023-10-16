@@ -20,7 +20,7 @@ gha_enabled: True
 # Example:
 #
 # description: sweepai/sweep is a python project. The main api endpoints are in sweepai/api.py. Write code that adheres to PEP8.
-description: ''
+description: 'boostercloud/booster is a Typescript monorepo managed with Microsoft Rust. All the packages can be found in the packages folder. Each page has a "src" folder with the source code and a "test" folder with tests implemented with mocha'
 
 # This sets whether to create pull requests as drafts. If this is set to True, then all pull requests will be created as drafts and GitHub Actions will not be triggered.
 draft: False
