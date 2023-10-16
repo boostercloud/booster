@@ -7,7 +7,9 @@ rules:
 - "Do not include large chunks of commented-out code."
 - "Ensure that error logs use traceback during exceptions."
 - "Remove debug logs and print statements from production code."
-- "Avoid manually modifying the CHANGELOG.md file."
+- "All the business logic in the 'src' folder for each package should have the corresponding unit tests in the 'test' folder in the same package."
+- "Avoid 'any' types when possible."
+- "If there's a simpler way to express a type, it should be used."
 
 # This is the branch that Sweep will develop from and make pull requests to. Most people use 'main' or 'master' but some users also use 'dev' or 'staging'.
 branch: 'main'
