@@ -101,7 +101,7 @@
   // }
   {
     "definitionName": "lockStepVersion",
-    "policyName": "booster",
+    "policyName": "monorepo",
     "mainProject": "@boostercloud/framework-core",
     "version": "1.20.0"
   }
