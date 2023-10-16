@@ -305,21 +305,26 @@
      * The list of shell commands to run before the Rush installation starts
      */
     "preRushInstall": [],
-
+  
     /**
      * The list of shell commands to run after the Rush installation finishes
      */
     "postRushInstall": [],
-
+  
     /**
      * The list of shell commands to run before the Rush build command starts
      */
     "preRushBuild": [],
-
+  
     /**
      * The list of shell commands to run after the Rush build command finishes
      */
-    "postRushBuild": []
+    "postRushBuild": [],
+  
+    /**
+     * The list of shell commands to run after the Rush publish command finishes
+     */
+    "postRushPublish": ["node scripts/createGithubRelease.js"]
   },
 
   /**
