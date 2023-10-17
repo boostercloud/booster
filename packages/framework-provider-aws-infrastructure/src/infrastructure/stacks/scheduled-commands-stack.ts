@@ -50,8 +50,7 @@ export class ScheduledCommandStack {
   }
 
   private createCronExpression(scheduledCommandMetadata: ScheduleInterface): Schedule {
-    const { minute = '*', hour = '*', day = '*', month = '*', weekDay = '?', year = '*' } = scheduledCommandMetadata
-    const expression = `${minute} ${hour} ${day} ${month} ${weekDay} ${year}`
+    const expression = `${scheduledCommandMetadata.minute} ${scheduledCommandMetadata.hour} ${scheduledCommandMetadata.day} ${scheduledCommandMetadata.month} ${scheduledCommandMetadata.weekDay} ${scheduledCommandMetadata.year}`
     const neverRunByDefault = '0 5 31 2 ? *'
     return Schedule.expression(`cron(${expression !== '* * * ? * *' ? expression : neverRunByDefault})`)
   }
