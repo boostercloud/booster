@@ -96,7 +96,7 @@ export interface EventSearchResponse {
   requestID: UUID
   user?: UserEnvelope
   createdAt: string
-  value: EventInterface
+  value: EventInterface | NotificationInterface
 }
 
 export interface ReadModelEnvelope {

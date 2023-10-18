@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws",
-  "version": "1.19.1",
+  "version": "1.20.0",
   "description": "Handle Booster's integration with AWS",
   "keywords": [
     "framework-provider-aws"
@@ -23,8 +23,8 @@
     "node": ">=18.0.0 <19.0.0"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "workspace:^1.19.1",
-    "@boostercloud/framework-types": "workspace:^1.19.1",
+    "@boostercloud/framework-common-helpers": "workspace:^1.20.0",
+    "@boostercloud/framework-types": "workspace:^1.20.0",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4"
   },
@@ -42,7 +42,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^1.19.1",
+    "@boostercloud/eslint-config": "workspace:^1.20.0",
     "@types/aws-lambda": "8.10.48",
     "@types/chai": "4.2.18",
     "@types/chai-arrays": "2.0.0",

@@ -3,12 +3,17 @@ import { BoosterConfig, DecodedToken, TraceActionTypes } from '@boostercloud/fra
 import * as fs from 'fs'
 import * as path from 'path'
 import { CustomTracer } from '../common/custom-tracer'
+import { CustomLogger } from '../common/custom-logger'
 
 class CustomPublicKeyTokenVerifier extends PublicKeyTokenVerifier {
   public async verify(token: string): Promise<DecodedToken> {
     await super.verify(token)
     throw new Error('Unauthorized')
   }
+}
+
+function configureLogger(config: BoosterConfig): void {
+  config.logger = new CustomLogger()
 }
 
 function configureInvocationsHandler(config: BoosterConfig) {
@@ -38,6 +43,7 @@ Booster.configure('local', (config: BoosterConfig): void => {
     ),
   ]
   configureInvocationsHandler(config)
+  configureLogger(config)
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
@@ -103,4 +109,5 @@ Booster.configure('azure', (config: BoosterConfig): void => {
     ),
   ]
   configureInvocationsHandler(config)
+  configureLogger(config)
 })
