@@ -28,7 +28,9 @@ export class BoosterDataMigrationEntity {
     if (currentDataMigration.duration?.start) {
       const start = currentDataMigration.duration.start
       const end = current.toISOString()
-      const elapsedTime = this.getElapsedTime(start, current)
+      const startTime = Date.parse(start)
+      const endTime = current.getTime()
+      const elapsedTime = endTime - startTime
       const duration: BoosterDataMigrationEntityDuration = {
         start: start,
         end: end,
@@ -37,11 +39,5 @@ export class BoosterDataMigrationEntity {
       return new BoosterDataMigrationEntity(event.name, DataMigrationStatus.FINISHED, event.lastUpdated, duration)
     }
     return new BoosterDataMigrationEntity(event.name, DataMigrationStatus.FINISHED, event.lastUpdated)
-  }
-
-  private static getElapsedTime(start: string, current: Date): number {
-    const startTime = Date.parse(start)
-    const endTime = current.getTime()
-    return endTime - startTime
   }
 }
