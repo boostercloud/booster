@@ -1,6 +1,10 @@
 {
   "folders": [
     {
+      "name": "✨ root",
+      "path": "."
+    },
+    {
       "name": "📦 @boostercloud/application-tester",
       "path": "packages/application-tester"
     },
