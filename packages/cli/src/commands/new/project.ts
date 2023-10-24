@@ -44,7 +44,7 @@ export default class Project extends Command {
     providerPackageName: flags.string({
       char: 'p',
       description:
-        'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
+        'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-azure")',
     }),
     default: flags.boolean({
       description: 'generates the project with default parameters (i.e. --license=MIT)',
@@ -112,7 +112,7 @@ const getProviderPackageName = async (prompter: Prompter, providerPackageName?: 
   if (providerSelection === Provider.OTHER) {
     return await prompter.defaultOrPrompt(
       undefined,
-      "What's the other provider integration library? e.g. @boostercloud/framework-provider-aws"
+      "What's the other provider integration library? e.g. @boostercloud/framework-provider-azure"
     )
   } else {
     return getSelectedProviderPackage(providerSelection)

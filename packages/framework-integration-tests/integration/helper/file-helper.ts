@@ -32,7 +32,9 @@ export const createFolder = (folder: string): void => {
 }
 
 export const removeFolders = (paths: Array<string>): void => {
-  paths.map((path: string) => rmSync(path, { recursive: true, force: true }))
+  for (const path of paths) {
+    rmSync(path, { recursive: true, force: true })
+  }
 }
 
 export const fileExists = existsSync
