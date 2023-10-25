@@ -3,7 +3,7 @@ import { expect } from '../expect'
 import { search } from '../../src/helpers/query-helper'
 import { createStubInstance, fake, match, restore, stub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, FilterFor } from '@boostercloud/framework-types'
+import { BoosterConfig, FilterFor, ProjectionFor } from '@boostercloud/framework-types'
 import { random } from 'faker'
 
 describe('Query helper', () => {
@@ -71,7 +71,7 @@ describe('Query helper', () => {
       )
     })
 
-    it('Executes a SQL query with a projection in the read model table', async () => {
+    it('Executes a SQL query with a string projection in the read model table', async () => {
       await search(
         mockCosmosDbClient as any,
         mockConfig,
@@ -94,6 +94,62 @@ describe('Query helper', () => {
       ).to.have.been.calledWith(
         match({
           query: 'SELECT DISTINCT field FROM c ',
+          parameters: [],
+        })
+      )
+    })
+
+    it('Executes a SQL query with a projectionFor projection in the read model table', async () => {
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        {},
+        undefined,
+        undefined,
+        false,
+        undefined,
+        ['id', 'other', 'first.second.third'] as ProjectionFor<unknown>
+      )
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT c.id, c.other, c.first.second.third FROM c ',
+          parameters: [],
+        })
+      )
+    })
+
+    it('Executes a SQL query with a star projection in the read model table', async () => {
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        {},
+        undefined,
+        undefined,
+        false,
+        undefined,
+        undefined
+      )
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query: 'SELECT * FROM c ',
           parameters: [],
         })
       )

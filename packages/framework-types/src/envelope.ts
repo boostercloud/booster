@@ -8,7 +8,7 @@ import {
   UUID,
 } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor, SortFor } from './searcher'
+import { FilterFor, ProjectionFor, SortFor } from './searcher'
 import { Class } from './typelevel'
 
 /**
@@ -133,6 +133,8 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
+  select?: ProjectionFor<TReadModel>
+  skipInstance?: boolean
 }
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {

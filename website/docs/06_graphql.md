@@ -627,7 +627,7 @@ query {
 - You can only query events, but not write them through this API. Use a command for that.
 - Currently, only available on the AWS provider.
 
-## Filter & Pagination
+## Filter, Pagination and Projections
 
 ### Filtering a read model
 
@@ -799,7 +799,7 @@ query {
 }
 ```
 
-### Getting and filtering read models data at code level
+### Getting, filtering and projecting read models data at code level
 
 Booster allows you to get your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
 
@@ -832,6 +832,43 @@ export class GetProductsCount {
   }
 }
 ```
+
+You can select which fields you want to get in your read model using the `select` method:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class GetProductsCount {
+  public constructor(readonly filters: Record<string, any>) {}
+
+  public static async handle(): Promise<unknown> {
+    const searcher = Booster.readModel(ProductReadModel)
+            .filter({
+              sku: { contains: 'toy' },
+              or: [
+                {
+                  description: { contains: 'fancy' },
+                },
+                {
+                  description: { contains: 'great' },
+                },
+              ],
+            })
+            .select(['sku', 'description'])
+            .skipInstance(true)
+    const result = await searcher.search()
+    return { count: result.length }
+  }
+}
+```
+
+The searcher result using `skipInstance` will generate an array of objects with the `sku` and `description` fields of the `ProductReadModel` read model. If you don't use `skipInstance` the result will be an array of `ProductReadModel` instances.
+
+> **Warning**: Only available for Azure and Local Providers. `select` will be ignored for AWS Provider.
+
+> **Warning**: Using `skipInstance` will skip any Read Models migrations that need to be applied to the result. If you need to apply migrations to the result, don't use `skipInstance`.
+
 
 > **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
 

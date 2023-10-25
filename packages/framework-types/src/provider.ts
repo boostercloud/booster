@@ -16,7 +16,7 @@ import {
   ScheduledCommandEnvelope,
   SubscriptionEnvelope,
 } from './envelope'
-import { FilterFor, SortFor } from './searcher'
+import { FilterFor, ProjectionFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor, RocketEnvelope } from './rockets'
 
@@ -158,6 +158,7 @@ export interface ProviderReadModelsLibrary {
    * @param limit - The maximum number of results to return (optional).
    * @param afterCursor - A cursor that specifies the position after which results should be returned (optional).
    * @param paginatedVersion - A boolean value that indicates whether the results should be paginated (optional).
+   * @param select - An object that specifies fields to be returned (optional).
    * @returns A promise that resolves to an array of `TReadModel` objects or a `ReadModelListResult` object.
    */
   search<TReadModel extends ReadModelInterface>(
@@ -167,7 +168,8 @@ export interface ProviderReadModelsLibrary {
     sortBy?: SortFor<unknown>,
     limit?: number,
     afterCursor?: unknown,
-    paginatedVersion?: boolean
+    paginatedVersion?: boolean,
+    select?: ProjectionFor<TReadModel>
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>>
 
   /**

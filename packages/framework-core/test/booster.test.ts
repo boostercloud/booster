@@ -84,7 +84,8 @@ describe('the `Booster` class', () => {
         {},
         undefined,
         undefined,
-        false
+        false,
+        undefined
       )
     })
     it('has an instance method', async () => {

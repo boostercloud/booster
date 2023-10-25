@@ -4,6 +4,7 @@ import {
   FilterFor,
   InvalidParameterError,
   Operation,
+  ProjectionFor,
   ReadModelListResult,
   SortFor,
 } from '@boostercloud/framework-types'
@@ -18,11 +19,12 @@ export async function search<TResult>(
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false,
   order?: SortFor<unknown>,
-  projections = '*'
+  projections: ProjectionFor<unknown> | string = '*'
 ): Promise<Array<TResult> | ReadModelListResult<TResult>> {
   const logger = getLogger(config, 'query-helper#search')
   const filterExpression = buildFilterExpression(filters)
-  const queryDefinition = `SELECT ${projections} FROM c ${
+  const projectionsExpression = buildProjections(projections)
+  const queryDefinition = `SELECT ${projectionsExpression} FROM c ${
     filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression
   }`
   const queryWithOrder = queryDefinition + buildOrderExpression(order)
@@ -213,4 +215,11 @@ function toLocalSortFor(
     }
   })
   return sortedList
+}
+
+function buildProjections(projections: ProjectionFor<unknown> | string = '*'): string {
+  if (typeof projections !== 'object') {
+    return projections
+  }
+  return 'c.' + Object.values(projections).join(', c.')
 }
