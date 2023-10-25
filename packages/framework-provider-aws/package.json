@@ -1,5 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws",
+  "deprecated": "Due to significant changes in recent versions of the AWS CDK, specifically the transition from CDKToolkit to a cli tool as noted [here](https://github.com/aws/aws-cdk-rfcs/issues/300), upgrading our current implementation would require a substantial rewrite. Given the open-source nature of our project without direct revenue streams, the ensuing maintenance costs are unfeasible. However, we are open to upgrading the AWS provider or creating an alternative implementation using other technologies like Terraform's CDKTF, with community contributions or sponsorships. If you're interested in supporting us, we welcome you to reach out via the official channels listed on the [Booster's website](https://boosterframework.com).",
   "version": "1.20.0",
   "description": "Handle Booster's integration with AWS",
   "keywords": [

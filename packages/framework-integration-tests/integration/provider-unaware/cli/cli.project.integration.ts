@@ -35,8 +35,8 @@ describe('Project', () => {
     createFolder(SANDBOX_INTEGRATION_DIR)
   })
 
-  after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+  after(async () => {
+    await removeFolders([SANDBOX_INTEGRATION_DIR])
   })
 
   const cliPath = path.join('..', 'node_modules', '.bin', 'boost')

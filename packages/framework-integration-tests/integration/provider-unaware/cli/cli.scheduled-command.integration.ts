@@ -13,8 +13,8 @@ describe('Scheduled Command', () => {
     scheduledCommandSandboxDir = createSandboxProject(sandboxPathFor('scheduled-command'))
   })
 
-  after(() => {
-    removeFolders([scheduledCommandSandboxDir])
+  after(async () => {
+    await removeFolders([scheduledCommandSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')

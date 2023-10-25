@@ -3,7 +3,7 @@
   "version": "1.20.0",
   "description": "Debug your Booster projects locally",
   "keywords": [
-    "framework-provider-aws"
+    "framework-provider-local"
   ],
   "author": "Boosterin Labs SLU",
   "homepage": "https://boosterframework.com",

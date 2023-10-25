@@ -31,7 +31,7 @@ export async function getProviderTestHelper(): Promise<ProviderTestHelper> {
 export async function setEnv(): Promise<void> {
   if (!process.env.BOOSTER_APP_SUFFIX) {
     // If the user doesn't set an app name suffix, use the current git commit hash
-    // to build a unique suffix for the application name in AWS to avoid collisions
+    // to build a unique suffix for the application name to avoid collisions
     // between tests from different branches.
     const { stdout } = await exec('git rev-parse HEAD')
     process.env['BOOSTER_APP_SUFFIX'] = stdout.trim().substring(0, 7)
