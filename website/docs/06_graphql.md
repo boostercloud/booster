@@ -919,37 +919,38 @@ One of the best clients to connect to a GraphQL API is the [Apollo](https://www.
 We recommend referring to the documentation of those clients to know how to use them. Here is an example of how to fully instantiate the Javascript client so that it works for queries, mutations and subscriptions:
 
 ```typescript
-import { split, HttpLink } from '@apollo/client'
-import { getMainDefinition } from '@apollo/client/utilities'
-import { WebSocketLink } from '@apollo/client/link/ws'
-import { ApolloClient, InMemoryCache } from '@apollo/client'
-import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { split, HttpLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 
 // Helper function that checks if a GraphQL operation is a subscription or not
 function isSubscriptionOperation({ query }) {
-  const definition = getMainDefinition(query)
-  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
 }
 
 // Create an HTTP link for sending queries and mutations
 const httpLink = new HttpLink({
   uri: '<graphqlURL>',
-})
+});
 
-// Create a SusbscriptionClient and a WebSocket link for sending subscriptions
-const subscriptionClient = new SubscriptionClient('<websocketURL>', {
-  reconnect: true,
-})
-const wsLink = new WebSocketLink(subscriptionClient)
+// Create a WebSocket link for sending subscriptions
+const wsLink = new WebSocketLink({
+  uri: '<websocketURL>',
+  options: {
+    reconnect: true,
+  },
+});
 
 // Combine both links so that depending on the operation, it uses one or another
-const splitLink = split(isSubscriptionOperation, wsLink, httpLink)
+const splitLink = split(isSubscriptionOperation, wsLink, httpLink);
 
 // Finally, create the client using the link created above
 const client = new ApolloClient({
   link: splitLink,
   cache: new InMemoryCache(),
-})
+});
 ```
 
 Now, we can send queries, mutations and subscriptions using the `client` instance:
@@ -1033,21 +1034,20 @@ You normally won't be sending tokens in such a low-level way. GraphQL clients ha
 We recommend going to the specific documentation of the specific Apollo client you are using to know how to send tokens. However, the basics of this guide remains the same. Here is an example of how you would configure the Javascript/Typescript Apollo client to send the authorization token. The example is exactly the same as the one shown in the [Using Apollo clients](#using-apollo-client) section, but with the changes needed to send the token. Notice that `<AuthApiEndpoint>` and `<idToken>` are obtained from the [Authentication Rocket](https://github.com/boostercloud/rocket-auth-aws-infrastructure).
 
 ```typescript
-import { split, HttpLink, ApolloLink } from '@apollo/client'
-import { getMainDefinition } from '@apollo/client/utilities'
-import { WebSocketLink } from '@apollo/client/link/ws'
-import { ApolloClient, InMemoryCache } from '@apollo/client'
-import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { split, HttpLink, ApolloLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 
 function isSubscriptionOperation({ query }) {
-  const definition = getMainDefinition(query)
-  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
 }
 
 // CHANGED: We now use the AuthApiEndpoint obtained by the auth rocket
 const httpLink = new HttpLink({
   uri: '<graphqlURL>',
-})
+});
 
 // CHANGED: We create an "authLink" that modifies the operation by adding the token to the headers
 const authLink = new ApolloLink((operation, forward) => {
@@ -1055,30 +1055,33 @@ const authLink = new ApolloLink((operation, forward) => {
     headers: {
       Authorization: 'Bearer <idToken>',
     },
-  })
-  return forward(operation)
-})
+  });
+  return forward(operation);
+});
 
 // <-- CHANGED: Concatenate the links so that the "httpLink" receives the operation with the headers set by the "authLink"
-const httpLinkWithAuth = authLink.concat(httpLink)
+const httpLinkWithAuth = authLink.concat(httpLink);
 
-const subscriptionClient = new SubscriptionClient('<websocketURL>', {
-  reconnect: true,
-  // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
-  connectionParams: () => {
-    return {
-      Authorization: 'Bearer <idToken>',
-    }
+// CHANGED: Create a WebSocket link for sending subscriptions
+const wsLink = new WebSocketLink({
+  uri: '<websocketURL>',
+  options: {
+    reconnect: true,
+    // CHANGED: added a "connectionParam" property with a function that returns the `Authorization` header containing our token
+    connectionParams: () => {
+      return {
+        Authorization: 'Bearer <idToken>',
+      };
+    },
   },
-})
-const wsLink = new WebSocketLink(subscriptionClient)
+});
 
-const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth) // Note that we now are using "httpLinkWithAuth"
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth); // Note that we now are using "httpLinkWithAuth"
 
 const client = new ApolloClient({
   link: splitLink,
   cache: new InMemoryCache(),
-})
+});
 ```
 
 ### Refreshing tokens with Apollo clients
@@ -1090,56 +1093,58 @@ There are several ways to do this. Here we show the simplest one for learning pu
 First, we modify the example shown in the section [Sending tokens with apollo clients](#sending-tokens-with-apollo-clients) so that the token is stored in a global variable and the Apollo links get the token from it. That variable will be updated when the user signs-in and the token is refreshed:
 
 ```typescript
-import { split, HttpLink, ApolloLink } from '@apollo/client'
-import { getMainDefinition } from '@apollo/client/utilities'
-import { WebSocketLink } from '@apollo/client/link/ws'
-import { ApolloClient, InMemoryCache } from '@apollo/client'
-import { SubscriptionClient } from 'subscriptions-transport-ws'
+import { split, HttpLink, ApolloLink } from '@apollo/client';
+import { getMainDefinition } from '@apollo/client/utilities';
+import { WebSocketLink } from '@apollo/client/link/ws';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 
-let authToken = undefined // <-- CHANGED: This variable will hold the token and will be updated everytime the token is refreshed
+let authToken = undefined;  // <-- No change here, this variable will hold the token and will be updated every time the token is refreshed.
 
 function isSubscriptionOperation({ query }) {
-  const definition = getMainDefinition(query)
-  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
+  const definition = getMainDefinition(query);
+  return definition.kind === 'OperationDefinition' && definition.operation === 'subscription';
 }
 
 const httpLink = new HttpLink({
   uri: '<AuthApiEndpoint>',
-})
+});
 
 const authLink = new ApolloLink((operation, forward) => {
   if (authToken) {
     operation.setContext({
       headers: {
-        Authorization: `Bearer ${authToken}`, // <-- CHANGED: We use the "authToken" global variable
+        Authorization: `Bearer ${authToken}`,  // <-- No change here, continue using the "authToken" global variable.
       },
-    })
+    });
   }
-  return forward(operation)
-})
+  return forward(operation);
+});
 
-const httpLinkWithAuth = authLink.concat(httpLink)
+const httpLinkWithAuth = authLink.concat(httpLink);
 
-const subscriptionClient = new SubscriptionClient('<websocketURL>', {
-  reconnect: true,
-  // CHANGED: added a "connectionParam" property with a function that returns the `Authorizaiton` header containing our token
-  connectionParams: () => {
-    if (authToken) {
-      return {
-        Authorization: `Bearer ${authToken}`, // <-- CHANGED: We use the "authToken" global variable
+// CHANGED: Create a WebSocket link for sending subscriptions, and specify the connectionParams for Authorization header.
+const wsLink = new WebSocketLink({
+  uri: '<websocketURL>',
+  options: {
+    reconnect: true,
+    connectionParams: () => {
+      if (authToken) {
+        return {
+          Authorization: `Bearer ${authToken}`,  // <-- CHANGED: We use the "authToken" global variable.
+        };
       }
-    }
-    return {}
+      return {};
+    },
   },
-})
-const wsLink = new WebSocketLink(subscriptionClient)
+});
 
-const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth)
+const splitLink = split(isSubscriptionOperation, wsLink, httpLinkWithAuth);
 
 const client = new ApolloClient({
   link: splitLink,
   cache: new InMemoryCache(),
-})
+});
+
 ```
 
 Now, _when the user signs-in_ or _when the token is refreshed_, we need to do two things:
@@ -1155,10 +1160,4 @@ Sockets are channels for two-way communication that doesn't follow the request-r
 
 For these reasons, in order to have an effective non-trivial communication through sockets, a sub-protocol is needed. It would be in charge of making both parts understand each other, share authentication tokens, matching response to the corresponding requests, etc.
 
-The Booster WebSocket communication uses the "GraphQL over WebSocket" protocol as subprotocol. It is in charge of all the low level stuff needed to properly send subscription operations to read models and receive the corresponding data.
-
-You don't need to know anything about this to develop using Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients uses this protocol), but it is good to know it is there to guarantee a proper communication. In case you are really curious, you can read about the protocol [here](https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md).
-
-:::note
-The WebSocket communication in Booster only supports this subprotocol, whose identifier is `graphql-ws`. For this reason, when you connect to the WebSocket provisioned by Booster, you must specify the `graphql-ws` subprotocol. If not, the connection won't succeed.
-:::
+You don't need to know anything about this to develop using Booster, neither in the backend side nor in the frontend side (as all the Apollo GraphQL clients use this protocol), but it's good to know it is there to guarantee a proper communication. If you are really curious, you can read about the protocol [here](https://github.com/enisdenjo/graphql-ws).

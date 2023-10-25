@@ -5,7 +5,7 @@ import { applicationName, checkAndGetCurrentEnv, getProviderTestHelper } from '.
 import { internet, random, commerce, finance } from 'faker'
 import { waitForIt } from '../../../helper/sleep'
 import { ApplicationTester } from '@boostercloud/application-tester'
-import { gql } from '@apollo/client'
+import { gql, ApolloClient, NormalizedCacheObject } from '@apollo/client'
 
 describe('After deployment', () => {
   describe('the ARM template', () => {
@@ -34,7 +34,7 @@ describe('After deployment', () => {
         async () => {
           try {
             console.log('Performing mutation')
-            const client = applicationUnderTest.graphql.client(authToken)
+            const client: ApolloClient<NormalizedCacheObject> = applicationUnderTest.graphql.client(authToken)
             return await client.mutate({
               variables: {
                 sku: random.uuid(),
