@@ -7,5 +7,5 @@ before(async () => {
   console.log(`stopping local server with pid ${pid}...`)
   process.kill(pid)
   console.log('removing sandbox project...')
-  removeFolders([sandboxPath])
+  await removeFolders([sandboxPath])
 })
