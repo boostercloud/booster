@@ -250,18 +250,32 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain('--projects expects a value')
       })
 
-      it('with empty fields and projection', async () => {
+      it('with empty fields', async () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields', '--projects'], {} as Config).run()
+          await new ReadModel([readModelName, '--fields'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error parsing field --projects')
+        expect(exceptionMessage).to.contain('Flag --fields expects a value')
       })
+
+      it('with empty projection', async () => {
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new ReadModel([readModelName, '--projects'], {} as Config).run()
+        } catch (e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Flag --projects expects a value')
+      })
+
 
       it('with field with no type', async () => {
         let exceptionThrown = false

@@ -75,10 +75,9 @@ describe('add', async () => {
           exceptionThrown = true
           exceptionMessage = e.message
         }
-
+        console.log(exceptionMessage)
         expect(exceptionThrown).to.be.true
-        expect(exceptionMessage).to.contain('Missing required flag')
-        expect(exceptionMessage).to.contain('--read-model READ-MODEL')
+        expect(exceptionMessage).to.contain('Missing required flag read-model')
       })
 
       it('with empty --read-model', async () => {

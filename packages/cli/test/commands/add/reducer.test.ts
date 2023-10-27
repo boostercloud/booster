@@ -98,8 +98,7 @@ describe('add', async () => {
         }
 
         expect(exceptionThrown).to.be.true
-        expect(exceptionMessage).to.contain('Missing required flag')
-        expect(exceptionMessage).to.contain('--entity ENTITY')
+        expect(exceptionMessage).to.contain('Missing required flag entity')
       })
 
       it('with empty --entity flag', async () => {

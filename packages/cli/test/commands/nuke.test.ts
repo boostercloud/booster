@@ -234,7 +234,7 @@ describe('nuke', () => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(exceptionMessage).to.contain('Nonexistent flag: --nonexistingoption')
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
       })

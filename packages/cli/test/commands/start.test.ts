@@ -143,7 +143,7 @@ describe('start', () => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(exceptionMessage).to.contain('Nonexistent flag: --nonexistingoption')
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called
         expect(oraLogger.start).to.have.not.been.calledWithMatch(/Starting debug server on port/)

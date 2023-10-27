@@ -236,7 +236,7 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain('--reduces expects a value')
       })
 
-      it('with empty fields and reduces', async () => {
+      it('with empty fields', async () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
@@ -246,7 +246,20 @@ describe('new', (): void => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error parsing field --reduces')
+        expect(exceptionMessage).to.contain('Flag --fields expects a value')
+      })
+
+      it('with empty reduces', async () => {
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new Entity([entityName, '--fields', 'title', '--reduces'], {} as Config).run()
+        } catch (e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Flag --reduces expects a value')
       })
 
       it('with field with no type', async () => {

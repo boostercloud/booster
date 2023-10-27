@@ -374,7 +374,7 @@ describe('new', (): void => {
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+            expect(exceptionMessage).to.contain('Nonexistent flag: --nonexistingoption')
             expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
             expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
         })

@@ -175,7 +175,7 @@ describe('deploy', () => {
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(exceptionMessage).to.contain('Nonexistent flag: --nonexistingoption')
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')
