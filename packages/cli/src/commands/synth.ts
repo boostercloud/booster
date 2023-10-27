@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../common/base-command'
 import {
   cleanDeploymentSandbox,
@@ -26,19 +26,19 @@ export default class Synth extends BaseCommand {
   public static description = 'Generate the required cloud templates to deploy your app manually.'
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    environment: flags.string({
+    help: Flags.help({ char: 'h' }),
+    environment: Flags.string({
       char: 'e',
       description: 'environment configuration to run',
     }),
-    verbose: flags.boolean({
+    verbose: Flags.boolean({
       description: 'display full error messages',
       default: false,
     }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Synth)
+    const { flags } = await this.parse(Synth)
 
     if (initializeEnvironment(logger, flags.environment)) {
       const deploymentProjectPath = await createDeploymentSandbox()
@@ -49,7 +49,7 @@ export default class Synth extends BaseCommand {
   async catch(fullError: Error) {
     const {
       flags: { verbose },
-    } = this.parse(Synth)
+    } = await this.parse(Synth)
 
     if (verbose) {
       console.error(fullError.message)
