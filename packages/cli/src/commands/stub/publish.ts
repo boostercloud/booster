@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
@@ -14,14 +14,14 @@ export default class Publish extends BaseCommand {
   public static examples = ['$ boost stub:publish --force', '$ boost stub:publish']
 
   public static flags = {
-    force: flags.boolean({
+    force: Flags.boolean({
       char: 'f',
       description: 'Overwrite any existing stub files',
     }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Publish)
+    const { flags } = await this.parse(Publish)
 
     const stubFolderExists: boolean = checkStubsFolderExists()
 

@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags, Args } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
@@ -20,23 +20,25 @@ import { classNameToFileName } from '../../common/filenames'
 export default class Entity extends BaseCommand {
   public static description = 'create a new entity'
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-    fields: Oclif.flags.string({
+    help: Flags.help({ char: 'h' }),
+    fields: Flags.string({
       char: 'f',
       description: 'fields that this entity will contain',
       multiple: true,
     }),
-    reduces: Oclif.flags.string({
+    reduces: Flags.string({
       char: 'r',
       description: 'events that this entity will reduce to build its state',
       multiple: true,
     }),
   }
 
-  public static args = [{ name: 'entityName' }]
+  public static args = {
+    entityName: Args.string(),
+  }
 
   public async run(): Promise<void> {
-    const { args, flags } = this.parse(Entity)
+    const { args, flags } = await this.parse(Entity)
 
     try {
       const fields = flags.fields || []
