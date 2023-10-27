@@ -39,6 +39,7 @@ const sidebars = {
         'architecture/entity',
         'architecture/read-model',
         'architecture/notifications',
+        'architecture/queries',
       ],
     },
     {
