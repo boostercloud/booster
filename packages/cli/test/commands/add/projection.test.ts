@@ -1,5 +1,5 @@
 import { fake, replace, restore, spy, stub } from 'sinon'
-import { IConfig } from '@oclif/config'
+import { Config } from '@oclif/core'
 import { ClassDeclaration, MethodDeclarationStructure, Project, SourceFile } from 'ts-morph'
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { expect } from '../../expect'
@@ -35,7 +35,7 @@ describe('add', async () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Projection([], {} as IConfig).init()
+      await new Projection([], {} as Config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
@@ -54,7 +54,7 @@ describe('add', async () => {
       stub(SourceFile.prototype, 'fixMissingImports').returnsThis()
       stub(SourceFile.prototype, 'save').resolves()
 
-      await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as IConfig).run()
+      await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as Config).run()
 
       expect(Filenames.fileNameWithExtension).to.have.been.calledWith(readModelName)
       expect(Project.prototype.getSourceFileOrThrow).to.have.been.calledOnceWith('post-read-model.ts')
@@ -70,15 +70,14 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Projection([], {} as IConfig).run()
+          await new Projection([], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
-
+        console.log(exceptionMessage)
         expect(exceptionThrown).to.be.true
-        expect(exceptionMessage).to.contain('Missing required flag')
-        expect(exceptionMessage).to.contain('--read-model READ-MODEL')
+        expect(exceptionMessage).to.contain('Missing required flag read-model')
       })
 
       it('with empty --read-model', async () => {
@@ -86,7 +85,7 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Projection(['--entity', projectionName, '--read-model'], {} as IConfig).run()
+          await new Projection(['--entity', projectionName, '--read-model'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -101,7 +100,7 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity'], {} as IConfig).run()
+          await new Projection(['--read-model', readModelName, '--entity'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -116,7 +115,7 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', 'Post'], {} as IConfig).run()
+          await new Projection(['--read-model', readModelName, '--entity', 'Post'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -133,7 +132,7 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', 'Post:'], {} as IConfig).run()
+          await new Projection(['--read-model', readModelName, '--entity', 'Post:'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -150,7 +149,7 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', ':id'], {} as IConfig).run()
+          await new Projection(['--read-model', readModelName, '--entity', ':id'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -171,7 +170,7 @@ describe('add', async () => {
         let exceptionThrown = false
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as IConfig).run()
+          await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
         }
@@ -201,7 +200,7 @@ describe('add', async () => {
         let exceptionThrown = false
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as IConfig).run()
+          await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
         }

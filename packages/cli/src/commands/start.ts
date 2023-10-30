@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../common/base-command'
 import { startProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
@@ -21,24 +21,24 @@ export default class Start extends BaseCommand {
   public static description = 'Start local debug server.'
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    port: flags.integer({
+    help: Flags.help({ char: 'h' }),
+    port: Flags.integer({
       char: 'p',
       description: 'port to run the local runtime on',
       default: 3000,
     }),
-    environment: flags.string({
+    environment: Flags.string({
       char: 'e',
       description: 'environment configuration to run',
     }),
-    verbose: flags.boolean({
+    verbose: Flags.boolean({
       description: 'display full error messages',
       default: false,
     }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Start)
+    const { flags } = await this.parse(Start)
 
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))
@@ -48,7 +48,7 @@ export default class Start extends BaseCommand {
   async catch(fullError: Error) {
     const {
       flags: { verbose },
-    } = this.parse(Start)
+    } = await this.parse(Start)
 
     if (verbose) {
       console.error(fullError.message)

@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { HasName, HasProjection, joinParsers, parseName, parseProjectionField } from '../../services/generator/target'
 import { Script } from '../../common/script'
@@ -17,14 +17,14 @@ export default class Projection extends BaseCommand {
   ]
 
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-    'read-model': Oclif.flags.string({
+    help: Flags.help({ char: 'h' }),
+    'read-model': Flags.string({
       description: 'read-model name',
       required: true,
       multiple: false,
       dependsOn: ['entity'],
     }),
-    entity: Oclif.flags.string({
+    entity: Flags.string({
       description: 'an entity name',
       required: true,
       multiple: false,
@@ -33,7 +33,7 @@ export default class Projection extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Projection)
+    const { flags } = await this.parse(Projection)
     const readModel = flags['read-model']
     const entity = flags.entity
 

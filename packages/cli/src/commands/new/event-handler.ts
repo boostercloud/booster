@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags, Args } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import {
   HasEvent,
@@ -18,18 +18,20 @@ import { classNameToFileName } from '../../common/filenames'
 export default class EventHandler extends BaseCommand {
   public static description = 'create a new event handler'
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-    event: Oclif.flags.string({
+    help: Flags.help({ char: 'h' }),
+    event: Flags.string({
       char: 'e',
       description: 'event that this event handler with handle',
       multiple: false,
     }),
   }
 
-  public static args = [{ name: 'eventHandlerName' }]
+  public static args = {
+    eventHandlerName: Args.string(),
+  }
 
   public async run(): Promise<void> {
-    const { args, flags } = this.parse(EventHandler)
+    const { args, flags } = await this.parse(EventHandler)
 
     try {
       const event = flags.event

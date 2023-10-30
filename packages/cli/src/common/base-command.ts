@@ -1,4 +1,4 @@
-import Command from '@oclif/command'
+import { Command } from '@oclif/core'
 import { checkCurrentDirBoosterVersion } from '../services/project-checker'
 import { appendOnErrorsFile } from '../services/logger'
 
