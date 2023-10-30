@@ -3,6 +3,7 @@ import { GlobalErrorHandler } from '@boostercloud/framework-core'
 import {
   CommandEnvelope,
   EntityInterface,
+  EventEnvelope,
   EventInterface,
   QueryEnvelope,
   ReadModelInterface,
@@ -12,6 +13,8 @@ import {
   commandHandlerErrorCartId,
   commandHandlerErrorIgnoredCartId,
   dispatchEventErrorCartId,
+  eventErrorCartId,
+  ignoreEventErrorCartId,
   projectionErrorCartId,
   queryHandlerErrorCartId,
   reducerErrorCartId,
@@ -74,6 +77,16 @@ export class AppErrorHandler {
   ): Promise<Error | undefined> {
     if (entity?.id === projectionErrorCartId) {
       return new Error(error.message + '-onProjectionError')
+    }
+    return error
+  }
+
+  public static async onEventError(error: Error, eventEnvelope: EventEnvelope): Promise<Error | undefined> {
+    if (eventEnvelope.entityID === eventErrorCartId) {
+      return new Error(error.message + '-onEventError')
+    }
+    if (eventEnvelope.entityID === ignoreEventErrorCartId) {
+      return undefined
     }
     return error
   }
