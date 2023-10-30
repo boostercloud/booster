@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-aws-infrastructure",
-  "version": "1.20.0",
+  "version": "1.21.0",
   "description": "Handle the Booster deployment process to AWS",
   "keywords": [
     "framework-provider-aws-infrastructure"
@@ -37,9 +37,9 @@
     "@aws-cdk/aws-s3-deployment": "^1.170.0",
     "@aws-cdk/core": "^1.170.0",
     "@aws-cdk/cx-api": "^1.170.0",
-    "@boostercloud/framework-common-helpers": "workspace:^1.20.0",
-    "@boostercloud/framework-provider-aws": "workspace:^1.20.0",
-    "@boostercloud/framework-types": "workspace:^1.20.0",
+    "@boostercloud/framework-common-helpers": "workspace:^1.21.0",
+    "@boostercloud/framework-provider-aws": "workspace:^1.21.0",
+    "@boostercloud/framework-types": "workspace:^1.21.0",
     "constructs": "^3.3.69",
     "aws-cdk": "^1.170.0",
     "aws-sdk": "2.853.0",
@@ -65,7 +65,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^1.20.0",
+    "@boostercloud/eslint-config": "workspace:^1.21.0",
     "@types/aws-lambda": "8.10.48",
     "@types/aws-sdk": "2.7.0",
     "@types/chai": "4.2.18",

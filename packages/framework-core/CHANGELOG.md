@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 10 Oct 2023 12:54:54 GMT and should not be manually modified.
+This log was last generated on Mon, 30 Oct 2023 16:27:59 GMT and should not be manually modified.
+
+## 1.21.0
+Mon, 30 Oct 2023 16:27:59 GMT
+
+### Minor changes
+
+- Add elapsed time to data migration entities
 
 ## 1.20.0
 Tue, 10 Oct 2023 12:54:54 GMT
