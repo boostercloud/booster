@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - main
-      - v2.x.x
     paths-ignore:
       - '**.md'
       - 'website/**'
@@ -14,7 +13,6 @@ on:
   pull_request:
     branches:
       - main
-      - v2.x.x
     paths-ignore:
       - '**.md'
       - 'website/**'
