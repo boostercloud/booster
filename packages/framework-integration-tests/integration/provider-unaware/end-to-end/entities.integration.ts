@@ -331,9 +331,10 @@ describe('Entities end-to-end tests', () => {
             })
           },
           (result) => {
-            const count = result?.data?.ListDataMigrationsReadModels?.count
+            const resultReadModels = result?.data?.ListDataMigrationsReadModels
+            const count = resultReadModels?.count
             if (count < 2) {
-              return `Waiting for ${count} migrations. Done ${count} migrations`
+              return `Waiting for at least 2 migrations. Done ${count} migrations. ${JSON.stringify(resultReadModels)}`
             }
             return true
           }
