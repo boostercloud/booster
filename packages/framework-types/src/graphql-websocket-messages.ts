@@ -61,5 +61,5 @@ export class GraphQLComplete {
 }
 
 export const graphQLWebsocketSubprotocolHeaders = {
-  'Sec-WebSocket-Protocol': 'graphql-ws',
+  'Sec-WebSocket-Protocol': 'graphql-transport-ws',
 }

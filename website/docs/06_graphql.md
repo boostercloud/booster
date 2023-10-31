@@ -251,7 +251,7 @@ In the following examples we use [`wscat`](https://github.com/websockets/wscat) 
 1. Connect to the web socket:
 
 ```sh
- wscat -c <websocketURL> -s graphql-ws
+ wscat -c <websocketURL> -s graphql-transport-ws
 ```
 
 :::note
