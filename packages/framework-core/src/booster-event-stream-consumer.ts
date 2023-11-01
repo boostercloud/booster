@@ -6,6 +6,9 @@ import { ReadModelStore } from './services/read-model-store'
 import { RawEventsParser } from './services/raw-events-parser'
 import { BoosterEventProcessor } from './booster-event-processor'
 
+/**
+ * This class consumes events from the event stream and dispatches them to the event handlers
+ */
 export class BoosterEventStreamConsumer {
   @Trace(TraceActionTypes.CONSUME_STREAM_EVENTS)
   public static async consume(rawEvents: unknown, config: BoosterConfig): Promise<void> {

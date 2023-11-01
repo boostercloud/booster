@@ -5,6 +5,7 @@ export {
   boosterPreSignUpChecker,
   boosterHealth,
   boosterServeGraphQL,
-  boosterRequestAuthorizer,
   boosterNotifySubscribers,
+  boosterTriggerScheduledCommand,
+  boosterRocketDispatcher,
 } from '@boostercloud/framework-core'

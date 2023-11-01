@@ -1,31 +1,72 @@
 import { expect } from './expect'
-import * as BoosterCore from '../src/index'
-import * as Booster from '../src/booster'
+import {
+  boosterEventDispatcher,
+  boosterNotifySubscribers,
+  boosterRocketDispatcher,
+  boosterServeGraphQL,
+  boosterTriggerScheduledCommands,
+} from '../src/'
+import { fake, replace, restore } from 'sinon'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
+import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
+import { BoosterScheduledCommandDispatcher } from '../src/booster-scheduled-command-dispatcher'
+import { BoosterSubscribersNotifier } from '../src/booster-subscribers-notifier'
 
 describe('framework-core package', () => {
-  it('exports the `boosterEventDispatcher` function', () => {
-    expect(BoosterCore.boosterEventDispatcher).not.to.be.null
-    expect(BoosterCore.boosterEventDispatcher).to.equal(Booster.boosterEventDispatcher)
+  afterEach(() => {
+    restore()
   })
 
-  it('exports the `boosterServeGraphQL` function', () => {
-    expect(BoosterCore.boosterServeGraphQL).not.to.be.null
-    expect(BoosterCore.boosterServeGraphQL).to.equal(Booster.boosterServeGraphQL)
+  context('`boosterEventDispatcher` function', () => {
+    it('calls the `dispatch` method of the `BoosterEventDispatcher` class', async () => {
+      const fakeDispatch = fake.resolves(undefined)
+      const config = new BoosterConfig('test')
+      const fakeRawEvents = { some: 'events' }
+      replace(BoosterEventDispatcher, 'dispatch', fakeDispatch)
+      await boosterEventDispatcher(fakeRawEvents)
+      expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawEvents, config)
+    })
   })
 
-  it('exports the `boosterNotifySubscribers` function', () => {
-    expect(BoosterCore.boosterNotifySubscribers).not.to.be.null
-    expect(BoosterCore.boosterNotifySubscribers).to.equal(Booster.boosterNotifySubscribers)
+  context('`boosterServeGraphQL` function', () => {
+    it('calls the `dispatch` method of the `BoosterGraphQLDispatcher` class', async () => {
+      const fakeDispatch = fake.resolves(undefined)
+      const fakeRawRequest = { some: 'request' }
+      replace(BoosterGraphQLDispatcher.prototype, 'dispatch', fakeDispatch)
+      await boosterServeGraphQL(fakeRawRequest)
+      expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawRequest)
+    })
   })
 
-  it('exports the `boosterTriggerScheduledCommand` function', () => {
-    expect(BoosterCore.boosterTriggerScheduledCommand).not.to.be.null
-    expect(BoosterCore.boosterTriggerScheduledCommand).to.equal(Booster.boosterTriggerScheduledCommand)
+  context('`boosterTriggerScheduledCommands` function', () => {
+    it('calls the `dispatch` method of the `BoosterScheduledCommandDispatcher` class', async () => {
+      const fakeDispatch = fake.resolves(undefined)
+      const fakeRawRequest = { some: 'request' }
+      replace(BoosterScheduledCommandDispatcher.prototype, 'dispatch', fakeDispatch)
+      await boosterTriggerScheduledCommands(fakeRawRequest)
+      expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawRequest)
+    })
   })
 
-  it('exports the `boosterRocketDispatcher` function', () => {
-    expect(BoosterCore.boosterRocketDispatcher).not.to.be.null
-    expect(BoosterCore.boosterRocketDispatcher).to.equal(Booster.boosterRocketDispatcher)
+  context('`boosterNotifySubscribers` function', () => {
+    it('calls the `dispatch` method of the `BoosterSubscribersNotifier` class', async () => {
+      const fakeDispatch = fake.resolves(undefined)
+      const fakeRawRequest = { some: 'request' }
+      replace(BoosterSubscribersNotifier.prototype, 'dispatch', fakeDispatch)
+      await boosterNotifySubscribers(fakeRawRequest)
+      expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawRequest)
+    })
+  })
+
+  context('`boosterRocketDispatcher` function', () => {
+    it('calls the `dispatch` method of the `BoosterRocketDispatcher` class', async () => {
+      const fakeDispatch = fake.resolves(undefined)
+      const fakeRawRequest = { some: 'request' }
+      replace(BoosterSubscribersNotifier.prototype, 'dispatch', fakeDispatch)
+      await boosterRocketDispatcher(fakeRawRequest)
+      expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawRequest)
+    })
   })
 
   it('exports the `boosterHealth` function', () => {

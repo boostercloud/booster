@@ -9,6 +9,7 @@ export {
   boosterServeGraphQL,
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,
+  boosterRocketDispatcher,
 } from '@boostercloud/framework-core'
 
 Booster.start(__dirname)
