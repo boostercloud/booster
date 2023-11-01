@@ -192,12 +192,17 @@ After the service principal is created, create a bash script with the following 
 
 SP_DISPLAY_NAME="<service-principal-name>" #replace <service-principal-name> with the name of your own SP
 REGION="East US" #replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
+AZURE_MAX_CONTAINER_THROUGHPUT=400 #replace with a desired value for CosmosDB container throughput
+AZURE_MAX_DATABASE_THROUGHPUT=400 #replace with a desired value for CosmosDB database throughput
 
 export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appId')
 export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerOrganizationId')
 export AZURE_SECRET=$(az ad sp credential reset --id ${AZURE_APP_ID} | jq -r '.password')
 export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
 export REGION=$REGION
+
+export AZURE_MAX_CONTAINER_THROUGHPUT=:AZURE_MAX_CONTAINER_THROUGHPUT
+export AZURE_MAX_DATABASE_THROUGHPUT=:AZURE_MAX_DATABASE_THROUGHPUT
 ```
 
 :::note
