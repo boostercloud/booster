@@ -16,8 +16,8 @@ describe('Entity', () => {
     entitySandboxDir = createSandboxProject(sandboxPathFor('entity'))
   })
 
-  after(() => {
-    removeFolders([entitySandboxDir])
+  after(async () => {
+    await removeFolders([entitySandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')

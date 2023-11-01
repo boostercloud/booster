@@ -19,9 +19,12 @@
     "type": "git",
     "url": "git+https://github.com/boostercloud/booster.git"
   },
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
   "dependencies": {
     "@azure/arm-appservice": "^13.0.0",
-    "@azure/cosmos": "^3.17.0",
+    "@azure/cosmos": "^4.0.0",
     "@boostercloud/framework-common-helpers": "workspace:^1.21.0",
     "@boostercloud/framework-core": "workspace:^1.21.0",
     "@boostercloud/framework-provider-azure": "workspace:^1.21.0",
@@ -71,7 +74,7 @@
     "@types/fs-extra": "^9.0.13",
     "@types/mocha": "10.0.1",
     "@types/mustache": "4.1.0",
-    "@types/node": "16.11.7",
+    "@types/node": "^18.15.3",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
     "@types/uuid": "8.3.0",

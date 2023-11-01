@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { HasName, HasReaction, joinParsers, parseName, parseReaction } from '../../services/generator/target'
 import { Script } from '../../common/script'
@@ -17,14 +17,14 @@ export default class Reducer extends BaseCommand {
   ]
 
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-    entity: Oclif.flags.string({
+    help: Flags.help({ char: 'h' }),
+    entity: Flags.string({
       description: 'an entity name',
       required: true,
       multiple: false,
       dependsOn: ['event'],
     }),
-    event: Oclif.flags.string({
+    event: Flags.string({
       description: 'an event name',
       required: true,
       multiple: true,
@@ -33,7 +33,7 @@ export default class Reducer extends BaseCommand {
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Reducer)
+    const { flags } = await this.parse(Reducer)
     const entity = flags.entity
     const events = flags.event
 

@@ -1,7 +1,9 @@
 {
   "extends": "./tsconfig.json",
   "include": [
-    "src/**/*",
     "integration/**/*"
+  ],
+  "exclude": [
+    "integration/fixtures/**/*"
   ]
 }

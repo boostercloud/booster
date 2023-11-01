@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags, Args } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
@@ -10,13 +10,15 @@ import { checkCurrentDirIsABoosterProject } from '../../services/project-checker
 export default class ScheduledCommand extends BaseCommand {
   public static description = "generate new scheduled command, write 'boost new:scheduled-command -h' to see options"
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
+    help: Flags.help({ char: 'h' }),
   }
 
-  public static args = [{ name: 'scheduledCommandName' }]
+  public static args = {
+    scheduledCommandName: Args.string(),
+  }
 
   public async run(): Promise<void> {
-    const { args } = this.parse(ScheduledCommand)
+    const { args } = await this.parse(ScheduledCommand)
 
     try {
       if (!args.scheduledCommandName)

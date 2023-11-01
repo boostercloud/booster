@@ -1,7 +1,8 @@
 #!/usr/bin/env sh
 
-rush purge \
-&& rush install \
-&& rush build \
+rush clean \
+&& rush purge \
+&& rush update \
+&& rush rebuild \
 && rush lint:fix \
 && rush test

@@ -32,6 +32,9 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
   "dependencies": {
     "@boostercloud/framework-types": "workspace:^1.21.0",
     "child-process-promise": "^2.2.1",
@@ -44,7 +47,7 @@
     "@types/chai-as-promised": "7.1.4",
     "@types/child-process-promise": "^2.2.1",
     "@types/mocha": "10.0.1",
-    "@types/node": "16.11.7",
+    "@types/node": "^18.15.3",
     "@types/rewire": "^2.5.28",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",

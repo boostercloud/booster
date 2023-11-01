@@ -32,6 +32,9 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
   "peerDependencies": {
     "graphql": "^16.6.0"
   },
@@ -47,13 +50,12 @@
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/mocha": "10.0.1",
-    "@types/node": "16.11.7",
+    "@types/node": "^18.15.3",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
     "@types/uuid": "8.3.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
-    "@types/graphql": "^14.5.0",
     "eslint": "^8.23.1",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "^2.26.0",

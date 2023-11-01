@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags, Args } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
@@ -11,18 +11,20 @@ export default class Type extends BaseCommand {
   public static description = 'create a new type'
 
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-    fields: Oclif.flags.string({
+    help: Flags.help({ char: 'h' }),
+    fields: Flags.string({
       char: 'f',
       description: 'field that this type will contain',
       multiple: true,
     }),
   }
 
-  public static args = [{ name: 'typeName' }]
+  public static args = {
+    typeName: Args.string(),
+  }
 
   public async run(): Promise<void> {
-    const { args, flags } = this.parse(Type)
+    const { args, flags } = await this.parse(Type)
 
     try {
       const fields = flags.fields || []

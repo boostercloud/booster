@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Replaced the deprecated dependency `ttypescript` with `ts-patch`",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

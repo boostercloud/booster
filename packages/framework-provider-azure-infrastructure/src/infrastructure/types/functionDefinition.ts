@@ -14,11 +14,11 @@ export type GraphQLBinding = Binding & {
 }
 
 export type EventHandlerBinding = Binding & {
-  leaseCollectionName: string
-  connectionStringSetting: string
+  leaseContainerName: string
+  connection: string
   databaseName: string
-  collectionName: string
-  createLeaseCollectionIfNotExists: string
+  containerName: string
+  createLeaseContainerIfNotExists: string
   [key: string]: any
 }
 

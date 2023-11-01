@@ -15,7 +15,6 @@ import { expect } from '../../helper/expect'
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../../package.json').version
 
-
 const TEST_TIMEOUT = 80000
 const DESCRIPTION = 'cart-demo'
 const VERSION = '1.0.0'
@@ -36,8 +35,8 @@ describe('Project', () => {
     createFolder(SANDBOX_INTEGRATION_DIR)
   })
 
-  after(() => {
-    removeFolders([SANDBOX_INTEGRATION_DIR])
+  after(async () => {
+    await removeFolders([SANDBOX_INTEGRATION_DIR])
   })
 
   const cliPath = path.join('..', 'node_modules', '.bin', 'boost')

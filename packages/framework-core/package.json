@@ -29,6 +29,9 @@
   "bugs": {
     "url": "https://github.com/boostercloud/booster/issues"
   },
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
   "peerDependencies": {
     "graphql": "^16.6.0"
   },
@@ -56,7 +59,7 @@
     "@types/inflected": "1.1.29",
     "@types/jsonwebtoken": "9.0.1",
     "@types/mocha": "10.0.1",
-    "@types/node": "16.11.7",
+    "@types/node": "^18.15.3",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
     "@types/validator": "13.1.3",

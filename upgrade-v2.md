@@ -1,0 +1,7 @@
+# Upgrade from Booster v1.x.x to Booster v2.x.x
+
+Booster v2 introduces the following breaking changes:
+
+1. **Node 18 support**: Booster v2 has been upgraded to work with Node 18. If you're using an older version of Node, you'll need to upgrade it.
+2. **Azure runtime upgraded to v4**: The Azure Functions Runtime has been upgraded from v3 to v4. If you're using Booster v1.x.x with Azure, you may need to perform a migration. Check out [Azure's migration guide](https://learn.microsoft.com/en-us/azure/azure-functions/migrate-version-3-version-4?tabs=net6-isolated%2Cazure-cli%2Cwindows&pivots=programming-language-typescript) for more details.
+3. **The AWS provider has been deprecated**: Due to significant changes in recent versions of the AWS CDK, specifically the transition from CDKToolkit to a cli tool as noted [here](https://github.com/aws/aws-cdk-rfcs/issues/300), upgrading our current implementation would require a substantial rewrite. Given the open-source nature of our project without direct revenue streams, the ensuing maintenance costs are unfeasible. However, we are open to upgrading the AWS provider or creating an alternative implementation using other technologies like Terraform's CDKTF, with community contributions or sponsorships. If you're interested in supporting us, we welcome you to reach out via the official channels listed on the [Booster's website](https://boosterframework.com).

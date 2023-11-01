@@ -22,6 +22,9 @@
   "files": [
     "dist"
   ],
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
   "dependencies": {
     "reflect-metadata": "0.1.13",
     "ts-morph": "15.1.0",
@@ -35,10 +38,10 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "3.4.0",
+    "@types/node": "^18.15.3",
     "@boostercloud/eslint-config": "workspace:^1.21.0",
-    "@types/node": "16.11.7",
     "ts-node": "^10.9.1",
-    "ttypescript": "1.5.15",
+    "ts-patch": "2.0.2",
     "typescript": "4.7.4",
     "prettier": "2.3.0",
     "sinon": "9.2.3",
@@ -46,12 +49,13 @@
     "eslint-plugin-unicorn": "~44.0.2"
   },
   "scripts": {
+    "prepare": "ts-patch install -s",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
     "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo",
     "prepack": "tsc -b tsconfig.json",
-    "test": "ttsc -p tsconfig.test.json"
+    "test": "tsc -p tsconfig.test.json"
   },
   "pnpm": {
     "overrides": {

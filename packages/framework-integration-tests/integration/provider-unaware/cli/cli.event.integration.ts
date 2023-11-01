@@ -22,8 +22,8 @@ describe('Event', () => {
     eventSandboxDir = createSandboxProject(sandboxPathFor('event'))
   })
 
-  after(() => {
-    removeFolders([eventSandboxDir])
+  after(async () => {
+    await removeFolders([eventSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
