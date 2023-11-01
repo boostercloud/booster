@@ -1,6 +1,18 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 30 Oct 2023 16:27:59 GMT and should not be manually modified.
+This log was last generated on Wed, 01 Nov 2023 13:01:59 GMT and should not be manually modified.
+
+## 2.0.0
+Wed, 01 Nov 2023 13:01:59 GMT
+
+### Breaking changes
+
+- Bump version to 2.0.0
+
+### Minor changes
+
+- Upgraded for Node18 support
+- Replaced the deprecated dependency `ttypescript` with `ts-patch`
 
 ## 1.21.0
 Mon, 30 Oct 2023 16:27:59 GMT
