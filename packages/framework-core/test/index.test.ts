@@ -1,5 +1,6 @@
 import { expect } from './expect'
 import {
+  Booster,
   boosterEventDispatcher,
   boosterNotifySubscribers,
   boosterRocketDispatcher,
@@ -7,11 +8,11 @@ import {
   boosterTriggerScheduledCommands,
 } from '../src/'
 import { fake, replace, restore } from 'sinon'
-import { BoosterConfig } from '@boostercloud/framework-types'
 import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import { BoosterScheduledCommandDispatcher } from '../src/booster-scheduled-command-dispatcher'
 import { BoosterSubscribersNotifier } from '../src/booster-subscribers-notifier'
+import { BoosterRocketDispatcher } from '../src/booster-rocket-dispatcher'
 
 describe('framework-core package', () => {
   afterEach(() => {
@@ -21,11 +22,10 @@ describe('framework-core package', () => {
   context('`boosterEventDispatcher` function', () => {
     it('calls the `dispatch` method of the `BoosterEventDispatcher` class', async () => {
       const fakeDispatch = fake.resolves(undefined)
-      const config = new BoosterConfig('test')
       const fakeRawEvents = { some: 'events' }
       replace(BoosterEventDispatcher, 'dispatch', fakeDispatch)
       await boosterEventDispatcher(fakeRawEvents)
-      expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawEvents, config)
+      expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawEvents, Booster.config)
     })
   })
 
@@ -63,7 +63,7 @@ describe('framework-core package', () => {
     it('calls the `dispatch` method of the `BoosterRocketDispatcher` class', async () => {
       const fakeDispatch = fake.resolves(undefined)
       const fakeRawRequest = { some: 'request' }
-      replace(BoosterSubscribersNotifier.prototype, 'dispatch', fakeDispatch)
+      replace(BoosterRocketDispatcher.prototype, 'dispatch', fakeDispatch)
       await boosterRocketDispatcher(fakeRawRequest)
       expect(fakeDispatch).to.have.been.calledOnceWithExactly(fakeRawRequest)
     })

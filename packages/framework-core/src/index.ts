@@ -1,5 +1,4 @@
-import * as boosterModule from './booster'
-import { BoosterApp } from '@boostercloud/framework-types'
+import { Booster } from './booster'
 import { BoosterEventDispatcher } from './booster-event-dispatcher'
 import { BoosterGraphQLDispatcher } from './booster-graphql-dispatcher'
 import { BoosterScheduledCommandDispatcher } from './booster-scheduled-command-dispatcher'
@@ -9,6 +8,8 @@ import { BoosterEventStreamConsumer } from './booster-event-stream-consumer'
 import { BoosterEventStreamProducer } from './booster-event-stream-producer'
 import { BoosterHealthService } from './sensor'
 
+// Exports
+export { Booster } from './booster'
 export { RegisterHandler } from './booster-register-handler'
 export * from './decorators'
 export { BoosterDataMigrations } from './booster-data-migrations'
@@ -26,7 +27,7 @@ export * from './decorators/health-sensor'
  * @returns A promise that resolves when the events are processed
  */
 export async function boosterEventDispatcher(rawEvents: unknown): Promise<void> {
-  return BoosterEventDispatcher.dispatch(rawEvents, boosterModule.Booster.config)
+  return BoosterEventDispatcher.dispatch(rawEvents, Booster.config)
 }
 
 /**
@@ -36,7 +37,7 @@ export async function boosterEventDispatcher(rawEvents: unknown): Promise<void> 
  * @returns A promise that resolves to the GraphQL response.
  */
 export async function boosterServeGraphQL(rawRequest: unknown): Promise<unknown> {
-  return new BoosterGraphQLDispatcher(boosterModule.Booster.config).dispatch(rawRequest)
+  return new BoosterGraphQLDispatcher(Booster.config).dispatch(rawRequest)
 }
 
 /**
@@ -46,7 +47,7 @@ export async function boosterServeGraphQL(rawRequest: unknown): Promise<unknown>
  * @returns A promise that resolves when the scheduled commands are triggered
  */
 export async function boosterTriggerScheduledCommands(rawRequest: unknown): Promise<void> {
-  return new BoosterScheduledCommandDispatcher(boosterModule.Booster.config).dispatch(rawRequest)
+  return new BoosterScheduledCommandDispatcher(Booster.config).dispatch(rawRequest)
 }
 
 /**
@@ -61,7 +62,7 @@ export const boosterTriggerScheduledCommand = boosterTriggerScheduledCommands
  * @returns A promise that resolves when the subscribers are notified
  */
 export async function boosterNotifySubscribers(rawRequest: unknown): Promise<void> {
-  return new BoosterSubscribersNotifier(boosterModule.Booster.config).dispatch(rawRequest)
+  return new BoosterSubscribersNotifier(Booster.config).dispatch(rawRequest)
 }
 
 /**
@@ -71,7 +72,7 @@ export async function boosterNotifySubscribers(rawRequest: unknown): Promise<voi
  * @returns A promise that resolves when the request is processed
  */
 export async function boosterRocketDispatcher(rawRequest: unknown): Promise<unknown> {
-  return new BoosterRocketDispatcher(boosterModule.Booster.config).dispatch(rawRequest)
+  return new BoosterRocketDispatcher(Booster.config).dispatch(rawRequest)
 }
 
 /**
@@ -81,7 +82,7 @@ export async function boosterRocketDispatcher(rawRequest: unknown): Promise<unkn
  * @returns A promise that resolves when the event is processed
  */
 export async function boosterConsumeEventStream(rawEvent: unknown): Promise<unknown> {
-  return BoosterEventStreamConsumer.consume(rawEvent, boosterModule.Booster.config)
+  return BoosterEventStreamConsumer.consume(rawEvent, Booster.config)
 }
 
 /**
@@ -91,7 +92,7 @@ export async function boosterConsumeEventStream(rawEvent: unknown): Promise<unkn
  * @returns A promise that resolves when the event is produced
  */
 export async function boosterProduceEventStream(rawEvent: unknown): Promise<unknown> {
-  return BoosterEventStreamProducer.produce(rawEvent, boosterModule.Booster.config)
+  return BoosterEventStreamProducer.produce(rawEvent, Booster.config)
 }
 
 /**
@@ -101,7 +102,5 @@ export async function boosterProduceEventStream(rawEvent: unknown): Promise<unkn
  * @returns A promise that resolves to the health of the application
  */
 export async function boosterHealth(request: unknown): Promise<unknown> {
-  return new BoosterHealthService(boosterModule.Booster.config).boosterHealth(request)
+  return new BoosterHealthService(Booster.config).boosterHealth(request)
 }
-
-export const Booster: BoosterApp = boosterModule.Booster
