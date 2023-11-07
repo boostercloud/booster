@@ -1,11 +1,14 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { BoosterApp } from './booster-app'
+import { BoosterConfig } from './config'
 
 /**
  * `UserApp` represents the expected interface when we `require` the `dist/index.js` file of a Booster app
  */
 export interface UserApp {
-  Booster: BoosterApp
+  Booster: {
+    config: BoosterConfig
+    configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
+    configuredEnvironments: Set<string>
+  }
   boosterEventDispatcher(_: unknown): Promise<void>
   boosterPreSignUpChecker(_: unknown): Promise<any>
   boosterServeGraphQL(_: unknown): Promise<unknown>

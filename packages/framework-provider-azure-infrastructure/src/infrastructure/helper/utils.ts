@@ -1,6 +1,6 @@
 import * as fsExtra from 'fs-extra'
 import * as path from 'path'
-import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, UserApp } from '@boostercloud/framework-types'
 import * as Mustache from 'mustache'
 import { configuration } from './params'
 import { WebSiteManagementClient as WebSiteManagement } from '@azure/arm-appservice'
@@ -69,7 +69,7 @@ export function buildAppPrefix(config: BoosterConfig): string {
 
 export function readProjectConfig(userProjectPath: string): BoosterConfig {
   const userProject = loadUserProject(userProjectPath)
-  const app: BoosterApp = userProject.Booster
+  const app = userProject.Booster
   return app.config
 }
 
@@ -113,7 +113,7 @@ export function createDomainNameLabel(resourceGroupName: string): string {
   return `${resourceGroupName}apis`
 }
 
-function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
+function loadUserProject(userProjectPath: string): UserApp {
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
   return require(projectIndexJSPath)
 }
