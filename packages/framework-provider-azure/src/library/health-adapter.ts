@@ -1,5 +1,5 @@
 import { BoosterConfig, HealthEnvelope } from '@boostercloud/framework-types'
-import { Container, CosmosClient, PartitionKeyDefinition } from '@azure/cosmos'
+import { Container, CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from '../constants'
 import { Context } from '@azure/functions'
 import { request } from '@boostercloud/framework-common-helpers'
@@ -23,11 +23,6 @@ export async function isContainerUp(
   return resources !== undefined
 }
 
-export async function partitionKeys(container: Container): Promise<PartitionKeyDefinition | undefined> {
-  const { resource } = await container.readPartitionKeyDefinition()
-  return resource
-}
-
 export async function countAll(container: Container): Promise<number> {
   const { resources } = await container.items.query('SELECT VALUE COUNT(1) FROM c', { maxItemCount: -1 }).fetchAll()
   return resources ? resources[0] : 0
@@ -36,11 +31,9 @@ export async function countAll(container: Container): Promise<number> {
 export async function databaseEventsHealthDetails(cosmosDb: CosmosClient, config: BoosterConfig): Promise<unknown> {
   const container = getContainer(cosmosDb, config, config.resourceNames.eventsStore)
   const url = container.url
-  const partitionKeyDefinition = await partitionKeys(container)
   const count = await countAll(container)
   return {
     url: url,
-    partitionKeyDefinition: partitionKeyDefinition,
     count: count,
   }
 }
@@ -107,12 +100,10 @@ export async function databaseReadModelsHealthDetails(cosmosDb: CosmosClient, co
     const name = readModel.class.name
     const containerName = config.resourceNames.forReadModel(name)
     const container = getContainer(cosmosDb, config, containerName)
-    const partitionKeyDefinition: PartitionKeyDefinition | undefined = await partitionKeys(container)
     const url: string = container.url
     const count: number = await countAll(container)
     result.push({
       url: url,
-      partitionKeyDefinition: partitionKeyDefinition,
       count: count,
     })
   }

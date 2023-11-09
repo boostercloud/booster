@@ -120,13 +120,6 @@ Example:
         "status": "UP",
         "details": {
           "url": "dbs/my-store-app/colls/my-store-app-events-store",
-          "partitionKeyDefinition": {
-            "paths": [
-              "/entityTypeName_entityID_kind"
-            ],
-            "kind": "Hash",
-            "version": 2
-          },
           "count": 6
         },
         "name": "Booster Database Events",
@@ -137,13 +130,6 @@ Example:
         "details": [
           {
             "url": "dbs/my-store-app/colls/my-store-app-ProductReadModel",
-            "partitionKeyDefinition": {
-              "paths": [
-                "/id"
-              ],
-              "kind": "Hash",
-              "version": 2
-            },
             "count": 1
           }
         ],
@@ -310,7 +296,6 @@ export class ApplicationHealthIndicator {
 * details:
   * **AZURE PROVIDER**:
     * url: Events url
-    * partitionKeyDefinition: Cosmos database partition key definition. Include: paths, kind and version
     * count: number of rows
   * **LOCAL PROVIDER**:
     * file: event database file
@@ -324,7 +309,6 @@ export class ApplicationHealthIndicator {
   * **AZURE PROVIDER**:
     * For each Read Model:
       * url: Event url
-      * partitionKeyDefinition: Cosmos database partition key definition. Include: paths, kind and version
       * count: number of rows
   * **LOCAL PROVIDER**:
     * file: Read Models database file
