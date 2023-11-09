@@ -33,6 +33,16 @@ import {
   storeConnectionData,
 } from './library/connections-adapter'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
+import {
+  areDatabaseReadModelsUp,
+  databaseUrl,
+  databaseEventsHealthDetails,
+  graphqlFunctionUrl,
+  isDatabaseEventUp,
+  isGraphQLFunctionUp,
+  rawRequestToSensorHealth,
+  databaseReadModelsHealthDetails,
+} from './library/health-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -94,6 +104,16 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   },
   rockets: {
     rawToEnvelopes: rawRocketInputToEnvelope,
+  },
+  sensor: {
+    databaseEventsHealthDetails: databaseEventsHealthDetails.bind(null, cosmosClient),
+    databaseReadModelsHealthDetails: databaseReadModelsHealthDetails.bind(null, cosmosClient),
+    isDatabaseEventUp: isDatabaseEventUp.bind(null, cosmosClient),
+    areDatabaseReadModelsUp: areDatabaseReadModelsUp.bind(null, cosmosClient),
+    databaseUrls: databaseUrl.bind(null, cosmosClient),
+    graphQLFunctionUrl: graphqlFunctionUrl,
+    isGraphQLFunctionUp: isGraphQLFunctionUp,
+    rawRequestToHealthEnvelope: rawRequestToSensorHealth,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

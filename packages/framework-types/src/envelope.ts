@@ -33,6 +33,11 @@ export interface CommandEnvelope extends TypedEnvelope {
 
 export type QueryEnvelope = CommandEnvelope
 
+export interface HealthEnvelope extends Envelope {
+  componentPath: string
+  token?: string
+}
+
 export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
 }

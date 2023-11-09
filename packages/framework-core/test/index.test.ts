@@ -27,4 +27,9 @@ describe('framework-core package', () => {
     expect(BoosterCore.boosterRocketDispatcher).not.to.be.null
     expect(BoosterCore.boosterRocketDispatcher).to.equal(Booster.boosterRocketDispatcher)
   })
+
+  it('exports the `boosterHealth` function', () => {
+    expect(BoosterCore.boosterHealth).not.to.be.null
+    expect(BoosterCore.boosterHealth).to.equal(Booster.boosterHealth)
+  })
 })

@@ -31,6 +31,10 @@ export interface ApplicationSynthStack {
   apiManagementApi: apiManagementApi.ApiManagementApi | undefined
   graphQLApiManagementApiOperation: apiManagementApiOperation.ApiManagementApiOperation | undefined
   graphQLApiManagementApiOperationPolicy: apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy | undefined
+  sensorHealthApiManagementApiOperation: apiManagementApiOperation.ApiManagementApiOperation | undefined
+  sensorHealthApiManagementApiOperationPolicy:
+    | apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy
+    | undefined
   cosmosdbDatabase: cosmosdbAccount.CosmosdbAccount | undefined
   cosmosdbSqlDatabase: cosmosdbSqlDatabase.CosmosdbSqlDatabase | undefined
   containers: Array<cosmosdbSqlContainer.CosmosdbSqlContainer> | undefined

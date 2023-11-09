@@ -20,7 +20,7 @@ import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rockets'
-import { Logger } from '.'
+import { DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS, HealthIndicatorMetadata, Logger, SensorConfiguration } from '.'
 import { TraceConfiguration } from './instrumentation/trace-types'
 
 /**
@@ -46,6 +46,7 @@ export class BoosterConfig {
   public readonly codeRelativePath: string = 'dist'
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
   public readonly serveGraphQLHandler: string = path.join(this.codeRelativePath, 'index.boosterServeGraphQL')
+  public readonly sensorHealthHandler: string = path.join(this.codeRelativePath, 'index.boosterHealth')
   public readonly scheduledTaskHandler: string = path.join(
     this.codeRelativePath,
     'index.boosterTriggerScheduledCommand'
@@ -71,6 +72,15 @@ export class BoosterConfig {
   public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
+  public userHealthIndicators: Record<string, HealthIndicatorMetadata> = {}
+  public readonly sensorConfiguration: SensorConfiguration = {
+    health: {
+      globalAuthorizer: {
+        authorize: 'all',
+      },
+      booster: DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS,
+    },
+  }
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
   public enableSubscriptions = true
   public readonly nonExposedGraphQLMetadataKey: Record<string, Array<string>> = {}

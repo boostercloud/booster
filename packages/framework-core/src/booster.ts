@@ -31,6 +31,7 @@ import { BoosterAuthorizer } from './booster-authorizer'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
 import { eventSearch } from './booster-event-search'
+import { BoosterHealthService } from './sensor'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -152,6 +153,10 @@ export class Booster {
     return new BoosterRocketDispatcher(this.config).dispatch(request)
   }
 
+  public static dispatchBoosterHealth(request: unknown): Promise<unknown> {
+    return new BoosterHealthService(this.config).boosterHealth(request)
+  }
+
   private static configureBoosterConcepts(): void {
     this.configureDataMigrations()
     this.configureTouchEntities()
@@ -244,4 +249,8 @@ export async function boosterNotifySubscribers(rawRequest: unknown): Promise<unk
 
 export async function boosterRocketDispatcher(rawRequest: unknown): Promise<unknown> {
   return Booster.dispatchRocket(rawRequest)
+}
+
+export async function boosterHealth(rawRequest: unknown): Promise<unknown> {
+  return Booster.dispatchBoosterHealth(rawRequest)
 }

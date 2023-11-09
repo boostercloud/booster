@@ -24,6 +24,7 @@ import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
 import { TerraformOutputs } from './terraform-outputs'
 import { TerraformWebPubsubHub } from './terraform-web-pubsub-hub'
 import { TerraformWebPubSubExtensionKey } from './terraform-web-pub-sub-extension-key'
+import { TerraformApiManagementApiOperationSensorHealth } from './terraform-api-management-api-operation-sensor-health'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -143,6 +144,15 @@ export class ApplicationSynth {
       'graphql'
     )
 
+    const sensorHealthApiManagementApiOperationResource = TerraformApiManagementApiOperationSensorHealth.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      apiManagementApiResource,
+      this.appPrefix,
+      'sensor-health'
+    )
+
     const graphQLApiManagementApiOperationPolicyResource = TerraformApiManagementApiOperationPolicy.build(
       azurermProvider,
       this.terraformStackResource,
@@ -152,6 +162,17 @@ export class ApplicationSynth {
       this.config.environmentName,
       functionAppResource,
       'graphql'
+    )
+
+    const sensorHealthApiManagementApiOperationPolicyResource = TerraformApiManagementApiOperationPolicy.build(
+      azurermProvider,
+      this.terraformStackResource,
+      resourceGroupResource,
+      sensorHealthApiManagementApiOperationResource,
+      this.appPrefix,
+      this.config.environmentName,
+      functionAppResource,
+      'sensor-health'
     )
 
     let webPubSubHubResource
@@ -183,6 +204,7 @@ export class ApplicationSynth {
       this.appPrefix,
       resourceGroupResource,
       graphQLApiManagementApiOperationResource,
+      sensorHealthApiManagementApiOperationResource,
       hubName,
       webPubSubResource
     )
@@ -201,6 +223,8 @@ export class ApplicationSynth {
       apiManagementApi: apiManagementApiResource,
       graphQLApiManagementApiOperation: graphQLApiManagementApiOperationResource,
       graphQLApiManagementApiOperationPolicy: graphQLApiManagementApiOperationPolicyResource,
+      sensorHealthApiManagementApiOperation: sensorHealthApiManagementApiOperationResource,
+      sensorHealthApiManagementApiOperationPolicy: sensorHealthApiManagementApiOperationPolicyResource,
       cosmosdbDatabase: cosmosdbDatabaseResource,
       cosmosdbSqlDatabase: cosmosdbSqlDatabaseResource,
       containers: containersResource,

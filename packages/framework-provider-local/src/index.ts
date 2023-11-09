@@ -37,9 +37,20 @@ import { WebSocketRegistry } from './services/web-socket-registry'
 import { connectionsDatabase, subscriptionDatabase } from './paths'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
+import {
+  areDatabaseReadModelsUp,
+  databaseUrl,
+  databaseEventsHealthDetails,
+  graphqlFunctionUrl,
+  isDatabaseEventUp,
+  isGraphQLFunctionUp,
+  rawRequestToSensorHealth,
+  databaseReadModelsHealthDetails,
+} from './library/health-adapter'
 
 export * from './paths'
 export * from './services'
+import * as process from 'process'
 
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
@@ -101,6 +112,16 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   },
   rockets: {
     rawToEnvelopes: rawRocketInputToEnvelope,
+  },
+  sensor: {
+    databaseEventsHealthDetails: databaseEventsHealthDetails.bind(null, eventRegistry),
+    databaseReadModelsHealthDetails: databaseReadModelsHealthDetails.bind(null, readModelRegistry),
+    isDatabaseEventUp: isDatabaseEventUp,
+    areDatabaseReadModelsUp: areDatabaseReadModelsUp,
+    databaseUrls: databaseUrl,
+    isGraphQLFunctionUp: isGraphQLFunctionUp,
+    graphQLFunctionUrl: graphqlFunctionUrl,
+    rawRequestToHealthEnvelope: rawRequestToSensorHealth,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
