@@ -227,7 +227,7 @@ Use `@HealthSensor` parameters to configure user components. Example:
 ### Create your own health endpoint
 
 Create your own health endpoint with a class annotated with `@HealthSensor` decorator. This class 
-should define a `health` method that returns a <HealthIndicatorResult>. Example:
+should define a `health` method that returns a **HealthIndicatorResult**. Example:
 
 ```typescript
 import {
