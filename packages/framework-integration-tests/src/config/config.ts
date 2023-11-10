@@ -25,6 +25,12 @@ function configureInvocationsHandler(config: BoosterConfig) {
   }
 }
 
+function configureBoosterSensorHealth(config: BoosterConfig) {
+  Object.values(config.sensorConfiguration.health.booster).forEach((indicator) => {
+    indicator.enabled = true
+  })
+}
+
 Booster.configure('local', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-local'
@@ -44,6 +50,7 @@ Booster.configure('local', (config: BoosterConfig): void => {
   ]
   configureInvocationsHandler(config)
   configureLogger(config)
+  configureBoosterSensorHealth(config)
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
@@ -51,6 +58,7 @@ Booster.configure('development', (config: BoosterConfig): void => {
   config.providerPackage = '@boostercloud/framework-provider-aws'
   config.assets = ['assets', 'assetFile.txt']
   configureInvocationsHandler(config)
+  configureBoosterSensorHealth(config)
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {
@@ -80,6 +88,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
     ),
   ]
   configureInvocationsHandler(config)
+  configureBoosterSensorHealth(config)
 })
 
 Booster.configure('azure', (config: BoosterConfig): void => {
@@ -110,4 +119,5 @@ Booster.configure('azure', (config: BoosterConfig): void => {
   ]
   configureInvocationsHandler(config)
   configureLogger(config)
+  configureBoosterSensorHealth(config)
 })

@@ -164,3 +164,23 @@ export class CartIdDataMigrateV2 {
     "@boostercloud/metadata-booster": "0.30.2"
   },
 ```
+
+## Migrate to Booster version 1.19.0
+
+Booster version 1.19.0 requires updating your index.ts file to export the `boosterHealth` method. If you have an index.ts file created from a previous Booster version, update it accordingly. Example:
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+export {
+  Booster,
+  boosterEventDispatcher,
+  boosterServeGraphQL,
+  boosterHealth,
+  boosterNotifySubscribers,
+  boosterTriggerScheduledCommand,
+  boosterRocketDispatcher,
+} from '@boostercloud/framework-core'
+
+Booster.start(__dirname)
+
+```

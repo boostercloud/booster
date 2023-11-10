@@ -11,4 +11,5 @@ export interface UserApp {
   boosterPreSignUpChecker(_: any): Promise<any>
   boosterServeGraphQL(_: any): Promise<any>
   boosterNotifySubscribers(_: any): Promise<any>
+  boosterHealth(_: any): Promise<any>
 }

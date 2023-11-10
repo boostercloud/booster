@@ -3,6 +3,7 @@ export {
   Booster,
   boosterEventDispatcher,
   boosterServeGraphQL,
+  boosterHealth,
   boosterNotifySubscribers,
   boosterTriggerScheduledCommand,
   boosterRocketDispatcher,

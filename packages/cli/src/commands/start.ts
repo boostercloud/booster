@@ -2,11 +2,12 @@ import { Flags } from '@oclif/core'
 import BaseCommand from '../common/base-command'
 import { startProvider } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { BOOSTER_LOCAL_PORT, BoosterConfig } from '@boostercloud/framework-types'
 import { Script } from '../common/script'
 import Brand from '../common/brand'
 import { logger } from '../services/logger'
 import { currentEnvironment, initializeEnvironment } from '../services/environment'
+import * as process from 'process'
 
 const runTasks = async (
   port: number,
@@ -41,6 +42,7 @@ export default class Start extends BaseCommand {
     const { flags } = await this.parse(Start)
 
     if (initializeEnvironment(logger, flags.environment)) {
+      process.env[BOOSTER_LOCAL_PORT] = flags.port ? flags.port.toString() : '3000'
       await runTasks(flags.port, compileProjectAndLoadConfig(process.cwd()), startProvider.bind(null, flags.port))
     }
   }

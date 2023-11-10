@@ -9,6 +9,7 @@ export class TerraformOutputs {
     appPrefix: string,
     resourceGroupResource: resourceGroup.ResourceGroup,
     graphQLApiManagementApiOperationResource: apiManagementApiOperation.ApiManagementApiOperation,
+    sensorHealthApiManagementApiOperationResource: apiManagementApiOperation.ApiManagementApiOperation,
     hubName: string,
     webPubsubResource?: webPubsub.WebPubsub
   ): void {
@@ -22,6 +23,10 @@ export class TerraformOutputs {
     new TerraformOutput(providerResource, 'graphqlURL', {
       value: baseUrl + graphQLApiManagementApiOperationResource.urlTemplate,
       description: 'The base URL for sending GraphQL mutations and queries',
+    })
+    new TerraformOutput(providerResource, 'sensorHealthURL', {
+      value: baseUrl + sensorHealthApiManagementApiOperationResource.urlTemplate,
+      description: 'The base URL for getting health information',
     })
 
     if (webPubsubResource) {

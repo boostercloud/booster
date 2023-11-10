@@ -2,6 +2,102 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.1.0",
+      "tag": "@boostercloud/framework-core_v2.1.0",
+      "date": "Thu, 09 Nov 2023 12:10:04 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add health sensor",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "4969203d640226fa7dd504c034e58c2e847e9323"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.0.0` to `^2.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.0.0` to `^2.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.0.0` to `^2.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.0.0` to `^2.1.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@boostercloud/framework-core_v2.0.0",
+      "date": "Wed, 01 Nov 2023 13:01:59 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Upgraded for Node18 support",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "5e85f6e717fa7124ee1819ad5cc3be4177763611"
+          },
+          {
+            "comment": "Replaced the deprecated dependency `ttypescript` with `ts-patch`",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "663a15e6a26144577bccdb4d35fc2cc8903a6c5c"
+          }
+        ],
+        "major": [
+          {
+            "comment": "Bump version to 2.0.0",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "7d0927048409c823b39add8b1b937f494500f55c"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.21.0` to `^2.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.21.0` to `^2.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.21.0` to `^2.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^1.21.0` to `^2.0.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.21.0",
+      "tag": "@boostercloud/framework-core_v1.21.0",
+      "date": "Mon, 30 Oct 2023 16:27:59 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add elapsed time to data migration entities",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "b37bb4430ee9dc6708f53f7b0f56431bb717464d"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.20.0` to `^1.21.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.20.0` to `^1.21.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.20.0` to `^1.21.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^1.20.0` to `^1.21.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.20.0",
       "tag": "@boostercloud/framework-core_v1.20.0",
       "date": "Tue, 10 Oct 2023 12:54:54 GMT",

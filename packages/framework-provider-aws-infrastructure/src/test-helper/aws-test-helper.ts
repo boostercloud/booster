@@ -6,6 +6,7 @@ import { AWSQueries } from './aws-queries'
 interface ApplicationOutputs {
   graphqlURL: string
   websocketURL: string
+  healthURL: string
 }
 
 const cloudFormation = new CloudFormation()
@@ -26,6 +27,7 @@ export class AWSTestHelper {
       {
         graphqlURL: await this.graphqlURL(stack),
         websocketURL: await this.websocketURL(stack),
+        healthURL: '',
       },
       new AWSCounters(stackName),
       new AWSQueries(stackName)
