@@ -15,7 +15,7 @@ import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { createInstance, getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { NotificationInterface } from 'framework-types/dist'
 import { Trace } from './instrumentation'
-import { ProjectEntities } from './services/read-model-projections/project-entities'
+import { ReadModelStore } from './services/read-model-store'
 
 export class BoosterEventDispatcher {
   /**
@@ -27,13 +27,13 @@ export class BoosterEventDispatcher {
   public static async dispatch(rawEvents: unknown, config: BoosterConfig): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#dispatch')
     const eventStore = new EventStore(config)
-    const readModelProjectEntities = new ProjectEntities(config)
+    const readModelStore = new ReadModelStore(config)
     logger.debug('Event workflow started for raw events:', require('util').inspect(rawEvents, false, null, false))
     try {
       await RawEventsParser.streamPerEntityEvents(
         config,
         rawEvents,
-        BoosterEventDispatcher.eventProcessor(eventStore, readModelProjectEntities)
+        BoosterEventDispatcher.eventProcessor(eventStore, readModelStore)
       )
     } catch (e) {
       logger.error('Unhandled error while dispatching event: ', e)
@@ -44,10 +44,7 @@ export class BoosterEventDispatcher {
    * Builds a function that will be called once for each entity from the `RawEventsParser.streamPerEntityEvents` method
    * after the page of events is grouped by entity.
    */
-  private static eventProcessor(
-    eventStore: EventStore,
-    readModelProjectEntities: ProjectEntities
-  ): EventsStreamingCallback {
+  private static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
       const eventEnvelopesProcessors = [
         BoosterEventDispatcher.dispatchEntityEventsToEventHandlers(eventEnvelopes, config),
@@ -56,13 +53,7 @@ export class BoosterEventDispatcher {
       // Read models are not updated for notification events (events that are not related to an entity but a topic)
       if (!(entityName in config.topicToEvent)) {
         eventEnvelopesProcessors.push(
-          BoosterEventDispatcher.snapshotAndUpdateReadModels(
-            config,
-            entityName,
-            entityID,
-            eventStore,
-            readModelProjectEntities
-          )
+          BoosterEventDispatcher.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
         )
       }
 
@@ -75,7 +66,7 @@ export class BoosterEventDispatcher {
     entityName: string,
     entityID: UUID,
     eventStore: EventStore,
-    projectEntities: ProjectEntities
+    readModelStore: ReadModelStore
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher#snapshotAndUpdateReadModels')
     let entitySnapshot = undefined
@@ -89,7 +80,7 @@ export class BoosterEventDispatcher {
       return
     }
     logger.debug('Snapshot loaded and started read models projection:', entitySnapshot)
-    await projectEntities.projectEntities(entitySnapshot)
+    await readModelStore.project(entitySnapshot)
   }
 
   @Trace(TraceActionTypes.EVENT_HANDLERS_PROCESS)

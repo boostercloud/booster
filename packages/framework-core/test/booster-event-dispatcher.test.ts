@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { fake, replace, restore, createStubInstance } from 'sinon'
 import {
   EntitySnapshotEnvelope,
@@ -12,12 +13,11 @@ import {
 } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { RawEventsParser } from '../src/services/raw-events-parser'
+import { ReadModelStore } from '../src/services/read-model-store'
 import { EventStore } from '../src/services/event-store'
 import { RegisterHandler } from '../src/booster-register-handler'
 import { random } from 'faker'
-import { ProjectEntities } from '../src/services/read-model-projections/project-entities'
 import { Booster } from '../src'
-import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 
 class SomeEvent {
   public constructor(readonly id: UUID) {}
@@ -141,7 +141,7 @@ describe('BoosterEventDispatcher', () => {
     describe('the `eventProcessor` method', () => {
       it('waits for the snapshot generation process and read model update process to complete', async () => {
         const stubEventStore = createStubInstance(EventStore)
-        const stubReadModelStore = createStubInstance(ProjectEntities)
+        const stubReadModelStore = createStubInstance(ReadModelStore)
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
@@ -162,7 +162,7 @@ describe('BoosterEventDispatcher', () => {
 
       it('waits for the event to be handled by the event handlers', async () => {
         const stubEventStore = createStubInstance(EventStore)
-        const stubReadModelStore = createStubInstance(ProjectEntities)
+        const stubReadModelStore = createStubInstance(ReadModelStore)
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
@@ -180,7 +180,7 @@ describe('BoosterEventDispatcher', () => {
 
       it("doesn't call snapshotAndUpdateReadModels if the entity name is in config.topicToEvent", async () => {
         const stubEventStore = createStubInstance(EventStore)
-        const stubReadModelStore = createStubInstance(ProjectEntities)
+        const stubReadModelStore = createStubInstance(ReadModelStore)
 
         const boosterEventDispatcher = BoosterEventDispatcher as any
         replace(boosterEventDispatcher, 'snapshotAndUpdateReadModels', fake())
@@ -202,7 +202,7 @@ describe('BoosterEventDispatcher', () => {
       it('gets the updated state for the event entity', async () => {
         const boosterEventDispatcher = BoosterEventDispatcher as any
         const eventStore = createStubInstance(EventStore)
-        const readModelStore = createStubInstance(ProjectEntities)
+        const readModelStore = createStubInstance(ReadModelStore)
         eventStore.fetchEntitySnapshot = fake.resolves({}) as any
 
         await boosterEventDispatcher.snapshotAndUpdateReadModels(
@@ -222,7 +222,7 @@ describe('BoosterEventDispatcher', () => {
         const eventStore = createStubInstance(EventStore)
         eventStore.fetchEntitySnapshot = fake.resolves(someEntitySnapshot) as any
 
-        const readModelStore = createStubInstance(ProjectEntities)
+        const readModelStore = createStubInstance(ReadModelStore)
 
         await boosterEventDispatcher.snapshotAndUpdateReadModels(
           config,
@@ -231,15 +231,15 @@ describe('BoosterEventDispatcher', () => {
           eventStore,
           readModelStore
         )
-        expect(readModelStore.projectEntities).to.have.been.calledOnce
-        expect(readModelStore.projectEntities).to.have.been.calledWith(someEntitySnapshot)
+        expect(readModelStore.project).to.have.been.calledOnce
+        expect(readModelStore.project).to.have.been.calledWith(someEntitySnapshot)
       })
 
       context('when the entity reduction fails', () => {
         it('logs the error, does not throw it, and the projects method is not called', async () => {
           const boosterEventDispatcher = BoosterEventDispatcher as any
           const eventStore = createStubInstance(EventStore)
-          const readModelStore = createStubInstance(ProjectEntities)
+          const readModelStore = createStubInstance(ReadModelStore)
           const error = new Error('some error')
           eventStore.fetchEntitySnapshot = fake.rejects(error) as any
 
@@ -253,7 +253,7 @@ describe('BoosterEventDispatcher', () => {
             )
           ).to.be.eventually.fulfilled
 
-          expect(readModelStore.projectEntities).not.to.have.been.called
+          expect(readModelStore.project).not.to.have.been.called
           expect(config.logger?.error).to.have.been.calledWith(
             '[Booster]|BoosterEventDispatcher#snapshotAndUpdateReadModels: ',
             'Error while fetching or reducing entity snapshot:',
