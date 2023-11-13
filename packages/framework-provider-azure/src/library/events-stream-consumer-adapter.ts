@@ -10,6 +10,8 @@ interface DedupEventStream {
   ttl: number
 }
 
+const DEFAULT_DEDUP_TTL = 86400
+
 export async function dedupEventStream(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
@@ -25,7 +27,7 @@ export async function dedupEventStream(
     const eventTag: DedupEventStream = {
       primaryKey: rawParsed._etag,
       createdAt: new Date().toISOString(),
-      ttl: config.eventStreamConfiguration.parameters?.dedupTtl ?? 86400,
+      ttl: config.eventStreamConfiguration.parameters?.dedupTtl ?? DEFAULT_DEDUP_TTL,
     }
     try {
       const { resource } = await cosmosDb

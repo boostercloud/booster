@@ -31,7 +31,9 @@ export async function produceEventsStream(
     }
 
     if (batch.count === 0) {
-      throw new Error(`Message was too large and can't be sent until it's made smaller. ${eventEnvelope}`)
+      throw new Error(
+        `Message was too large and can't be sent until it's made smaller. ${JSON.stringify(eventEnvelope)}`
+      )
     }
 
     // We reached the batch size limit

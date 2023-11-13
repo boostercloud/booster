@@ -28,7 +28,7 @@ export class TerraformEventHub {
       resourceGroupName: resourceGroupName,
       provider: azureProvider,
       namespaceName: eventHubNamespace.name,
-      partitionCount: config.eventStreamConfiguration.parameters?.partitionCount ?? this.DEFAULT_PARTITION_COUNT, // Changing this will force-recreate the resource. Cannot be changed unless Eventhub Namespace SKU is Premium
+      partitionCount: config.eventStreamConfiguration.parameters?.partitionCount ?? this.DEFAULT_PARTITION_COUNT, // Cannot be changed unless Eventhub Namespace SKU is Premium
       messageRetention: config.eventStreamConfiguration.parameters?.messageRetention ?? this.DEFAULT_MESSAGE_RETENTION, // Specifies the number of days to retain the events for this Event Hub.
     })
   }
