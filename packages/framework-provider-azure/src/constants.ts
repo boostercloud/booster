@@ -30,6 +30,8 @@ export const environmentVarNames = {
   cosmosDbConnectionString: 'COSMOSDB_CONNECTION_STRING',
   eventHubConnectionString: 'EVENTHUB_CONNECTION_STRING',
   eventHubName: 'EVENTHUB_NAME',
+  eventHubMaxRetries: 'EVENTHUB_MAX_RETRIES',
+  eventHubMode: 'EVENTHUB_MODE',
 } as const
 
 // Azure special error codes

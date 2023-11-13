@@ -50,6 +50,9 @@ export class TerraformFunctionApp {
         BOOSTER_REST_API_URL: `https://${apiManagementName}.azure-api.net/${config.environmentName}`,
         [environmentVarNames.eventHubConnectionString]: eventHubConnectionString,
         [environmentVarNames.eventHubName]: config.resourceNames.streamTopic,
+        [environmentVarNames.eventHubMaxRetries]:
+          config.eventStreamConfiguration.parameters?.maxRetries?.toString() || '5',
+        [environmentVarNames.eventHubMode]: config.eventStreamConfiguration.parameters?.mode || 'exponential',
         COSMOSDB_CONNECTION_STRING: `AccountEndpoint=https://${cosmosdbDatabase.name}.documents.azure.com:443/;AccountKey=${cosmosdbDatabase.primaryKey};`,
         WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageAccount.primaryConnectionString, // Terraform bug: https://github.com/hashicorp/terraform-provider-azurerm/issues/16650
       },

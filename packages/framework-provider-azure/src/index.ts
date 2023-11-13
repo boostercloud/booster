@@ -4,9 +4,9 @@ import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
   rawEventsToEnvelopes,
-  storeEvents,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
@@ -57,6 +57,8 @@ if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefi
 let producer: EventHubProducerClient
 const eventHubConnectionString = process.env[environmentVarNames.eventHubConnectionString]
 const eventHubName = process.env[environmentVarNames.eventHubName]
+const DEFAULT_MAX_RETRY = 5
+const DEFAULT_EVENT_HUB_MODE = RetryMode.Exponential
 if (
   typeof eventHubConnectionString === 'undefined' ||
   typeof eventHubName === 'undefined' ||
@@ -65,10 +67,18 @@ if (
 ) {
   producer = {} as any
 } else {
+  const maxRetries = process.env[environmentVarNames.eventHubMaxRetries]
+    ? Number(process.env[environmentVarNames.eventHubMaxRetries])
+    : DEFAULT_MAX_RETRY
+  const mode =
+    process.env[environmentVarNames.eventHubMaxRetries] &&
+    process.env[environmentVarNames.eventHubMode]?.toUpperCase() === 'FIXED'
+      ? RetryMode.Fixed
+      : DEFAULT_EVENT_HUB_MODE
   producer = new EventHubProducerClient(eventHubConnectionString, eventHubName, {
     retryOptions: {
-      maxRetries: 5,
-      mode: RetryMode.Exponential,
+      maxRetries: maxRetries,
+      mode: mode,
     },
   })
 }

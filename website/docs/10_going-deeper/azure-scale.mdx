@@ -19,6 +19,8 @@ To enable EventStream, set the `EventStreamConfiguration` in the configuration o
       streamTopic: 'test',
       partitionCount: 3,
       messageRetention: 1,
+      maxRetries: 5,
+      mode: 'exponential'
     },
   }
 ```
@@ -27,6 +29,10 @@ To enable EventStream, set the `EventStreamConfiguration` in the configuration o
 * StreamTopic: Define the internal topic name Booster will use.
 * PartitionCount: Number of Event Hub partitions. The number of functions app consumer instances will match the partition count
 * MessageRetention: Specifies the number of days to retain the events for this Event Hub
+* MaxRetries: Number of retries to consume an event
+* Mode: Retry mode. It could be `fixed` or `exponential`
+
+Note: `maxRetries` and `mode` are configured at Function level
 
 ## Infrastructure
 
@@ -38,5 +44,11 @@ Enabling `EventStreamConfiguration` will apply some changes to the infrastructur
 * A new container to handle duplicated consumed events
 * A new Event Hub will be added for event handling.
 
+## Recommendations
+
+[From the Azure documentation](https://learn.microsoft.com/en-us/azure/event-hubs/dynamically-add-partitions#recommendations):
+
+Dynamically adding partitions isn't recommended. While the existing data preserves ordering, partition hashing will be broken for messages hashed after the
+partition count changes due to addition of partitions.
 
 <DocCardList />
