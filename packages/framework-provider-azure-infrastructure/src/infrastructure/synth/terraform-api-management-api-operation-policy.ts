@@ -14,7 +14,6 @@ export class TerraformApiManagementApiOperationPolicy {
       functionApp,
       graphQLApiManagementApiOperation,
     }: ApplicationSynthStack,
-    environmentName: string,
     name: string
   ): apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy {
     if (!functionApp) {

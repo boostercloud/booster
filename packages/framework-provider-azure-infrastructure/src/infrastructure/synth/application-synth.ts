@@ -59,6 +59,7 @@ export class ApplicationSynth {
 
   public synth(zipFile: string): ApplicationSynthStack {
     const graphQLApiOperation = 'graphql'
+    const sensorApiOperation = 'sensor-health'
     const resourceGroup = TerraformResourceGroup.build(this.stackNames)
     const stack: ApplicationSynthStack = { ...this.stackNames, resourceGroup: resourceGroup }
     stack.cosmosdbDatabase = TerraformCosmosdbDatabase.build(stack)
@@ -74,28 +75,15 @@ export class ApplicationSynth {
     stack.functionApp = this.buildDefaultFunctionApp(stack, zipFile)
     stack.graphQLApiManagementApiOperationPolicy = TerraformApiManagementApiOperationPolicy.build(
       stack,
-      this.config.environmentName,
       graphQLApiOperation
     )
-    // TODO
-    const sensorHealthApiManagementApiOperationResource = TerraformApiManagementApiOperationSensorHealth.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      apiManagementApiResource,
-      this.appPrefix,
-      'sensor-health'
+    stack.sensorHealthApiManagementApiOperation = TerraformApiManagementApiOperationSensorHealth.build(
+      stack,
+      sensorApiOperation
     )
-    // todo
-    const sensorHealthApiManagementApiOperationPolicyResource = TerraformApiManagementApiOperationPolicy.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      sensorHealthApiManagementApiOperationResource,
-      this.appPrefix,
-      this.config.environmentName,
-      functionAppResource,
-      'sensor-health'
+    stack.sensorHealthApiManagementApiOperationPolicy = TerraformApiManagementApiOperationPolicy.build(
+      stack,
+      sensorApiOperation
     )
     this.buildWebPubSubHub(stack)
     TerraformOutputs.build(stack)

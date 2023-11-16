@@ -17,11 +17,11 @@ export class EventStreamProducerFunction {
       type: 'cosmosDBTrigger',
       name: 'rawEvent',
       direction: 'in',
-      leaseCollectionName: 'leases',
-      connectionStringSetting: 'COSMOSDB_CONNECTION_STRING',
+      leaseContainerName: 'leases',
+      connection: 'COSMOSDB_CONNECTION_STRING',
       databaseName: this.config.resourceNames.applicationStack,
-      collectionName: this.config.resourceNames.eventsStore,
-      createLeaseCollectionIfNotExists: 'true',
+      containerName: this.config.resourceNames.eventsStore,
+      createLeaseContainerIfNotExists: 'true',
     }
     const eventHubBinding: EventHubOutBinding = {
       name: 'eventHubMessages',

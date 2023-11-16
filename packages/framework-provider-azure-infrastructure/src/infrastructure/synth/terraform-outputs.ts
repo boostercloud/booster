@@ -15,7 +15,7 @@ export class TerraformOutputs {
       description: 'The base URL for sending GraphQL mutations and queries',
     })
     new TerraformOutput(applicationSynthStack.azureProvider, 'sensorHealthURL', {
-      value: baseUrl + applicationSynthStack.sensorHealthApiManagementApiOperationResource.urlTemplate,
+      value: baseUrl + applicationSynthStack.sensorHealthApiManagementApiOperation?.urlTemplate,
       description: 'The base URL for getting health information',
     })
 
