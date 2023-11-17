@@ -69,11 +69,7 @@ export class ApplicationSynth {
     this.buildWebPubSub(stack)
     stack.apiManagement = TerraformApiManagement.build(stack)
     stack.apiManagementApi = TerraformApiManagementApi.build(stack, this.config.environmentName)
-    stack.graphQLApiManagementApiOperation = TerraformApiManagementApiOperation.build(stack, graphQLApiOperation)
-    stack.applicationServicePlan = TerraformServicePlan.build(stack, 'psp', 'Y1', 1)
-    stack.storageAccount = TerraformStorageAccount.build(stack, 'sp')
-    stack.functionApp = this.buildDefaultFunctionApp(stack, zipFile)
-    stack.graphQLApiManagementApiOperationPolicy = TerraformApiManagementApiOperationPolicy.build(
+    stack.graphQLApiManagementApiOperation = TerraformApiManagementApiOperation.build(
       stack,
       graphQLApiOperation
     )
@@ -81,9 +77,20 @@ export class ApplicationSynth {
       stack,
       sensorApiOperation
     )
+    stack.applicationServicePlan = TerraformServicePlan.build(stack, 'psp', 'Y1', 1)
+    stack.storageAccount = TerraformStorageAccount.build(stack, 'sp')
+    stack.functionApp = this.buildDefaultFunctionApp(stack, zipFile)
+    stack.graphQLApiManagementApiOperationPolicy = TerraformApiManagementApiOperationPolicy.build(
+      stack,
+      stack.graphQLApiManagementApiOperation,
+      graphQLApiOperation,
+      'amaop'
+    )
     stack.sensorHealthApiManagementApiOperationPolicy = TerraformApiManagementApiOperationPolicy.build(
       stack,
-      sensorApiOperation
+      stack.sensorHealthApiManagementApiOperation,
+      sensorApiOperation,
+      'amaopsh'
     )
     this.buildWebPubSubHub(stack)
     TerraformOutputs.build(stack)

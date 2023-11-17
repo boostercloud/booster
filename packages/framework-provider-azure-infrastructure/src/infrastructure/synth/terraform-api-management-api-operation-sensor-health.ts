@@ -4,7 +4,7 @@ import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformApiManagementApiOperationSensorHealth {
   static build(
-    { terraformStack, azureProvider, resourceGroup, apiManagementApi, appPrefix }: ApplicationSynthStack,
+    { terraformStack, azureProvider, appPrefix, resourceGroupName, apiManagementApi }: ApplicationSynthStack,
     name: string
   ): apiManagementApiOperation.ApiManagementApiOperation {
     if (!apiManagementApi) {
@@ -15,7 +15,7 @@ export class TerraformApiManagementApiOperationSensorHealth {
       operationId: `${name}GET`,
       apiName: apiManagementApi.name,
       apiManagementName: apiManagementApi.apiManagementName,
-      resourceGroupName: resourceGroup.name,
+      resourceGroupName: resourceGroupName,
       displayName: '/sensor/health',
       method: 'GET',
       urlTemplate: '/sensor/health/*',
