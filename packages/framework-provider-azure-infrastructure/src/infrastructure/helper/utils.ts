@@ -97,7 +97,11 @@ export function createResourceGroupName(appName: string, environmentName: string
 }
 
 export function createFunctionResourceGroupName(resourceGroupName: string): string {
-  return `${resourceGroupName}func`
+  return `${resourceGroupName}fpr`
+}
+
+export function createStreamFunctionResourceGroupName(resourceGroupName: string): string {
+  return `${resourceGroupName}fcs`
 }
 
 export function createApiManagementName(resourceGroupName: string): string {

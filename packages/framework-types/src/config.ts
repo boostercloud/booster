@@ -15,6 +15,7 @@ import {
   RoleMetadata,
   ScheduledCommandMetadata,
   SchemaMigrationMetadata,
+  EventStreamConfiguration,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -45,6 +46,8 @@ export class BoosterConfig {
   private _userProjectRootPath?: string
   public readonly codeRelativePath: string = 'dist'
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
+  public readonly eventStreamConsumer: string = path.join(this.codeRelativePath, 'index.boosterConsumeEventStream')
+  public readonly eventStreamProducer: string = path.join(this.codeRelativePath, 'index.boosterProduceEventStream')
   public readonly serveGraphQLHandler: string = path.join(this.codeRelativePath, 'index.boosterServeGraphQL')
   public readonly sensorHealthHandler: string = path.join(this.codeRelativePath, 'index.boosterHealth')
   public readonly scheduledTaskHandler: string = path.join(
@@ -106,6 +109,8 @@ export class BoosterConfig {
     onEnd: async (): Promise<void> => {},
   }
 
+  public eventStreamConfiguration: EventStreamConfiguration = { enabled: false }
+
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
@@ -124,8 +129,10 @@ export class BoosterConfig {
     return {
       applicationStack: applicationStackName,
       eventsStore: applicationStackName + '-events-store',
+      eventsDedup: applicationStackName + '-events-dedup',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
       connectionsStore: applicationStackName + '-connections-store',
+      streamTopic: this.eventStreamConfiguration.parameters?.streamTopic ?? 'booster_events',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
@@ -227,8 +234,10 @@ export class BoosterConfig {
 interface ResourceNames {
   applicationStack: string
   eventsStore: string
+  eventsDedup: string
   subscriptionsStore: string
   connectionsStore: string
+  streamTopic: string
   forReadModel(entityName: string): string
 }
 

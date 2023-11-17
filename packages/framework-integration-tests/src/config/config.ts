@@ -31,6 +31,17 @@ function configureBoosterSensorHealth(config: BoosterConfig) {
   })
 }
 
+function configureEventHub(config: BoosterConfig) {
+  config.eventStreamConfiguration = {
+    enabled: true,
+    parameters: {
+      streamTopic: 'test',
+      partitionCount: 3,
+      messageRetention: 1,
+    },
+  }
+}
+
 Booster.configure('local', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-local'
@@ -120,4 +131,5 @@ Booster.configure('azure', (config: BoosterConfig): void => {
   configureInvocationsHandler(config)
   configureLogger(config)
   configureBoosterSensorHealth(config)
+  configureEventHub(config)
 })

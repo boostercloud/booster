@@ -12,14 +12,11 @@ type EnvelopesPerEntity = Record<string, Array<EventEnvelope>>
 export class RawEventsParser {
   public static async streamPerEntityEvents(
     config: BoosterConfig,
-    rawEvents: unknown,
+    eventEnvelopes: Array<EventEnvelope>,
     callbackFn: EventsStreamingCallback
   ): Promise<void> {
     const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
-    const eventEnvelopesPerEntity = config.provider.events
-      .rawToEnvelopes(rawEvents)
-      .filter(isEventKind)
-      .reduce(groupByEntity, {})
+    const eventEnvelopesPerEntity = eventEnvelopes.filter(isEventKind).reduce(groupByEntity, {})
 
     const processes = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
       // All envelopes are for the same entity type/ID, so we get the first one to get those values

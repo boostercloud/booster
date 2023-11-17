@@ -1,40 +1,41 @@
-import { TerraformStack } from 'cdktf'
 import { toTerraformName } from '../helper/utils'
-import {
-  dataAzurermFunctionAppHostKeys,
-  resourceGroup,
-  webPubsub,
-  webPubsubHub,
-  windowsFunctionApp,
-} from '@cdktf/provider-azurerm'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { webPubsubHub } from '@cdktf/provider-azurerm'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformWebPubsubHub {
-  static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    webPubSubResource: webPubsub.WebPubsub,
-    appPrefix: string,
-    functionApp: windowsFunctionApp.WindowsFunctionApp,
-    dataAzurermFunctionAppHostKeys: dataAzurermFunctionAppHostKeys.DataAzurermFunctionAppHostKeys,
-    hubName: string
-  ): webPubsubHub.WebPubsubHub {
+  static build({
+    terraformStack,
+    azureProvider,
+    appPrefix,
+    webPubSub,
+    functionApp,
+    dataFunctionAppHostKeys,
+    webPubSubHubName,
+  }: ApplicationSynthStack): webPubsubHub.WebPubsubHub {
+    if (!webPubSub) {
+      throw new Error('Undefined webPubSub resource')
+    }
+    if (!functionApp) {
+      throw new Error('Undefined functionApp resource')
+    }
+    if (!dataFunctionAppHostKeys) {
+      throw new Error('Undefined dataFunctionAppHostKeys resource')
+    }
     const idApiManagement = toTerraformName(appPrefix, 'wpsh')
-
-    return new webPubsubHub.WebPubsubHub(terraformStackResource, idApiManagement, {
-      name: hubName,
-      webPubsubId: webPubSubResource.id,
+    const name = webPubSubHubName
+    return new webPubsubHub.WebPubsubHub(terraformStack, idApiManagement, {
+      name: name,
+      webPubsubId: webPubSub.id,
       eventHandler: [
         {
-          urlTemplate: `https://${functionApp.name}.azurewebsites.net/runtime/webhooks/webpubsub?code=${dataAzurermFunctionAppHostKeys.webpubsubExtensionKey}`,
+          urlTemplate: `https://${functionApp.name}.azurewebsites.net/runtime/webhooks/webpubsub?code=${dataFunctionAppHostKeys.webpubsubExtensionKey}`,
           systemEvents: ['connect', 'disconnected'],
           userEventPattern: '*',
         },
       ],
       anonymousConnectionsEnabled: true,
-      dependsOn: [functionApp, dataAzurermFunctionAppHostKeys, webPubSubResource],
-      provider: providerResource,
+      dependsOn: [functionApp, dataFunctionAppHostKeys, webPubSub],
+      provider: azureProvider,
     })
   }
 }

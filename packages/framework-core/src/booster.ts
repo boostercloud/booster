@@ -32,6 +32,8 @@ import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
 import { eventSearch } from './booster-event-search'
 import { BoosterHealthService } from './sensor'
+import { BoosterEventStreamConsumer } from './booster-event-stream-consumer'
+import { BoosterEventStreamProducer } from './booster-event-stream-producer'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -128,6 +130,14 @@ export class Booster {
     const eventStore = new EventStore(this.config)
     const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
     return entitySnapshotEnvelope ? createInstance(entityClass, entitySnapshotEnvelope.value) : undefined
+  }
+
+  public static consumeEventStream(rawEvent: unknown): Promise<unknown> {
+    return BoosterEventStreamConsumer.consume(rawEvent, this.config)
+  }
+
+  public static produceEventStream(request: unknown): Promise<unknown> {
+    return BoosterEventStreamProducer.produce(request, this.config)
   }
 
   /**
@@ -229,6 +239,14 @@ function checkAndGetCurrentEnv(): string {
     )
   }
   return env
+}
+
+export async function boosterConsumeEventStream(rawEvent: unknown): Promise<unknown> {
+  return Booster.consumeEventStream(rawEvent)
+}
+
+export async function boosterProduceEventStream(rawEvent: unknown): Promise<unknown> {
+  return Booster.produceEventStream(rawEvent)
 }
 
 export async function boosterEventDispatcher(rawEvent: unknown): Promise<unknown> {

@@ -1,47 +1,68 @@
-import { TerraformStack } from 'cdktf'
-import { resourceGroup, servicePlan, storageAccount, webPubsub, windowsFunctionApp } from '@cdktf/provider-azurerm'
+import { servicePlan, storageAccount, windowsFunctionApp } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
+import { environmentVarNames } from '@boostercloud/framework-provider-azure'
 
 export class TerraformFunctionApp {
   static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    servicePlanResource: servicePlan.ServicePlan,
-    storageAccountResource: storageAccount.StorageAccount,
-    appPrefix: string,
-    functionAppName: string,
-    cosmosDatabaseName: string,
-    apiManagementServiceName: string,
-    cosmosDbConnectionString: string,
+    {
+      terraformStack,
+      azureProvider,
+      appPrefix,
+      resourceGroup,
+      resourceGroupName,
+      cosmosdbDatabase,
+      apiManagementName,
+      eventHubNamespace,
+      eventHub,
+      webPubSub,
+    }: ApplicationSynthStack,
     config: BoosterConfig,
     zipFile: string,
-    webPubsubResource?: webPubsub.WebPubsub
+    applicationServicePlan: servicePlan.ServicePlan,
+    storageAccount: storageAccount.StorageAccount,
+    suffixName: string,
+    functionAppName: string
   ): windowsFunctionApp.WindowsFunctionApp {
-    const id = toTerraformName(appPrefix, 'func')
-    return new windowsFunctionApp.WindowsFunctionApp(terraformStackResource, id, {
+    if (!cosmosdbDatabase) {
+      throw new Error('Undefined cosmosdbDatabase resource')
+    }
+    if (!applicationServicePlan) {
+      throw new Error('Undefined applicationServicePlan resource')
+    }
+    const id = toTerraformName(appPrefix, suffixName)
+    const eventHubConnectionString =
+      eventHubNamespace?.defaultPrimaryConnectionString && eventHub?.name
+        ? `${eventHubNamespace.defaultPrimaryConnectionString};EntityPath=${eventHub.name}`
+        : ''
+    return new windowsFunctionApp.WindowsFunctionApp(terraformStack, id, {
       name: functionAppName,
-      location: resourceGroupResource.location,
-      resourceGroupName: resourceGroupResource.name,
-      servicePlanId: servicePlanResource.id,
+      location: resourceGroup.location,
+      resourceGroupName: resourceGroupName,
+      servicePlanId: applicationServicePlan.id,
       appSettings: {
-        WebPubSubConnectionString: webPubsubResource?.primaryConnectionString || '',
         WEBSITE_RUN_FROM_PACKAGE: '1',
         WEBSITE_CONTENTSHARE: id,
         ...config.env,
+        WebPubSubConnectionString: webPubSub?.primaryConnectionString || '',
         BOOSTER_ENV: config.environmentName,
-        BOOSTER_REST_API_URL: `https://${apiManagementServiceName}.azure-api.net/${config.environmentName}`,
-        COSMOSDB_CONNECTION_STRING: `AccountEndpoint=https://${cosmosDatabaseName}.documents.azure.com:443/;AccountKey=${cosmosDbConnectionString};`,
+        BOOSTER_REST_API_URL: `https://${apiManagementName}.azure-api.net/${config.environmentName}`,
+        [environmentVarNames.eventHubConnectionString]: eventHubConnectionString,
+        [environmentVarNames.eventHubName]: config.resourceNames.streamTopic,
+        [environmentVarNames.eventHubMaxRetries]:
+          config.eventStreamConfiguration.parameters?.maxRetries?.toString() || '5',
+        [environmentVarNames.eventHubMode]: config.eventStreamConfiguration.parameters?.mode || 'exponential',
+        COSMOSDB_CONNECTION_STRING: `AccountEndpoint=https://${cosmosdbDatabase.name}.documents.azure.com:443/;AccountKey=${cosmosdbDatabase.primaryKey};`,
+        WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageAccount.primaryConnectionString, // Terraform bug: https://github.com/hashicorp/terraform-provider-azurerm/issues/16650
       },
-      storageAccountName: storageAccountResource.name,
-      storageAccountAccessKey: storageAccountResource.primaryAccessKey,
-      dependsOn: [resourceGroupResource],
+      storageAccountName: storageAccount.name,
+      storageAccountAccessKey: storageAccount.primaryAccessKey,
+      dependsOn: [resourceGroup],
       lifecycle: {
         ignoreChanges: ['app_settings["WEBSITE_RUN_FROM_PACKAGE"]'],
       },
-      provider: providerResource,
+      provider: azureProvider,
       siteConfig: {
         applicationStack: {
           nodeVersion: '~18',

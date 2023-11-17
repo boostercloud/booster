@@ -2,6 +2,8 @@ import { Booster } from '@boostercloud/framework-core'
 export {
   Booster,
   boosterEventDispatcher,
+  boosterProduceEventStream,
+  boosterConsumeEventStream,
   boosterPreSignUpChecker,
   boosterHealth,
   boosterServeGraphQL,

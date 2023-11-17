@@ -1,38 +1,34 @@
-import { TerraformStack } from 'cdktf'
-import {
-  apiManagementApiOperation,
-  apiManagementApiOperationPolicy,
-  resourceGroup,
-  windowsFunctionApp,
-} from '@cdktf/provider-azurerm'
+import { apiManagementApiOperation, apiManagementApiOperationPolicy } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import * as Mustache from 'mustache'
 import { templates } from '../templates'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformApiManagementApiOperationPolicy {
   static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    apiManagementApiOperationResource: apiManagementApiOperation.ApiManagementApiOperation,
-    appPrefix: string,
-    environmentName: string,
-    functionAppResource: windowsFunctionApp.WindowsFunctionApp,
-    name: string
+    { terraformStack, azureProvider, appPrefix, resourceGroupName, functionApp }: ApplicationSynthStack,
+    apiManagementApiOperation: apiManagementApiOperation.ApiManagementApiOperation,
+    name: string,
+    suffix: string
   ): apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy {
-    const idApiManagementApiOperationPolicy = toTerraformName(appPrefix, 'amaop' + name[0])
-    const policyContent = Mustache.render(templates.policy, { functionAppName: functionAppResource.name })
+    if (!functionApp) {
+      throw new Error('Undefined functionApp resource')
+    }
+    if (!apiManagementApiOperation) {
+      throw new Error('Undefined apiManagementApiOperation resource')
+    }
+    const idApiManagementApiOperationPolicy = toTerraformName(appPrefix, suffix + name[0])
+    const policyContent = Mustache.render(templates.policy, { functionAppName: functionApp.name })
     return new apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy(
-      terraformStackResource,
+      terraformStack,
       idApiManagementApiOperationPolicy,
       {
-        apiName: apiManagementApiOperationResource.apiName,
-        apiManagementName: apiManagementApiOperationResource.apiManagementName,
-        resourceGroupName: resourceGroupResource.name,
-        operationId: apiManagementApiOperationResource.operationId,
+        apiName: apiManagementApiOperation.apiName,
+        apiManagementName: apiManagementApiOperation.apiManagementName,
+        resourceGroupName: resourceGroupName,
+        operationId: apiManagementApiOperation.operationId,
         xmlContent: policyContent,
-        provider: providerResource,
+        provider: azureProvider,
       }
     )
   }

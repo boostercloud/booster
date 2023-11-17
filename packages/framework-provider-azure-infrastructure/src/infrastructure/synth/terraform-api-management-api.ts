@@ -1,29 +1,26 @@
-import { TerraformStack } from 'cdktf'
-import { apiManagement, apiManagementApi, resourceGroup } from '@cdktf/provider-azurerm'
+import { apiManagementApi } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformApiManagementApi {
   static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    apiManagementResource: apiManagement.ApiManagement,
-    appPrefix: string,
-    environmentName: string,
-    resourceGroupName: string
+    { terraformStack, azureProvider, appPrefix, resourceGroupName, apiManagement }: ApplicationSynthStack,
+    environmentName: string
   ): apiManagementApi.ApiManagementApi {
+    if (!apiManagement) {
+      throw new Error('Undefined apiManagement resource')
+    }
     const idApiManagementApi = toTerraformName(appPrefix, 'amapi')
-    return new apiManagementApi.ApiManagementApi(terraformStackResource, idApiManagementApi, {
+    return new apiManagementApi.ApiManagementApi(terraformStack, idApiManagementApi, {
       name: `${resourceGroupName}rest`,
-      resourceGroupName: resourceGroupResource.name,
-      apiManagementName: apiManagementResource.name,
+      resourceGroupName: resourceGroupName,
+      apiManagementName: apiManagement.name,
       revision: '1',
       displayName: `${appPrefix}-rest-api`,
       path: environmentName,
       protocols: ['http', 'https'],
       subscriptionRequired: false,
-      provider: providerResource,
+      provider: azureProvider,
     })
   }
 }

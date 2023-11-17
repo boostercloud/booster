@@ -20,6 +20,7 @@ import {
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor, RocketEnvelope } from './rockets'
+import { EventStream } from './stream-types'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -56,6 +57,17 @@ export interface ProviderEventsLibrary {
    * @returns An array of EventEnvelope objects
    */
   rawToEnvelopes(rawEvents: unknown): Array<EventEnvelope>
+
+  rawStreamToEnvelopes(config: BoosterConfig, context: unknown, dedupEventStream: EventStream): Array<EventEnvelope>
+
+  dedupEventStream(config: BoosterConfig, rawEvents: unknown): Promise<EventStream>
+
+  produce(
+    entityName: string,
+    entityID: UUID,
+    eventEnvelopes: Array<EventEnvelope>,
+    config: BoosterConfig
+  ): Promise<void>
 
   /**
    * Retrieves events for a specific entity since a given time

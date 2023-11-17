@@ -1,9 +1,15 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { azureCredentials, createResourceGroupName, createResourceManagementClient } from './helper/utils'
+import {
+  azureCredentials,
+  createFunctionResourceGroupName,
+  createResourceGroupName,
+  createResourceManagementClient, createStreamFunctionResourceGroupName
+} from './helper/utils'
 import { runCommand, getLogger } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { ApplicationBuilder } from './application-builder'
 import { RocketBuilder } from './rockets/rocket-builder'
+import { FunctionZip } from './helper/function-zip'
 
 export const synth = (config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> =>
   synthApp(config, rockets)
@@ -36,7 +42,13 @@ async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]
     return Promise.reject(`Deployment of application ${config.appName} failed. Check cdktf logs. \n${error.message}}`)
   }
 
-  await applicationBuilder.uploadFile(applicationBuild.zipResource)
+  const resourceGroupName = createResourceGroupName(config.appName, config.environmentName)
+  const functionAppName = createFunctionResourceGroupName(resourceGroupName)
+  await FunctionZip.deployZip(config, functionAppName, resourceGroupName, applicationBuild.zipResource)
+  if (config.eventStreamConfiguration.enabled) {
+    const streamFunctionAppName = createStreamFunctionResourceGroupName(resourceGroupName)
+    await FunctionZip.deployZip(config, streamFunctionAppName, resourceGroupName, applicationBuild.consumerZipResource)
+  }
   if (applicationBuild.rocketsZipResources && applicationBuild.rocketsZipResources.length > 0) {
     const rocketBuilder = new RocketBuilder(config, applicationBuild.azureStack.applicationStack, rockets)
     await rocketBuilder.uploadRocketsFiles(applicationBuild.rocketsZipResources)
