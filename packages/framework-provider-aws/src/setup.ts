@@ -66,9 +66,9 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     // ProviderEventsLibrary
     events: {
       rawToEnvelopes: rawEventsToEnvelopes,
-      rawStreamToEnvelopes: notImplementedResult() as any,
-      dedupEventStream: notImplementedResult() as any,
-      produce: notImplementedResult() as any,
+      rawStreamToEnvelopes: notImplementedResult as any,
+      dedupEventStream: notImplementedResult as any,
+      produce: notImplementedResult as any,
       forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
       latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
       search: searchEvents.bind(null, dynamoDB),
