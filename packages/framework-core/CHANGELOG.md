@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 09 Nov 2023 12:10:04 GMT and should not be manually modified.
+This log was last generated on Fri, 17 Nov 2023 14:25:53 GMT and should not be manually modified.
+
+## 2.2.0
+Fri, 17 Nov 2023 14:25:53 GMT
+
+### Minor changes
+
+- Add Azure Event Hub
 
 ## 2.1.0
 Thu, 09 Nov 2023 12:10:04 GMT

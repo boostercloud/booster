@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.2.0",
+      "tag": "@boostercloud/framework-core_v2.2.0",
+      "date": "Fri, 17 Nov 2023 14:25:53 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add Azure Event Hub",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "46181ee3ae888df6a88bc7ac92e6143899f66560"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.1.0` to `^2.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.1.0` to `^2.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.1.0` to `^2.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.1.0` to `^2.2.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.1.0",
       "tag": "@boostercloud/framework-core_v2.1.0",
       "date": "Thu, 09 Nov 2023 12:10:04 GMT",
