@@ -25,16 +25,24 @@ export class ReadModelStore {
   public constructor(readonly config: BoosterConfig) {}
 
   public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope): Promise<void> {
-    const logger = getLogger(this.config, 'ProjectEntities#projectEntities')
+    const logger = getLogger(this.config, 'ReadModelStore#projectEntities')
     const projections = this.config.projections[entitySnapshotEnvelope.entityTypeName]
     if (!projections) {
       logger.debug(`No projections found for entity ${entitySnapshotEnvelope.entityTypeName}. Skipping...`)
       return
     }
+    logger.debug(
+      `Projections found for entity ${entitySnapshotEnvelope.entityTypeName}: ${JSON.stringify(projections)}`
+    )
     const entityMetadata = this.config.entities[entitySnapshotEnvelope.entityTypeName]
     const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
     const projectReadModelPromises = projections.flatMap(
       (projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>) => {
+        logger.debug(
+          `Projecting entity snapshot ${entitySnapshotEnvelope} to build new state of read model with projectionMetadata ${JSON.stringify(
+            projectionMetadata
+          )}`
+        )
         const readModelName = projectionMetadata.class.name
         const sequenceKey = this.sequenceKeyForProjection(entityInstance, projectionMetadata)
         return this.projectEntity(
@@ -116,7 +124,7 @@ export class ReadModelStore {
     currentReadModel: ReadModelInterface
   ): Promise<Array<Promise<unknown>>> {
     const projections: Array<Promise<unknown>> = []
-    const logger = getLogger(this.config, 'ProjectEntities#projectionsForExistingReadModels')
+    const logger = getLogger(this.config, 'ReadModelStore#projectionsForExistingReadModels')
     if (this.isJoinKeyByEntity(projectionMetadata.joinKey)) {
       const entityJoinKey = (entityInstance as any)[projectionMetadata.joinKey]
       if (!entityJoinKey) {
@@ -166,7 +174,7 @@ export class ReadModelStore {
     entityMetadata: EntityMetadata
   ): Promise<Array<Promise<unknown>>> {
     const projections: Array<Promise<unknown>> = []
-    const logger = getLogger(this.config, 'ProjectEntities#projectionsForNewReadModels')
+    const logger = getLogger(this.config, 'ReadModelStore#projectionsForNewReadModels')
     if (this.isJoinKeyByEntity(projectionMetadata.joinKey)) {
       const entityJoinKey = (entityInstance as any)[projectionMetadata.joinKey]
       if (!entityJoinKey) {
@@ -213,7 +221,7 @@ export class ReadModelStore {
     readModelId?: UUID,
     currentReadModel?: ReadModelInterface
   ): Promise<unknown> {
-    const logger = getLogger(this.config, 'ProjectEntities#projectAndStoreReadModelWithRetry')
+    const logger = getLogger(this.config, 'ReadModelStore#projectAndStoreReadModelWithRetry')
     logger.debug(
       'Projecting entity snapshot ',
       entitySnapshotEnvelope,
@@ -222,14 +230,15 @@ export class ReadModelStore {
     )
 
     return retryIfError(
-      () =>
+      (tryNumber?: number) =>
         this.applyProjectionToReadModel(
           entityInstance,
           projectionMetadata,
           currentReadModel,
           entitySnapshotEnvelope,
           readModelId,
-          sequenceKey
+          sequenceKey,
+          tryNumber
         ),
       OptimisticConcurrencyUnexpectedVersionError,
       logger
@@ -241,12 +250,19 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityMetadata: EntityMetadata
   ): Promise<Array<ReadModelInterface>> {
+    const logger = getLogger(this.config, 'ReadModelStore#getReadModels')
+    logger.debug(
+      `Looking for ReadModels for entity ${JSON.stringify(entityInstance)} using Filter ${projectionMetadata.joinKey}`
+    )
     const readModelName = projectionMetadata.class.name
     const readModelMetadata = this.config.readModels[readModelName]
     const filter = this.filterForProjection(entityInstance, projectionMetadata, entityMetadata)
     if (!filter) {
       return []
     }
+    logger.debug(
+      `Calling ReadModelSearcher searching for ReadModels for entity ${readModelMetadata.class.name} using Filter ${filter}`
+    )
     const rawReadModels = (await readModelSearcher<ReadModelInterface>(this.config, readModelMetadata.class)
       .filter(filter)
       .paginatedVersion(false)
@@ -271,17 +287,35 @@ export class ReadModelStore {
     currentReadModel?: ReadModelInterface,
     lastProjectedEntity?: EntitySnapshotEnvelope,
     currentReadModelID?: UUID,
-    sequenceKey?: SequenceKey
+    sequenceKey?: SequenceKey,
+    tryNumber?: number
   ): Promise<unknown> {
-    const logger = getLogger(this.config, 'ProjectionStore#applyProjectionToReadModel')
+    const logger = getLogger(this.config, 'ReadModelStore#applyProjectionToReadModel')
     const readModelName = projectionMetadata.class.name
     const readModelID = currentReadModelID ?? currentReadModel?.id
 
+    if (tryNumber && tryNumber > 1) {
+      // In case of optimistic concurrency error, we need to fetch the current read model version and retry
+      logger.debug(
+        `OptimisticConcurrencyUnexpectedVersionError (version=${
+          currentReadModel?.boosterMetadata?.version
+        } and expectedDatabaseVersion=${
+          currentReadModel?.boosterMetadata?.version ?? 0
+        }). Looking for an updated version of read model ${readModelName} with ID = ${readModelID}` +
+          (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : '')
+      )
+
+      currentReadModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
+      logger.debug(
+        `Current read model ${readModelName} with ID ${readModelID} updated with version = ${currentReadModel?.boosterMetadata?.version}` +
+          (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : '')
+      )
+    }
     let migratedReadModel: ReadModelInterface | undefined
     if (currentReadModel) {
       migratedReadModel = await new ReadModelSchemaMigrator(this.config).migrate(currentReadModel, readModelName)
     }
-    const expectedDatabaseVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
+    const currentDatabaseVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
 
     let newReadModel: any
     try {
@@ -300,33 +334,16 @@ export class ReadModelStore {
       return
     }
 
-    try {
-      return await this.store(
-        entity,
-        projectionMetadata,
-        readModelID,
-        readModelName,
-        migratedReadModel,
-        newReadModel,
-        expectedDatabaseVersion,
-        lastProjectedEntity
-      )
-    } catch (e) {
-      if (e instanceof OptimisticConcurrencyUnexpectedVersionError) {
-        // In case of optimistic concurrency error, we need to fetch the current read model version and retry
-        logger.debug(
-          `OptimisticConcurrencyUnexpectedVersionError. Looking for an updated version of read model ${readModelName} with ID = ${readModelID}` +
-            (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : '')
-        )
-
-        currentReadModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
-        logger.debug(
-          `Current read model ${readModelName} with ID ${readModelID} updated with version = ${currentReadModel?.boosterMetadata?.version}` +
-            (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : '')
-        )
-      }
-      throw e
-    }
+    return await this.store(
+      entity,
+      projectionMetadata,
+      readModelID,
+      readModelName,
+      migratedReadModel,
+      newReadModel,
+      currentDatabaseVersion,
+      lastProjectedEntity
+    )
   }
 
   private async store(
@@ -336,14 +353,14 @@ export class ReadModelStore {
     readModelName: string,
     migratedReadModel: ReadModelInterface | undefined,
     newReadModel: any,
-    expectedDatabaseVersion: number,
+    expectedCurrentDatabaseVersion: number,
     lastProjectedEntity?: EntitySnapshotEnvelope
   ): Promise<unknown> {
-    const logger = getLogger(this.config, 'ProjectionStore#store')
+    const logger = getLogger(this.config, 'ReadModelStore#store')
     const schemaVersion: number =
       migratedReadModel?.boosterMetadata?.schemaVersion ?? this.config.currentVersionFor(readModelName)
     // Increment the read model version in 1 before storing
-    const newReadModelVersion = expectedDatabaseVersion + 1
+    const newReadModelVersion = expectedCurrentDatabaseVersion + 1
     newReadModel.boosterMetadata = {
       ...migratedReadModel?.boosterMetadata,
       version: newReadModelVersion,
@@ -357,10 +374,15 @@ export class ReadModelStore {
       },
     } as BoosterMetadata
     logger.debug(
-      `Storing new version of read model ${readModelName} with ID ${readModelID}, version ${newReadModel.boosterMetadata.version} and expected database version ${expectedDatabaseVersion}:`,
+      `Storing new version of read model ${readModelName} with ID ${readModelID}, version ${newReadModel.boosterMetadata.version} and expected database version ${expectedCurrentDatabaseVersion}:`,
       newReadModel
     )
-    return this.config.provider.readModels.store(this.config, readModelName, newReadModel, expectedDatabaseVersion)
+    return this.config.provider.readModels.store(
+      this.config,
+      readModelName,
+      newReadModel,
+      expectedCurrentDatabaseVersion
+    )
   }
 
   /**
@@ -429,9 +451,9 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityMetadata: EntityMetadata
   ): FilterFor<ReadModelInterface> | undefined {
-    const logger = getLogger(this.config, 'ProjectFilterFor#filterForProjection')
+    const logger = getLogger(this.config, 'ReadModelStore#filterForProjection')
     const projectionMetadataJoinKey = projectionMetadata.joinKey
-    logger.debug(`Looking for ReadModels using Filter ${projectionMetadataJoinKey}`)
+    logger.debug(`Calculating filter for projection for ReadModels using Filter ${projectionMetadataJoinKey}`)
     if (this.isJoinKeyByEntity(projectionMetadataJoinKey)) {
       return this.filterForEntityProjection(entity, projectionMetadata, entityMetadata)
     }
@@ -444,7 +466,7 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityMetadata: EntityMetadata
   ): FilterFor<ReadModelInterface> | undefined {
-    const logger = getLogger(this.config, 'ProjectFilterFor#filterForEntityProjection')
+    const logger = getLogger(this.config, 'ReadModelStore#filterForEntityProjection')
     const projectionMetadataJoinKey = projectionMetadata.joinKey as keyof TEntity
     const entityJoinKey = (entity as any)[projectionMetadataJoinKey]
     if (!entityJoinKey) {
@@ -455,8 +477,10 @@ export class ReadModelStore {
     }
     const ids = Array.isArray(entityJoinKey) ? entityJoinKey : [entityJoinKey]
     if (!ids || ids.length === 0) {
+      logger.debug('No ids found for entity projection. Skipping...')
       return undefined
     }
+    logger.debug(`Filtering for entity projection with ids ${ids}`)
     return {
       id: {
         in: ids,
@@ -469,7 +493,7 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityMetadata: EntityMetadata
   ): FilterFor<ReadModelInterface> | undefined {
-    const logger = getLogger(this.config, 'ProjectFilterFor#filterForReadModelProjection')
+    const logger = getLogger(this.config, 'ReadModelStore#filterForReadModelProjection')
     const joinKeyForProjection = projectionMetadata.joinKey as ReadModelJoinKeyFunction<
       EntityInterface,
       ReadModelInterface

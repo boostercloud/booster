@@ -124,7 +124,7 @@ export async function storeSnapshot(
   config: BoosterConfig
 ): Promise<EntitySnapshotEnvelope> {
   const logger = getLogger(config, 'events-adapter#storeSnapshot')
-  logger.debug('[EventsAdapter#storeSnapshot] Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
+  logger.debug('Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
 
   const partitionKey = partitionKeyForSnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
   /**

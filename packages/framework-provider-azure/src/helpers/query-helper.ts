@@ -39,7 +39,7 @@ export async function search<TResult>(
     parameters: buildExpressionAttributeValues(filters),
   }
 
-  logger.debug('Running search with the following params: \n', querySpec)
+  logger.debug('Running search with the following params: \n', JSON.stringify(querySpec))
   const { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
     .container(containerName)
