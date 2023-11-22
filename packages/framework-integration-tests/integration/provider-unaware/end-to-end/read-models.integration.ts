@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ApolloClient, ApolloQueryResult, gql, NormalizedCacheObject } from '@apollo/client'
 import { commerce, finance, internet, lorem, random } from 'faker'
-import { expect } from 'chai'
+import { expect } from '../../helper/expect'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
@@ -148,7 +148,10 @@ describe('Read models end-to-end tests', () => {
     context('several cart items', () => {
       let mockCartId: string
       let mockCartItemsCount: number
-      const mockCartItems: Array<{ productId: string; quantity: number }> = []
+      const mockCartItems: Array<{
+        productId: string
+        quantity: number
+      }> = []
 
       beforeEach(async () => {
         mockCartId = random.uuid()
@@ -225,7 +228,10 @@ describe('Read models end-to-end tests', () => {
 
     context('query lists of carts', () => {
       let mockCartId: string
-      const mockCartItems: Array<{ productId: string; quantity: number }> = []
+      const mockCartItems: Array<{
+        productId: string
+        quantity: number
+      }> = []
       let mockProductId: string
       let mockQuantity: number
       const mockConfirmationToken: string = random.alphaNumeric(10)
@@ -381,7 +387,9 @@ describe('Read models end-to-end tests', () => {
       })
 
       it('should retrieve a list of carts using nested filters', async () => {
-        const filter = { shippingAddress: { firstName: { eq: mockAddress.firstName } } }
+        const filter = {
+          and: [{ id: { eq: mockCartId } }, { shippingAddress: { firstName: { eq: mockAddress.firstName } } }],
+        }
         const queryResult = await waitForIt(
           () => {
             return client.query({
@@ -397,7 +405,7 @@ describe('Read models end-to-end tests', () => {
               `,
             })
           },
-          (result) => result?.data?.CartReadModels?.length >= 1
+          (result) => result?.data?.CartReadModels?.length >= 1 && result?.data?.CartReadModels[0].id === mockCartId
         )
 
         const cartData = queryResult.data.CartReadModels
@@ -1017,6 +1025,7 @@ describe('Read models end-to-end tests', () => {
           },
           (result) =>
             result?.data?.ListCartReadModels?.items.length >= 1 &&
+            result?.data?.ListCartReadModels?.items[0]?.id === mockCartId &&
             result?.data?.ListCartReadModels?.items[0]?.payment?.id !== undefined
         )
 
@@ -1193,7 +1202,12 @@ describe('Read models end-to-end tests', () => {
     })
 
     context('query sorted lists of carts', () => {
-      const mockCartItems: Array<{ id: string; productId: string; quantity: number; firstName: string }> = []
+      const mockCartItems: Array<{
+        id: string
+        productId: string
+        quantity: number
+        firstName: string
+      }> = []
       const cartItems = 5
       let mockAddress: {
         firstName: string
@@ -1434,7 +1448,10 @@ describe('Read models end-to-end tests', () => {
 
     context('query using pagination', () => {
       const mockCartIds: Array<string> = []
-      const mockCartItems: Array<{ productId: string; quantity: number }> = []
+      const mockCartItems: Array<{
+        productId: string
+        quantity: number
+      }> = []
       let mockProductId: string
       let mockQuantity: number
       const changeCartPromises: Array<Promise<unknown>> = []
