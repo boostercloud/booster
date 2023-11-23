@@ -83,11 +83,10 @@ export class ReadModelStore {
       projectionMetadata,
       entityMetadata
     )
-    const projection: Array<Promise<unknown>> = []
     if (currentReadModels && currentReadModels.length > 0) {
       const existingReadModelsProjections: Array<Promise<unknown>> = []
       for (const currentReadModel of currentReadModels) {
-        const newReadModelsProjections: Array<Promise<unknown>> = await this.projectionsForExistingReadModels(
+        const newProjections: Array<Promise<unknown>> = await this.projectionsForReadModels(
           entitySnapshotEnvelope,
           readModelName,
           sequenceKey,
@@ -96,35 +95,32 @@ export class ReadModelStore {
           entityMetadata,
           currentReadModel
         )
-        existingReadModelsProjections.push(...newReadModelsProjections)
+        existingReadModelsProjections.push(...newProjections)
       }
-      projection.push(...existingReadModelsProjections)
-    } else {
-      const newReadModelsProjections: Array<Promise<unknown>> = await this.projectionsForNewReadModels(
-        entitySnapshotEnvelope,
-        readModelName,
-        sequenceKey,
-        projectionMetadata,
-        entityInstance,
-        entityMetadata
-      )
-      projection.push(...newReadModelsProjections)
+      return Promises.allSettledAndFulfilled(existingReadModelsProjections)
     }
-
-    return Promises.allSettledAndFulfilled(projection)
+    const newProjections: Array<Promise<unknown>> = await this.projectionsForReadModels(
+      entitySnapshotEnvelope,
+      readModelName,
+      sequenceKey,
+      projectionMetadata,
+      entityInstance,
+      entityMetadata
+    )
+    return Promises.allSettledAndFulfilled(newProjections)
   }
 
-  private async projectionsForExistingReadModels(
+  private async projectionsForReadModels(
     entitySnapshotEnvelope: EntitySnapshotEnvelope,
     readModelName: string,
     sequenceKey: any,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityInstance: EntityInterface,
     entityMetadata: EntityMetadata,
-    currentReadModel: ReadModelInterface
+    currentReadModel?: ReadModelInterface
   ): Promise<Array<Promise<unknown>>> {
     const projections: Array<Promise<unknown>> = []
-    const logger = getLogger(this.config, 'ReadModelStore#projectionsForExistingReadModels')
+    const logger = getLogger(this.config, 'ReadModelStore#projectionsForReadModels')
     if (this.isJoinKeyByEntity(projectionMetadata.joinKey)) {
       const entityJoinKey = (entityInstance as any)[projectionMetadata.joinKey]
       if (!entityJoinKey) {
@@ -134,8 +130,9 @@ export class ReadModelStore {
         return []
       }
       const entitiesJoinKeys: Array<UUID> = Array.isArray(entityJoinKey) ? entityJoinKey : [entityJoinKey]
+      // A new Read Model with JoinKey by entity needs to be projected using a JoinKey with an entity query. We don't have a previous read model, but we have the new id from the entity
       for (const readModelId of entitiesJoinKeys) {
-        const readModel = currentReadModel.id === readModelId ? currentReadModel : undefined
+        const readModel = currentReadModel?.id === readModelId ? currentReadModel : undefined
         projections.push(
           this.projectAndStoreReadModelWithRetry(
             entitySnapshotEnvelope,
@@ -157,55 +154,8 @@ export class ReadModelStore {
           sequenceKey,
           entityInstance,
           projectionMetadata,
-          currentReadModel.id,
+          currentReadModel?.id,
           currentReadModel
-        )
-      )
-    }
-    return projections
-  }
-
-  private async projectionsForNewReadModels(
-    entitySnapshotEnvelope: EntitySnapshotEnvelope,
-    readModelName: string,
-    sequenceKey: any,
-    projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
-    entityInstance: EntityInterface,
-    entityMetadata: EntityMetadata
-  ): Promise<Array<Promise<unknown>>> {
-    const projections: Array<Promise<unknown>> = []
-    const logger = getLogger(this.config, 'ReadModelStore#projectionsForNewReadModels')
-    if (this.isJoinKeyByEntity(projectionMetadata.joinKey)) {
-      const entityJoinKey = (entityInstance as any)[projectionMetadata.joinKey]
-      if (!entityJoinKey) {
-        logger.warn(
-          `Couldn't find the joinKey named ${projectionMetadata} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
-        )
-        return []
-      }
-      const entitiesJoinKeys: Array<UUID> = Array.isArray(entityJoinKey) ? entityJoinKey : [entityJoinKey]
-      // A new Read Model with JoinKey by entity needs to be projected using a JoinKey with an entity query. We don't have a previous read model, but we have the new id from the entity
-      for (const readModelId of entitiesJoinKeys) {
-        projections.push(
-          this.projectAndStoreReadModelWithRetry(
-            entitySnapshotEnvelope,
-            readModelName,
-            sequenceKey,
-            entityInstance,
-            projectionMetadata,
-            readModelId
-          )
-        )
-      }
-    } else {
-      // A new Read Model with JoinKey by ReadModel needs to be projected using a JoinKey with a read model query. We don't have a previous read model nor the new id as we don't have an entity field
-      projections.push(
-        this.projectAndStoreReadModelWithRetry(
-          entitySnapshotEnvelope,
-          readModelName,
-          sequenceKey,
-          entityInstance,
-          projectionMetadata
         )
       )
     }
