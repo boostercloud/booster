@@ -8,8 +8,8 @@ importers:
   ../../packages/application-tester:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/jsonwebtoken': 9.0.1
       '@types/node': ^18.15.3
@@ -70,10 +70,10 @@ importers:
 
   ../../packages/cli:
     specifiers:
-      '@boostercloud/application-tester': workspace:^2.1.0
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-core': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/application-tester': workspace:^2.2.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-core': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@oclif/core': ^3.9.0
       '@oclif/plugin-help': ^5
@@ -181,8 +181,8 @@ importers:
 
   ../../packages/framework-common-helpers:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -250,10 +250,10 @@ importers:
 
   ../../packages/framework-core:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
-      '@boostercloud/metadata-booster': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
+      '@boostercloud/metadata-booster': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -350,20 +350,21 @@ importers:
   ../../packages/framework-integration-tests:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/application-tester': workspace:^2.1.0
-      '@boostercloud/cli': workspace:^2.1.0
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-core': workspace:^2.1.0
-      '@boostercloud/framework-provider-aws': workspace:^2.1.0
-      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.1.0
-      '@boostercloud/framework-provider-azure': workspace:^2.1.0
-      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.1.0
-      '@boostercloud/framework-provider-local': workspace:^2.1.0
-      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
-      '@boostercloud/metadata-booster': workspace:^2.1.0
+      '@boostercloud/application-tester': workspace:^2.2.0
+      '@boostercloud/cli': workspace:^2.2.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-core': workspace:^2.2.0
+      '@boostercloud/framework-provider-aws': workspace:^2.2.0
+      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.2.0
+      '@boostercloud/framework-provider-azure': workspace:^2.2.0
+      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.2.0
+      '@boostercloud/framework-provider-local': workspace:^2.2.0
+      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
+      '@boostercloud/metadata-booster': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
+      '@seald-io/nedb': 4.0.2
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
       '@types/chai-arrays': 2.0.0
@@ -401,7 +402,6 @@ importers:
       jwks-rsa: 3.0.1
       mocha: 10.2.0
       mocha-skip-if: 0.0.3
-      nedb: ^1.8.0
       nyc: ^15.1.0
       prettier: 2.3.0
       react: ^17.0.0
@@ -437,6 +437,7 @@ importers:
       '@boostercloud/framework-provider-azure-infrastructure': link:../framework-provider-azure-infrastructure
       '@boostercloud/framework-provider-local-infrastructure': link:../framework-provider-local-infrastructure
       '@boostercloud/metadata-booster': link:../metadata-booster
+      '@seald-io/nedb': 4.0.2
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
       '@types/chai-arrays': 2.0.0
@@ -470,7 +471,6 @@ importers:
       jwks-rsa: 3.0.1
       mocha: 10.2.0
       mocha-skip-if: 0.0.3
-      nedb: 1.8.0
       nyc: 15.1.0
       prettier: 2.3.0
       react: 17.0.2
@@ -486,9 +486,9 @@ importers:
 
   ../../packages/framework-provider-aws:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
@@ -582,10 +582,10 @@ importers:
       '@aws-cdk/core': ^1.170.0
       '@aws-cdk/custom-resources': ^1.170.0
       '@aws-cdk/cx-api': ^1.170.0
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-provider-aws': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-provider-aws': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/archiver': 5.1.0
       '@types/aws-lambda': 8.10.48
@@ -699,9 +699,9 @@ importers:
       '@azure/functions': ^1.2.2
       '@azure/identity': ~2.1.0
       '@azure/web-pubsub': ~1.1.0
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -773,11 +773,11 @@ importers:
       '@azure/arm-resources': ^5.0.1
       '@azure/cosmos': ^4.0.0
       '@azure/identity': ~2.1.0
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-core': workspace:^2.1.0
-      '@boostercloud/framework-provider-azure': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-core': workspace:^2.2.0
+      '@boostercloud/framework-provider-azure': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@cdktf/provider-azurerm': 5.0.13
       '@cdktf/provider-time': 5.0.0
       '@effect-ts/core': ^0.60.4
@@ -884,16 +884,16 @@ importers:
 
   ../../packages/framework-provider-local:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
+      '@seald-io/nedb': 4.0.2
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
       '@types/express': ^4.17.13
       '@types/faker': 5.1.5
       '@types/mocha': 10.0.1
-      '@types/nedb': ^1.8.12
       '@types/node': ^18.15.3
       '@types/sinon': 10.0.0
       '@types/sinon-chai': 3.2.5
@@ -911,7 +911,6 @@ importers:
       express: ^4.17.1
       faker: 5.1.0
       mocha: 10.2.0
-      nedb: ^1.8.0
       nyc: ^15.1.0
       prettier: 2.3.0
       rimraf: ^5.0.0
@@ -926,8 +925,7 @@ importers:
       '@boostercloud/framework-common-helpers': link:../framework-common-helpers
       '@boostercloud/framework-types': link:../framework-types
       '@effect-ts/core': 0.60.5
-      '@types/nedb': 1.8.13
-      nedb: 1.8.0
+      '@seald-io/nedb': 4.0.2
       tslib: 2.5.0
       ws: 8.12.0
     devDependencies:
@@ -965,10 +963,10 @@ importers:
 
   ../../packages/framework-provider-local-infrastructure:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/framework-common-helpers': workspace:^2.1.0
-      '@boostercloud/framework-provider-local': workspace:^2.1.0
-      '@boostercloud/framework-types': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/framework-common-helpers': workspace:^2.2.0
+      '@boostercloud/framework-provider-local': workspace:^2.2.0
+      '@boostercloud/framework-types': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -1048,8 +1046,8 @@ importers:
 
   ../../packages/framework-types:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.1.0
-      '@boostercloud/metadata-booster': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
+      '@boostercloud/metadata-booster': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@effect-ts/node': ~0.39.0
       '@types/chai': 4.2.18
@@ -1115,7 +1113,7 @@ importers:
 
   ../../packages/metadata-booster:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.1.0
+      '@boostercloud/eslint-config': workspace:^2.2.0
       '@effect-ts/core': ^0.60.4
       '@types/node': ^18.15.3
       '@typescript-eslint/eslint-plugin': ^5.0.0
@@ -1529,7 +1527,7 @@ packages:
       '@aws-cdk/aws-codecommit': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-codestarnotifications': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
+      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
       '@aws-cdk/aws-ecr-assets': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
@@ -1704,7 +1702,7 @@ packages:
       constructs: ^3.3.69
     dependencies:
       '@aws-cdk/assets': 1.199.0_6t5bexudk3vtq7zhe7acxljz2e
-      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
+      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
@@ -1714,7 +1712,7 @@ packages:
       - '@aws-cdk/aws-events'
     dev: false
 
-  /@aws-cdk/aws-ecr/1.199.0_wim6pvar6pmwiq3fs3ksmix5ru:
+  /@aws-cdk/aws-ecr/1.199.0_5lpmbvgigeswzbugyujlevszcq:
     resolution: {integrity: sha512-C4VG9uRf8UD/cNitVvYaQvF9zKwgWZoNLf43RaUrMEpo4Q/KE3/KilYBG8lsza8B7f4yjYRey5iOpydKE68kYg==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -1725,11 +1723,8 @@ packages:
     dependencies:
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
-      '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       constructs: 3.4.293
-    transitivePeerDependencies:
-      - '@aws-cdk/cx-api'
     dev: false
 
   /@aws-cdk/aws-ecs/1.199.0_7m5azgjywxpgdeoosvoxrcdts4:
@@ -1750,7 +1745,7 @@ packages:
       '@aws-cdk/aws-certificatemanager': 1.199.0_aklsbzsp6i2n6pzp4sxy6hufne
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
+      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
       '@aws-cdk/aws-ecr-assets': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-elasticloadbalancing': 1.199.0_ehdkigggl2baqdi4l6p7upw4f4
       '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_74oizvoelbxgex3gbujl2xzm54
@@ -2036,7 +2031,7 @@ packages:
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-codeguruprofiler': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
+      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
       '@aws-cdk/aws-ecr-assets': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-efs': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
@@ -3352,11 +3347,21 @@ packages:
     dev: true
 
   /@pkgjs/parseargs/0.11.0:
-    resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
+    resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/@pkgjs/parseargs/-/parseargs-0.11.0.tgz}
     engines: {node: '>=14'}
     requiresBuild: true
     dev: true
     optional: true
+
+  /@seald-io/binary-search-tree/1.0.3:
+    resolution: {integrity: sha512-qv3jnwoakeax2razYaMsGI/luWdliBLHTdC6jU55hQt1hcFqzauH/HsBollQ7IR4ySTtYhT+xyHoijpA16C+tA==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/@seald-io/binary-search-tree/-/binary-search-tree-1.0.3.tgz}
+
+  /@seald-io/nedb/4.0.2:
+    resolution: {integrity: sha512-gJ91fT1sgh2cLXYVcTSh7khZ8LdemI8+SojCdpZ5wy+DUQ4fSrEwGqOwbdV49NDs2BBO6GeBpSb8CnhG2IW1rw==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/@seald-io/nedb/-/nedb-4.0.2.tgz}
+    dependencies:
+      '@seald-io/binary-search-tree': 1.0.3
+      localforage: 1.10.0
+      util: 0.12.5
 
   /@sentry/core/6.19.7:
     resolution: {integrity: sha512-tOfZ/umqB2AcHPGbIrsFLcvApdTm9ggpi/kQZFkej7kMphjT+SGBiQfYtjyg9jcRW+ilAR4JXC9BGKsdEQ+8Vw==}
@@ -3768,6 +3773,7 @@ packages:
     resolution: {integrity: sha512-x/aIeHmmiDq1kMzgHvjygxl5RZGzIabFcq2HpRzB3X26AdfPg5Y70EwWrcZM/TuJwNHtWRruD/telSTvPEY6Xw==}
     dependencies:
       '@types/node': 18.18.3
+    dev: true
 
   /@types/needle/2.5.3:
     resolution: {integrity: sha512-RwgTwMRaedfyCBe5SSWMpm1Yqzc5UPZEMw0eAd09OSyV93nLRj9/evMGZmgFeHKzUOd4xxtHvgtc+rjcBjI1Qg==}
@@ -4296,9 +4302,6 @@ packages:
     resolution: {integrity: sha512-Z7tMw1ytTXt5jqMcOP+OQteU1VuNK9Y02uuJtKQ1Sv69jXQKKg5cibLwGJow8yzZP+eAc18EmLGPal0bp36rvQ==}
     engines: {node: '>=8'}
 
-  /async/0.2.10:
-    resolution: {integrity: sha512-eAkdoKxU6/LkKDBzLpT+t6Ff5EtfSF4wx1WfJiPEEV7WNLnDaRXk0oVysiEPm262roaachGexwUv94WhSgN5TQ==}
-
   /async/3.2.4:
     resolution: {integrity: sha512-iAB+JbDEGXhyIUavoDl9WP/Jj106Kz9DEn1DPgYw5ruDn0e3Wgi3sKFm55sASdGBNOQB8F59d9qQ7deqrHA8wQ==}
 
@@ -4380,11 +4383,6 @@ packages:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
     engines: {node: '>=8'}
     dev: true
-
-  /binary-search-tree/0.2.5:
-    resolution: {integrity: sha512-CvNVKS6iXagL1uGwLagSXz1hzSMezxOuGnFi5FHGKqaTO3nPPWrAbyALUzK640j+xOTVm7lzD9YP8W1f/gvUdw==}
-    dependencies:
-      underscore: 1.4.4
 
   /bl/1.2.3:
     resolution: {integrity: sha512-pvcNpa0UU69UT341rO6AYy4FVAIkUHuZXRIWbq+zHnsVcRzDDjIAhGuuYoi0d//cwIwtt4pkpKycWEfjdV+vww==}
@@ -6289,7 +6287,7 @@ packages:
     dev: true
 
   /fsevents/2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/fsevents/-/fsevents-2.3.2.tgz}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
     requiresBuild: true
@@ -6846,7 +6844,7 @@ packages:
     engines: {node: '>= 0.10'}
 
   /is-arguments/1.1.1:
-    resolution: {integrity: sha512-8Q7EARjzEnKpt/PCD7e1cgUS0a6X8u5tdSiMqXhojOdoV9TsMsiO+9VLC5vAmO8N7/GmXn7yjR8qnA6bVAEzfA==}
+    resolution: {integrity: sha512-8Q7EARjzEnKpt/PCD7e1cgUS0a6X8u5tdSiMqXhojOdoV9TsMsiO+9VLC5vAmO8N7/GmXn7yjR8qnA6bVAEzfA==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/is-arguments/-/is-arguments-1.1.1.tgz}
     engines: {node: '>= 0.4'}
     dependencies:
       call-bind: 1.0.2
@@ -6938,7 +6936,7 @@ packages:
     engines: {node: '>=8'}
 
   /is-generator-function/1.0.10:
-    resolution: {integrity: sha512-jsEjy9l3yiXEQ+PsXdmBwEPcOxaXWLspKdplFUVI9vq1iZgIekeC0L167qeu86czQaxed3q/Uzuw0swL0irL8A==}
+    resolution: {integrity: sha512-jsEjy9l3yiXEQ+PsXdmBwEPcOxaXWLspKdplFUVI9vq1iZgIekeC0L167qeu86czQaxed3q/Uzuw0swL0irL8A==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/is-generator-function/-/is-generator-function-1.0.10.tgz}
     engines: {node: '>= 0.4'}
     dependencies:
       has-tostringtag: 1.0.0
@@ -7493,7 +7491,7 @@ packages:
       type-check: 0.4.0
 
   /lie/3.1.1:
-    resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==}
+    resolution: {integrity: sha512-RiNhHysUjhrDQntfYSfY4MU24coXXdEOgw9WGcKHNeEwffDYbF//u87M1EWaMGzuFoSbqW0C9C6lEEhDOAswfw==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/lie/-/lie-3.1.1.tgz}
     dependencies:
       immediate: 3.0.6
 
@@ -7511,7 +7509,7 @@ packages:
     dev: true
 
   /localforage/1.10.0:
-    resolution: {integrity: sha512-14/H1aX7hzBBmmh7sGPd+AOMkkIrHM3Z1PAyGgZigA1H1p5O5ANnMyWzvpAETtG68/dC4pC0ncy3+PPGzXZHPg==}
+    resolution: {integrity: sha512-14/H1aX7hzBBmmh7sGPd+AOMkkIrHM3Z1PAyGgZigA1H1p5O5ANnMyWzvpAETtG68/dC4pC0ncy3+PPGzXZHPg==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/localforage/-/localforage-1.10.0.tgz}
     dependencies:
       lie: 3.1.1
 
@@ -7892,6 +7890,7 @@ packages:
     hasBin: true
     dependencies:
       minimist: 1.2.8
+    dev: true
 
   /mkdirp/1.0.4:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
@@ -8002,15 +8001,6 @@ packages:
   /ncp/2.0.0:
     resolution: {integrity: sha512-zIdGUrPRFTUELUvr3Gmc7KZ2Sw/h1PiVM0Af/oHB6zgnV1ikqSfRk+TOufi79aHYCW3NiOXmr1BP5nWbzojLaA==}
     hasBin: true
-
-  /nedb/1.8.0:
-    resolution: {integrity: sha512-ip7BJdyb5m+86ZbSb4y10FCCW9g35+U8bDRrZlAfCI6m4dKwEsQ5M52grcDcVK4Vm/vnPlDLywkyo3GliEkb5A==}
-    dependencies:
-      async: 0.2.10
-      binary-search-tree: 0.2.5
-      localforage: 1.10.0
-      mkdirp: 0.5.6
-      underscore: 1.4.4
 
   /needle/2.9.1:
     resolution: {integrity: sha512-6R9fqJ5Zcmf+uYaFgdIHmLwNldn5HbK8L5ybn7Uz+ylX/rnOsSp1AHcvQSrCaFN+qNM1wpymHqD7mVasEOlHGQ==}
@@ -10034,9 +10024,6 @@ packages:
       through: 2.3.8
     dev: true
 
-  /underscore/1.4.4:
-    resolution: {integrity: sha512-ZqGrAgaqqZM7LGRzNjLnw5elevWb5M8LEoDMadxIW3OWbcv72wMMgKdwOKpd5Fqxe8choLD8HN3iSj3TUh/giQ==}
-
   /uni-global/1.0.0:
     resolution: {integrity: sha512-WWM3HP+siTxzIWPNUg7hZ4XO8clKi6NoCAJJWnuRL+BAqyFXF8gC03WNyTefGoUXYc47uYgXxpKLIEvo65PEHw==}
     dependencies:
@@ -10089,7 +10076,7 @@ packages:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
   /util/0.12.5:
-    resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==}
+    resolution: {integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==, tarball: https://repo1.uhc.com:443/artifactory/api/npm/npm-virtual/util/-/util-0.12.5.tgz}
     dependencies:
       inherits: 2.0.4
       is-arguments: 1.1.1

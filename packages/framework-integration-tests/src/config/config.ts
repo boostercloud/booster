@@ -45,7 +45,6 @@ function configureEventHub(config: BoosterConfig) {
 Booster.configure('local', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-local'
-  config.logger = new MyLogger()
   config.tokenVerifiers = [
     new PublicKeyTokenVerifier(
       'booster',
