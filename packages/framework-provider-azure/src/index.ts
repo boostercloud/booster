@@ -6,7 +6,6 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
-  storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
