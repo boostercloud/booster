@@ -2,7 +2,6 @@
 import {
   BoosterConfig,
   EntityInterface,
-  EntitySnapshotEnvelope,
   OptimisticConcurrencyUnexpectedVersionError,
   ProjectionGlobalError,
   EntitySnapshotEnvelope,
@@ -62,7 +61,7 @@ export class ReadModelStore {
                 readModelName,
                 readModelID,
                 deleteEvent,
-                sequenceKey
+                sequenceKey,
                 entitySnapshotEnvelope
               ),
             OptimisticConcurrencyUnexpectedVersionError,
@@ -153,7 +152,7 @@ export class ReadModelStore {
     readModelName: string,
     readModelID: UUID,
     deleteEvent: boolean,
-    sequenceKey?: SequenceKey
+    sequenceKey?: SequenceKey,
     lastProjectedEntity?: EntitySnapshotEnvelope
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#applyProjectionToReadModel')

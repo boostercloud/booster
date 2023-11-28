@@ -5,9 +5,6 @@ import {
   HealthEnvelope,
   ProviderLibrary,
   RocketDescriptor,
-  HasInfrastructure,
-  ProviderLibrary,
-  RocketDescriptor,
   EventEnvelopeFromDatabase,
   EntitySnapshotEnvelopeFromDatabase,
 } from '@boostercloud/framework-types'

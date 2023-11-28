@@ -78,7 +78,6 @@ export class BoosterEventProcessor {
         eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
           const eventInstance = createInstance(eventClass.class, eventEnvelope.value)
           const register = new Register(eventEnvelope.requestID, {}, RegisterHandler.flush, eventEnvelope.currentUser)
-          logger.debug('Calling "handleEvent" method on event handler: ', eventHandler)
           await this.handleEvent(eventHandler, eventInstance, register, config)
           return RegisterHandler.handle(config, register)
         })
@@ -94,6 +93,8 @@ export class BoosterEventProcessor {
     config: BoosterConfig
   ) {
     try {
+      const logger = getLogger(config, 'BoosterEventProcessor#handleEvent')
+      logger.debug('Calling "handle" method on event handler: ', eventHandler)
       await eventHandler.handle(eventInstance, register)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
