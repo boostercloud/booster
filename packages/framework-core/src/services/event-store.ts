@@ -26,6 +26,8 @@ import { Trace } from '../instrumentation'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
+const boosterReducibleEventsTypesNames: Array<string> = [BoosterEntityMigrated.name, BoosterEntityTouched.name]
+
 export class EventStore {
   public constructor(readonly config: BoosterConfig) {}
 
@@ -147,7 +149,7 @@ export class EventStore {
   ): Promise<NonPersistedEntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'entityReducer')
     logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
-    if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
+    if (this.shouldReduceBoosterSuperKind(eventEnvelope)) {
       return this.reduceSuperKind(eventEnvelope, latestSnapshot)
     }
 
@@ -157,6 +159,11 @@ export class EventStore {
     const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
     const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
     return this.createNewSnapshot(migratedEventEnvelope, eventInstance, snapshotInstance, eventEnvelope)
+  }
+
+  private shouldReduceBoosterSuperKind(eventEnvelope: EventEnvelope) {
+    const reducible = boosterReducibleEventsTypesNames.includes(eventEnvelope.typeName)
+    return eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND && reducible
   }
 
   private eventMetadataFor(eventEnvelope: EventEnvelope): EventMetadata {
@@ -207,7 +214,7 @@ export class EventStore {
     if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
       return this.reduceEntityMigrated(eventEnvelope)
     }
-    throw new InvalidParameterError(`Invalid super kind ${eventEnvelope.superKind}`)
+    throw new InvalidParameterError(`Unexpected super kind ${eventEnvelope.superKind} to be reduced`)
   }
 
   private reduceEntityMigrated(eventEnvelope: EventEnvelope): NonPersistedEntitySnapshotEnvelope {
