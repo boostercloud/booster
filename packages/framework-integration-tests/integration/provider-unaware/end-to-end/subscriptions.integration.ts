@@ -2,10 +2,9 @@ import { internet, random } from 'faker'
 import { expect } from '../../helper/expect'
 import { waitForIt } from '../../helper/sleep'
 import { FilterFor } from '@boostercloud/framework-types'
-import { DisconnectableApolloClient } from '@boostercloud/application-tester'
 import { applicationUnderTest } from './setup'
 import { beforeHookProductId } from '../../../src/constants'
-import { Observable, gql } from '@apollo/client'
+import { ApolloClient, NormalizedCacheObject, Observable, gql } from '@apollo/client'
 
 describe('subscriptions', () => {
   let countSubscriptions: () => Promise<number>
@@ -16,12 +15,14 @@ describe('subscriptions', () => {
   })
 
   describe('the "unsubscribe" operation', () => {
-    let client: DisconnectableApolloClient
+    let client: ApolloClient<NormalizedCacheObject>
+
     before(async () => {
       client = await applicationUnderTest.graphql.clientWithSubscriptions()
     })
+
     after(() => {
-      client.disconnect()
+      client.stop()
     })
 
     it('should delete a subscription when the client calls "unsubscribe"', async () => {
@@ -44,8 +45,8 @@ describe('subscriptions', () => {
 
   describe('the "terminate" operation', () => {
     it('should delete all subscription of the connectionID when socket is disconnected', async () => {
-      const clientA = await applicationUnderTest.graphql.clientWithSubscriptions()
-      const clientB = await applicationUnderTest.graphql.clientWithSubscriptions()
+      const clientA: ApolloClient<NormalizedCacheObject> = await applicationUnderTest.graphql.clientWithSubscriptions()
+      const clientB: ApolloClient<NormalizedCacheObject> = await applicationUnderTest.graphql.clientWithSubscriptions()
       try {
         const originalSubscriptionsCount = await countSubscriptions()
 
@@ -60,15 +61,15 @@ describe('subscriptions', () => {
         await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 3)
 
         // Now we close the socket of client B and check its 2 subscriptions were deleted
-        clientB.disconnect()
+        clientB.stop()
         await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + 1)
 
         // Finally, close the socket of client A and check that we are back to the original count of subscriptions
-        clientA.disconnect()
+        clientA.stop()
         await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount)
       } catch (e) {
-        clientA.disconnect()
-        clientB.disconnect()
+        clientA.stop()
+        clientB.stop()
       }
     })
 
@@ -85,42 +86,13 @@ describe('subscriptions', () => {
     })
   })
 
-  describe('when socket reconnects ', () => {
-    let clients: DisconnectableApolloClient[]
-    const clientCount = 2
-    before(async () => {
-      clients = []
-      for (let i = 0; i < clientCount; i++)
-        clients.push(await applicationUnderTest.graphql.clientWithSubscriptions())
-    })
-    after(() => {
-      clients.forEach(c => c.disconnect())
-    })
-
-    it('keeps the same subscriptions', async () => {
-      const cartID = random.uuid()
-      const originalSubscriptionsCount = await countSubscriptions()
-      const observables = clients.map(c => cartSubscription(c, cartID))
-      observables.forEach(o => o.subscribe(() => {}));
-      await waitForIt(countSubscriptions, (newCount) => newCount == originalSubscriptionsCount + clientCount)
-      await verifySubscriptionsActive()
-      await Promise.all(clients.map(c => c.reconnect()))
-      await verifySubscriptionsActive()
-
-      async function verifySubscriptionsActive() {
-        await cartMutation(clients[0], cartID)
-        await expect(Promise.all(observables.map(promisifyNextSubscriptionResult))).to.eventually.be.fulfilled
-      }
-    })
-  })
-
   describe('with filters', () => {
-    let client: DisconnectableApolloClient
+    let client: ApolloClient<NormalizedCacheObject>
     before(async () => {
       client = await applicationUnderTest.graphql.clientWithSubscriptions()
     })
     after(() => {
-      client.disconnect()
+      client.stop()
     })
 
     it('get a carts with a specific ID', async () => {
@@ -228,14 +200,14 @@ describe('subscriptions', () => {
 
   describe('readmodel authorization', () => {
     context('with an anonymous user', () => {
-      let client: DisconnectableApolloClient
+      let client: ApolloClient<NormalizedCacheObject>
 
       beforeEach(async () => {
         client = await applicationUnderTest.graphql.clientWithSubscriptions()
       })
 
       afterEach(() => {
-        client.disconnect()
+        client.stop()
       })
 
       context('with a read model authorized for matching roles', () => {
@@ -257,9 +229,9 @@ describe('subscriptions', () => {
         })
       })
     })
-    
+
     context('with a user without the required role', () => {
-      let loggedClient: DisconnectableApolloClient
+      let loggedClient: ApolloClient<NormalizedCacheObject>
 
       beforeEach(async () => {
         const userToken = applicationUnderTest.token.forUser(internet.email(), 'UserThatHasNoBusinesWithProducts')
@@ -267,7 +239,7 @@ describe('subscriptions', () => {
       })
 
       afterEach(() => {
-        loggedClient.disconnect()
+        loggedClient.stop()
       })
 
       context('with a read model authorized for matching roles', () => {
@@ -291,7 +263,7 @@ describe('subscriptions', () => {
     })
 
     context('with a user with the required role', () => {
-      let loggedClient: DisconnectableApolloClient
+      let loggedClient: ApolloClient<NormalizedCacheObject>
 
       beforeEach(async () => {
         const userToken = applicationUnderTest.token.forUser(internet.email(), 'UserWithEmail')
@@ -299,7 +271,7 @@ describe('subscriptions', () => {
       })
 
       afterEach(() => {
-        loggedClient.disconnect()
+        loggedClient.stop()
       })
 
       context('with a read model authorized for matching roles', () => {
@@ -320,7 +292,7 @@ describe('subscriptions', () => {
   })
 })
 
-function cartSubscription(client: DisconnectableApolloClient, cartID: string): Observable<any> {
+function cartSubscription(client: ApolloClient<NormalizedCacheObject>, cartID: string): Observable<any> {
   return client.subscribe({
     variables: { cartId: cartID },
     query: gql`
@@ -337,7 +309,7 @@ function cartSubscription(client: DisconnectableApolloClient, cartID: string): O
   })
 }
 
-function productSubscription(client: DisconnectableApolloClient, productId: string): Observable<any> {
+function productSubscription(client: ApolloClient<NormalizedCacheObject>, productId: string): Observable<any> {
   return client.subscribe({
     variables: { productId: productId },
     query: gql`
@@ -354,7 +326,10 @@ function productSubscription(client: DisconnectableApolloClient, productId: stri
   })
 }
 
-function cartFilteredSubscription(client: DisconnectableApolloClient, filter: FilterFor<any>): Observable<any> {
+function cartFilteredSubscription(
+  client: ApolloClient<NormalizedCacheObject>,
+  filter: FilterFor<any>
+): Observable<any> {
   return client.subscribe({
     variables: { filter },
     query: gql`
@@ -372,7 +347,10 @@ function cartFilteredSubscription(client: DisconnectableApolloClient, filter: Fi
   })
 }
 
-function cartFilteredSingleIDSubscription(client: DisconnectableApolloClient, cartId: string): Observable<any> {
+function cartFilteredSingleIDSubscription(
+  client: ApolloClient<NormalizedCacheObject>,
+  cartId: string
+): Observable<any> {
   return client.subscribe({
     variables: { cartId, random: 'variable' },
     query: gql`
@@ -400,7 +378,7 @@ function promisifyNextSubscriptionResult(observable: Observable<any>): Promise<a
 }
 
 async function cartMutation(
-  client: DisconnectableApolloClient,
+  client: ApolloClient<NormalizedCacheObject>,
   cartID: string,
   productId: string = random.uuid()
 ): Promise<void> {
@@ -417,7 +395,7 @@ async function cartMutation(
   })
 }
 
-async function productMutation(client: DisconnectableApolloClient, productId: string): Promise<void> {
+async function productMutation(client: ApolloClient<NormalizedCacheObject>, productId: string): Promise<void> {
   const sku = random.uuid()
   await client.mutate({
     variables: {

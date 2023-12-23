@@ -99,7 +99,7 @@ describe('the `BoosterGraphQLDispatcher`', () => {
         await dispatcher.dispatch({})
 
         expect(config.provider.graphQL.handleResult).to.have.been.calledOnceWithExactly(null, {
-          'Sec-WebSocket-Protocol': 'graphql-ws',
+          'Sec-WebSocket-Protocol': 'graphql-transport-ws',
         })
       })
     })
