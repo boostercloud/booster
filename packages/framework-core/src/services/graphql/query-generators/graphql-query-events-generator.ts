@@ -72,6 +72,7 @@ export class GraphqlQueryEventsGenerator {
           },
           createdAt: { type: new GraphQLNonNull(GraphQLString) },
           value: { type: new GraphQLNonNull(GraphQLJSON) },
+          deletedAt: { type: GraphQLString },
         },
       })
     )

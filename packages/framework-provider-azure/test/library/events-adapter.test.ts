@@ -73,7 +73,7 @@ describe('Events adapter', () => {
         match({
           query:
             `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
-            `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
+            `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime AND NOT IS_DEFINED(c["deletedAt"]) ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
           parameters: [
             {
               name: '@partitionKey',

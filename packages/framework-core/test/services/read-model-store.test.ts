@@ -824,6 +824,7 @@ describe('ReadModelStore', () => {
             projectionMetadata,
             readModelClassName,
             anEntityInstance[projectionMetadata.joinKey],
+            false,
             readModelClassName === 'AnotherReadModel' ? { name: 'count', value: 123 } : undefined
           )
         }

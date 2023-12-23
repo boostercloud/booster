@@ -16,7 +16,10 @@ export class RawEventsParser {
     callbackFn: EventsStreamingCallback
   ): Promise<void> {
     const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
-    const eventEnvelopesPerEntity = eventEnvelopes.filter(isEventKind).reduce(groupByEntity, {})
+    const eventEnvelopesPerEntity = eventEnvelopes
+      .filter(isEventKind)
+      .filter(isNotDeleted)
+      .reduce(groupByEntity, {})
 
     const processes = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
       // All envelopes are for the same entity type/ID, so we get the first one to get those values
@@ -41,6 +44,10 @@ export class RawEventsParser {
 
 function isEventKind(envelope: EventEnvelope): boolean {
   return envelope.kind == 'event'
+}
+
+function isNotDeleted(envelope: EventEnvelope): boolean {
+  return !envelope?.deletedAt
 }
 
 function groupByEntity(envelopesPerEntity: EnvelopesPerEntity, envelope: EventEnvelope): EnvelopesPerEntity {

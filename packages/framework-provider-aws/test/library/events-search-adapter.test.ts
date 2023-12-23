@@ -291,7 +291,16 @@ describe('Events searcher adapter', () => {
         expect(res.map((item) => item.entityID)).to.be.deep.equal([occurredThirdID, occurredSecondID, occurredFirstID])
         // Check they have the right structure
         for (const item of res) {
-          expect(item).to.have.keys(['type', 'entity', 'entityID', 'requestID', 'user', 'createdAt', 'value'])
+          expect(item).to.have.keys([
+            'type',
+            'entity',
+            'entityID',
+            'requestID',
+            'user',
+            'createdAt',
+            'value',
+            'deletedAt',
+          ])
         }
       })
     })

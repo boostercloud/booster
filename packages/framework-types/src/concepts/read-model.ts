@@ -28,3 +28,12 @@ export interface ReadModelMetadata<TReadModel extends ReadModelInterface = ReadM
   readonly authorizer: ReadModelAuthorizer
   readonly before: NonNullable<ReadModelFilterHooks<TReadModel>['before']>
 }
+
+export enum ProjectionInfoReason {
+  ENTITY_PROJECTED,
+  ENTITY_DELETED,
+}
+
+export interface ProjectionInfo {
+  reason: ProjectionInfoReason
+}

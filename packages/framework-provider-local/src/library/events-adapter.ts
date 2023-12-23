@@ -35,6 +35,7 @@ export async function readEntityEventsSince(
     createdAt: {
       $gt: fromTime,
     },
+    deletedAt: { $exists: false },
   }
   const result = await eventRegistry.query(query)
 

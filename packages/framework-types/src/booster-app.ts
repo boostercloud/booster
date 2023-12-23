@@ -8,6 +8,7 @@ import {
   EventSearchParameters,
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
+  EventDeleteParameters,
 } from '.'
 
 /**
@@ -27,5 +28,6 @@ export interface BoosterApp {
     limit: number,
     afterCursor: Record<string, string> | undefined
   ): Promise<PaginatedEntitiesIdsResult>
+  deleteEvent(parameters: EventDeleteParameters): Promise<boolean>
   configuredEnvironments: Set<string>
 }

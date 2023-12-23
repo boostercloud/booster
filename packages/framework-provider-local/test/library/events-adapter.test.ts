@@ -123,6 +123,9 @@ describe('events-adapter', () => {
           kind: 'event',
           entityID: mockEntityID,
           entityTypeName: mockEntityTypeName,
+          deletedAt: {
+            $exists: false,
+          },
         })
       })
 
@@ -149,6 +152,9 @@ describe('events-adapter', () => {
           kind: 'event',
           entityID: mockEntityID,
           entityTypeName: mockEntityTypeName,
+          deletedAt: {
+            $exists: false,
+          },
         })
       })
 

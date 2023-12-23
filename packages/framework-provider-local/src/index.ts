@@ -47,6 +47,7 @@ import {
   rawRequestToSensorHealth,
   databaseReadModelsHealthDetails,
 } from './library/health-adapter'
+import { deleteSnapshot, deleteEvent, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 
 export * from './paths'
 export * from './services'
@@ -80,6 +81,10 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
+    findDeletableEvent: findDeletableEvent.bind(null, eventRegistry),
+    findDeletableSnapshot: findDeletableSnapshot.bind(null, eventRegistry),
+    deleteEvent: deleteEvent.bind(null, eventRegistry),
+    deleteSnapshot: deleteSnapshot.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
