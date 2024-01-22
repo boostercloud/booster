@@ -76,3 +76,4 @@ common/autoinstallers/*/.npmrc
 .booster
 *-integration-sandbox
 *.tsbuildinfo
+.aider*
