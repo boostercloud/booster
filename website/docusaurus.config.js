@@ -40,7 +40,17 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/boostercloud/booster/tree/main/website/',
         },
-        blog: false,
+        blog: {
+          path: 'proposals',
+          exclude: ['README.md'],
+          sortPosts: 'ascending',
+          blogTitle: 'BEEP',
+          blogDescription: 'Booster Evolution Enhancement Proposals',
+          blogSidebarTitle: 'Proposals Index',
+          blogSidebarCount: 'ALL',
+          editUrl: ({ locale, blogDirPath, blogPath, permalink }) =>
+            `https://github.com/boostercloud/booster/edit/main/website/proposals/${blogPath}`,
+        },
         theme: {
           customCss: [require.resolve('./src/custom.css')],
         },
@@ -68,6 +78,11 @@ const config = {
           docId: 'ai-assistant',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          to: 'blog',
+          label: 'Proposals',
+          position: 'left',
         },
         {
           href: 'https://github.com/boostercloud/booster',
