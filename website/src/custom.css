@@ -2,8 +2,6 @@
 @import './styles/index.css';
 
 :root, * {
-  font-family: 'IamwriterquattroS';
-  --ifm-font-family-base: 'IamwriterquattroS';
   --ifm-link-color: #00f;
   --ifm-color-primary: #0000ff;
   --ifm-color-primary-dark: #0000e6;
@@ -67,7 +65,7 @@
   border-radius: 50%;
 }
 
-.bc-searchbar { 
+.bc-searchbar {
   display: flex;
   gap: 1rem;
   padding: 1rem;
