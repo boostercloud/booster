@@ -104,7 +104,7 @@ export function createStreamFunctionResourceGroupName(resourceGroupName: string)
   return `${resourceGroupName}fcs`
 }
 
-export function createApiManagementName(resourceGroupName: string): string {
+export function createDomainNameLabel(resourceGroupName: string): string {
   return `${resourceGroupName}apis`
 }
 
