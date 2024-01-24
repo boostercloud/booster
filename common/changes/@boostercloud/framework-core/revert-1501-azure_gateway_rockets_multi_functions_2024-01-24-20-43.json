@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Reverts boostercloud/booster#1501",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
