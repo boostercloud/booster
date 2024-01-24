@@ -3,8 +3,7 @@ import {
   azureCredentials,
   createFunctionResourceGroupName,
   createResourceGroupName,
-  createResourceManagementClient,
-  createStreamFunctionResourceGroupName,
+  createResourceManagementClient, createStreamFunctionResourceGroupName
 } from './helper/utils'
 import { runCommand, getLogger } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
@@ -48,7 +47,7 @@ async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]
   await FunctionZip.deployZip(config, functionAppName, resourceGroupName, applicationBuild.zipResource)
   if (config.eventStreamConfiguration.enabled) {
     const streamFunctionAppName = createStreamFunctionResourceGroupName(resourceGroupName)
-    await FunctionZip.deployZip(config, streamFunctionAppName, resourceGroupName, applicationBuild.consumerZipResource!)
+    await FunctionZip.deployZip(config, streamFunctionAppName, resourceGroupName, applicationBuild.consumerZipResource)
   }
   if (applicationBuild.rocketsZipResources && applicationBuild.rocketsZipResources.length > 0) {
     const rocketBuilder = new RocketBuilder(config, applicationBuild.azureStack.applicationStack, rockets)

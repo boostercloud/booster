@@ -184,29 +184,3 @@ export {
 Booster.start(__dirname)
 
 ```
-
-## Migrate to Booster version 2.3.0
-
-Booster version 2.3.0 updates the url for the GraphQL API, sensors, etc. for the Azure Provider. New base url is `http://[resourcegroupname]apis.eastus.cloudapp.azure.com`
-
-Also, Booster version 2.3.0 deprecated the Azure Api Management in favor of Azure Application Gateway. You don't need to do anything to migrate to the new Application Gateway.
-
-Booster 2.3.0 provides an improved Rocket process to handle Rockets with more than one function. To use this new feature, you need to implement method `mountCode` in your `Rocket` class. Example:
-
-```typescript
-const AzureWebhook = (params: WebhookParams): InfrastructureRocket => ({
-  mountStack: Synth.mountStack.bind(Synth, params),
-  mountCode: Functions.mountCode.bind(Synth, params),
-  getFunctionAppName: Functions.getFunctionAppName.bind(Synth, params),
-})
-```
-
-This method will return an Array of functions definitions, the function name, and the host.json file. Example:
-
-```typescript
-export interface FunctionAppFunctionsDefinition<T extends Binding = Binding> {
-  functionAppName: string
-  functionsDefinitions: Array<FunctionDefinition<T>>
-  hostJsonPath?: string
-}
-```

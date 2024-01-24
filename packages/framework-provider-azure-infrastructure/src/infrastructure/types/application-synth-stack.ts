@@ -1,22 +1,20 @@
 import {
+  apiManagement,
   apiManagementApi,
-  applicationGateway,
+  apiManagementApiOperation,
+  apiManagementApiOperationPolicy,
   cosmosdbAccount,
   cosmosdbSqlContainer,
   cosmosdbSqlDatabase,
   dataAzurermFunctionAppHostKeys,
-  dataAzurermPublicIp,
   eventhub,
   eventhubNamespace,
-  networkSecurityGroup,
-  publicIp,
   resourceGroup,
   servicePlan,
   storageAccount,
-  virtualNetwork,
   webPubsub,
   webPubsubHub,
-  windowsFunctionApp,
+  windowsFunctionApp
 } from '@cdktf/provider-azurerm'
 import { TerraformResource, TerraformStack } from 'cdktf'
 import { FunctionDefinition } from './functionDefinition'
@@ -29,7 +27,7 @@ export interface StackNames {
   resourceGroupName: string
   functionAppName: string
   streamFunctionAppName: string
-  domainNameLabel: string
+  apiManagementName: string
   eventHubName: string
   webPubSubHubName: string
 }
@@ -43,12 +41,12 @@ export interface ApplicationSynthStack extends StackNames {
   eventConsumerStorageAccount?: storageAccount.StorageAccount
   eventConsumerFunctionApp?: windowsFunctionApp.WindowsFunctionApp
   dataFunctionAppHostKeys?: dataAzurermFunctionAppHostKeys.DataAzurermFunctionAppHostKeys
-  appGateway?: applicationGateway.ApplicationGateway
-  networkSecurityGroup?: networkSecurityGroup.NetworkSecurityGroup
-  virtualNetwork?: virtualNetwork.VirtualNetwork
-  publicIP?: publicIp.PublicIp
-  publicIPData?: dataAzurermPublicIp.DataAzurermPublicIp
+  apiManagement?: apiManagement.ApiManagement
   apiManagementApi?: apiManagementApi.ApiManagementApi
+  graphQLApiManagementApiOperation?: apiManagementApiOperation.ApiManagementApiOperation
+  graphQLApiManagementApiOperationPolicy?: apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy
+  sensorHealthApiManagementApiOperation?: apiManagementApiOperation.ApiManagementApiOperation
+  sensorHealthApiManagementApiOperationPolicy?: apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy
   cosmosdbDatabase?: cosmosdbAccount.CosmosdbAccount
   cosmosdbSqlDatabase?: cosmosdbSqlDatabase.CosmosdbSqlDatabase
   containers?: Array<cosmosdbSqlContainer.CosmosdbSqlContainer>

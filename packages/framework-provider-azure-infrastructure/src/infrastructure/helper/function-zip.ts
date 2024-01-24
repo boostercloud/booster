@@ -40,12 +40,8 @@ export class FunctionZip {
     return zipResource
   }
 
-  static async copyZip(
-    featuresDefinitions: Array<FunctionDefinition>,
-    fileName: string,
-    hostJsonPath?: string
-  ): Promise<ZipResource> {
-    const zipPath = await this.createZip(featuresDefinitions, fileName, hostJsonPath)
+  static async copyZip(featuresDefinitions: Array<FunctionDefinition>, fileName: string): Promise<ZipResource> {
+    const zipPath = await this.createZip(featuresDefinitions, fileName)
     const originFile = path.basename(zipPath)
     const destinationFile = path.join(process.cwd(), originFile)
     fs.copyFileSync(zipPath, destinationFile)
@@ -136,11 +132,7 @@ export class FunctionZip {
     return featuresDefinitions
   }
 
-  private static async createZip(
-    functionDefinitions: Array<FunctionDefinition>,
-    fileName: string,
-    hostJsonPath?: string
-  ): Promise<any> {
+  private static async createZip(functionDefinitions: Array<FunctionDefinition>, fileName: string): Promise<any> {
     const output = fs.createWriteStream(path.join(os.tmpdir(), fileName))
 
     const archive = archiver('zip', {
@@ -154,12 +146,8 @@ export class FunctionZip {
         name: functionDefinition.name + '/function.json',
       })
     })
-    if (hostJsonPath) {
-      this.appendCustomHostConfig(archive, hostJsonPath)
-    } else {
-      if (!fs.existsSync(path.join('.deploy', 'host.json'))) {
-        this.appendDefaultHostConfig(archive)
-      }
+    if (!fs.existsSync(path.join('.deploy', 'host.json'))) {
+      this.appendDefaultHostConfig(archive)
     }
     await archive.finalize()
 
@@ -249,18 +237,8 @@ export class FunctionZip {
         version: '[4.*, 5.0.0)',
       },
     }
-    const hostJson = JSON.stringify(hostConfig, null, 2)
-    archive.append(hostJson, {
+    archive.append(JSON.stringify(hostConfig, null, 2), {
       name: 'host.json',
     })
-  }
-
-  private static appendCustomHostConfig(archive: archiver.Archiver, hostJsonPath: string): void {
-    const hostJson = fs.readFileSync(hostJsonPath, 'utf8')
-    if (hostJson) {
-      archive.append(hostJson, {
-        name: 'host.json',
-      })
-    }
   }
 }

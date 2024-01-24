@@ -12,7 +12,7 @@ import { RocketBuilder, RocketZipResource } from './rockets/rocket-builder'
 export interface ApplicationBuild {
   azureStack: AzureStack
   zipResource: ZipResource
-  consumerZipResource?: ZipResource | undefined
+  consumerZipResource: ZipResource
   rocketsZipResources?: RocketZipResource[] | undefined
 }
 
@@ -23,11 +23,8 @@ export class ApplicationBuilder {
     await this.generateSynthFiles()
 
     const app = new App()
-    let webPubSubBaseFile: string | undefined
-    if (this.config.enableSubscriptions) {
-      webPubSubBaseFile = await FunctionZip.copyBaseZip(this.config)
-    }
-    const azureStack = await this.synthApplication(app, webPubSubBaseFile)
+    const destinationFile = await FunctionZip.copyBaseZip(this.config)
+    const azureStack = await this.synthApplication(app, destinationFile)
     const rocketBuilder = new RocketBuilder(this.config, azureStack.applicationStack, this.rockets)
     await rocketBuilder.synthRocket()
     app.synth()
@@ -35,13 +32,10 @@ export class ApplicationBuilder {
     azureStack.applicationStack.functionDefinitions = FunctionZip.buildAzureFunctions(this.config)
     azureStack.applicationStack.consumerFunctionDefinitions = FunctionZip.buildAzureConsumerFunctions(this.config)
     const zipResource = await FunctionZip.copyZip(azureStack.applicationStack.functionDefinitions!, 'functionApp.zip')
-    let consumerZipResource: ZipResource | undefined
-    if (this.config.eventStreamConfiguration.enabled) {
-      consumerZipResource = await FunctionZip.copyZip(
-        azureStack.applicationStack.consumerFunctionDefinitions!,
-        'consumerFunctionApp.zip'
-      )
-    }
+    const consumerZipResource = await FunctionZip.copyZip(
+      azureStack.applicationStack.consumerFunctionDefinitions!,
+      'consumerFunctionApp.zip'
+    )
     const rocketsZipResources = await rocketBuilder.mountRocketsZipResources()
 
     return {
@@ -52,7 +46,7 @@ export class ApplicationBuilder {
     }
   }
 
-  private async synthApplication(app: App, destinationFile?: string): Promise<AzureStack> {
+  private async synthApplication(app: App, destinationFile: string): Promise<AzureStack> {
     const logger = getLogger(this.config, 'ApplicationBuilder#synthApplication')
     logger.info('Synth...')
     return new AzureStack(app, this.config.appName + this.config.environmentName, destinationFile)

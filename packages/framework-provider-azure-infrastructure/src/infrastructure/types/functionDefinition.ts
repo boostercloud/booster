@@ -62,14 +62,6 @@ export interface FunctionDefinition<T extends Binding = Binding> {
   }
 }
 
-export interface FunctionAppFunctionsDefinition<T extends Binding = Binding> {
-  functionAppName: string
-  functionsDefinitions: Array<FunctionDefinition<T>>
-  hostJsonPath?: string
-}
-
-export type FunctionAppFunctionsDefinitions = Array<FunctionAppFunctionsDefinition>
-
 export type ScheduleFunctionDefinition = FunctionDefinition<ScheduleBinding>
 
 export type GraphQLFunctionDefinition = FunctionDefinition<GraphQLBinding>

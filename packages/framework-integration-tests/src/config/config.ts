@@ -31,10 +31,6 @@ function configureBoosterSensorHealth(config: BoosterConfig) {
   })
 }
 
-function configureSubscriptions(config: BoosterConfig) {
-  config.enableSubscriptions = true
-}
-
 function configureEventHub(config: BoosterConfig) {
   config.eventStreamConfiguration = {
     enabled: true,
@@ -63,26 +59,15 @@ Booster.configure('local', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
-  config.enableSubscriptions = false
-  config.eventStreamConfiguration = {
-    enabled: false,
-  }
-
   configureInvocationsHandler(config)
   configureLogger(config)
   configureBoosterSensorHealth(config)
-  configureEventHub(config)
-  configureSubscriptions(config)
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-aws'
   config.assets = ['assets', 'assetFile.txt']
-  config.enableSubscriptions = false
-  config.eventStreamConfiguration = {
-    enabled: false,
-  }
   configureInvocationsHandler(config)
   configureBoosterSensorHealth(config)
 })
@@ -92,10 +77,6 @@ Booster.configure('production', (config: BoosterConfig): void => {
    * running integration tests for different branches concurrently.
    */
   const appNameSuffix = process.env.BOOSTER_APP_SUFFIX ?? 'default'
-  config.enableSubscriptions = false
-  config.eventStreamConfiguration = {
-    enabled: false,
-  }
 
   // The app suffix must be copied to the test app lambdas
   config.env['BOOSTER_APP_SUFFIX'] = appNameSuffix
@@ -151,5 +132,4 @@ Booster.configure('azure', (config: BoosterConfig): void => {
   configureLogger(config)
   configureBoosterSensorHealth(config)
   configureEventHub(config)
-  configureSubscriptions(config)
 })

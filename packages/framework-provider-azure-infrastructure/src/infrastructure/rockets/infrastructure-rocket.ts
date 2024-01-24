@@ -1,5 +1,5 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { FunctionAppFunctionsDefinitions, FunctionDefinition } from '../types/functionDefinition'
+import { FunctionDefinition } from '../types/functionDefinition'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 import { RocketUtils } from './rocket-utils'
 
@@ -8,18 +8,12 @@ export interface InfrastructureRocket {
     config: BoosterConfig,
     applicationSynthStack: ApplicationSynthStack,
     utils: RocketUtils
-  ) => Promise<ApplicationSynthStack>
+  ) => ApplicationSynthStack
   unmountStack?: () => void
   getFunctionAppName?: (applicationSynthStack: ApplicationSynthStack) => string
-  // @deprecated use mountCode instead
   mountFunctions?: (
     config: BoosterConfig,
     applicationSynthStack: ApplicationSynthStack,
     utils: RocketUtils
   ) => Array<FunctionDefinition>
-  mountCode?: (
-    config: BoosterConfig,
-    applicationSynthStack: ApplicationSynthStack,
-    utils: RocketUtils
-  ) => Promise<FunctionAppFunctionsDefinitions>
 }
