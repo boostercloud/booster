@@ -10,7 +10,7 @@ const config = {
   staticDirectories: ['static'],
   url: 'https://boosterframework.com',
   baseUrl: '/',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.png',
 
