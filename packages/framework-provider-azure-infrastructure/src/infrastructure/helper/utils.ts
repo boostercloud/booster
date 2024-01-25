@@ -7,7 +7,7 @@ import { WebSiteManagementClient as WebSiteManagement } from '@azure/arm-appserv
 import { ResourceManagementClient } from '@azure/arm-resources'
 import { TokenCredential, ClientSecretCredential } from '@azure/identity'
 
-const MAX_TERRAFORM_SIZE_NAME = 24
+const MAX_TERRAFORM_SIZE_NAME = 22
 const MAX_RESOURCE_GROUP_NAME_SIZE = 20
 
 export function renderToFile(config: BoosterConfig): (_: [Array<string>, string]) => Promise<void> {
