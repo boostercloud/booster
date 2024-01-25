@@ -52,5 +52,294 @@
 </ul>
 <p>Please <strong>state explicitly</strong> whether you believe that the proposal should be accepted into Booster.</p>]]></content:encoded>
         </item>
+        <item>
+            <title><![CDATA[BEEP 2 - Target and User Persona]]></title>
+            <link>https://boosterframework.com/blog/0002-project-target</link>
+            <guid>https://boosterframework.com/blog/0002-project-target</guid>
+            <pubDate>Thu, 25 Jan 2024 00:00:00 GMT</pubDate>
+            <description><![CDATA[Introduction]]></description>
+            <content:encoded><![CDATA[<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>STATUS - ACCEPTED</div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="introduction">Introduction<a href="https://boosterframework.com/blog/0002-project-target#introduction" class="hash-link" aria-label="Direct link to Introduction" title="Direct link to Introduction">​</a></h2>
+<p>This document defines the target audience and <a href="https://en.wikipedia.org/wiki/Persona_(user_experience)" target="_blank" rel="noopener noreferrer">user persona</a> for the Booster Framework project, aligning it with its current usage and user base.</p>
+<p>While maintaining a focus on guiding the design and development process of the Booster Framework, this definition is not an exclusionary rule but a strategic tool for decision-making. The framework is inclusive and welcomes a diverse range of users, though particular emphasis is placed on specific user groups in design and functionality.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="target-audience">Target Audience<a href="https://boosterframework.com/blog/0002-project-target#target-audience" class="hash-link" aria-label="Direct link to Target Audience" title="Direct link to Target Audience">​</a></h2>
+<p>The primary target audience for the Booster Framework is developers in large-scale enterprise environments, familiar with enterprise technologies like Java, .NET, or similar. This includes those working in Fortune 500 companies, especially those transitioning from traditional enterprise technologies to TypeScript in complex projects such as financial transactions.</p>
+<p>Additionally, the Booster Framework is gaining traction among hobbyist developers for personal projects, thanks to its ease of use and efficient learning curve. This secondary audience appreciates the framework for its quick setup, minimal configuration, and straightforward deployment, which are ideal for smaller-scale, personal projects.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="whos-not-the-target-audience">Who's not the target audience<a href="https://boosterframework.com/blog/0002-project-target#whos-not-the-target-audience" class="hash-link" aria-label="Direct link to Who's not the target audience" title="Direct link to Who's not the target audience">​</a></h3>
+<ul>
+<li>Developers deeply invested in exploring advanced theoretical concepts in programming without practical application.</li>
+<li>Those who prefer frameworks with a steep learning curve or require extensive configuration.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="user-persona">User Persona<a href="https://boosterframework.com/blog/0002-project-target#user-persona" class="hash-link" aria-label="Direct link to User Persona" title="Direct link to User Persona">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="primary-persona-enterprise-developer">Primary Persona: Enterprise Developer<a href="https://boosterframework.com/blog/0002-project-target#primary-persona-enterprise-developer" class="hash-link" aria-label="Direct link to Primary Persona: Enterprise Developer" title="Direct link to Primary Persona: Enterprise Developer">​</a></h3>
+<ul>
+<li><strong>Name</strong>: Aarya</li>
+<li><strong>Role</strong>: Senior Enterprise Software Developer</li>
+</ul>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="actions-motivations-and-pains">Actions, Motivations, and Pains<a href="https://boosterframework.com/blog/0002-project-target#actions-motivations-and-pains" class="hash-link" aria-label="Direct link to Actions, Motivations, and Pains" title="Direct link to Actions, Motivations, and Pains">​</a></h4>
+<ul>
+<li><strong>What do I do?</strong>
+<ul>
+<li>Work on large-scale TypeScript projects, transitioning from a background in traditional enterprise technologies.</li>
+<li>Develop robust applications for sectors like finance, requiring high security and reliability.</li>
+</ul>
+</li>
+<li><strong>Why do I do it?</strong>
+<ul>
+<li>To apply my experience in enterprise technologies in new, dynamic environments.</li>
+<li>To contribute significantly to business-critical projects.</li>
+</ul>
+</li>
+<li><strong>What do I want?</strong>
+<ul>
+<li>A framework that bridges my existing knowledge with modern development practices.</li>
+<li>Tools that ensure efficiency, security, and compatibility with enterprise standards.</li>
+</ul>
+</li>
+<li><strong>What's stopping me?</strong>
+<ul>
+<li>Adapting to new technologies while maintaining high standards of enterprise development.</li>
+<li>Balancing rapid development with regulatory and security requirements.</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="secondary-persona-hobbyist-developer">Secondary Persona: Hobbyist Developer<a href="https://boosterframework.com/blog/0002-project-target#secondary-persona-hobbyist-developer" class="hash-link" aria-label="Direct link to Secondary Persona: Hobbyist Developer" title="Direct link to Secondary Persona: Hobbyist Developer">​</a></h3>
+<ul>
+<li><strong>Name</strong>: Navin</li>
+<li><strong>Role</strong>: Hobbyist Developer</li>
+</ul>
+<h4 class="anchor anchorWithStickyNavbar_LWe7" id="actions-motivations-and-pains-1">Actions, Motivations, and Pains<a href="https://boosterframework.com/blog/0002-project-target#actions-motivations-and-pains-1" class="hash-link" aria-label="Direct link to Actions, Motivations, and Pains" title="Direct link to Actions, Motivations, and Pains">​</a></h4>
+<ul>
+<li><strong>What do I do?</strong>
+<ul>
+<li>Develop personal projects in my spare time, exploring new technologies and ideas.</li>
+<li>Seek tools that enable quick and easy project setup and deployment.</li>
+</ul>
+</li>
+<li><strong>Why do I do it?</strong>
+<ul>
+<li>To learn new skills and stay updated with the latest technology trends.</li>
+<li>To bring personal project ideas to life efficiently.</li>
+</ul>
+</li>
+<li><strong>What do I want?</strong>
+<ul>
+<li>A user-friendly framework that doesn't require extensive setup or configuration.</li>
+<li>Resources that help me quickly understand and apply the framework.</li>
+</ul>
+</li>
+<li><strong>What's stopping me?</strong>
+<ul>
+<li>Overly complex tools that require significant time investment to learn.</li>
+<li>Lack of clear, beginner-friendly documentation and community support.</li>
+</ul>
+</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="conclusion">Conclusion<a href="https://boosterframework.com/blog/0002-project-target#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion">​</a></h2>
+<p>This document outlines the dual focus of the Booster Framework's target audience and user personas. Our development and design efforts are directed towards supporting both the enterprise developers transitioning from traditional technologies to TypeScript, and the growing community of hobbyist developers seeking an accessible and easy-to-use framework for personal projects. This approach ensures the Booster Framework remains versatile and relevant across different scales and scopes of software development.</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[BEEP 3 - Principles of Design]]></title>
+            <link>https://boosterframework.com/blog/0003-principles-of-design</link>
+            <guid>https://boosterframework.com/blog/0003-principles-of-design</guid>
+            <pubDate>Thu, 25 Jan 2024 00:01:00 GMT</pubDate>
+            <description><![CDATA[Introduction]]></description>
+            <content:encoded><![CDATA[<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>STATUS - ACCEPTED</div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="introduction">Introduction<a href="https://boosterframework.com/blog/0003-principles-of-design#introduction" class="hash-link" aria-label="Direct link to Introduction" title="Direct link to Introduction">​</a></h2>
+<p>This document lays out the design principles guiding the design and implementation processes of the Booster Framework. These principles are crucial in steering both high-level and low-level decision-making within the project. They are pivotal in ensuring that the project remains focused on the correct aspects of design and implementation, always keeping in mind <a href="https://boosterframework.com/blog/0002-project-target">the target audience and user persona</a>, as they are the most important stakeholders of the project.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="principle-of-least-astonishment">Principle of Least Astonishment<a href="https://boosterframework.com/blog/0003-principles-of-design#principle-of-least-astonishment" class="hash-link" aria-label="Direct link to Principle of Least Astonishment" title="Direct link to Principle of Least Astonishment">​</a></h2>
+<p>The Principle of Least Astonishment, also known as the Principle of Least Surprise, is a fundamental guideline in user interface and software design. It stresses the importance of creating systems that behave in ways consistent with user expectations, minimizing surprise and confusion. This principle is crucial in the Booster Framework, ensuring that the framework's components and functionalities align with the conventions familiar to both enterprise and hobbyist developers, thereby enhancing their experience and usability. It is particularly relevant in a context where developers are transitioning from traditional enterprise technologies to modern TypeScript-based environments, as it aids in reducing the learning curve and preventing user astonishment.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="examples">Examples<a href="https://boosterframework.com/blog/0003-principles-of-design#examples" class="hash-link" aria-label="Direct link to Examples" title="Direct link to Examples">​</a></h3>
+<ul>
+<li>Favoring JSON or YAML for configuration over more complex formats, aligning with common industry practices.</li>
+<li>Integrating with popular version control systems like Git and widely-used platforms such as GitHub or GitLab.</li>
+<li>Recommending mainstream IDEs like Visual Studio Code, which are familiar to a broad range of developers.</li>
+<li>Ensuring that the framework's functionalities and syntax are intuitive and align with common programming practices.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="principle-of-developer-happiness">Principle of Developer Happiness<a href="https://boosterframework.com/blog/0003-principles-of-design#principle-of-developer-happiness" class="hash-link" aria-label="Direct link to Principle of Developer Happiness" title="Direct link to Principle of Developer Happiness">​</a></h2>
+<p>The Principle of Developer Happiness is centered around creating an environment and culture that aligns with developers' professional and personal expectations, thereby enhancing satisfaction and retention. This principle is key in the Booster Framework, focusing on an engaging experience and a supportive culture where developers, regardless of their background, feel valued and connected to the project's mission. It also involves using efficient tools and technologies to streamline the development process and saving time, along with continuously assessing developer efficiency and satisfaction.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="examples-1">Examples<a href="https://boosterframework.com/blog/0003-principles-of-design#examples-1" class="hash-link" aria-label="Direct link to Examples" title="Direct link to Examples">​</a></h3>
+<ul>
+<li><strong>Comprehensive Documentation</strong>: Providing clear and user-friendly documentation with practical examples for both enterprise and hobbyist developers.</li>
+<li><strong>Active Community Engagement</strong>: Encouraging participation and collaboration within the open-source community.</li>
+<li><strong>Transparent Decision-Making</strong>: Keeping language development and framework enhancement decisions transparent.</li>
+<li><strong>Inclusive Onboarding</strong>: Offering learning resources and support for developers of varying skill levels.</li>
+<li><strong>Acknowledgement of Contributions</strong>: Recognizing and valuing contributions from the community, regardless of their scale.</li>
+<li><strong>Open Feedback Channels</strong>: Maintaining open channels for feedback, suggestions, and issue reporting from users and contributors.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="principle-of-least-effort">Principle of Least Effort<a href="https://boosterframework.com/blog/0003-principles-of-design#principle-of-least-effort" class="hash-link" aria-label="Direct link to Principle of Least Effort" title="Direct link to Principle of Least Effort">​</a></h2>
+<p>The Principle of Least Effort emphasizes the idea that entities will naturally gravitate towards the solution that requires the least amount of work or complexity. In the context of the Booster Framework, this principle is applied to create systems and interfaces that are straightforward, easy to comprehend, and simple to interact with. This reduces the cognitive and operational load on users, particularly those transitioning from different technology backgrounds. For developers, it encourages the creation of code and architectures that are clean, efficient, and easy to understand and modify. By adhering to this principle, the Booster Framework aims to offer user-friendly applications and sustainably maintainable codebases, promoting efficient interactions for all users.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="examples-2">Examples<a href="https://boosterframework.com/blog/0003-principles-of-design#examples-2" class="hash-link" aria-label="Direct link to Examples" title="Direct link to Examples">​</a></h3>
+<ul>
+<li><strong>Intuitive Syntax and Features</strong>: Designing the framework with a simple, intuitive syntax that reduces cognitive load, particularly for those new to TypeScript.</li>
+<li><strong>Streamlined Documentation</strong>: Providing clear, concise documentation that helps users quickly understand and utilize the framework.</li>
+<li><strong>Robust Standard Libraries</strong>: Including comprehensive standard libraries that simplify common development tasks.</li>
+<li><strong>Effective Error Handling</strong>: Implementing user-friendly error messages and handling mechanisms for efficient problem-solving.</li>
+<li><strong>Strong Community Support</strong>: Building a supportive community for knowledge sharing and collaboration, reducing the effort needed to overcome challenges.</li>
+<li><strong>Simplified Version Management</strong>: Facilitating easy version management and updates for seamless adoption of new features and improvements.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="conclusion">Conclusion<a href="https://boosterframework.com/blog/0003-principles-of-design#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion">​</a></h2>
+<p>The design principles outlined for the Booster Framework serve as a guiding light for the project's development and implementation processes. The Principle of Least Astonishment ensures system behavior aligns with user expectations, enhancing usability. The Principle of Developer Happiness focuses on creating a fulfilling environment for developers, while the Principle of Least Effort promotes simplicity and efficiency. These principles collectively ensure that the Booster Framework remains attuned to the needs of its diverse user base, from enterprise developers to hobbyist programmers, ensuring a user-centric, efficient, and developer-friendly journey throughout its development.</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[BEEP 4 - Semantic Versioning]]></title>
+            <link>https://boosterframework.com/blog/0004-semantic-versioning</link>
+            <guid>https://boosterframework.com/blog/0004-semantic-versioning</guid>
+            <pubDate>Thu, 25 Jan 2024 00:03:00 GMT</pubDate>
+            <description><![CDATA[Introduction]]></description>
+            <content:encoded><![CDATA[<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>STATUS - ACCEPTED</div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="introduction">Introduction<a href="https://boosterframework.com/blog/0004-semantic-versioning#introduction" class="hash-link" aria-label="Direct link to Introduction" title="Direct link to Introduction">​</a></h2>
+<p>In the context of the Booster Framework ecosystem, we adopt the <a href="https://semver.org/" target="_blank" rel="noopener noreferrer">Semantic Versioning</a> (SemVer) schema. SemVer is a system of rules and guidelines for assigning and incrementing version numbers within our software development process. By using SemVer, the Booster Framework aims to manage the complexities of dependencies as the ecosystem evolves. The primary goal of implementing Semantic Versioning is to ensure that our version numbers are transparent and informative, effectively communicating the nature of changes in our software to both enterprise and hobbyist developers.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="impact-on-principle-of-least-astonishment">Impact on Principle of Least Astonishment<a href="https://boosterframework.com/blog/0004-semantic-versioning#impact-on-principle-of-least-astonishment" class="hash-link" aria-label="Direct link to Impact on Principle of Least Astonishment" title="Direct link to Impact on Principle of Least Astonishment">​</a></h2>
+<p>Semantic Versioning positively impacts the Principle of Least Astonishment. It is a widely recognized and used schema in numerous open-source projects. Adhering to a clear and consistent version numbering system (Major.Minor.Patch) reduces confusion and surprise for developers and users alike. This predictability in versioning enhances the user experience and facilitates the management of software dependencies.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="impact-on-principle-of-developer-happiness">Impact on Principle of Developer Happiness<a href="https://boosterframework.com/blog/0004-semantic-versioning#impact-on-principle-of-developer-happiness" class="hash-link" aria-label="Direct link to Impact on Principle of Developer Happiness" title="Direct link to Impact on Principle of Developer Happiness">​</a></h2>
+<p>Semantic Versioning aligns with the Principle of Developer Happiness by offering a systematic and standardized approach to versioning. This method simplifies the process of releasing and updating software packages, allowing developers to confidently implement changes. Knowing that version numbers accurately reflect the impact of changes reduces the stress related to dependency management and enables developers to concentrate on innovation and software improvement.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="impact-on-principle-of-least-effort">Impact on Principle of Least Effort<a href="https://boosterframework.com/blog/0004-semantic-versioning#impact-on-principle-of-least-effort" class="hash-link" aria-label="Direct link to Impact on Principle of Least Effort" title="Direct link to Impact on Principle of Least Effort">​</a></h2>
+<p>Semantic Versioning supports the Principle of Least Effort by making the management of software dependencies more straightforward. By adhering to SemVer, developers can introduce backward-compatible changes without needing new major releases, thereby minimizing the effort needed for maintaining and updating software. Additionally, the clear documentation of public APIs and the use of version numbers to indicate compatibility simplify the integration of dependencies, reducing the effort needed for seamless software interactions.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="usage-of-semver-in-early-development-phases">Usage of SemVer in Early Development Phases<a href="https://boosterframework.com/blog/0004-semantic-versioning#usage-of-semver-in-early-development-phases" class="hash-link" aria-label="Direct link to Usage of SemVer in Early Development Phases" title="Direct link to Usage of SemVer in Early Development Phases">​</a></h2>
+<p>During the initial development phases of Booster Framework projects, the major version will remain at 0. This indicates that breaking changes are likely to be frequent as the project evolves. Once the project achieves a stable state, the major version will be incremented to 1, signifying a reduction in the frequency of breaking changes.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="standardizing-the-use-of-semver">Standardizing the Use of SemVer<a href="https://boosterframework.com/blog/0004-semantic-versioning#standardizing-the-use-of-semver" class="hash-link" aria-label="Direct link to Standardizing the Use of SemVer" title="Direct link to Standardizing the Use of SemVer">​</a></h2>
+<p>We advise using the Semantic Versioning schema as a standard across all Booster Framework projects. This uniformity will ensure coherence within the ecosystem. The Booster CLI tool should facilitate version management by inspecting exported functions and types, suggesting the next version based on the changes made.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="considerations">Considerations<a href="https://boosterframework.com/blog/0004-semantic-versioning#considerations" class="hash-link" aria-label="Direct link to Considerations" title="Direct link to Considerations">​</a></h2>
+<p>It's important to note that changes in the implementation of a function, even without altering the API, can produce different results and are considered breaking changes. These should be reflected in the version number accordingly. For more information and examples, please refer to this <a href="https://github.com/semver/semver/issues/311" target="_blank" rel="noopener noreferrer">GitHub thread</a>.</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[BEEP 5 - Agent-Based Codebase Structure]]></title>
+            <link>https://boosterframework.com/blog/0005-agent-codebase</link>
+            <guid>https://boosterframework.com/blog/0005-agent-codebase</guid>
+            <pubDate>Thu, 25 Jan 2024 00:04:00 GMT</pubDate>
+            <description><![CDATA[Introduction]]></description>
+            <content:encoded><![CDATA[<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>STATUS - DRAFT</div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="introduction">Introduction<a href="https://boosterframework.com/blog/0005-agent-codebase#introduction" class="hash-link" aria-label="Direct link to Introduction" title="Direct link to Introduction">​</a></h2>
+<p>This document proposes a significant reorganization of the Booster Framework's folder structure to address current challenges in codebase management and to align with the principles of modularity and scalability. The current structure, <code>src/{commands,events,entities,read-models}/*.ts</code>, while functional, has shown limitations in managing complexity as the framework and the team grow.</p>
+<p>This proposal introduces a new structure based on the concept of "Agents" in event sourcing/event-driven systems, aiming to bring conceptual clarity and improved organization to the codebase. It can be thought as <strong>the microservices approach, but more tailored to the event-driven</strong> nature of Booster Framework.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="current-challenges">Current Challenges<a href="https://boosterframework.com/blog/0005-agent-codebase#current-challenges" class="hash-link" aria-label="Direct link to Current Challenges" title="Direct link to Current Challenges">​</a></h2>
+<p>The existing folder structure in the Booster Framework presents several challenges:</p>
+<ul>
+<li><strong>Lack of Modularity</strong>: The mixed nature of components (commands, events, entities, read-models) in a flat structure leads to difficulties in isolating specific functionalities or use cases.</li>
+<li><strong>Scalability Concerns</strong>: As the team and the codebase grow, the lack of hierarchical organization makes it increasingly challenging to manage and navigate the codebase.</li>
+<li><strong>Interdependency Issues</strong>: The current structure does not clearly delineate dependencies and relationships between different components, leading to potential conflicts and complexities.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="proposed-folder-structure">Proposed Folder Structure<a href="https://boosterframework.com/blog/0005-agent-codebase#proposed-folder-structure" class="hash-link" aria-label="Direct link to Proposed Folder Structure" title="Direct link to Proposed Folder Structure">​</a></h2>
+<p>The new folder structure is organized around the concept of "Agents", where each use case is encapsulated within its own subfolder. This approach mirrors the modular and event-driven nature of the Booster Framework.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="structure-overview">Structure Overview<a href="https://boosterframework.com/blog/0005-agent-codebase#structure-overview" class="hash-link" aria-label="Direct link to Structure Overview" title="Direct link to Structure Overview">​</a></h3>
+<ul>
+<li><code>src/</code>
+<ul>
+<li><code>agents/</code>
+<ul>
+<li><code>agent-name-1/</code>
+<ul>
+<li><code>commands/</code></li>
+<li><code>events/</code></li>
+<li><code>entities/</code></li>
+<li><code>read-models/</code></li>
+</ul>
+</li>
+<li><code>agent-name-2/</code>
+<ul>
+<li><code>commands/</code></li>
+<li><code>events/</code></li>
+<li><code>entities/</code></li>
+<li><code>read-models/</code></li>
+</ul>
+</li>
+<li>...</li>
+</ul>
+</li>
+<li><code>shared/</code>
+<ul>
+<li><code>common-entities/</code></li>
+<li><code>utilities/</code></li>
+<li>...</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="guidelines-for-naming-subfolders">Guidelines for Naming Subfolders<a href="https://boosterframework.com/blog/0005-agent-codebase#guidelines-for-naming-subfolders" class="hash-link" aria-label="Direct link to Guidelines for Naming Subfolders" title="Direct link to Guidelines for Naming Subfolders">​</a></h3>
+<ul>
+<li><strong>Reflective of Use Case</strong>: Each subfolder (agent) should be named in a way that clearly reflects its specific use case or domain.</li>
+<li><strong>Consistent Naming Convention</strong>: A uniform naming convention should be adopted across all agents to maintain consistency and readability.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="benefits-of-the-reorganization">Benefits of the Reorganization<a href="https://boosterframework.com/blog/0005-agent-codebase#benefits-of-the-reorganization" class="hash-link" aria-label="Direct link to Benefits of the Reorganization" title="Direct link to Benefits of the Reorganization">​</a></h2>
+<ul>
+<li><strong>Improved Modularity</strong>: Each agent acts as a self-contained module, enhancing the clarity and separation of different aspects of the codebase.</li>
+<li><strong>Enhanced Scalability</strong>: This structure supports the growth of the team and the codebase, allowing for easier navigation and management.</li>
+<li><strong>Facilitated Collaboration</strong>: Teams can focus on specific agents without interfering with others, simplifying collaboration and reducing the risk of conflicts.</li>
+<li><strong>Repository Splitting</strong>: The modular nature of this structure allows for splitting the codebase into separate repositories if necessary for better scalability and management.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="addressing-potential-challenges">Addressing Potential Challenges<a href="https://boosterframework.com/blog/0005-agent-codebase#addressing-potential-challenges" class="hash-link" aria-label="Direct link to Addressing Potential Challenges" title="Direct link to Addressing Potential Challenges">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="interaction-and-communication-between-agents">Interaction and Communication Between Agents<a href="https://boosterframework.com/blog/0005-agent-codebase#interaction-and-communication-between-agents" class="hash-link" aria-label="Direct link to Interaction and Communication Between Agents" title="Direct link to Interaction and Communication Between Agents">​</a></h3>
+<ul>
+<li><strong>Well-Defined Interfaces</strong>: Clear interfaces and communication protocols between agents must be established to ensure smooth interactions.</li>
+<li><strong>Shared Resources Management</strong>: The <code>shared/</code> folder will house common entities and utilities, accessible to all agents while maintaining their independence.</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="technical-and-implementation-considerations">Technical and Implementation Considerations<a href="https://boosterframework.com/blog/0005-agent-codebase#technical-and-implementation-considerations" class="hash-link" aria-label="Direct link to Technical and Implementation Considerations" title="Direct link to Technical and Implementation Considerations">​</a></h3>
+<ul>
+<li><strong>Incremental Transition</strong>: A phased approach to migrating to the new structure is recommended to minimize disruption.<!-- -->
+<ul>
+<li>The team can start by putting everything in the <code>shared/</code> folder, then gradually move to the new structure.</li>
+</ul>
+</li>
+<li><strong>Documentation and Communication</strong>: The team should be in charge of having documentation and communication sessions in order to ensure that everyone is on the same page and responsibilities are not duplicated.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="additional-ideas">Additional Ideas<a href="https://boosterframework.com/blog/0005-agent-codebase#additional-ideas" class="hash-link" aria-label="Direct link to Additional Ideas" title="Direct link to Additional Ideas">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="integration-of-ai-agents">Integration of AI Agents<a href="https://boosterframework.com/blog/0005-agent-codebase#integration-of-ai-agents" class="hash-link" aria-label="Direct link to Integration of AI Agents" title="Direct link to Integration of AI Agents">​</a></h3>
+<p>In line with the event-driven architecture of the Booster Framework, an intriguing extension to the proposed semantic codebase structure is the <strong>incorporation of AI agents</strong>. These agents, mirroring the structure of traditionally-programmed agents with <code>commands</code>, <code>events</code>, <code>read-models</code>, etc., would have their internal logic powered by <strong>Large Language Models (LLMs)</strong>.</p>
+<p>This integration aligns with the scalable and modular design of the framework, allowing AI agents to <strong>autonomously handle specific tasks or workflows within their domain</strong>. The use of AI agents could significantly enhance the framework's capabilities in areas such as:</p>
+<ul>
+<li><strong>Automated decision-making</strong></li>
+<li><strong>Predictive analytics</strong></li>
+<li><strong>Personalized user interactions</strong></li>
+</ul>
+<p>Each AI agent would operate within its designated subfolder, ensuring a <strong>clear delineation and manageable interaction</strong> with regular agents, while adhering to the same communication protocols and interface standards established in the overall framework.</p>
+<p>This innovative approach opens new avenues for efficiency, creativity, and advanced functionalities within the Booster Framework ecosystem.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="conclusion">Conclusion<a href="https://boosterframework.com/blog/0005-agent-codebase#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion">​</a></h2>
+<p>The proposed semantic codebase structure for Booster Framework aims to address current challenges in codebase management while aligning with the principles of modularity and scalability. This reorganization, centered around the concept of "Agents", offers numerous benefits, including improved code separation, easier collaboration, and the potential for scalable codebase management.</p>]]></content:encoded>
+        </item>
+        <item>
+            <title><![CDATA[BEEP 6 - Remote Imports]]></title>
+            <link>https://boosterframework.com/blog/0006-remote-imports</link>
+            <guid>https://boosterframework.com/blog/0006-remote-imports</guid>
+            <pubDate>Fri, 26 Jan 2024 00:00:00 GMT</pubDate>
+            <description><![CDATA[Introduction]]></description>
+            <content:encoded><![CDATA[<div class="theme-admonition theme-admonition-tip admonition_xJq3 alert alert--success"><div class="admonitionHeading_Gvgb"><span class="admonitionIcon_Rf37"><svg viewBox="0 0 12 16"><path fill-rule="evenodd" d="M6.5 0C3.48 0 1 2.19 1 5c0 .92.55 2.25 1 3 1.34 2.25 1.78 2.78 2 4v1h5v-1c.22-1.22.66-1.75 2-4 .45-.75 1-2.08 1-3 0-2.81-2.48-5-5.5-5zm3.64 7.48c-.25.44-.47.8-.67 1.11-.86 1.41-1.25 2.06-1.45 3.23-.02.05-.02.11-.02.17H5c0-.06 0-.13-.02-.17-.2-1.17-.59-1.83-1.45-3.23-.2-.31-.42-.67-.67-1.11C2.44 6.78 2 5.65 2 5c0-2.2 2.02-4 4.5-4 1.22 0 2.36.42 3.22 1.19C10.55 2.94 11 3.94 11 5c0 .66-.44 1.78-.86 2.48zM4 14h5c-.23 1.14-1.3 2-2.5 2s-2.27-.86-2.5-2z"></path></svg></span>STATUS - DRAFT</div></div>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="introduction">Introduction<a href="https://boosterframework.com/blog/0006-remote-imports#introduction" class="hash-link" aria-label="Direct link to Introduction" title="Direct link to Introduction">​</a></h2>
+<p>This document proposes a novel solution to address the challenges encountered by the team following the restructuring of Booster Framework codebase into <a href="https://boosterframework.com/blog/0005-agent-codebase">distinct agents</a> and separate repositories. The primary challenge involves enabling easy importation of types and classes from other agents without relying on traditional package managers. The proposed solution introduces a new endpoint, <code>/inspect</code>, in Booster services, coupled with an extension to the TypeScript compiler through a specialized plugin (transformer). This approach aims to streamline development, ensure access to up-to-date type definitions, and facilitate seamless agent interaction.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="context-and-challenges">Context and Challenges<a href="https://boosterframework.com/blog/0006-remote-imports#context-and-challenges" class="hash-link" aria-label="Direct link to Context and Challenges" title="Direct link to Context and Challenges">​</a></h2>
+<p>After splitting the project codebase into individual agents and repositories, the team faces the challenge of efficiently importing types and classes across these divided entities. Traditional methods, such as package managers, are not optimal in this scenario due to their complexity and the additional maintenance they require. There is a need for a more agile and integrated solution that aligns with the dynamic nature of Booster Framework.</p>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="proposed-solution">Proposed Solution<a href="https://boosterframework.com/blog/0006-remote-imports#proposed-solution" class="hash-link" aria-label="Direct link to Proposed Solution" title="Direct link to Proposed Solution">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="introduction-of-inspect-endpoint">Introduction of <code>/inspect</code> Endpoint<a href="https://boosterframework.com/blog/0006-remote-imports#introduction-of-inspect-endpoint" class="hash-link" aria-label="Direct link to introduction-of-inspect-endpoint" title="Direct link to introduction-of-inspect-endpoint">​</a></h3>
+<ul>
+<li><strong>Functionality</strong>: The <code>/inspect</code> endpoint in Booster services will provide direct access to <code>.d.ts</code> files of all project components, organized by agents. This will include types for commands, events, read-models, and other relevant components.</li>
+<li><strong>Benefits</strong>: This endpoint simplifies development by offering an organized and up-to-date source of type definitions, ensuring consistency across different agents.</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="extension-of-typescript-compiler">Extension of TypeScript Compiler<a href="https://boosterframework.com/blog/0006-remote-imports#extension-of-typescript-compiler" class="hash-link" aria-label="Direct link to Extension of TypeScript Compiler" title="Direct link to Extension of TypeScript Compiler">​</a></h3>
+<ul>
+<li><strong>Plugin Development</strong>: A custom plugin for the TypeScript compiler will be developed to recognize a special import syntax, such as <code>import FooEvent from 'booster://agent-name/events/FooEvent'</code>.</li>
+<li><strong>Dynamic Importing</strong>: This plugin will dynamically fetch the corresponding <code>.d.ts</code> file from the <code>/inspect</code> endpoint, streamlining the import process.</li>
+<li><strong>Advantages</strong>: This system allows seamless interaction between agents, enhancing the developer experience and negating the need for traditional package management complexities.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="addressing-potential-concerns">Addressing Potential Concerns<a href="https://boosterframework.com/blog/0006-remote-imports#addressing-potential-concerns" class="hash-link" aria-label="Direct link to Addressing Potential Concerns" title="Direct link to Addressing Potential Concerns">​</a></h2>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="security-and-access-control-for-inspect">Security and Access Control for <code>/inspect</code><a href="https://boosterframework.com/blog/0006-remote-imports#security-and-access-control-for-inspect" class="hash-link" aria-label="Direct link to security-and-access-control-for-inspect" title="Direct link to security-and-access-control-for-inspect">​</a></h3>
+<ul>
+<li><strong>Implementation of Security Measures</strong>: Appropriate security measures and access controls will be implemented to protect sensitive information within the <code>.d.ts</code> files accessible via the <code>/inspect</code> endpoint.</li>
+<li><strong>Restricted Access</strong>: Access to the endpoint may be restricted based on user roles or project settings, ensuring that only authorized personnel can retrieve type definitions.</li>
+</ul>
+<p>As the first version of this feature, these security concerns will be mitigated through making this feature opt-in. <strong>It would be only available for environments where the flag has been enabled.</strong> For example, it should be enabled in the local development, testing, and staging environments, but disabled in production.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="integration-with-existing-workflow">Integration with Existing Workflow<a href="https://boosterframework.com/blog/0006-remote-imports#integration-with-existing-workflow" class="hash-link" aria-label="Direct link to Integration with Existing Workflow" title="Direct link to Integration with Existing Workflow">​</a></h3>
+<ul>
+<li><strong>Seamless Integration</strong>: The proposed solution is designed to integrate smoothly with the existing development workflow of the Booster Framework.</li>
+<li><strong>Addressing Challenges and Dependencies</strong>: Potential challenges, such as network latency or downtime, will be addressed through robust error handling and fallback mechanisms.</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="naming-convention-and-format">Naming Convention and Format<a href="https://boosterframework.com/blog/0006-remote-imports#naming-convention-and-format" class="hash-link" aria-label="Direct link to Naming Convention and Format" title="Direct link to Naming Convention and Format">​</a></h3>
+<ul>
+<li><strong>Import Syntax Convention</strong>: The <code>booster://agent-name</code> import syntax will follow a clear and consistent naming convention, aligning with the overall structure and nomenclature of the Booster Framework.</li>
+<li><strong>Agent Naming Guidelines</strong>: Specific guidelines and constraints for naming agents will be established to ensure clarity and avoid conflicts in the import process.</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="conclusion">Conclusion<a href="https://boosterframework.com/blog/0006-remote-imports#conclusion" class="hash-link" aria-label="Direct link to Conclusion" title="Direct link to Conclusion">​</a></h2>
+<p>The introduction of the <code>/inspect</code> endpoint and the extension of the TypeScript compiler with a custom plugin represent a significant step forward in addressing the challenges of remote imports in Booster Framework. This solution not only simplifies the development process but also enhances the modularity and flexibility of the framework, ensuring a smooth and efficient experience for developers working across different agents and repositories.</p>]]></content:encoded>
+        </item>
     </channel>
 </rss>
