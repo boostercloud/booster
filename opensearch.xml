@@ -4,8 +4,8 @@
   <ShortName>Booster Framework</ShortName>
   <Description>Search Booster Framework</Description>
   <InputEncoding>UTF-8</InputEncoding>
-  <Image width="16" height="16" type="image/x-icon">https://boosterframework.com/img/favicon.png</Image>
-  <Url type="text/html" method="get" template="https://boosterframework.com/search?q={searchTerms}"/>
-  <Url type="application/opensearchdescription+xml" rel="self" template="https://boosterframework.com/opensearch.xml" />
-  <moz:SearchForm>https://boosterframework.com/</moz:SearchForm>
+  <Image width="16" height="16" type="image/x-icon">https://docs.boosterframework.com/img/favicon.png</Image>
+  <Url type="text/html" method="get" template="https://docs.boosterframework.com/search?q={searchTerms}"/>
+  <Url type="application/opensearchdescription+xml" rel="self" template="https://docs.boosterframework.com/opensearch.xml" />
+  <moz:SearchForm>https://docs.boosterframework.com/</moz:SearchForm>
 </OpenSearchDescription>
