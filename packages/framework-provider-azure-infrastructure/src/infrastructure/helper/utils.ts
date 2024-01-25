@@ -32,16 +32,21 @@ export function toTerraformName(name: string, suffix = ''): string {
   const cleanName = terraformCleanText(name)
   const totalLength = cleanName.length + cleanSuffix.length
   if (totalLength <= MAX_TERRAFORM_SIZE_NAME) {
-    return cleanName + cleanSuffix
+    return startsWithLetter(cleanName + cleanSuffix)
   }
 
   if (cleanName.length <= cleanSuffix.length) {
-    return (cleanName + cleanSuffix).substr(0, MAX_TERRAFORM_SIZE_NAME - 1)
+    const newName = (cleanName + cleanSuffix).substr(0, MAX_TERRAFORM_SIZE_NAME - 1)
+    return startsWithLetter(newName)
   }
 
   const extraLength = totalLength - MAX_TERRAFORM_SIZE_NAME
   const fixedCleanName = cleanName.substr(extraLength)
-  return fixedCleanName + cleanSuffix
+  return startsWithLetter(fixedCleanName + cleanSuffix)
+}
+
+function startsWithLetter(text: string): string {
+  return text.match(/^\d/) ? 'B' + text.substring(1) : text
 }
 
 export function toAzureName(name: string, maxSize = 24): string {

@@ -35,6 +35,16 @@ export class ApplicationSynth {
   readonly config: BoosterConfig
   readonly stackNames: StackNames
 
+  readonly CONSUMPTION_PLAN = {
+    skuName: 'Y1',
+    workerCount: 1,
+  }
+
+  readonly BASIC_PLAN = {
+    skuName: 'B1',
+    workerCount: 2,
+  }
+
   public constructor(terraformStack: TerraformStack) {
     this.config = readProjectConfig(process.cwd())
     const azurermProvider = new AzurermProvider(terraformStack, 'azureFeature', {
@@ -77,7 +87,22 @@ export class ApplicationSynth {
     stack.containers = TerraformContainers.build(stack, this.config)
     this.buildEventHub(stack)
     this.buildWebPubSub(stack)
-    stack.applicationServicePlan = TerraformServicePlan.build(stack, 'psp', 'Y1', 1)
+    const basicServicePlan = process.env.BOOSTER_AZURE_SERVICE_PLAN_BASIC ?? 'false'
+    if (basicServicePlan === 'true') {
+      stack.applicationServicePlan = TerraformServicePlan.build(
+        stack,
+        'psp',
+        this.BASIC_PLAN.skuName,
+        this.BASIC_PLAN.workerCount
+      )
+    } else {
+      stack.applicationServicePlan = TerraformServicePlan.build(
+        stack,
+        'psp',
+        this.CONSUMPTION_PLAN.skuName,
+        this.CONSUMPTION_PLAN.workerCount
+      )
+    }
     stack.storageAccount = TerraformStorageAccount.build(stack, 'sp')
     stack.functionApp = this.buildDefaultFunctionApp(stack, zipFile)
     this.buildWebPubSubHub(stack)
