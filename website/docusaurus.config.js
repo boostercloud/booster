@@ -8,7 +8,7 @@ const lightCodeTheme = themes.palenight
 const config = {
   title: 'Booster Framework',
   staticDirectories: ['static'],
-  url: 'https://boosterframework.com',
+  url: 'https://docs.boosterframework.com',
   baseUrl: '/',
   onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
