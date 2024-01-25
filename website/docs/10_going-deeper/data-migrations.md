@@ -210,3 +210,5 @@ export interface FunctionAppFunctionsDefinition<T extends Binding = Binding> {
   hostJsonPath?: string
 }
 ```
+
+Booster 2.3.0 allows you to set the app service plan used to deploy the main function app. Setting the `BOOSTER_AZURE_SERVICE_PLAN_BASIC` environment variable to true will force the use of a basic service plan instead of the default consumption plan.
