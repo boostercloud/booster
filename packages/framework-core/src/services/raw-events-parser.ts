@@ -19,7 +19,7 @@ export class RawEventsParser {
     const eventEnvelopesPerEntity = eventEnvelopes.filter(isEventKind).reduce(groupByEntity, {})
 
     const processes = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
-      // All envelopes are for the same entity type/ID, so we get the first one to get those values
+      // All envelopes are for the same entity type/ID, so we get the first one to get those values.
       if (!entityEnvelopes[0]) {
         throw new Error('The impossible happened: Attempted to process a non existent event')
       }
