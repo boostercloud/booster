@@ -11,7 +11,7 @@ export default function Utterance(props: Props) {
   const options = useMemo(
     () =>
       ({
-        repo: 'boostercloud/booster',
+        repo: 'boostercloud/docs-discussion',
         theme: `github-${colorMode}`,
         label: 'comment-section',
       } as const),
