@@ -244,3 +244,7 @@ svg {
     margin-right: 3rem
   }
 }
+
+.utterances {
+  max-width: 100%;
+}
