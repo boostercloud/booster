@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.3.0",
+      "tag": "@boostercloud/framework-core_v2.3.0",
+      "date": "Thu, 25 Jan 2024 18:03:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Update Azure infrastructure to use Azure Gateway. Rockets now support multiple functions with specific host.json files",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "6f315815a197c7e66e03ba61b125c3b85b5a3b96"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.2.0` to `^2.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.2.0` to `^2.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.2.0` to `^2.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.2.0` to `^2.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.2.0",
       "tag": "@boostercloud/framework-core_v2.2.0",
       "date": "Fri, 17 Nov 2023 14:25:53 GMT",

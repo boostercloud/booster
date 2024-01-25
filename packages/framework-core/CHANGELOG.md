@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 17 Nov 2023 14:25:53 GMT and should not be manually modified.
+This log was last generated on Thu, 25 Jan 2024 18:03:39 GMT and should not be manually modified.
+
+## 2.3.0
+Thu, 25 Jan 2024 18:03:39 GMT
+
+### Minor changes
+
+- Update Azure infrastructure to use Azure Gateway. Rockets now support multiple functions with specific host.json files
 
 ## 2.2.0
 Fri, 17 Nov 2023 14:25:53 GMT
