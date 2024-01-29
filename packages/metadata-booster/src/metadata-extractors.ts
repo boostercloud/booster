@@ -90,9 +90,9 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
       [(t) => t.isClass(), 'Class'],
       [(t) => t.isInterface(), 'Interface'],
       [(t) => t.getAliasSymbol() != null, 'Type'],
+      [isReadonlyArray, 'ReadonlyArray'],
       [(t) => t.isArray(), 'Array'],
       [(t) => t.getCallSignatures().length > 0, 'Function'],
-      [isReadonlyArray, 'ReadonlyArray'],
       [(t) => t.isObject(), 'Object'],
     ]
 
@@ -156,6 +156,9 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
     }
 
     if (typeInfo.typeName === '') {
+      if (typeInfo.name === 'ReadonlyArray') {
+        throw new Error(`A ${typeInfo.typeGroup}`)
+      }
       typeInfo.typeName = typeInfo.name
     }
 

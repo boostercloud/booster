@@ -15,5 +15,6 @@
   "monorepoWorkspace.includeRoot": false,
   "cSpell.words": ["codeql", "codesee"],
   "mochaExplorer.files": "packages/**test/**/*.test.ts",
-  "mochaExplorer.require": "ts-node/register"
+  "mochaExplorer.require": "ts-node/register",
+  "typescript.tsdk": "packages/framework-core/node_modules/typescript/lib"
 }

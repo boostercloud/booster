@@ -1,5 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Class } from '@boostercloud/framework-types'
-import { plainToClass } from 'class-transformer'
 
 /**
  * Creates an instance of the given class from the given raw object.
@@ -25,8 +25,9 @@ import { plainToClass } from 'class-transformer'
  * console.log(user.name) // Prints 'John Doe'
  * ```
  */
-export function createInstance<T, V>(instanceClass: Class<T>, rawObject: V): T {
-  return plainToClass(instanceClass, rawObject)
+export function createInstance<T>(instanceClass: Class<T>, rawObject: Record<string, any>): T {
+  const instance = new instanceClass()
+  return Object.assign(instance as any, rawObject)
 }
 
 /**
@@ -39,6 +40,6 @@ export function createInstance<T, V>(instanceClass: Class<T>, rawObject: V): T {
  *
  * @see {@link createInstance}
  */
-export function createInstances<T, V>(instanceClass: Class<T>, rawObjects: Array<V>): T[] {
+export function createInstances<T>(instanceClass: Class<T>, rawObjects: Array<Record<string, any>>): T[] {
   return rawObjects.map((rawObject) => createInstance(instanceClass, rawObject))
 }
