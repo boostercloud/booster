@@ -156,9 +156,6 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
     }
 
     if (typeInfo.typeName === '') {
-      if (typeInfo.name === 'ReadonlyArray') {
-        throw new Error(`A ${typeInfo.typeGroup}`)
-      }
       typeInfo.typeName = typeInfo.name
     }
 
