@@ -73,7 +73,7 @@
     "subscriptions-transport-ws": "0.11.0",
     "ts-node": "^10.9.1",
     "ts-patch": "2.0.2",
-    "typescript": "^5.1.0",
+    "typescript": "5.1.6",
     "sinon": "9.2.3",
     "eslint-plugin-unicorn": "~44.0.2"
   },

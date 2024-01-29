@@ -22,7 +22,7 @@
     "mocha": "10.2.0",
     "nyc": "^15.1.0",
     "prettier": "^1.19.1",
-    "typescript": "^5.1.0",
+    "typescript": "5.1.6",
     "ts-node": "^10.9.1",
     "@types/node": "^13.5.1"
   },
