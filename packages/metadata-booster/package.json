@@ -29,7 +29,8 @@
     "reflect-metadata": "0.1.13",
     "ts-morph": "15.1.0",
     "tslib": "^2.4.0",
-    "@effect-ts/core": "^0.60.4"
+    "@effect-ts/core": "^0.60.4",
+    "typescript-rtti": "~0.9.6"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.0.0",
@@ -42,7 +43,7 @@
     "@boostercloud/eslint-config": "workspace:^2.3.0",
     "ts-node": "^10.9.1",
     "ts-patch": "2.0.2",
-    "typescript": "4.7.4",
+    "typescript": "5.1.6",
     "prettier": "2.3.0",
     "sinon": "9.2.3",
     "rimraf": "^5.0.0",

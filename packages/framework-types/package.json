@@ -42,7 +42,9 @@
     "tslib": "^2.4.0",
     "uuid": "8.3.2",
     "@effect-ts/core": "^0.60.4",
-    "@effect-ts/node": "~0.39.0"
+    "@effect-ts/node": "~0.39.0",
+    "typescript-rtti": "~0.9.6",
+    "reflect-metadata": "0.1.13"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^2.3.0",
@@ -67,7 +69,7 @@
     "nyc": "^15.1.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
-    "typescript": "4.7.4",
+    "typescript": "5.1.6",
     "prettier": "2.3.0",
     "eslint-plugin-unicorn": "~44.0.2",
     "graphql": "^16.6.0",

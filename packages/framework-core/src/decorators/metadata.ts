@@ -1,13 +1,22 @@
-import { AnyClass } from '@boostercloud/framework-types'
+// import { AnyClass } from '@boostercloud/framework-types'
 import { ClassMetadata } from '@boostercloud/metadata-booster'
+import { CallSite, Constructor, reflect } from 'typescript-rtti'
 import 'reflect-metadata'
 
-export function getClassMetadata(classType: AnyClass): ClassMetadata {
-  const meta: ClassMetadata = Reflect.getMetadata('booster:typeinfo', classType)
-  if (!meta) {
-    throw Error(`Couldn't get proper metadata information of ${classType.name}`)
-  }
-  return meta
+export function getClassMetadata<T>(classType: Constructor<T>, callSite?: CallSite): ClassMetadata {
+  // const meta: ClassMetadata = Reflect.getMetadata('booster:typeinfo', classType)
+  const info = reflect(callSite).parameters[0].reflectedClass
+
+  throw new Error(`
+  #############################
+  ${JSON.stringify(info, null, 2)}
+  #############################
+  `)
+
+  // if (!meta) {
+  //   throw Error(`Couldn't get proper metadata information of ${classType.name}`)
+  // }
+  // return meta
 }
 
 /**
