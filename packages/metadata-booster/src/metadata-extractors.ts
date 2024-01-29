@@ -155,7 +155,24 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
         break
     }
 
-    if (typeInfo.typeName === '') throw new Error(`Could not extract typeName for type ${JSON.stringify(typeInfo)}`)
+    if (typeInfo.typeName === '') {
+      typeInfo.typeName = typeInfo.name
+    }
+
+    if (typeInfo.typeName === '')
+      throw new Error(`
+    Could not extract typeName for type ${JSON.stringify(typeInfo)}
+
+    This is probably a bug in the metadata extractor.
+
+    More information
+    ----------------
+
+    typeInfo: ${JSON.stringify(typeInfo)}
+    type: ${JSON.stringify(type.getText())}
+    node: ${JSON.stringify(node?.getText())}
+    depth: ${depth}
+    `)
 
     return typeInfo
   }
