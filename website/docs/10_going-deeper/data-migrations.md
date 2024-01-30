@@ -102,7 +102,7 @@ Data migrations can be seen as background processes that can actively update the
 
 To create a data migration in Booster, you can use the `@DataMigration` decorator on a class that implements a `start` method. The `@DataMigration` decorator takes an object with a single parameter, `order`, which specifies the order in which the data migration should be run relative to other data migrations.
 
-Data migrations are not run automatically, you need to invoke the `BoosterDataMigrations.run()` method from an event handler or a command. This will emit a `BoosterDataMigrationStarted` event, which will make Booster check for any pending migrations and run them in the specified order. A common pattern to be able to run migrations on demand is to add a special command, with access limited to an administrator role which calls this function. 
+Data migrations are not run automatically, you need to invoke the `BoosterDataMigrations.run()` method from an event handler or a command. This will emit a `BoosterDataMigrationStarted` event, which will make Booster check for any pending migrations and run them in the specified order. A common pattern to be able to run migrations on demand is to add a special command, with access limited to an administrator role which calls this function.
 
 Take into account that, depending on your cloud provider implementation, data migrations are executed in the context of a lambda or function app, so it's advisable to design these functions in a way that allow to re-run them in case of failures (i.e. lambda timeouts). In order to tell Booster that your migration has been applied successfully, at the end of each `DataMigration.start` method, you must emit a `BoosterDataMigrationFinished` event manually.
 
@@ -160,7 +160,7 @@ export class CartIdDataMigrateV2 {
     "typescript": "4.5.4",
     "ts-node": "9.1.1",
     "@types/node": "15.0.2",
-    "ts-patch": "2.0.2",
+    "ts-patch": "3.1.2",
     "@boostercloud/metadata-booster": "0.30.2"
   },
 ```
