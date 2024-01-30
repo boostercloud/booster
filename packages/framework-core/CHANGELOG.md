@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 25 Jan 2024 18:03:39 GMT and should not be manually modified.
+This log was last generated on Tue, 30 Jan 2024 10:48:42 GMT and should not be manually modified.
+
+## 2.4.0
+Tue, 30 Jan 2024 10:48:42 GMT
+
+### Minor changes
+
+- Bump TypeScript to 5.1.6
 
 ## 2.3.0
 Thu, 25 Jan 2024 18:03:39 GMT

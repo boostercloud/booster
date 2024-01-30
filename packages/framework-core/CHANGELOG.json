@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.4.0",
+      "tag": "@boostercloud/framework-core_v2.4.0",
+      "date": "Tue, 30 Jan 2024 10:48:42 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Bump TypeScript to 5.1.6",
+            "author": "Nick Seagull <nick@booster.cloud>",
+            "commit": "f331e03be3832a8517aedcd782322f003ee24630"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.3.0` to `^2.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.3.0` to `^2.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.3.0` to `^2.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.3.0` to `^2.4.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.3.0",
       "tag": "@boostercloud/framework-core_v2.3.0",
       "date": "Thu, 25 Jan 2024 18:03:39 GMT",
