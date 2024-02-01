@@ -30,6 +30,8 @@ import { TerraformNetworkSecurityGroup } from './gateway/terraform-network-secur
 import { TerraformVirtualNetwork } from './gateway/terraform-virtual-network'
 import { TerraformPublicIp } from './gateway/terraform-public-ip'
 import { TerraformPublicIpData } from './gateway/terraform-public-ip-data'
+import { TerraformSubnet } from './gateway/terraform-subnet'
+import { TerraformSubnetSecurity } from './gateway/terraform-subnet-security'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -78,6 +80,8 @@ export class ApplicationSynth {
       `${this.stackNames.resourceGroupName}rjsg`
     )
     stack.virtualNetwork = TerraformVirtualNetwork.build(stack)
+    stack.subnet = TerraformSubnet.build(stack)
+    stack.subnetNetworkSecurityGroupAssociation = TerraformSubnetSecurity.build(stack)
     stack.publicIP = TerraformPublicIp.build(stack, 'pip')
     stack.appGateway = TerraformApplicationGateway.build(stack)
     stack.publicIPData = TerraformPublicIpData.build(stack)
