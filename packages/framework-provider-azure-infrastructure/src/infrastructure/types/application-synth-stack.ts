@@ -15,6 +15,8 @@ import {
   storageAccount,
   virtualNetwork,
   webPubsub,
+  subnet,
+  subnetNetworkSecurityGroupAssociation,
   webPubsubHub,
   windowsFunctionApp,
 } from '@cdktf/provider-azurerm'
@@ -45,6 +47,8 @@ export interface ApplicationSynthStack extends StackNames {
   dataFunctionAppHostKeys?: dataAzurermFunctionAppHostKeys.DataAzurermFunctionAppHostKeys
   appGateway?: applicationGateway.ApplicationGateway
   networkSecurityGroup?: networkSecurityGroup.NetworkSecurityGroup
+  subnet?: subnet.Subnet
+  subnetNetworkSecurityGroupAssociation?: subnetNetworkSecurityGroupAssociation.SubnetNetworkSecurityGroupAssociation
   virtualNetwork?: virtualNetwork.VirtualNetwork
   publicIP?: publicIp.PublicIp
   publicIPData?: dataAzurermPublicIp.DataAzurermPublicIp

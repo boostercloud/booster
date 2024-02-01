@@ -9,11 +9,15 @@ export class TerraformApplicationGateway {
     resourceGroupName,
     functionAppName,
     virtualNetwork,
+    subnet,
     publicIP,
   }: ApplicationSynthStack): applicationGateway.ApplicationGateway {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
     if (!virtualNetwork) {
       throw new Error('Undefined virtualNetwork resource')
+    }
+    if (!subnet) {
+      throw new Error('Undefined subnet resource')
     }
     if (!publicIP) {
       throw new Error('Undefined publicIP resource')
@@ -36,7 +40,7 @@ export class TerraformApplicationGateway {
       gatewayIpConfiguration: [
         {
           name: 'myGatewayIpConfiguration',
-          subnetId: virtualNetwork.subnet.get(0).id,
+          subnetId: subnet.id,
         },
       ],
       frontendIpConfiguration: [
