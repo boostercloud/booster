@@ -2,14 +2,13 @@ import { Booster } from '@boostercloud/framework-core'
 export {
   Booster,
   boosterEventDispatcher,
-  boosterProduceEventStream,
-  boosterConsumeEventStream,
-  boosterPreSignUpChecker,
-  boosterHealth,
   boosterServeGraphQL,
+  boosterTriggerScheduledCommands,
   boosterNotifySubscribers,
-  boosterTriggerScheduledCommand,
   boosterRocketDispatcher,
+  boosterConsumeEventStream,
+  boosterProduceEventStream,
+  boosterHealth,
 } from '@boostercloud/framework-core'
 
 Booster.start(__dirname)

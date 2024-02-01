@@ -10,10 +10,11 @@ export interface UserApp {
     configuredEnvironments: Set<string>
   }
   boosterEventDispatcher(_: unknown): Promise<void>
-  boosterPreSignUpChecker(_: unknown): Promise<any>
   boosterServeGraphQL(_: unknown): Promise<unknown>
-  boosterTriggerScheduledCommand(_: unknown): Promise<void>
+  boosterTriggerScheduledCommands(_: unknown): Promise<void>
   boosterNotifySubscribers(_: unknown): Promise<void>
   boosterRocketDispatcher(_: unknown): Promise<unknown>
+  boosterConsumeEventStream(_: unknown): Promise<unknown>
+  boosterProduceEventStream(_: unknown): Promise<unknown>
   boosterHealth(_: unknown): Promise<any>
 }

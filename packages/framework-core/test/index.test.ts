@@ -6,6 +6,9 @@ import {
   boosterRocketDispatcher,
   boosterServeGraphQL,
   boosterTriggerScheduledCommands,
+  boosterConsumeEventStream,
+  boosterProduceEventStream,
+  boosterHealth,
 } from '../src/'
 import { fake, replace, restore } from 'sinon'
 import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
@@ -13,6 +16,9 @@ import { BoosterGraphQLDispatcher } from '../src/booster-graphql-dispatcher'
 import { BoosterScheduledCommandDispatcher } from '../src/booster-scheduled-command-dispatcher'
 import { BoosterSubscribersNotifier } from '../src/booster-subscribers-notifier'
 import { BoosterRocketDispatcher } from '../src/booster-rocket-dispatcher'
+import { BoosterEventStreamConsumer } from '../src/booster-event-stream-consumer'
+import { BoosterEventStreamProducer } from '../src/booster-event-stream-producer'
+import { BoosterHealthService } from '../src/sensor'
 
 describe('framework-core package', () => {
   afterEach(() => {
@@ -69,8 +75,33 @@ describe('framework-core package', () => {
     })
   })
 
-  it('exports the `boosterHealth` function', () => {
-    expect(BoosterCore.boosterHealth).not.to.be.null
-    expect(BoosterCore.boosterHealth).to.equal(Booster.boosterHealth)
+  context('`boosterConsumeEventStream` function', () => {
+    it('calls the `consume` method of the `BoosterEventStreamConsumer` class', async () => {
+      const fakeConsume = fake.resolves(undefined)
+      const fakeRawEvent = { some: 'event' }
+      replace(BoosterEventStreamConsumer, 'consume', fakeConsume)
+      await boosterConsumeEventStream(fakeRawEvent)
+      expect(fakeConsume).to.have.been.calledOnceWithExactly(fakeRawEvent, Booster.config)
+    })
+  })
+
+  context('`boosterProduceEventStream` function', () => {
+    it('calls the `produce` method of the `BoosterEventStreamProducer` class', async () => {
+      const fakeProduce = fake.resolves(undefined)
+      const fakeRawEvent = { some: 'event' }
+      replace(BoosterEventStreamProducer, 'produce', fakeProduce)
+      await boosterProduceEventStream(fakeRawEvent)
+      expect(fakeProduce).to.have.been.calledOnceWithExactly(fakeRawEvent, Booster.config)
+    })
+  })
+
+  context('`boosterHealth` function', () => {
+    it('calls the `boosterHealth` method of the `BoosterHealthService` class', async () => {
+      const fakeHealth = fake.resolves(undefined)
+      const fakeRawRequest = { some: 'request' }
+      replace(BoosterHealthService.prototype, 'boosterHealth', fakeHealth)
+      await boosterHealth(fakeRawRequest)
+      expect(fakeHealth).to.have.been.calledOnceWithExactly(fakeRawRequest)
+    })
   })
 })
