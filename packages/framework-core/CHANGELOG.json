@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.5.0",
+      "tag": "@boostercloud/framework-core_v2.5.0",
+      "date": "Thu, 01 Feb 2024 12:48:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "refactor subnet creation for Azure Provider",
+            "author": "Gonzalo Garcia Jaubert <gonzalo@theagilemonkeys.com>",
+            "commit": "2206386848773d2ba44558ff4341a8d631e4e987"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.4.0` to `^2.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.4.0` to `^2.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.4.0` to `^2.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.4.0` to `^2.5.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.4.0",
       "tag": "@boostercloud/framework-core_v2.4.0",
       "date": "Tue, 30 Jan 2024 10:48:42 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 30 Jan 2024 10:48:42 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Feb 2024 12:48:38 GMT and should not be manually modified.
+
+## 2.5.0
+Thu, 01 Feb 2024 12:48:38 GMT
+
+### Minor changes
+
+- refactor subnet creation for Azure Provider
 
 ## 2.4.0
 Tue, 30 Jan 2024 10:48:42 GMT
