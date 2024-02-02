@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 01 Feb 2024 12:48:38 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Feb 2024 13:14:34 GMT and should not be manually modified.
+
+## 2.5.1
+Fri, 02 Feb 2024 13:14:34 GMT
+
+### Patches
+
+- Refactored the core exports and removed the `BoosterApp` to reduce code redund
 
 ## 2.5.0
 Thu, 01 Feb 2024 12:48:38 GMT

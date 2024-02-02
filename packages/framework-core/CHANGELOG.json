@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.5.1",
+      "tag": "@boostercloud/framework-core_v2.5.1",
+      "date": "Fri, 02 Feb 2024 13:14:34 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Refactored the core exports and removed the `BoosterApp` to reduce code redund",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "883c447417544056251783397d51a416d775c165"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.5.0` to `^2.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.5.0` to `^2.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.5.0` to `^2.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.5.0` to `^2.5.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.0",
       "tag": "@boostercloud/framework-core_v2.5.0",
       "date": "Thu, 01 Feb 2024 12:48:38 GMT",
