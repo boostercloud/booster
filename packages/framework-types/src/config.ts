@@ -32,19 +32,29 @@ export class BoosterConfig {
   public logLevel: Level = Level.debug
   public logPrefix?: string
   public logger?: Logger
+
   private _provider?: ProviderLibrary
   public providerPackage?: string
+
   public rockets?: Array<RocketDescriptor>
+
   public appName = 'new-booster-app'
+
   public assets?: Array<string>
+
   public defaultResponseHeaders: Record<string, string> = {}
+
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
   }
+
   public enableGraphQLIntrospection = true
+
   private _userProjectRootPath?: string
+
   public readonly codeRelativePath: string = 'dist'
+
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
   public readonly eventStreamConsumer: string = path.join(this.codeRelativePath, 'index.boosterConsumeEventStream')
   public readonly eventStreamProducer: string = path.join(this.codeRelativePath, 'index.boosterProduceEventStream')
@@ -58,6 +68,7 @@ export class BoosterConfig {
   public readonly rocketDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterRocketDispatcher')
 
   public readonly functionRelativePath: string = path.join('..', this.codeRelativePath, 'index.js')
+
   public readonly events: Record<EventName, EventMetadata> = {}
   public readonly notifications: Record<EventName, NotificationMetadata> = {}
   public readonly partitionKeys: Record<EventName, string> = {}
@@ -84,6 +95,7 @@ export class BoosterConfig {
       booster: DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS,
     },
   }
+
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
   public enableSubscriptions = true
   public readonly nonExposedGraphQLMetadataKey: Record<string, Array<string>> = {}

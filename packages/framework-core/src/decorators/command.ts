@@ -44,7 +44,7 @@ export function Command(
  *
  * @param commandClass The command that this method will handle
  *
- * @deprecated The method is not needed anymore and will be removed in future versions
+ * @deprecated [EOL v3] The method is not needed anymore and will be removed in future versions
  *
  * TODO Remove this method as it's not needed
  */

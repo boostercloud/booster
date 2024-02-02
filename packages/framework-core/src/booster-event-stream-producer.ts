@@ -3,6 +3,9 @@ import { BoosterConfig, TraceActionTypes } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { RawEventsParser } from './services/raw-events-parser'
 
+/**
+ * Produces events to the event stream
+ */
 export class BoosterEventStreamProducer {
   @Trace(TraceActionTypes.PRODUCE_STREAM_EVENTS)
   public static async produce(request: unknown, config: BoosterConfig): Promise<void> {

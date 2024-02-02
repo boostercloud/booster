@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { expect } from './expect'
-import { Booster, boosterEventDispatcher, boosterServeGraphQL } from '../src/booster'
+import { Booster } from '../src/'
 import { replace, fake, restore, match, replaceGetter } from 'sinon'
 import { Importer } from '../src/importer'
 import {
@@ -316,28 +316,6 @@ describe('the `Booster` class', () => {
       }
 
       expect(providerEventsSearch).to.have.been.calledOnce
-    })
-  })
-
-  describe('the public static function `boosterEventDispatcher`', () => {
-    it('calls `Booster.dispatchEvent` passing the rawEvent', async () => {
-      replace(Booster, 'dispatchEvent', fake())
-      const message = { body: 'Test body' }
-
-      await boosterEventDispatcher(message)
-
-      expect(Booster.dispatchEvent).to.have.been.calledOnceWith(message)
-    })
-  })
-
-  describe('the public static function `boosterServeGraphQL`', () => {
-    it('calls `Booster.serveGraphQL` passing the rawMessage', async () => {
-      replace(Booster, 'serveGraphQL', fake())
-      const message = { body: 'Test body' }
-
-      await boosterServeGraphQL(message)
-
-      expect(Booster.serveGraphQL).to.have.been.calledOnceWith(message)
     })
   })
 
