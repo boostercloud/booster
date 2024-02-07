@@ -49,7 +49,11 @@
     "reflect-metadata": "0.1.13",
     "tslib": "^2.4.0",
     "validator": "13.7.0",
-    "@effect-ts/core": "^0.60.4"
+    "effect": "~2.2.3",
+    "@effect/platform": "~0.43.9",
+    "@effect/schema": "~0.61.5",
+    "@effect/cli": "~0.31.9",
+    "@effect/printer-ansi": "~0.31.12"
   },
   "devDependencies": {
     "@boostercloud/metadata-booster": "workspace:^2.6.0",
@@ -60,7 +64,7 @@
     "@types/inflected": "1.1.29",
     "@types/jsonwebtoken": "9.0.1",
     "@types/mocha": "10.0.1",
-    "@types/node": "^18.15.3",
+    "@types/node": "^18.18.2",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
     "@types/validator": "13.1.3",

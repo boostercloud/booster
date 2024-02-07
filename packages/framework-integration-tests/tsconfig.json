@@ -3,10 +3,12 @@
     "declaration": true,
     "importHelpers": true,
     "module": "commonjs",
+    "moduleResolution": "nodenext",
+    "skipLibCheck": true,
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "target": "ES2019",
+    "target": "ES2022",
     "noImplicitReturns": true,
     "noImplicitThis": true,
     "noUnusedLocals": true,
@@ -15,7 +17,7 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "useUnknownInCatchVariables": false,
-    "lib": ["ES2019", "ES2020"],
+    "lib": ["ES2022"],
     "plugins": [{ "transform": "@boostercloud/metadata-booster" }]
   },
   "include": ["src/**/*"]

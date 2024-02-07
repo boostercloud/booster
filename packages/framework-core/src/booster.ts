@@ -26,6 +26,13 @@ import { BoosterAuthorizer } from './booster-authorizer'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
 import { eventSearch } from './booster-event-search'
+import { BoosterHealthService } from './sensor'
+import { BoosterEventStreamConsumer } from './booster-event-stream-consumer'
+import { BoosterEventStreamProducer } from './booster-event-stream-producer'
+import { Effect, pipe } from 'effect'
+import { Command } from '@effect/cli'
+import * as path from 'path'
+import { Flux } from '@boostercloud/framework-types/dist/components'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -59,13 +66,34 @@ export class Booster {
   /**
    * Initializes the Booster project
    */
-  public static start(codeRootPath: string): void {
+  public static start(codeRootPath: string, flux?: Flux): void {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
     this.configureBoosterConcepts()
     this.loadTokenVerifierFromEnv()
     this.config.validate()
+    const args = process.argv
+    if (args.length < 3) {
+      return
+    }
+    if (flux) {
+      const { execute, runMain, contextProvider } = flux
+      const name = 'boost'
+      const version = require(path.join(projectRootPath, 'package.json')).version
+      const command = Command.make('boost').pipe(Command.withSubcommands([execute()]))
+      // Run the generated CLI
+      pipe(
+        args,
+        Command.run(command, {
+          name,
+          version,
+        }),
+        // TODO: Improve error messages
+        Effect.provide(contextProvider),
+        runMain
+      )
+    }
   }
 
   /**

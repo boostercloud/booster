@@ -23,6 +23,7 @@ import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rockets'
 import { DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS, HealthIndicatorMetadata, Logger, SensorConfiguration } from '.'
 import { TraceConfiguration } from './instrumentation/trace-types'
+import { Context } from 'effect'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -242,6 +243,8 @@ export class BoosterConfig {
     }
   }
 }
+
+export const BoosterConfigTag = Context.Tag<BoosterConfig>()
 
 interface ResourceNames {
   applicationStack: string
