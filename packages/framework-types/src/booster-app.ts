@@ -9,14 +9,13 @@ import {
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
 } from '.'
-import { Nexus } from './components'
 
 /**
  * `BoosterApp` is the interface of the user-facing functions that
  * the framework provides.
  */
 export interface BoosterApp {
-  start(projectPath: string, nexus?: Nexus): void
+  start(projectPath: string): void
   config: BoosterConfig
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
@@ -29,4 +28,5 @@ export interface BoosterApp {
     afterCursor: Record<string, string> | undefined
   ): Promise<PaginatedEntitiesIdsResult>
   configuredEnvironments: Set<string>
+  withNexus(nexus: unknown): BoosterApp
 }

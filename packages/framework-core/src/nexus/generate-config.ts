@@ -3,9 +3,9 @@ import { FileSystem } from '@effect/platform/FileSystem'
 import { BoosterConfig, BoosterConfigTag } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { Options } from '@effect/cli'
-import { nexusCommand } from '@boostercloud/framework-types/dist/components'
+import * as Nexus from '.'
 
-const options = {
+export const options = {
   output: pipe(
     Options.file('output'),
     Options.withAlias('o'),
@@ -14,7 +14,7 @@ const options = {
   ),
 }
 
-export const generateConfig = nexusCommand('config', options, (args) =>
+export const handler = Nexus.handler(options, (args) =>
   Effect.withSpan('cli/generate-config')(
     Effect.gen(function* (_) {
       const config = yield* _(BoosterConfigTag)
@@ -26,6 +26,8 @@ export const generateConfig = nexusCommand('config', options, (args) =>
     })
   )
 )
+
+export const command = Nexus.command('config', options, handler)
 
 const extractWritableConfig = (config: BoosterConfig) => ({
   logLevel: config.logLevel,

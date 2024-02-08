@@ -33,7 +33,7 @@ import { BoosterEventStreamProducer } from './booster-event-stream-producer'
 import { Effect, pipe } from 'effect'
 import { Command } from '@effect/cli'
 import * as path from 'path'
-import { Nexus } from '@boostercloud/framework-types/dist/components'
+import * as Nexus from './nexus'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -46,6 +46,7 @@ import { Nexus } from '@boostercloud/framework-types/dist/components'
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
   public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
+  private static nexus?: Nexus.Nexus
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
     configurator(this.config)
@@ -65,9 +66,17 @@ export class Booster {
   }
 
   /**
+   * Attaches a Nexus to the Booster app
+   */
+  public static withNexus(nexus: Nexus.Nexus) {
+    this.nexus = nexus
+    return this
+  }
+
+  /**
    * Initializes the Booster project
    */
-  public static start(codeRootPath: string, nexus?: Nexus): void {
+  public static start(codeRootPath: string): void {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
@@ -78,8 +87,8 @@ export class Booster {
     if (args.length < 3) {
       return
     }
-    if (nexus) {
-      const { commands, runMain, contextProvider } = nexus
+    if (this.nexus) {
+      const { commands, runMain, contextProvider } = this.nexus
       const name = 'boost'
       const version = require(path.join(projectRootPath, 'package.json')).version
       const command = Command.make('boost').pipe(Command.withSubcommands(commands))
