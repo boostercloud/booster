@@ -1,9 +1,11 @@
-import * as GenerateConfig from '@boostercloud/framework-core/dist/nexus/generate-config'
-import { Nexus } from '@boostercloud/framework-types/dist/components'
+import { Nexus } from '@boostercloud/framework-core'
 import { NodeContext, Runtime } from '@effect/platform-node'
+import { Console } from 'effect'
+
+const testCommand = Nexus.command('test', {}, () => Console.log('Hello, world'))
 
 export default {
-  commands: [GenerateConfig.command],
+  commands: [testCommand],
   runMain: Runtime.runMain,
   contextProvider: NodeContext.layer,
-} as Nexus
+} as Nexus.Nexus
