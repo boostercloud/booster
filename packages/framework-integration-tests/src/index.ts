@@ -1,6 +1,6 @@
 import { Booster } from '@boostercloud/framework-core'
 import { generateConfig } from '@boostercloud/framework-core/dist/components'
-import { Flux } from '@boostercloud/framework-types/dist/components'
+import { Nexus } from '@boostercloud/framework-types/dist/components'
 import { NodeContext, Runtime } from '@effect/platform-node'
 export {
   Booster,
@@ -14,10 +14,10 @@ export {
   boosterConsumeEventStream,
 } from '@boostercloud/framework-core'
 
-const execute = generateConfig
+const commands = [generateConfig] as const
 const runMain = Runtime.runMain
 const contextProvider = NodeContext.layer
 
-const flux: Flux = { execute, runMain, contextProvider }
+const nexus: Nexus = { commands, runMain, contextProvider }
 
-Booster.start(__dirname, flux)
+Booster.start(__dirname, nexus)

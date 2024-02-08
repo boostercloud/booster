@@ -2,57 +2,30 @@ import { Effect, pipe } from 'effect'
 import { FileSystem } from '@effect/platform/FileSystem'
 import { BoosterConfig, BoosterConfigTag } from '@boostercloud/framework-types'
 import * as path from 'path'
-import { Command, Options } from '@effect/cli'
-import { Booster } from '..'
-import { CliContext, CliError } from '@boostercloud/framework-types/dist/components'
-// ---------------------------------------------------------------------------------------------
+import { Options } from '@effect/cli'
+import { nexusCommand } from '@boostercloud/framework-types/dist/components'
 
-export const generateConfig = (): Command.Command<
-  'config',
-  CliContext,
-  CliError,
-  {
-    readonly environment: string
-    readonly output: string
-    readonly format: 'json'
-  }
-> => {
-  return Command.make(
-    'config',
-    {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      environment: pipe(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        Options.choice('environment', Array.from(Booster.configuredEnvironments) as [string]),
-        Options.withAlias('e'),
-        Options.withDescription('The environment to use')
-      ),
-      output: pipe(
-        Options.file('output'),
-        Options.withAlias('o'),
-        Options.withDescription('The file where the config will be written'),
-        Options.withDefault(path.join('.booster', 'infra-config.json'))
-      ),
-      format: pipe(
-        Options.choice('format', ['json']),
-        Options.withAlias('f'),
-        Options.withDescription('The format of the output file'),
-        Options.withDefault('json')
-      ),
-    },
-    (args) =>
-      Effect.withSpan('cli/generate-config')(
-        Effect.gen(function* (_) {
-          const config = yield* _(BoosterConfigTag)
-          const fs = yield* _(FileSystem)
-          const configObject = extractWritableConfig(config)
-          const renderedConfig = JSON.stringify(configObject, null, 2)
-          const configFilePath = path.join(config.userProjectRootPath, args.output)
-          yield* _(fs.writeFileString(configFilePath, renderedConfig))
-        })
-      )
-  )
+const options = {
+  output: pipe(
+    Options.file('output'),
+    Options.withAlias('o'),
+    Options.withDescription('The file where the config will be written'),
+    Options.withDefault(path.join('.booster', 'infra-config.json'))
+  ),
 }
+
+export const generateConfig = nexusCommand('config', options, (args) =>
+  Effect.withSpan('cli/generate-config')(
+    Effect.gen(function* (_) {
+      const config = yield* _(BoosterConfigTag)
+      const fs = yield* _(FileSystem)
+      const configObject = extractWritableConfig(config)
+      const renderedConfig = JSON.stringify(configObject, null, 2)
+      const configFilePath = path.join(config.userProjectRootPath, args.output)
+      yield* _(fs.writeFileString(configFilePath, renderedConfig))
+    })
+  )
+)
 
 const extractWritableConfig = (config: BoosterConfig) => ({
   logLevel: config.logLevel,

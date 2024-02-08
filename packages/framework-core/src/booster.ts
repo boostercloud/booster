@@ -2,6 +2,7 @@ import { createInstance } from '@boostercloud/framework-common-helpers'
 import {
   AnyClass,
   BoosterConfig,
+  BoosterConfigTag,
   Class,
   EntityInterface,
   EventSearchParameters,
@@ -32,7 +33,7 @@ import { BoosterEventStreamProducer } from './booster-event-stream-producer'
 import { Effect, pipe } from 'effect'
 import { Command } from '@effect/cli'
 import * as path from 'path'
-import { Flux } from '@boostercloud/framework-types/dist/components'
+import { Nexus } from '@boostercloud/framework-types/dist/components'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -66,7 +67,7 @@ export class Booster {
   /**
    * Initializes the Booster project
    */
-  public static start(codeRootPath: string, flux?: Flux): void {
+  public static start(codeRootPath: string, nexus?: Nexus): void {
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
@@ -77,11 +78,11 @@ export class Booster {
     if (args.length < 3) {
       return
     }
-    if (flux) {
-      const { execute, runMain, contextProvider } = flux
+    if (nexus) {
+      const { commands, runMain, contextProvider } = nexus
       const name = 'boost'
       const version = require(path.join(projectRootPath, 'package.json')).version
-      const command = Command.make('boost').pipe(Command.withSubcommands([execute()]))
+      const command = Command.make('boost').pipe(Command.withSubcommands(commands))
       // Run the generated CLI
       pipe(
         args,
@@ -91,6 +92,7 @@ export class Booster {
         }),
         // TODO: Improve error messages
         Effect.provide(contextProvider),
+        Effect.provideService(BoosterConfigTag, this.config),
         runMain
       )
     }

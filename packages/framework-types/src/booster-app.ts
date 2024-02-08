@@ -9,14 +9,14 @@ import {
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
 } from '.'
-import { Flux } from './components'
+import { Nexus } from './components'
 
 /**
  * `BoosterApp` is the interface of the user-facing functions that
  * the framework provides.
  */
 export interface BoosterApp {
-  start(projectPath: string, flux?: Flux): void
+  start(projectPath: string, nexus?: Nexus): void
   config: BoosterConfig
   configure(environment: string, configurator: (config: BoosterConfig) => void): void
   configureCurrentEnv(configurator: (config: BoosterConfig) => void): void
