@@ -32,6 +32,7 @@ import { TerraformPublicIp } from './gateway/terraform-public-ip'
 import { TerraformPublicIpData } from './gateway/terraform-public-ip-data'
 import { TerraformSubnet } from './gateway/terraform-subnet'
 import { TerraformSubnetSecurity } from './gateway/terraform-subnet-security'
+import { BASIC_SERVICE_PLAN } from '../constants'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -91,8 +92,7 @@ export class ApplicationSynth {
     stack.containers = TerraformContainers.build(stack, this.config)
     this.buildEventHub(stack)
     this.buildWebPubSub(stack)
-    const basicServicePlan = process.env.BOOSTER_AZURE_SERVICE_PLAN_BASIC ?? 'false'
-    if (basicServicePlan === 'true') {
+    if (BASIC_SERVICE_PLAN === 'true') {
       stack.applicationServicePlan = TerraformServicePlan.build(
         stack,
         'psp',

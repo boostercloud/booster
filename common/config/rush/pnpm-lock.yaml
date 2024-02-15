@@ -8,8 +8,8 @@ importers:
   ../../packages/application-tester:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/jsonwebtoken': 9.0.1
       '@types/node': ^18.15.3
@@ -70,10 +70,10 @@ importers:
 
   ../../packages/cli:
     specifiers:
-      '@boostercloud/application-tester': workspace:^2.5.0
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-core': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/application-tester': workspace:^2.5.1
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-core': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@oclif/core': ^3.9.0
       '@oclif/plugin-help': ^5
@@ -183,8 +183,8 @@ importers:
 
   ../../packages/framework-common-helpers:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -254,10 +254,10 @@ importers:
 
   ../../packages/framework-core:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
-      '@boostercloud/metadata-booster': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
+      '@boostercloud/metadata-booster': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -356,19 +356,19 @@ importers:
   ../../packages/framework-integration-tests:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/application-tester': workspace:^2.5.0
-      '@boostercloud/cli': workspace:^2.5.0
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-core': workspace:^2.5.0
-      '@boostercloud/framework-provider-aws': workspace:^2.5.0
-      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.5.0
-      '@boostercloud/framework-provider-azure': workspace:^2.5.0
-      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.5.0
-      '@boostercloud/framework-provider-local': workspace:^2.5.0
-      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
-      '@boostercloud/metadata-booster': workspace:^2.5.0
+      '@boostercloud/application-tester': workspace:^2.5.1
+      '@boostercloud/cli': workspace:^2.5.1
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-core': workspace:^2.5.1
+      '@boostercloud/framework-provider-aws': workspace:^2.5.1
+      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.5.1
+      '@boostercloud/framework-provider-azure': workspace:^2.5.1
+      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.5.1
+      '@boostercloud/framework-provider-local': workspace:^2.5.1
+      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
+      '@boostercloud/metadata-booster': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
@@ -397,6 +397,7 @@ importers:
       eslint-plugin-import: ^2.26.0
       eslint-plugin-prettier: 3.4.0
       eslint-plugin-unicorn: ~44.0.2
+      express: ^4.17.1
       express-unless: 2.1.3
       faker: 5.1.0
       graphology-types: ^0.24.0
@@ -429,6 +430,7 @@ importers:
       '@boostercloud/framework-types': link:../framework-types
       '@effect-ts/core': 0.60.5
       aws-sdk: 2.853.0
+      express: 4.18.2
       express-unless: 2.1.3
       graphql: 16.6.0
       tslib: 2.5.0
@@ -490,9 +492,9 @@ importers:
 
   ../../packages/framework-provider-aws:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
@@ -586,10 +588,10 @@ importers:
       '@aws-cdk/core': ^1.170.0
       '@aws-cdk/custom-resources': ^1.170.0
       '@aws-cdk/cx-api': ^1.170.0
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-provider-aws': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-provider-aws': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/archiver': 5.1.0
       '@types/aws-lambda': 8.10.48
@@ -703,9 +705,9 @@ importers:
       '@azure/functions': ^1.2.2
       '@azure/identity': ~2.1.0
       '@azure/web-pubsub': ~1.1.0
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -777,11 +779,11 @@ importers:
       '@azure/arm-resources': ^5.0.1
       '@azure/cosmos': ^4.0.0
       '@azure/identity': ~2.1.0
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-core': workspace:^2.5.0
-      '@boostercloud/framework-provider-azure': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-core': workspace:^2.5.1
+      '@boostercloud/framework-provider-azure': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@cdktf/provider-azurerm': 11.2.0
       '@cdktf/provider-time': 9.0.2
       '@effect-ts/core': ^0.60.4
@@ -888,9 +890,9 @@ importers:
 
   ../../packages/framework-provider-local:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -969,10 +971,10 @@ importers:
 
   ../../packages/framework-provider-local-infrastructure:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/framework-common-helpers': workspace:^2.5.0
-      '@boostercloud/framework-provider-local': workspace:^2.5.0
-      '@boostercloud/framework-types': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/framework-common-helpers': workspace:^2.5.1
+      '@boostercloud/framework-provider-local': workspace:^2.5.1
+      '@boostercloud/framework-types': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -1052,8 +1054,8 @@ importers:
 
   ../../packages/framework-types:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.5.0
-      '@boostercloud/metadata-booster': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
+      '@boostercloud/metadata-booster': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@effect-ts/node': ~0.39.0
       '@types/chai': 4.2.18
@@ -1119,7 +1121,7 @@ importers:
 
   ../../packages/metadata-booster:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.5.0
+      '@boostercloud/eslint-config': workspace:^2.5.1
       '@effect-ts/core': ^0.60.4
       '@types/node': ^18.15.3
       '@typescript-eslint/eslint-plugin': ^5.0.0
@@ -1309,9 +1311,9 @@ packages:
     dependencies:
       '@aws-cdk/aws-certificatemanager': 1.199.0_aklsbzsp6i2n6pzp4sxy6hufne
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
-      '@aws-cdk/aws-cognito': 1.199.0_4ejvrq2frkzailkr27vdockoii
+      '@aws-cdk/aws-cognito': 1.199.0_hzslyw5ts33yz4we44vxrnbbrm
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_hteww72hqzoereozif3gblcodi
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_74oizvoelbxgex3gbujl2xzm54
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/aws-logs': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
@@ -1393,7 +1395,7 @@ packages:
       '@aws-cdk/core': 1.199.0
       constructs: ^3.3.69
     dependencies:
-      '@aws-cdk/aws-autoscaling': 1.199.0_6aw2ag5odq3zb2mttwz3fxe3hu
+      '@aws-cdk/aws-autoscaling': 1.199.0_6ioy6wqnsnl357btnhiggvri2y
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
@@ -1404,7 +1406,7 @@ packages:
       constructs: 3.4.293
     dev: false
 
-  /@aws-cdk/aws-autoscaling/1.199.0_6aw2ag5odq3zb2mttwz3fxe3hu:
+  /@aws-cdk/aws-autoscaling/1.199.0_6ioy6wqnsnl357btnhiggvri2y:
     resolution: {integrity: sha512-JSwF4UC3JB1KpIQtLUhQytrhSBeEBxe20tLZy6lsdsULtJRz/rbz1Fm4GGUiqefX3gd9qcQBL5pwNlHhjGjZbg==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -1416,7 +1418,7 @@ packages:
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-elasticloadbalancing': 1.199.0_ehdkigggl2baqdi4l6p7upw4f4
-      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_hteww72hqzoereozif3gblcodi
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_74oizvoelbxgex3gbujl2xzm54
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-sns': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
@@ -1427,6 +1429,7 @@ packages:
       - '@aws-cdk/aws-lambda'
       - '@aws-cdk/aws-logs'
       - '@aws-cdk/aws-s3'
+      - '@aws-cdk/custom-resources'
       - '@aws-cdk/cx-api'
     dev: false
 
@@ -1532,7 +1535,7 @@ packages:
       '@aws-cdk/aws-codecommit': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-codestarnotifications': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
+      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-ecr-assets': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
@@ -1540,7 +1543,7 @@ packages:
       '@aws-cdk/aws-logs': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-s3-assets': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
-      '@aws-cdk/aws-secretsmanager': 1.199.0_uxypjio4ejtfqgxognd5fibs2q
+      '@aws-cdk/aws-secretsmanager': 1.199.0_maqnqwhn36fygp3z4rdnivbxii
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       '@aws-cdk/region-info': 1.199.0
       constructs: 3.4.293
@@ -1618,7 +1621,7 @@ packages:
       constructs: 3.4.293
     dev: false
 
-  /@aws-cdk/aws-cognito/1.199.0_4ejvrq2frkzailkr27vdockoii:
+  /@aws-cdk/aws-cognito/1.199.0_hzslyw5ts33yz4we44vxrnbbrm:
     resolution: {integrity: sha512-keHKhvJmAGcIbaAK/liyeI6HYaK9Dm4IhP+gXfHjMpr2Cm0Rd5WhNJtNsekVoa9m3w0agDFW8qOMDo6O2gVTzA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -1628,12 +1631,18 @@ packages:
       '@aws-cdk/custom-resources': 1.199.0
       constructs: ^3.3.69
     dependencies:
+      '@aws-cdk/aws-certificatemanager': 1.199.0_aklsbzsp6i2n6pzp4sxy6hufne
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
+      '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       '@aws-cdk/custom-resources': 1.199.0_6aw2ag5odq3zb2mttwz3fxe3hu
       constructs: 3.4.293
       punycode: 2.3.0
+    transitivePeerDependencies:
+      - '@aws-cdk/aws-ec2'
+      - '@aws-cdk/aws-logs'
+      - '@aws-cdk/cx-api'
     dev: false
     bundledDependencies:
       - punycode
@@ -1651,7 +1660,7 @@ packages:
       '@aws-cdk/aws-applicationautoscaling': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
-      '@aws-cdk/aws-kinesis': 1.199.0_yvevwnsp6zaocssyslvdojryte
+      '@aws-cdk/aws-kinesis': 1.199.0_e2y6n4vxxh6w5ycsjwgdk7fg7q
       '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
@@ -1701,7 +1710,7 @@ packages:
       constructs: ^3.3.69
     dependencies:
       '@aws-cdk/assets': 1.199.0_6t5bexudk3vtq7zhe7acxljz2e
-      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
+      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
@@ -1711,7 +1720,7 @@ packages:
       - '@aws-cdk/aws-events'
     dev: false
 
-  /@aws-cdk/aws-ecr/1.199.0_5lpmbvgigeswzbugyujlevszcq:
+  /@aws-cdk/aws-ecr/1.199.0_wim6pvar6pmwiq3fs3ksmix5ru:
     resolution: {integrity: sha512-C4VG9uRf8UD/cNitVvYaQvF9zKwgWZoNLf43RaUrMEpo4Q/KE3/KilYBG8lsza8B7f4yjYRey5iOpydKE68kYg==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -1722,8 +1731,11 @@ packages:
     dependencies:
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
+      '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       constructs: 3.4.293
+    transitivePeerDependencies:
+      - '@aws-cdk/cx-api'
     dev: false
 
   /@aws-cdk/aws-ecs/1.199.0_7m5azgjywxpgdeoosvoxrcdts4:
@@ -1739,25 +1751,25 @@ packages:
       constructs: ^3.3.69
     dependencies:
       '@aws-cdk/aws-applicationautoscaling': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
-      '@aws-cdk/aws-autoscaling': 1.199.0_6aw2ag5odq3zb2mttwz3fxe3hu
+      '@aws-cdk/aws-autoscaling': 1.199.0_6ioy6wqnsnl357btnhiggvri2y
       '@aws-cdk/aws-autoscaling-hooktargets': 1.199.0_wiaz33wtwefkv5d3nn7hbhuhmu
       '@aws-cdk/aws-certificatemanager': 1.199.0_aklsbzsp6i2n6pzp4sxy6hufne
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
+      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-ecr-assets': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-elasticloadbalancing': 1.199.0_ehdkigggl2baqdi4l6p7upw4f4
-      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_hteww72hqzoereozif3gblcodi
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_74oizvoelbxgex3gbujl2xzm54
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/aws-logs': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
       '@aws-cdk/aws-route53': 1.199.0_ytf4bxsrhewrt5j5jnuzynemxy
-      '@aws-cdk/aws-route53-targets': 1.199.0_2ap25t3f2ak5h2qxfnvuyuxrga
+      '@aws-cdk/aws-route53-targets': 1.199.0_6qn3q4quwxpkjgl3z2r2rmaqqi
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-s3-assets': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
-      '@aws-cdk/aws-secretsmanager': 1.199.0_uxypjio4ejtfqgxognd5fibs2q
-      '@aws-cdk/aws-servicediscovery': 1.199.0_mcuiip26demcvhycudknexqcta
+      '@aws-cdk/aws-secretsmanager': 1.199.0_maqnqwhn36fygp3z4rdnivbxii
+      '@aws-cdk/aws-servicediscovery': 1.199.0_4axszbdsnc7kzhsa3r5g56z4bu
       '@aws-cdk/aws-sns': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-sqs': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-ssm': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
@@ -1808,7 +1820,7 @@ packages:
       constructs: 3.4.293
     dev: false
 
-  /@aws-cdk/aws-elasticloadbalancingv2/1.199.0_hteww72hqzoereozif3gblcodi:
+  /@aws-cdk/aws-elasticloadbalancingv2/1.199.0_74oizvoelbxgex3gbujl2xzm54:
     resolution: {integrity: sha512-cb8dYlmqEjYRORTAu9Y8Xaiw3cZ0RSmCqiFL8Mj+IgxANDg9QdaMxdQu8QPWnC7+uVFWkbnD6G6NRL7FAPgnIA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -1819,14 +1831,22 @@ packages:
       '@aws-cdk/cx-api': 1.199.0
       constructs: ^3.3.69
     dependencies:
+      '@aws-cdk/aws-certificatemanager': 1.199.0_aklsbzsp6i2n6pzp4sxy6hufne
+      '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
+      '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
+      '@aws-cdk/aws-route53': 1.199.0_ytf4bxsrhewrt5j5jnuzynemxy
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/cloud-assembly-schema': 1.199.0
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       '@aws-cdk/cx-api': 1.199.0
       '@aws-cdk/region-info': 1.199.0
       constructs: 3.4.293
+    transitivePeerDependencies:
+      - '@aws-cdk/assets'
+      - '@aws-cdk/aws-logs'
+      - '@aws-cdk/custom-resources'
     dev: false
 
   /@aws-cdk/aws-events-targets/1.199.0_efa47vukfsbcitdg2oy6em6xpe:
@@ -1843,14 +1863,14 @@ packages:
       constructs: ^3.3.69
     dependencies:
       '@aws-cdk/aws-apigateway': 1.199.0_6ioy6wqnsnl357btnhiggvri2y
-      '@aws-cdk/aws-autoscaling': 1.199.0_6aw2ag5odq3zb2mttwz3fxe3hu
+      '@aws-cdk/aws-autoscaling': 1.199.0_6ioy6wqnsnl357btnhiggvri2y
       '@aws-cdk/aws-codebuild': 1.199.0_6aw2ag5odq3zb2mttwz3fxe3hu
       '@aws-cdk/aws-codepipeline': 1.199.0_z4s7qll3yvb46zglrdwf6455hq
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-ecs': 1.199.0_7m5azgjywxpgdeoosvoxrcdts4
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
-      '@aws-cdk/aws-kinesis': 1.199.0_yvevwnsp6zaocssyslvdojryte
+      '@aws-cdk/aws-kinesis': 1.199.0_e2y6n4vxxh6w5ycsjwgdk7fg7q
       '@aws-cdk/aws-kinesisfirehose': 1.199.0_maqnqwhn36fygp3z4rdnivbxii
       '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
@@ -1910,7 +1930,7 @@ packages:
       constructs: 3.4.293
     dev: false
 
-  /@aws-cdk/aws-kinesis/1.199.0_yvevwnsp6zaocssyslvdojryte:
+  /@aws-cdk/aws-kinesis/1.199.0_e2y6n4vxxh6w5ycsjwgdk7fg7q:
     resolution: {integrity: sha512-ASDtGXG1ZvBWpDUj9oT12tF5+jG+R7bykcflfE+KTTXX3mJy1S5gn3YQbb6hV5V+TYPyVckSeW2z0pHSL3RkpQ==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -1921,9 +1941,12 @@ packages:
     dependencies:
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
+      '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-logs': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       constructs: 3.4.293
+    transitivePeerDependencies:
+      - '@aws-cdk/cx-api'
     dev: false
 
   /@aws-cdk/aws-kinesisfirehose/1.199.0_maqnqwhn36fygp3z4rdnivbxii:
@@ -1940,7 +1963,7 @@ packages:
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
-      '@aws-cdk/aws-kinesis': 1.199.0_yvevwnsp6zaocssyslvdojryte
+      '@aws-cdk/aws-kinesis': 1.199.0_e2y6n4vxxh6w5ycsjwgdk7fg7q
       '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/aws-logs': 1.199.0_tqi77pcvvujtgay5663ykqn7wy
@@ -1987,11 +2010,11 @@ packages:
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
-      '@aws-cdk/aws-kinesis': 1.199.0_yvevwnsp6zaocssyslvdojryte
+      '@aws-cdk/aws-kinesis': 1.199.0_e2y6n4vxxh6w5ycsjwgdk7fg7q
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/aws-s3': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-s3-notifications': 1.199.0_fufarp47blk4okwshjegj2wjg4
-      '@aws-cdk/aws-secretsmanager': 1.199.0_uxypjio4ejtfqgxognd5fibs2q
+      '@aws-cdk/aws-secretsmanager': 1.199.0_maqnqwhn36fygp3z4rdnivbxii
       '@aws-cdk/aws-sns': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-sns-subscriptions': 1.199.0_x7skkdpav5hf4ncc76dwztyszi
       '@aws-cdk/aws-sqs': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
@@ -2019,7 +2042,7 @@ packages:
       '@aws-cdk/aws-cloudwatch': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-codeguruprofiler': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-ecr': 1.199.0_5lpmbvgigeswzbugyujlevszcq
+      '@aws-cdk/aws-ecr': 1.199.0_wim6pvar6pmwiq3fs3ksmix5ru
       '@aws-cdk/aws-ecr-assets': 1.199.0_u6wgonek7tj4xuwvr3d2ei6crq
       '@aws-cdk/aws-efs': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-events': 1.199.0_wcptolxmxi6sy3vjqhvgbrrnvi
@@ -2060,7 +2083,7 @@ packages:
       - '@aws-cdk/aws-s3'
     dev: false
 
-  /@aws-cdk/aws-route53-targets/1.199.0_2ap25t3f2ak5h2qxfnvuyuxrga:
+  /@aws-cdk/aws-route53-targets/1.199.0_6qn3q4quwxpkjgl3z2r2rmaqqi:
     resolution: {integrity: sha512-l8cg4zZncQ2JUF4Hd8kvouWYi5y63/2PKU57MY64dUC7wL/VjeEQMRJhehB11rt1OAbp/SNB2f/dnSTcNA8dmA==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -2074,10 +2097,10 @@ packages:
     dependencies:
       '@aws-cdk/aws-apigateway': 1.199.0_6ioy6wqnsnl357btnhiggvri2y
       '@aws-cdk/aws-cloudfront': 1.199.0_74oizvoelbxgex3gbujl2xzm54
-      '@aws-cdk/aws-cognito': 1.199.0_4ejvrq2frkzailkr27vdockoii
+      '@aws-cdk/aws-cognito': 1.199.0_hzslyw5ts33yz4we44vxrnbbrm
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-elasticloadbalancing': 1.199.0_ehdkigggl2baqdi4l6p7upw4f4
-      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_hteww72hqzoereozif3gblcodi
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_74oizvoelbxgex3gbujl2xzm54
       '@aws-cdk/aws-globalaccelerator': 1.199.0_uhmkgheirzwotmxej4ph7fbqla
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/aws-route53': 1.199.0_ytf4bxsrhewrt5j5jnuzynemxy
@@ -2086,6 +2109,7 @@ packages:
       '@aws-cdk/region-info': 1.199.0
       constructs: 3.4.293
     transitivePeerDependencies:
+      - '@aws-cdk/assets'
       - '@aws-cdk/aws-lambda'
       - '@aws-cdk/aws-logs'
       - '@aws-cdk/custom-resources'
@@ -2215,7 +2239,7 @@ packages:
       constructs: 3.4.293
     dev: false
 
-  /@aws-cdk/aws-secretsmanager/1.199.0_uxypjio4ejtfqgxognd5fibs2q:
+  /@aws-cdk/aws-secretsmanager/1.199.0_maqnqwhn36fygp3z4rdnivbxii:
     resolution: {integrity: sha512-Dj0+q7I9xRwg1hHowrHb9rxmicDGZVmQixFaFuBdsS5zNfBNdC6WJGWhDddJDZIPclip06fXBm/by4+l4XUpNw==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -2225,15 +2249,21 @@ packages:
       '@aws-cdk/cx-api': 1.199.0
       constructs: ^3.3.69
     dependencies:
+      '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
       '@aws-cdk/aws-iam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
+      '@aws-cdk/aws-kms': 1.199.0_iumdymv27iwprkm3rzoqxlpuia
       '@aws-cdk/aws-lambda': 1.199.0_5pbncl2no5vqinyo3n2ekkob5q
       '@aws-cdk/aws-sam': 1.199.0_xwfh4icwyvj4zfjhzlqde6qllu
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       '@aws-cdk/cx-api': 1.199.0
       constructs: 3.4.293
+    transitivePeerDependencies:
+      - '@aws-cdk/assets'
+      - '@aws-cdk/aws-logs'
+      - '@aws-cdk/aws-s3'
     dev: false
 
-  /@aws-cdk/aws-servicediscovery/1.199.0_mcuiip26demcvhycudknexqcta:
+  /@aws-cdk/aws-servicediscovery/1.199.0_4axszbdsnc7kzhsa3r5g56z4bu:
     resolution: {integrity: sha512-OSGcZQE5N4ynBFcv54XWSbfunBym5r/hHstpONZkRB+jf9nFEqaVqno9ZgeLU3in5m/QuK781g+dx0r0M0Ao6w==}
     engines: {node: '>= 14.15.0'}
     peerDependencies:
@@ -2242,11 +2272,12 @@ packages:
       constructs: ^3.3.69
     dependencies:
       '@aws-cdk/aws-ec2': 1.199.0_ylylsu27pdmlfxyxktlluxtkr4
-      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_hteww72hqzoereozif3gblcodi
+      '@aws-cdk/aws-elasticloadbalancingv2': 1.199.0_74oizvoelbxgex3gbujl2xzm54
       '@aws-cdk/aws-route53': 1.199.0_ytf4bxsrhewrt5j5jnuzynemxy
       '@aws-cdk/core': 1.199.0_kscyon7amn7dglog7cugnqvkwm
       constructs: 3.4.293
     transitivePeerDependencies:
+      - '@aws-cdk/assets'
       - '@aws-cdk/aws-iam'
       - '@aws-cdk/aws-lambda'
       - '@aws-cdk/aws-logs'
@@ -2930,7 +2961,7 @@ packages:
       '@cdktf/node-pty-prebuilt-multiarch': 0.10.1-pre.11
       '@cdktf/provider-schema': 0.19.2
       '@sentry/node': 7.99.0
-      archiver: 5.3.1
+      archiver: 5.3.2
       cdktf: 0.19.2_constructs@10.2.7
       chalk: 4.1.2
       chokidar: 3.5.3
@@ -4359,6 +4390,19 @@ packages:
       readdir-glob: 1.1.3
       tar-stream: 2.2.0
       zip-stream: 4.1.0
+    dev: false
+
+  /archiver/5.3.2:
+    resolution: {integrity: sha512-+25nxyyznAXF7Nef3y0EbBeqmGZgeN/BxHX29Rs39djAfaFalmQ89SE6CWyDCHzGL0yt/ycBtNOmGTW0FyGWNw==}
+    engines: {node: '>= 10'}
+    dependencies:
+      archiver-utils: 2.1.0
+      async: 3.2.4
+      buffer-crc32: 0.2.13
+      readable-stream: 3.6.2
+      readdir-glob: 1.1.3
+      tar-stream: 2.2.0
+      zip-stream: 4.1.0
 
   /archy/1.0.0:
     resolution: {integrity: sha512-Xg+9RwCg/0p32teKdGMPTPnVXKD0w3DfHnFTficozsAgsvq2XenPJq/MYpzzQ/v8zrOyJn6Ds39VA4JIDwFfqw==}
@@ -4785,7 +4829,10 @@ packages:
     peerDependencies:
       constructs: ^10.0.25
     dependencies:
+      archiver: 5.3.2
       constructs: 10.2.7
+      json-stable-stringify: 1.1.1
+      semver: 7.5.4
     bundledDependencies:
       - archiver
       - json-stable-stringify
@@ -5582,7 +5629,7 @@ packages:
     dependencies:
       semver: 7.5.4
       shelljs: 0.8.5
-      typescript: 5.4.0-dev.20240201
+      typescript: 5.4.0-dev.20240215
 
   /duration/0.2.2:
     resolution: {integrity: sha512-06kgtea+bGreF5eKYgI/36A6pLXggY7oR4p1pq4SmdFBn1ReOL5D8RhG64VrqfTTKNucqqtBAwEj8aB88mcqrg==}
@@ -7749,6 +7796,15 @@ packages:
   /json-stable-stringify-without-jsonify/1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
+  /json-stable-stringify/1.1.1:
+    resolution: {integrity: sha512-SU/971Kt5qVQfJpyDveVhQ/vya+5hvrjClFOcr8c0Fq5aODJjMwutrOfCU+eCnVD5gpx1Q3fEqkyom77zH1iIg==}
+    engines: {node: '>= 0.4'}
+    dependencies:
+      call-bind: 1.0.5
+      isarray: 2.0.5
+      jsonify: 0.0.1
+      object-keys: 1.1.1
+
   /json-stringify-safe/5.0.1:
     resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
     dev: true
@@ -7776,6 +7832,9 @@ packages:
       universalify: 2.0.0
     optionalDependencies:
       graceful-fs: 4.2.11
+
+  /jsonify/0.0.1:
+    resolution: {integrity: sha512-2/Ki0GcmuqSrgFyelQq9M05y7PS0mEwuIzrf3f1fPqkVDVRvZrPZtVSMHxdgo8Aq0sxAOb/cr2aqqA3LeWHVPg==}
 
   /jsonschema/1.4.1:
     resolution: {integrity: sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==}
@@ -9837,8 +9896,8 @@ packages:
   /side-channel/1.0.4:
     resolution: {integrity: sha512-q5XPytqFEIKHkGdiMIrY10mvLRvnQh42/+GoBlFW3b2LXLE2xxJpZFdm94we0BaoV3RwJyGqg5wS7epxTv0Zvw==}
     dependencies:
-      call-bind: 1.0.2
-      get-intrinsic: 1.2.0
+      call-bind: 1.0.5
+      get-intrinsic: 1.2.2
       object-inspect: 1.12.3
 
   /signal-exit/3.0.7:
@@ -10611,8 +10670,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  /typescript/5.4.0-dev.20240201:
-    resolution: {integrity: sha512-KyjAVgMfyIHhjbaYTeTElvoEKM4teDYYATdzsdcxvogVcaDuH0I0JbiwFUe6bIU5FnWxlbxc7rfGyh7aNwpnow==}
+  /typescript/5.4.0-dev.20240215:
+    resolution: {integrity: sha512-XC4/5bqzYJYPwH1EaVY3E7gtieevPWkKc1oBcHdiZytptFaqms77yIiiXmCpZsl+ydrcxCijAVzBXLWxujaksw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
