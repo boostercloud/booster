@@ -1,5 +1,10 @@
 import { applicationGateway } from '@cdktf/provider-azurerm'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
+import { USE_WAF } from '../../constants'
+import { ApplicationGatewayConfig } from '@cdktf/provider-azurerm/lib/application-gateway'
+
+const STANDARD_V2 = 'Standard_v2'
+const WAF_V2 = 'WAF_v2'
 
 export class TerraformApplicationGateway {
   static build({
@@ -22,20 +27,16 @@ export class TerraformApplicationGateway {
     if (!publicIP) {
       throw new Error('Undefined publicIP resource')
     }
-    return new applicationGateway.ApplicationGateway(terraformStack, 'ag', {
+    const skuType = USE_WAF === 'true' ? WAF_V2 : STANDARD_V2
+    const gatewayConfiguration: Exclude<ApplicationGatewayConfig, 'wafConfiguration'> = {
       name: `${resourceGroupName}apigw`,
       location: resourceGroup.location,
       resourceGroupName: resourceGroupName,
       provider: azureProvider,
       sku: {
-        name: 'WAF_v2',
-        tier: 'WAF_v2',
+        name: skuType,
+        tier: skuType,
         capacity: 1,
-      },
-      wafConfiguration: {
-        enabled: true,
-        firewallMode: 'Detection',
-        ruleSetVersion: '3.0',
       },
       gatewayIpConfiguration: [
         {
@@ -150,6 +151,18 @@ export class TerraformApplicationGateway {
           rewriteRuleSetName: 'mainRewriteRuleSet',
         },
       ],
-    })
+    }
+    if (USE_WAF === 'true') {
+      return new applicationGateway.ApplicationGateway(terraformStack, 'ag', {
+        ...gatewayConfiguration,
+        wafConfiguration: {
+          enabled: true,
+          firewallMode: 'Detection',
+          ruleSetVersion: '3.0',
+        },
+      })
+    }
+
+    return new applicationGateway.ApplicationGateway(terraformStack, 'ag', gatewayConfiguration)
   }
 }

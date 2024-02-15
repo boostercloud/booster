@@ -211,4 +211,8 @@ export interface FunctionAppFunctionsDefinition<T extends Binding = Binding> {
 }
 ```
 
-Booster 2.3.0 allows you to set the app service plan used to deploy the main function app. Setting the `BOOSTER_AZURE_SERVICE_PLAN_BASIC` environment variable to true will force the use of a basic service plan instead of the default consumption plan.
+Booster 2.3.0 allows you to set the Azure App Service Plan used to deploy the main function app. Setting the `BOOSTER_AZURE_SERVICE_PLAN_BASIC` (default value false) environment variable to true will force the use of a basic service plan instead of the default consumption plan.
+
+## Migrate to Booster version 2.6.0
+
+Booster 2.6.0 allows you to set the Azure Application Gateway SKU used. Setting the `BOOSTER_USE_WAF` (default value false) environment variable to true will force the use of a WAF sku instead of the Standard sku.
