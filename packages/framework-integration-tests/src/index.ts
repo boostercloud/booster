@@ -1,5 +1,5 @@
 import { Booster } from '@boostercloud/framework-core'
-import nexus from './config/nexus'
+import injectable from './config/injectable'
 export {
   Booster,
   boosterEventDispatcher,
@@ -12,4 +12,4 @@ export {
   boosterConsumeEventStream,
 } from '@boostercloud/framework-core'
 
-Booster.withNexus(nexus).start(__dirname)
+Booster.withInjectable(injectable).start(__dirname)

@@ -33,7 +33,7 @@ import { BoosterEventStreamProducer } from './booster-event-stream-producer'
 import { Effect, pipe } from 'effect'
 import { Command } from '@effect/cli'
 import * as path from 'path'
-import * as Nexus from './nexus'
+import * as Injectable from './injectable'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -46,7 +46,7 @@ import * as Nexus from './nexus'
 export class Booster {
   public static readonly configuredEnvironments: Set<string> = new Set<string>()
   public static readonly config = new BoosterConfig(checkAndGetCurrentEnv())
-  private static nexus?: Nexus.Nexus
+  private static injectable?: Injectable.Injectable
 
   public static configureCurrentEnv(configurator: (config: BoosterConfig) => void): void {
     configurator(this.config)
@@ -66,10 +66,10 @@ export class Booster {
   }
 
   /**
-   * Attaches a Nexus to the Booster app
+   * Attaches a Injectable to the Booster app
    */
-  public static withNexus(nexus: Nexus.Nexus) {
-    this.nexus = nexus
+  public static withInjectable(injectable: Injectable.Injectable) {
+    this.injectable = injectable
     return this
   }
 
@@ -87,8 +87,8 @@ export class Booster {
     if (args.length < 3) {
       return
     }
-    if (this.nexus) {
-      const { commands, runMain, contextProvider } = this.nexus
+    if (this.injectable) {
+      const { commands, runMain, contextProvider } = this.injectable
       const name = 'boost'
       const version = require(path.join(projectRootPath, 'package.json')).version
       const command = Command.make('boost').pipe(Command.withSubcommands(commands))

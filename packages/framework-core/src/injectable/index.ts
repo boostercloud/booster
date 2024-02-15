@@ -8,7 +8,7 @@ import { Effect, Layer, Types } from 'effect'
 export type Context = BoosterConfig | CliApp.CliApp.Environment
 export type Error = PlatformError
 
-export interface Nexus {
+export interface Injectable {
   commands: readonly [Command, ...Array<Command>]
   runMain: RunMain
   contextProvider: Layer.Layer<never, never, CliApp.CliApp.Environment>

@@ -28,5 +28,5 @@ export interface BoosterApp {
     afterCursor: Record<string, string> | undefined
   ): Promise<PaginatedEntitiesIdsResult>
   configuredEnvironments: Set<string>
-  withNexus(nexus: unknown): BoosterApp
+  withInjectable(injectable: unknown): BoosterApp
 }
