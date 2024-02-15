@@ -2,6 +2,46 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.6.0",
+      "tag": "@boostercloud/framework-core_v2.6.0",
+      "date": "Thu, 15 Feb 2024 12:26:19 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add Azure sku gateway and rus environment variables",
+            "author": "Gonzalo Garcia Jaubert <gonzalo@theagilemonkeys.com>",
+            "commit": "bc371e18f8821592d943c4e202aa80ce3f3ec7a8"
+          }
+        ],
+        "none": [
+          {
+            "comment": "changed CosmosDB throughput to use process env",
+            "author": "heavylemon1 <146999297+heavylemon1@users.noreply.github.com>",
+            "commit": "4d7959114110b8528e1ba9668814c2a2d8166529"
+          },
+          {
+            "comment": "fixed documentation env example for cosmosdb throughput",
+            "author": "heavylemon1 <146999297+heavylemon1@users.noreply.github.com>",
+            "commit": "4d7959114110b8528e1ba9668814c2a2d8166529"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.5.1` to `^2.6.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.5.1` to `^2.6.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.5.1` to `^2.6.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.5.1` to `^2.6.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.5.1",
       "tag": "@boostercloud/framework-core_v2.5.1",
       "date": "Fri, 02 Feb 2024 13:14:34 GMT",

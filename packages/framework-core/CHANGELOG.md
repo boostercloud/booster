@@ -1,6 +1,18 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 02 Feb 2024 13:14:34 GMT and should not be manually modified.
+This log was last generated on Thu, 15 Feb 2024 12:26:19 GMT and should not be manually modified.
+
+## 2.6.0
+Thu, 15 Feb 2024 12:26:19 GMT
+
+### Minor changes
+
+- Add Azure sku gateway and rus environment variables
+
+### Updates
+
+- changed CosmosDB throughput to use process env
+- fixed documentation env example for cosmosdb throughput
 
 ## 2.5.1
 Fri, 02 Feb 2024 13:14:34 GMT
