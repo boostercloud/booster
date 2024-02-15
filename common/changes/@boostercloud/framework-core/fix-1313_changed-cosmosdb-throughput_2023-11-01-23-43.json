@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "fixed documentation env example for cosmosdb throughput",
+      "type": "none"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
