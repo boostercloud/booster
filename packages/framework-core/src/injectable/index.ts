@@ -10,8 +10,8 @@ export type Error = PlatformError
 
 export interface Injectable {
   commands: readonly [Command, ...Array<Command>]
-  runMain: RunMain
-  contextProvider: Layer.Layer<never, never, CliApp.CliApp.Environment>
+  runMain?: RunMain
+  contextProvider?: Layer.Layer<never, never, CliApp.CliApp.Environment>
 }
 
 export type Command = Command.Command<any, Context, Error, any>

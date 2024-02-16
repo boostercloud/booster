@@ -45,6 +45,8 @@ export class BoosterConfig {
 
   public defaultResponseHeaders: Record<string, string> = {}
 
+  public injectable?: unknown
+
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
