@@ -14,12 +14,12 @@ Together, schema and data migrations provide a flexible and powerful toolset for
 
 ## Schema migrations
 
-Booster handles classes annotated with `@Migrates` as **schema migrations**. The migration functions defined inside will update an existing artifact (either an event or an entity) from a previous version to a newer one whenever that artifact is visited. Schema migrations are applied to events and entities lazyly, meaning that they are only applied when the event or entity is loaded. This ensures that the migration process is non-disruptive and does not affect the performance of your system. Schema migrations are also performed on-the-fly and the results are not written back to the database, as events are not revisited once the next snapshot is written in the database.
+Booster handles classes annotated with `@SchemaMigration` as **schema migrations**. The migration functions defined inside will update an existing artifact (either an event or an entity) from a previous version to a newer one whenever that artifact is visited. Schema migrations are applied to events and entities lazyly, meaning that they are only applied when the event or entity is loaded. This ensures that the migration process is non-disruptive and does not affect the performance of your system. Schema migrations are also performed on-the-fly and the results are not written back to the database, as events are not revisited once the next snapshot is written in the database.
 
 For example, to upgrade a `Product` entity from version 1 to version 2, you can write the following migration class:
 
 ```typescript
-@Migrates(Product)
+@SchemaMigration(Product)
 export class ProductMigration {
   @ToVersion(2, { fromSchema: ProductV1, toSchema: ProductV2 })
   public async changeNameFieldToDisplayName(old: ProductV1): Promise<ProductV2> {
@@ -63,7 +63,7 @@ class ProductV2 extends Product {}
 When you want to upgrade your artifacts from V2 to V3, you can add a new function decorated with `@ToVersion` to the same migrations class. You're free to structure the code the way you want, but we recommend keeping all migrations for the same artifact in the same migration class. For instance:
 
 ```typescript
-@Migrates(Product)
+@SchemaMigration(Product)
 export class ProductMigration {
   @ToVersion(2, { fromSchema: ProductV1, toSchema: ProductV2 })
   public async changeNameFieldToDisplayName(old: ProductV1): Promise<ProductV2> {
