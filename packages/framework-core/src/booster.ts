@@ -76,7 +76,7 @@ export class Booster {
     this.loadTokenVerifierFromEnv()
     this.config.validate()
     const args = process.argv
-    if (args.length < 3) {
+    if (process.env['BOOSTER_CLI_HOOK']?.trim() !== 'true') {
       return
     }
     const injectable = this.config.injectable

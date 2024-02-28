@@ -88,7 +88,10 @@
     "bin": "boost",
     "plugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "hooks": {
+      "command_not_found": "./dist/hooks/command_not_found/custom-parse"
+    }
   },
   "repository": "boostercloud/booster",
   "scripts": {
