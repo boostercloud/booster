@@ -11,19 +11,19 @@ export type Error = PlatformError
 export interface Injectable {
   commands: readonly [Command, ...Array<Command>]
   runMain?: RunMain
-  contextProvider?: Layer.Layer<never, never, CliApp.CliApp.Environment>
+  contextProvider?: Layer.Layer<CliApp.CliApp.Environment, never, never>
 }
 
 export type Command = Command.Command<any, Context, Error, any>
 
 export type Args<T extends Command.Command.Config> = Types.Simplify<Command.Command.ParseConfig<T>>
 
-export type Handler<T extends Command.Command.Config> = (args: Args<T>) => Effect.Effect<Context, Error, void>
+export type Handler<T extends Command.Command.Config> = (args: Args<T>) => Effect.Effect<void, Error, Context>
 
 export const command = <TName extends string, TArgs extends Command.Command.Config>(
   name: TName,
   args: TArgs,
-  handler: (args: Args<TArgs>) => Effect.Effect<Context, Error, void>
+  handler: (args: Args<TArgs>) => Effect.Effect<void, Error, Context>
 ): Command => Command.make(name, args, handler)
 
 export const handler = <T extends Command.Command.Config>(_: T, handler: Handler<T>): Handler<T> => handler

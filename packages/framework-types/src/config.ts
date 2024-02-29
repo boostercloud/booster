@@ -246,7 +246,7 @@ export class BoosterConfig {
   }
 }
 
-export const BoosterConfigTag = Context.Tag<BoosterConfig>()
+export const BoosterConfigTag = Context.GenericTag<BoosterConfig>('BoosterConfig')
 
 interface ResourceNames {
   applicationStack: string
