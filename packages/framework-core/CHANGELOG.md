@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 15 Feb 2024 12:26:19 GMT and should not be manually modified.
+This log was last generated on Tue, 05 Mar 2024 13:04:14 GMT and should not be manually modified.
+
+## 2.7.0
+Tue, 05 Mar 2024 13:04:14 GMT
+
+### Minor changes
+
+- Add injectable feature
 
 ## 2.6.0
 Thu, 15 Feb 2024 12:26:19 GMT
