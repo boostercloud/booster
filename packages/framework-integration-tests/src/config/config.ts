@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { CustomTracer } from '../common/custom-tracer'
 import { CustomLogger } from '../common/custom-logger'
+import injectable from './injectable'
 
 class CustomPublicKeyTokenVerifier extends PublicKeyTokenVerifier {
   public async verify(token: string): Promise<DecodedToken> {
@@ -67,7 +68,7 @@ Booster.configure('local', (config: BoosterConfig): void => {
   config.eventStreamConfiguration = {
     enabled: false,
   }
-
+  config.injectable = injectable
   configureInvocationsHandler(config)
   configureLogger(config)
   configureBoosterSensorHealth(config)
@@ -83,6 +84,7 @@ Booster.configure('development', (config: BoosterConfig): void => {
   config.eventStreamConfiguration = {
     enabled: false,
   }
+  config.injectable = injectable
   configureInvocationsHandler(config)
   configureBoosterSensorHealth(config)
 })
@@ -117,6 +119,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  config.injectable = injectable
   configureInvocationsHandler(config)
   configureBoosterSensorHealth(config)
 })
@@ -147,6 +150,7 @@ Booster.configure('azure', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  config.injectable = injectable
   configureInvocationsHandler(config)
   configureLogger(config)
   configureBoosterSensorHealth(config)

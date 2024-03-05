@@ -2,6 +2,7 @@ import { createInstance } from '@boostercloud/framework-common-helpers'
 import {
   AnyClass,
   BoosterConfig,
+  BoosterConfigTag,
   Class,
   EntityInterface,
   EventSearchParameters,
@@ -26,6 +27,11 @@ import { BoosterAuthorizer } from './booster-authorizer'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
 import { eventSearch } from './booster-event-search'
+import { Effect, pipe } from 'effect'
+import { Command } from '@effect/cli'
+import * as path from 'path'
+import * as Injectable from './injectable'
+import { NodeContext, NodeRuntime } from '@effect/platform-node'
 
 /**
  * Main class to interact with Booster and configure it.
@@ -66,6 +72,31 @@ export class Booster {
     this.configureBoosterConcepts()
     this.loadTokenVerifierFromEnv()
     this.config.validate()
+    const args = process.argv
+    if (process.env['BOOSTER_CLI_HOOK']?.trim() !== 'true') {
+      return
+    }
+    const injectable = this.config.injectable
+    if (injectable) {
+      const { commands, runMain, contextProvider } = injectable as Injectable.Injectable
+      const provider = contextProvider ?? NodeContext.layer
+      const runner = runMain ?? NodeRuntime.runMain
+      const name = 'boost'
+      const version = require(path.join(projectRootPath, 'package.json')).version
+      const command = Command.make('boost').pipe(Command.withSubcommands(commands))
+      // Run the generated CLI
+      pipe(
+        args,
+        Command.run(command, {
+          name,
+          version,
+        }),
+        // TODO: Improve error messages
+        Effect.provide(provider),
+        Effect.provideService(BoosterConfigTag, this.config),
+        runner
+      )
+    }
   }
 
   /**

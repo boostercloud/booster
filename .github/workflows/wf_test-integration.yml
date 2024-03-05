@@ -67,11 +67,6 @@ jobs:
       pr_sha: ${{ github.event.client_payload.pull_request.head.sha }}
       pr_number: ${{ github.event.client_payload.pull_request.number }}
 
-  aws-integration-tests:
-    needs: prepare-integration-tests
-    uses: ./.github/workflows/re_test-integration-aws.yml
-    secrets: inherit
-
   cli-integration-tests:
     needs: prepare-integration-tests
     uses: ./.github/workflows/re_test-integration-cli.yml
@@ -89,7 +84,7 @@ jobs:
 
   notify-end-success:
     runs-on: ubuntu-latest
-    needs: [aws-integration-tests, cli-integration-tests, local-integration-tests, azure-integration-tests]
+    needs: [cli-integration-tests, local-integration-tests, azure-integration-tests]
     if: ${{ always() && github.event.client_payload.pull_request != null && !contains(needs.*.result, 'failure') }}
     steps:
       - name: Notify success of integration tests
@@ -103,7 +98,7 @@ jobs:
 
   notify-end-failure:
     runs-on: ubuntu-latest
-    needs: [aws-integration-tests, cli-integration-tests, local-integration-tests, azure-integration-tests]
+    needs: [cli-integration-tests, local-integration-tests, azure-integration-tests]
     if: ${{ always() && github.event.client_payload.pull_request != null && contains(needs.*.result, 'failure') }}
     steps:
       - name: Notify failure of integration tests

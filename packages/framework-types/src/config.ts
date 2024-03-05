@@ -23,6 +23,7 @@ import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rockets'
 import { DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS, HealthIndicatorMetadata, Logger, SensorConfiguration } from '.'
 import { TraceConfiguration } from './instrumentation/trace-types'
+import { Context } from 'effect'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -43,6 +44,8 @@ export class BoosterConfig {
   public assets?: Array<string>
 
   public defaultResponseHeaders: Record<string, string> = {}
+
+  public injectable?: unknown
 
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
@@ -242,6 +245,8 @@ export class BoosterConfig {
     }
   }
 }
+
+export const BoosterConfigTag = Context.GenericTag<BoosterConfig>('BoosterConfig')
 
 interface ResourceNames {
   applicationStack: string

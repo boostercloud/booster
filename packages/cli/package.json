@@ -42,7 +42,7 @@
     "@types/inquirer": "^6.5.0",
     "@types/mocha": "10.0.1",
     "@types/mustache": "4.1.0",
-    "@types/node": "^18.15.3",
+    "@types/node": "^18.18.2",
     "@types/rewire": "^2.5.28",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
@@ -88,7 +88,10 @@
     "bin": "boost",
     "plugins": [
       "@oclif/plugin-help"
-    ]
+    ],
+    "hooks": {
+      "command_not_found": "./dist/hooks/command_not_found/custom-parse"
+    }
   },
   "repository": "boostercloud/booster",
   "scripts": {
