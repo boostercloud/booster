@@ -32,6 +32,14 @@ export class TerraformContainers {
       cosmosdbDatabase,
       cosmosdbSqlDatabase
     )
+    const processedEventsContainer = this.createProcessedEventsContainer(
+      azureProvider,
+      appPrefix,
+      terraformStack,
+      config,
+      cosmosdbDatabase,
+      cosmosdbSqlDatabase
+    )
     const readModels = Object.keys(config.readModels).map((readModel) =>
       this.createReadModel(azureProvider, terraformStack, config, readModel, cosmosdbDatabase, cosmosdbSqlDatabase)
     )
@@ -53,7 +61,9 @@ export class TerraformContainers {
         cosmosdbDatabase,
         cosmosdbSqlDatabase
       )
-      return [cosmosdbSqlEventContainer, subscriptionsContainer, connectionsContainer].concat(readModels)
+      return [cosmosdbSqlEventContainer, processedEventsContainer, subscriptionsContainer, connectionsContainer].concat(
+        readModels
+      )
     }
     return [cosmosdbSqlEventContainer].concat(readModels)
   }
@@ -77,6 +87,30 @@ export class TerraformContainers {
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
+      provider: providerResource,
+    })
+  }
+
+  private static createProcessedEventsContainer(
+    providerResource: AzurermProvider,
+    appPrefix: string,
+    terraformStackResource: TerraformStack,
+    config: BoosterConfig,
+    cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
+    cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase
+  ): cosmosdbSqlContainer.CosmosdbSqlContainer {
+    const idEvent = toTerraformName(appPrefix, 'processed-events')
+    return new cosmosdbSqlContainer.CosmosdbSqlContainer(terraformStackResource, idEvent, {
+      name: config.resourceNames.processedEventsStore,
+      resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
+      accountName: cosmosdbDatabaseResource.name,
+      databaseName: cosmosdbSqlDatabaseResource.name,
+      partitionKeyPath: '/id',
+      partitionKeyVersion: 2,
+      autoscaleSettings: {
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
+      },
+      defaultTtl: config.processedEventsTtl,
       provider: providerResource,
     })
   }

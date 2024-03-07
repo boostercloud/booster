@@ -5,17 +5,17 @@ import {
   EntityMetadata,
   EventHandlerInterface,
   EventMetadata,
+  EventStreamConfiguration,
   GlobalErrorHandlerMetadata,
-  TokenVerifier,
-  QueryMetadata,
   NotificationMetadata,
   ProjectionMetadata,
+  QueryMetadata,
   ReadModelMetadata,
   ReducerMetadata,
   RoleMetadata,
   ScheduledCommandMetadata,
   SchemaMigrationMetadata,
-  EventStreamConfiguration,
+  TokenVerifier,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
@@ -101,6 +101,7 @@ export class BoosterConfig {
   public readonly nonExposedGraphQLMetadataKey: Record<string, Array<string>> = {}
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
+
   public registerRocketFunction(id: string, func: RocketFunction): void {
     const currentFunction = this.rocketFunctionMap[id]
     if (currentFunction) {
@@ -110,6 +111,7 @@ export class BoosterConfig {
     }
     this.rocketFunctionMap[id] = func
   }
+
   public getRegisteredRocketFunction(id: string): RocketFunction | undefined {
     return this.rocketFunctionMap[id]
   }
@@ -141,6 +143,7 @@ export class BoosterConfig {
     return {
       applicationStack: applicationStackName,
       eventsStore: applicationStackName + '-events-store',
+      processedEventsStore: applicationStackName + '-processed-events',
       eventsDedup: applicationStackName + '-events-dedup',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
       connectionsStore: applicationStackName + '-connections-store',
@@ -241,15 +244,20 @@ export class BoosterConfig {
       }
     }
   }
+
+  // TTL for events stored in processed events table. Default to 5 minutes (i.e., 300 seconds).
+  public processedEventsTtl = 300
 }
 
 interface ResourceNames {
   applicationStack: string
   eventsStore: string
+  processedEventsStore: string
   eventsDedup: string
   subscriptionsStore: string
   connectionsStore: string
   streamTopic: string
+
   forReadModel(entityName: string): string
 }
 
