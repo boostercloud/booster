@@ -73,6 +73,30 @@ export class EventStore {
     }
   }
 
+  @Trace(TraceActionTypes.CUSTOM)
+  public async storeProcessedEvents(eventEnvelopes: Array<EventEnvelope>) {
+    const logger = getLogger(this.config, 'EventStore#storeProcessedEvents')
+    try {
+      logger.debug('Storing processed events in the processed event store:', eventEnvelopes)
+      return await this.config.provider.events.storeProcessed(eventEnvelopes, this.config)
+    } catch (e) {
+      logger.error('Could not store processed events')
+      return
+    }
+  }
+
+  @Trace(TraceActionTypes.CUSTOM)
+  public async searchProcessed(eventEnvelope: EventEnvelope) {
+    const logger = getLogger(this.config, 'EventStore#searchProcessed')
+    try {
+      logger.debug('Checking if event has been processed:', eventEnvelope)
+      return await this.config.provider.events.searchProcessed(eventEnvelope, this.config)
+    } catch (e) {
+      logger.error('Could not verify if event has been processed')
+      return
+    }
+  }
+
   @Trace(TraceActionTypes.STORE_SNAPSHOT)
   private async storeSnapshot(
     snapshot: NonPersistedEntitySnapshotEnvelope

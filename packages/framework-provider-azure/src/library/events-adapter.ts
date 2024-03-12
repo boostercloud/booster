@@ -1,11 +1,11 @@
 import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
 import {
-  EventEnvelope,
   BoosterConfig,
-  UUID,
   EntitySnapshotEnvelope,
-  NonPersistedEventEnvelope,
+  EventEnvelope,
   NonPersistedEntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
@@ -179,4 +179,51 @@ export async function storeSnapshot(
   })
   logger.debug('Snapshot stored', snapshotEnvelope)
   return persistableEntitySnapshot
+}
+
+export async function storeProcessedEvents(
+  cosmosDb: CosmosClient,
+  eventEnvelopes: Array<EventEnvelope>,
+  config: BoosterConfig
+): Promise<Array<{ id: string }>> {
+  const logger = getLogger(config, 'events-adapter#storeProcessedEvents')
+  logger.debug('[EventsAdapter#storeProcessedEvents] Storing EventEnvelope with eventEnvelopes:', eventEnvelopes)
+  const processedEvents = []
+  for (const eventEnvelope of eventEnvelopes) {
+    const processedEvent: { id: string } = {
+      id: eventEnvelope.id as string,
+    }
+    await cosmosDb
+      .database(config.resourceNames.applicationStack)
+      .container(config.resourceNames.processedEventsStore)
+      .items.create({
+        processedEvent,
+      })
+    processedEvents.push(processedEvent)
+  }
+  return processedEvents
+}
+
+export async function fetchProcessedEvents(
+  cosmosDb: CosmosClient,
+  eventEnvelope: EventEnvelope,
+  config: BoosterConfig
+): Promise<Array<{ id: string }>> {
+  const logger = getLogger(config, 'events-adapter#fetchProcessedEvents')
+  logger.debug('[EventsAdapter#fetchProcessedEvents] Searching processed events for ID:', eventEnvelope.id)
+  const querySpec: SqlQuerySpec = {
+    query: 'SELECT * FROM c WHERE c["id"] = @eventId ',
+    parameters: [
+      {
+        name: '@eventId',
+        value: eventEnvelope.id as string,
+      },
+    ],
+  }
+  const { resources } = await cosmosDb
+    .database(config.resourceNames.applicationStack)
+    .container(config.resourceNames.processedEventsStore)
+    .items.query(querySpec)
+    .fetchAll()
+  return resources
 }

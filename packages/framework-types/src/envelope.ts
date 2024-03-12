@@ -56,6 +56,7 @@ export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
 }
 
 export interface EventEnvelope extends NonPersistedEventEnvelope {
+  id?: string
   createdAt: string
 }
 

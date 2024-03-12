@@ -144,6 +144,24 @@ export interface ProviderEventsLibrary {
     snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
     config: BoosterConfig
   ): Promise<EntitySnapshotEnvelope>
+
+  /**
+   * Stores events envelopes that have been processed in the processed events table
+   *
+   * @param eventEnvelopes - The `Array<EventEnvelope>` to store
+   * @param config - The Booster configuration object
+   * @returns A promise that resolves with the `Array<{ id: string }>` of stored event ID's
+   */
+  storeProcessed(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<Array<{ id: string }>>
+
+  /**
+   * Searches the processed events table for IDs that match the input event envelope's ID
+   *
+   * @param eventEnvelope - The `EventEnvelope` to search for stored IDs
+   * @param config - The Booster configuration object
+   * @returns A promise that resolves with the `Array<{ id: string }>` of stored event ID's
+   */
+  searchProcessed(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<Array<{ id: string }>>
 }
 
 export interface ProviderReadModelsLibrary {

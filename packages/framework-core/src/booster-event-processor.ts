@@ -24,8 +24,11 @@ export class BoosterEventProcessor {
    */
   public static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
+      const logger = getLogger(config, 'BoosterEventDispatcher#eventProcessor')
+      const unprocessedEvents = await BoosterEventProcessor.filterProcessed(config, eventEnvelopes, eventStore)
+      logger.debug(`Total events that haven't been processed: ${unprocessedEvents.length}`)
       const eventEnvelopesProcessors = [
-        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventEnvelopes, config),
+        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(unprocessedEvents, config),
       ]
 
       // Read models are not updated for notification events (events that are not related to an entity but a topic)
@@ -34,9 +37,30 @@ export class BoosterEventProcessor {
           BoosterEventProcessor.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
         )
       }
+      // Store events that were just processed
+      await eventStore.storeProcessedEvents(unprocessedEvents)
 
       await Promises.allSettledAndFulfilled(eventEnvelopesProcessors)
     }
+  }
+
+  private static async filterProcessed(
+    config: BoosterConfig,
+    eventEnvelopes: Array<EventEnvelope>,
+    eventStore: EventStore
+  ): Promise<Array<EventEnvelope>> {
+    const logger = getLogger(config, 'BoosterEventDispatcher#filterProcessed')
+    const filteredResults = await Promise.all(
+      eventEnvelopes.map(async (eventEnvelope) => {
+        const result = await eventStore.searchProcessed(eventEnvelope)
+        if (!result || result.length > 0) {
+          logger.debug('Event has already been processed. Skipping.', eventEnvelope)
+        }
+        return result?.length === 0
+      })
+    )
+
+    return eventEnvelopes.filter((_, index) => filteredResults[index])
   }
 
   private static async snapshotAndUpdateReadModels(

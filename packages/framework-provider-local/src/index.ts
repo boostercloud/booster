@@ -6,7 +6,7 @@ import {
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
-import { requestSucceeded, requestFailed } from './library/api-adapter'
+import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { EventRegistry, GraphQLService, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
@@ -39,18 +39,18 @@ import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
 import {
   areDatabaseReadModelsUp,
-  databaseUrl,
   databaseEventsHealthDetails,
+  databaseReadModelsHealthDetails,
+  databaseUrl,
   graphqlFunctionUrl,
   isDatabaseEventUp,
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
-  databaseReadModelsHealthDetails,
 } from './library/health-adapter'
+import * as process from 'process'
 
 export * from './paths'
 export * from './services'
-import * as process from 'process'
 
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
@@ -80,6 +80,8 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
+    storeProcessed: notImplemented as any,
+    searchProcessed: notImplemented as any,
   },
   // ProviderReadModelsLibrary
   readModels: {
