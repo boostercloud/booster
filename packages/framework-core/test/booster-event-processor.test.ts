@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { fake, replace, restore, createStubInstance } from 'sinon'
+import { createStubInstance, fake, replace, restore } from 'sinon'
 import {
   BoosterConfig,
-  EntitySnapshotEnvelope,
-  UUID,
   EntityInterface,
-  ProviderLibrary,
-  Register,
+  EntitySnapshotEnvelope,
   EventInterface,
   NonPersistedEventEnvelope,
+  ProviderLibrary,
+  Register,
+  UUID,
 } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { ReadModelStore } from '../src/services/read-model-store'
@@ -19,18 +19,21 @@ import { random } from 'faker'
 import { BoosterEventProcessor } from '../src/booster-event-processor'
 
 class SomeEvent {
-  public constructor(readonly id: UUID) {}
+  public constructor(readonly id: UUID) {
+  }
 
   public entityID(): UUID {
     return this.id
   }
+
   public getPrefixedId(prefix: string): string {
     return `${prefix}-${this.id}`
   }
 }
 
 class SomeNotification {
-  public constructor() {}
+  public constructor() {
+  }
 }
 
 class AnEventHandler {
@@ -120,7 +123,7 @@ describe('BoosterEventProcessor', () => {
           someEvent.entityTypeName,
           someEvent.entityID,
           stubEventStore,
-          stubReadModelStore
+          stubReadModelStore,
         )
       })
 
@@ -129,6 +132,9 @@ describe('BoosterEventProcessor', () => {
         const stubReadModelStore = createStubInstance(ReadModelStore)
 
         const boosterEventProcessor = BoosterEventProcessor as any
+        const fakeFilterProcessed = fake.returns([someEvent])
+
+        replace(boosterEventProcessor, 'filterProcessed', fakeFilterProcessed)
         replace(boosterEventProcessor, 'snapshotAndUpdateReadModels', fake())
         replace(boosterEventProcessor, 'dispatchEntityEventsToEventHandlers', fake())
 
@@ -138,11 +144,11 @@ describe('BoosterEventProcessor', () => {
 
         expect(boosterEventProcessor.dispatchEntityEventsToEventHandlers).to.have.been.calledOnceWith(
           [someEvent],
-          config
+          config,
         )
       })
 
-      it("doesn't call snapshotAndUpdateReadModels if the entity name is in config.topicToEvent", async () => {
+      it('doesn\'t call snapshotAndUpdateReadModels if the entity name is in config.topicToEvent', async () => {
         const stubEventStore = createStubInstance(EventStore)
         const stubReadModelStore = createStubInstance(ReadModelStore)
 
@@ -174,7 +180,7 @@ describe('BoosterEventProcessor', () => {
           someEvent.entityTypeName,
           someEvent.entityID,
           eventStore,
-          readModelStore
+          readModelStore,
         )
 
         expect(eventStore.fetchEntitySnapshot).to.have.been.called
@@ -193,7 +199,7 @@ describe('BoosterEventProcessor', () => {
           someEvent.entityTypeName,
           someEvent.entityID,
           eventStore,
-          readModelStore
+          readModelStore,
         )
         expect(readModelStore.project).to.have.been.calledOnce
         expect(readModelStore.project).to.have.been.calledWith(someEntitySnapshot)
@@ -213,15 +219,15 @@ describe('BoosterEventProcessor', () => {
               someEvent.entityTypeName,
               someEvent.entityID,
               eventStore,
-              readModelStore
-            )
+              readModelStore,
+            ),
           ).to.be.eventually.fulfilled
 
           expect(readModelStore.project).not.to.have.been.called
           expect(config.logger?.error).to.have.been.calledWith(
             '[Booster]|BoosterEventDispatcher#snapshotAndUpdateReadModels: ',
             'Error while fetching or reducing entity snapshot:',
-            error
+            error,
           )
         })
       })
