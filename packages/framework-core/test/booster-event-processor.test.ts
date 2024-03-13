@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { createStubInstance, fake, replace, restore } from 'sinon'
+import { createStubInstance, fake, match, replace, restore } from 'sinon'
 import {
   BoosterConfig,
   EntityInterface,
@@ -19,8 +19,7 @@ import { random } from 'faker'
 import { BoosterEventProcessor } from '../src/booster-event-processor'
 
 class SomeEvent {
-  public constructor(readonly id: UUID) {
-  }
+  public constructor(readonly id: UUID) {}
 
   public entityID(): UUID {
     return this.id
@@ -32,8 +31,7 @@ class SomeEvent {
 }
 
 class SomeNotification {
-  public constructor() {
-  }
+  public constructor() {}
 }
 
 class AnEventHandler {
@@ -123,7 +121,7 @@ describe('BoosterEventProcessor', () => {
           someEvent.entityTypeName,
           someEvent.entityID,
           stubEventStore,
-          stubReadModelStore,
+          stubReadModelStore
         )
       })
 
@@ -144,11 +142,11 @@ describe('BoosterEventProcessor', () => {
 
         expect(boosterEventProcessor.dispatchEntityEventsToEventHandlers).to.have.been.calledOnceWith(
           [someEvent],
-          config,
+          config
         )
       })
 
-      it('doesn\'t call snapshotAndUpdateReadModels if the entity name is in config.topicToEvent', async () => {
+      it("doesn't call snapshotAndUpdateReadModels if the entity name is in config.topicToEvent", async () => {
         const stubEventStore = createStubInstance(EventStore)
         const stubReadModelStore = createStubInstance(ReadModelStore)
 
@@ -180,7 +178,7 @@ describe('BoosterEventProcessor', () => {
           someEvent.entityTypeName,
           someEvent.entityID,
           eventStore,
-          readModelStore,
+          readModelStore
         )
 
         expect(eventStore.fetchEntitySnapshot).to.have.been.called
@@ -199,7 +197,7 @@ describe('BoosterEventProcessor', () => {
           someEvent.entityTypeName,
           someEvent.entityID,
           eventStore,
-          readModelStore,
+          readModelStore
         )
         expect(readModelStore.project).to.have.been.calledOnce
         expect(readModelStore.project).to.have.been.calledWith(someEntitySnapshot)
@@ -219,15 +217,15 @@ describe('BoosterEventProcessor', () => {
               someEvent.entityTypeName,
               someEvent.entityID,
               eventStore,
-              readModelStore,
-            ),
+              readModelStore
+            )
           ).to.be.eventually.fulfilled
 
           expect(readModelStore.project).not.to.have.been.called
           expect(config.logger?.error).to.have.been.calledWith(
             '[Booster]|BoosterEventDispatcher#snapshotAndUpdateReadModels: ',
             'Error while fetching or reducing entity snapshot:',
-            error,
+            error
           )
         })
       })
@@ -321,6 +319,26 @@ describe('BoosterEventProcessor', () => {
 
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister)
         expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
+      })
+    })
+
+    describe('the `filterProcessed` method', () => {
+      it("removes events if they've been already processed", async () => {
+        const boosterEventProcessor = BoosterEventProcessor as any
+        const eventStore = createStubInstance(EventStore)
+        const someEventEnvelope = { ...someEvent, id: 'event-id' }
+        eventStore.searchProcessed = fake.returns({ id: 'event-id' }) as any
+
+        const unprocessedEvents = await boosterEventProcessor.filterProcessed(config, [someEventEnvelope], eventStore)
+
+        expect(eventStore.searchProcessed).to.have.been.called
+        expect(eventStore.searchProcessed).to.have.been.calledOnceWith(someEventEnvelope)
+        expect(unprocessedEvents).to.deep.equal([])
+        expect(config.logger?.warn).to.have.been.calledWith(
+          '[Booster]|BoosterEventDispatcher#filterProcessed: ',
+          'Event has already been processed. Skipping.',
+          match.any
+        )
       })
     })
 

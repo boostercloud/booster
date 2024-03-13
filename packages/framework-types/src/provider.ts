@@ -3,19 +3,20 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EntitySnapshotEnvelope,
-  NonPersistedEntitySnapshotEnvelope,
   EventEnvelope,
-  NonPersistedEventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
+  HealthEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
+  ProcessedEventEnvelope,
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
   SubscriptionEnvelope,
-  HealthEnvelope,
 } from './envelope'
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
@@ -150,18 +151,18 @@ export interface ProviderEventsLibrary {
    *
    * @param eventEnvelopes - The `Array<EventEnvelope>` to store
    * @param config - The Booster configuration object
-   * @returns A promise that resolves with the `Array<{ id: string }>` of stored event ID's
+   * @returns A promise that resolves with the `Array<ProcessedEventEnvelope>` of stored event ID's
    */
-  storeProcessed(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<Array<{ id: string }>>
+  storeProcessed(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<Array<ProcessedEventEnvelope>>
 
   /**
    * Searches the processed events table for IDs that match the input event envelope's ID
    *
    * @param eventEnvelope - The `EventEnvelope` to search for stored IDs
    * @param config - The Booster configuration object
-   * @returns A promise that resolves with the `Array<{ id: string }>` of stored event ID's
+   * @returns A promise that resolves with the `Array<ProcessedEventEnvelope>` of stored event ID's
    */
-  searchProcessed(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<Array<{ id: string }>>
+  searchProcessed(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<Array<ProcessedEventEnvelope>>
 }
 
 export interface ProviderReadModelsLibrary {

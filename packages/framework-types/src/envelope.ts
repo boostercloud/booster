@@ -60,6 +60,10 @@ export interface EventEnvelope extends NonPersistedEventEnvelope {
   createdAt: string
 }
 
+export interface ProcessedEventEnvelope {
+  id: string
+}
+
 export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvelope {
   kind: 'snapshot'
   snapshottedEventCreatedAt: string
@@ -71,6 +75,7 @@ export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelo
   /** Time when this snapshot was actually persisted in the database. */
   persistedAt: string
 }
+
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
 }
@@ -150,6 +155,7 @@ export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
 
 export interface ReadModelByIdRequestArgs {
   id: string
+
   [sequenceKey: string]: string | undefined
 }
 
@@ -165,6 +171,7 @@ export interface GraphQLRequestEnvelope extends Envelope {
   value?: GraphQLOperation | GraphQLClientMessage
   token?: string
 }
+
 export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventType' | 'connectionID' | 'requestID'> & {
   error: Error
 }

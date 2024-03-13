@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import * as EventsAdapter from '../../src/library/events-adapter'
-import { createStubInstance, fake, restore, match, stub, SinonStubbedInstance } from 'sinon'
+import { createStubInstance, fake, match, restore, SinonStubbedInstance, stub } from 'sinon'
 import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import { eventsStoreAttributes } from '../../src/constants'
@@ -63,12 +63,12 @@ describe('Events adapter', () => {
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
       ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.query
+          .container(mockConfig.resourceNames.eventsStore).items.query,
       ).to.have.been.calledWithExactly(
         match({
           query:
@@ -84,7 +84,7 @@ describe('Events adapter', () => {
               value: match.defined,
             },
           ],
-        })
+        }),
       )
     })
   })
@@ -95,12 +95,12 @@ describe('Events adapter', () => {
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
       ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.query
+          .container(mockConfig.resourceNames.eventsStore).items.query,
       ).to.have.been.calledWithExactly(
         match({
           query:
@@ -112,7 +112,7 @@ describe('Events adapter', () => {
               value: partitionKeyForSnapshot(mockEntityName, mockEntityId),
             },
           ],
-        })
+        }),
       )
     })
   })
@@ -123,21 +123,68 @@ describe('Events adapter', () => {
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
       ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.create
+          .container(mockConfig.resourceNames.eventsStore).items.create,
       ).to.have.been.calledWithExactly(
         match({
           ...mockEvents[0],
           [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
             mockEvents[0].entityTypeName,
-            mockEvents[0].entityID
+            mockEvents[0].entityID,
           ),
           [eventsStoreAttributes.sortKey]: match.defined,
-        })
+        }),
+      )
+    })
+  })
+
+  describe('The "storeProcessedEvents" method', () => {
+    it('Persists the IDs of the eventEnvelopes passed via parameters', async () => {
+      await EventsAdapter.storeProcessedEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
+      ).to.have.been.calledWithExactly(mockConfig.resourceNames.processedEventsStore)
+      expect(
+        mockCosmosDbClient
+          .database(mockConfig.resourceNames.applicationStack)
+          .container(mockConfig.resourceNames.processedEventsStore).items.create,
+      ).to.have.been.calledWithExactly(
+        match({
+          processedEvent: { id: mockEvents[0].id },
+        }),
+      )
+    })
+  })
+
+  describe('The "fetchProcessedEvents" method', () => {
+    it('Searches the processed events table for events with the same ID as the eventEnvelope passed via parameters', async () => {
+      await EventsAdapter.fetchProcessedEvents(mockCosmosDbClient as any, mockEvents[0], mockConfig)
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
+      ).to.have.been.calledWithExactly(mockConfig.resourceNames.processedEventsStore)
+      expect(
+        mockCosmosDbClient
+          .database(mockConfig.resourceNames.applicationStack)
+          .container(mockConfig.resourceNames.processedEventsStore).items.query,
+      ).to.have.been.calledWithExactly(
+        match({
+          query:
+            'SELECT * FROM c WHERE c["processedEvent"]["id"] = @eventId ',
+          parameters: [
+            {
+              name: '@eventId',
+              value: mockEvents[0].id as string,
+            },
+          ],
+        }),
       )
     })
   })

@@ -1,11 +1,11 @@
 import {
-  TraceActionTypes,
   BoosterConfig,
   EventEnvelope,
   EventHandlerGlobalError,
   EventHandlerInterface,
   EventInterface,
   Register,
+  TraceActionTypes,
   UUID,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
@@ -24,9 +24,7 @@ export class BoosterEventProcessor {
    */
   public static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      const logger = getLogger(config, 'BoosterEventDispatcher#eventProcessor')
       const unprocessedEvents = await BoosterEventProcessor.filterProcessed(config, eventEnvelopes, eventStore)
-      logger.debug(`Total events that haven't been processed: ${unprocessedEvents.length}`)
       const eventEnvelopesProcessors = [
         BoosterEventProcessor.dispatchEntityEventsToEventHandlers(unprocessedEvents, config),
       ]
@@ -54,7 +52,7 @@ export class BoosterEventProcessor {
       eventEnvelopes.map(async (eventEnvelope) => {
         const result = await eventStore.searchProcessed(eventEnvelope)
         if (!result || result.length > 0) {
-          logger.debug('Event has already been processed. Skipping.', eventEnvelope)
+          logger.warn('Event has already been processed. Skipping.', eventEnvelope)
         }
         return result?.length === 0
       })
