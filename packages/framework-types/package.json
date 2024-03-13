@@ -43,14 +43,15 @@
     "uuid": "8.3.2",
     "@effect-ts/core": "^0.60.4",
     "@effect-ts/node": "~0.39.0",
-    "effect": "~2.4.0",
-    "@effect/cli": "~0.34.2",
-    "@effect/platform": "~0.46.2",
-    "@effect/printer": "~0.31.9",
-    "@effect/printer-ansi": "~0.32.9",
-    "@effect/schema": "~0.63.1",
-    "@effect/typeclass": "~0.23.0",
-    "web-streams-polyfill": "~3.3.2"
+    "effect": "^2.4.3",
+    "@effect/cli": "^0.35.2",
+    "@effect/platform": "^0.48.0",
+    "@effect/printer": "^0.31.13",
+    "@effect/printer-ansi": "^0.32.13",
+    "@effect/schema": "^0.64.0",
+    "@effect/typeclass": "^0.23.4",
+    "web-streams-polyfill": "~3.3.2",
+    "ws": "8.12.0"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^2.7.0",

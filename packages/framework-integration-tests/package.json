@@ -20,10 +20,10 @@
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4",
     "express-unless": "2.1.3",
-    "effect": "~2.4.0",
-    "@effect/platform": "~0.46.2",
-    "@effect/cli": "~0.34.2",
-    "@effect/platform-node": "~0.44.10"
+    "effect": "^2.4.3",
+    "@effect/platform": "^0.48.0",
+    "@effect/cli": "^0.35.2",
+    "@effect/platform-node": "^0.44.10"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^2.7.0",

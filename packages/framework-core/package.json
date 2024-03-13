@@ -49,12 +49,12 @@
     "reflect-metadata": "0.1.13",
     "tslib": "^2.4.0",
     "validator": "13.7.0",
-    "effect": "~2.4.0",
-    "@effect/platform": "~0.46.2",
-    "@effect/schema": "~0.63.1",
-    "@effect/cli": "~0.34.2",
-    "@effect/printer-ansi": "~0.32.9",
-    "@effect/platform-node": "~0.44.10"
+    "effect": "^2.4.3",
+    "@effect/platform": "^0.48.0",
+    "@effect/schema": "^0.64.0",
+    "@effect/cli": "^0.35.2",
+    "@effect/printer-ansi": "^0.32.13",
+    "@effect/platform-node": "^0.44.10"
   },
   "devDependencies": {
     "@boostercloud/metadata-booster": "workspace:^2.7.0",
