@@ -76,3 +76,14 @@ common/autoinstallers/*/.npmrc
 .booster
 *-integration-sandbox
 *.tsbuildinfo
+
+# Devenv
+.devenv*
+devenv.local.nix
+
+# direnv
+.direnv
+
+# pre-commit
+.pre-commit-config.yaml
+
