@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.7.1",
+      "tag": "@boostercloud/framework-core_v2.7.1",
+      "date": "Thu, 14 Mar 2024 15:18:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix peer dependencies issues",
+            "author": "Nick Seagull <nick@booster.cloud>",
+            "commit": "6388640759d054aa4355f0a33c849ddd8b4e1bf7"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.7.0` to `^2.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.7.0` to `^2.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.7.0` to `^2.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.7.0` to `^2.7.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.0",
       "tag": "@boostercloud/framework-core_v2.7.0",
       "date": "Tue, 05 Mar 2024 13:04:14 GMT",

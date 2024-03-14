@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 05 Mar 2024 13:04:14 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Mar 2024 15:18:33 GMT and should not be manually modified.
+
+## 2.7.1
+Thu, 14 Mar 2024 15:18:33 GMT
+
+### Patches
+
+- Fix peer dependencies issues
 
 ## 2.7.0
 Tue, 05 Mar 2024 13:04:14 GMT
