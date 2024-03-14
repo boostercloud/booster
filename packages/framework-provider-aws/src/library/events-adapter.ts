@@ -188,3 +188,10 @@ async function persistEvent(
     throw e
   }
 }
+
+/**
+ * Dummy method that'll always return an empty array, since local provider won't be tracking processed events
+ */
+export async function storeProcessedEvents() {
+  return []
+}
