@@ -109,6 +109,13 @@ export async function storeSnapshot(
   return persistableEntitySnapshot
 }
 
+/**
+ * Dummy method that'll always return an empty array, since local provider won't be tracking processed events
+ */
+export async function storeProcessedEvents() {
+  return []
+}
+
 async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {
   await eventRegistry.store(eventEnvelope)
 }
