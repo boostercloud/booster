@@ -3,7 +3,8 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
-  storeEvents, storeProcessedEvents,
+  storeEvents,
+  storeProcessedEvents,
   storeSnapshot,
 } from './library/events-adapter'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
