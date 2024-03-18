@@ -142,9 +142,9 @@ describe('Events adapter', () => {
     })
   })
 
-  describe('The "storeDispatchedEvents" method', () => {
+  describe('The "storeDispatchedEvent" method', () => {
     it('Persists the IDs of the eventEnvelopes passed via parameters', async () => {
-      await EventsAdapter.storeDispatchedEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
+      await EventsAdapter.storeDispatchedEvent(mockCosmosDbClient as any, mockEvents[0], mockConfig)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
@@ -154,11 +154,7 @@ describe('Events adapter', () => {
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
           .container(mockConfig.resourceNames.dispatchedEventsStore).items.create
-      ).to.have.been.calledWithExactly(
-        match({
-          dispatchedEvent: { id: mockEvents[0].id },
-        })
-      )
+      ).to.have.been.calledWithExactly(match({ eventId: mockEvents[0].id }))
     })
   })
 

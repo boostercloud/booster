@@ -3,12 +3,12 @@ import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercl
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
+  fetchDispatchedEvents,
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeDispatchedEvent,
   storeEvents,
-  storeDispatchedEvents,
-  fetchDispatchedEvents,
   storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
@@ -40,13 +40,13 @@ import { EventHubProducerClient, RetryMode } from '@azure/event-hubs'
 import { dedupEventStream, rawEventsStreamToEnvelopes } from './library/events-stream-consumer-adapter'
 import {
   areDatabaseReadModelsUp,
-  databaseUrl,
   databaseEventsHealthDetails,
+  databaseReadModelsHealthDetails,
+  databaseUrl,
   graphqlFunctionUrl,
   isDatabaseEventUp,
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
-  databaseReadModelsHealthDetails,
 } from './library/health-adapter'
 
 let cosmosClient: CosmosClient
@@ -106,7 +106,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
-    storeDispatched: storeDispatchedEvents.bind(null, cosmosClient),
+    storeDispatched: storeDispatchedEvent.bind(null, cosmosClient),
     searchDispatched: fetchDispatchedEvents.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary

@@ -108,8 +108,9 @@ export class TerraformContainers {
       resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
       accountName: cosmosdbDatabaseResource.name,
       databaseName: cosmosdbSqlDatabaseResource.name,
-      partitionKeyPath: '/id',
+      partitionKeyPath: '/eventId',
       partitionKeyVersion: 2,
+      uniqueKey: [{ paths: ['/eventId'] }],
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },

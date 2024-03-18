@@ -327,7 +327,7 @@ describe('BoosterEventProcessor', () => {
         const boosterEventProcessor = BoosterEventProcessor as any
         const eventStore = createStubInstance(EventStore)
         const someEventEnvelope = { ...someEvent, id: 'event-id' }
-        eventStore.searchDispatched = fake.returns({ id: 'event-id' }) as any
+        eventStore.storeDispatchedEvent = fake.returns(false) as any
 
         const eventsNotDispatched = await boosterEventProcessor.filterDispatched(
           config,
@@ -335,8 +335,8 @@ describe('BoosterEventProcessor', () => {
           eventStore
         )
 
-        expect(eventStore.searchDispatched).to.have.been.called
-        expect(eventStore.searchDispatched).to.have.been.calledOnceWith(someEventEnvelope)
+        expect(eventStore.storeDispatchedEvent).to.have.been.called
+        expect(eventStore.storeDispatchedEvent).to.have.been.calledOnceWith(someEventEnvelope)
         expect(eventsNotDispatched).to.deep.equal([])
         expect(config.logger?.warn).to.have.been.calledWith(
           '[Booster]|BoosterEventDispatcher#filterDispatched: ',

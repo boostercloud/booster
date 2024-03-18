@@ -4,7 +4,7 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeEvents,
-  storeDispatchedEvents,
+  storeDispatchedEvent,
   storeSnapshot,
 } from './library/events-adapter'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
@@ -81,7 +81,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
-    storeDispatched: storeDispatchedEvents,
+    storeDispatched: storeDispatchedEvent,
     searchDispatched: searchDispatchedEvents,
   },
   // ProviderReadModelsLibrary

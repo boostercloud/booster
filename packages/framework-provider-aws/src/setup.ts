@@ -19,7 +19,7 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeEvents,
-  storeDispatchedEvents,
+  storeDispatchedEvent,
   storeSnapshot,
 } from './library/events-adapter'
 import { searchEntitiesIds, searchEvents, searchDispatchedEvents } from './library/events-searcher-adapter'
@@ -76,7 +76,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
       storeSnapshot: storeSnapshot.bind(null, dynamoDB),
-      storeDispatched: storeDispatchedEvents,
+      storeDispatched: storeDispatchedEvent,
       searchDispatched: searchDispatchedEvents,
     },
     // ProviderReadModelsLibrary

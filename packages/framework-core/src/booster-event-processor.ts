@@ -24,6 +24,7 @@ export class BoosterEventProcessor {
    */
   public static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
+      // Filter events that have already been dispatched
       const eventsNotDispatched = await BoosterEventProcessor.filterDispatched(config, eventEnvelopes, eventStore)
       const eventEnvelopesProcessors = [
         BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventsNotDispatched, config),
@@ -35,8 +36,6 @@ export class BoosterEventProcessor {
           BoosterEventProcessor.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
         )
       }
-      // Store events that were just dispatched
-      await eventStore.storeDispatchedEvents(eventsNotDispatched)
 
       await Promises.allSettledAndFulfilled(eventEnvelopesProcessors)
     }
@@ -50,11 +49,11 @@ export class BoosterEventProcessor {
     const logger = getLogger(config, 'BoosterEventDispatcher#filterDispatched')
     const filteredResults = await Promise.all(
       eventEnvelopes.map(async (eventEnvelope) => {
-        const result = await eventStore.searchDispatched(eventEnvelope)
-        if (!result || result.length > 0) {
+        const result = await eventStore.storeDispatchedEvent(eventEnvelope)
+        if (!result) {
           logger.warn('Event has already been dispatched. Skipping.', eventEnvelope)
         }
-        return result?.length === 0
+        return result
       })
     )
 

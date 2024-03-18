@@ -74,13 +74,13 @@ export class EventStore {
   }
 
   @Trace(TraceActionTypes.CUSTOM)
-  public async storeDispatchedEvents(eventEnvelopes: Array<EventEnvelope>) {
-    const logger = getLogger(this.config, 'EventStore#storeDispatchedEvents')
+  public async storeDispatchedEvent(eventEnvelope: EventEnvelope) {
+    const logger = getLogger(this.config, 'EventStore#storeDispatchedEvent')
     try {
-      logger.debug('Storing dispatched events in the dispatched event store:', eventEnvelopes)
-      return await this.config.provider.events.storeDispatched(eventEnvelopes, this.config)
+      logger.debug('Storing event in the dispatched event store:', eventEnvelope)
+      return await this.config.provider.events.storeDispatched(eventEnvelope, this.config)
     } catch (e) {
-      logger.error('Could not store dispatched events')
+      logger.error('Could not store dispatched event: ', eventEnvelope)
       return
     }
   }

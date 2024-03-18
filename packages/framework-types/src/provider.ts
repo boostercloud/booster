@@ -149,11 +149,11 @@ export interface ProviderEventsLibrary {
   /**
    * Stores events envelopes that have been dispatched in the dispatched events table
    *
-   * @param eventEnvelopes - The `Array<EventEnvelope>` to store
+   * @param eventEnvelope - The `Array<EventEnvelope>` to store
    * @param config - The Booster configuration object
-   * @returns A promise that resolves with the `Array<DispatchedEventEnvelope>` of stored event ID's
+   * @returns `true` if the dispatched event was stored, otherwise, returns `false`
    */
-  storeDispatched(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<Array<DispatchedEventEnvelope>>
+  storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
 
   /**
    * Searches the dispatched events table for IDs that match the input event envelope's ID
