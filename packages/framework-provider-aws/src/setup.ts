@@ -19,10 +19,10 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeEvents,
-  storeProcessedEvents,
+  storeDispatchedEvents,
   storeSnapshot,
 } from './library/events-adapter'
-import { searchEntitiesIds, searchEvents, searchProcessedEvents } from './library/events-searcher-adapter'
+import { searchEntitiesIds, searchEvents, searchDispatchedEvents } from './library/events-searcher-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
   deleteReadModel,
@@ -76,8 +76,8 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
       storeSnapshot: storeSnapshot.bind(null, dynamoDB),
-      storeProcessed: storeProcessedEvents,
-      searchProcessed: searchProcessedEvents,
+      storeDispatched: storeDispatchedEvents,
+      searchDispatched: searchDispatchedEvents,
     },
     // ProviderReadModelsLibrary
     readModels: {

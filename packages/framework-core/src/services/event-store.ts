@@ -74,25 +74,25 @@ export class EventStore {
   }
 
   @Trace(TraceActionTypes.CUSTOM)
-  public async storeProcessedEvents(eventEnvelopes: Array<EventEnvelope>) {
-    const logger = getLogger(this.config, 'EventStore#storeProcessedEvents')
+  public async storeDispatchedEvents(eventEnvelopes: Array<EventEnvelope>) {
+    const logger = getLogger(this.config, 'EventStore#storeDispatchedEvents')
     try {
-      logger.debug('Storing processed events in the processed event store:', eventEnvelopes)
-      return await this.config.provider.events.storeProcessed(eventEnvelopes, this.config)
+      logger.debug('Storing dispatched events in the dispatched event store:', eventEnvelopes)
+      return await this.config.provider.events.storeDispatched(eventEnvelopes, this.config)
     } catch (e) {
-      logger.error('Could not store processed events')
+      logger.error('Could not store dispatched events')
       return
     }
   }
 
   @Trace(TraceActionTypes.CUSTOM)
-  public async searchProcessed(eventEnvelope: EventEnvelope) {
-    const logger = getLogger(this.config, 'EventStore#searchProcessed')
+  public async searchDispatched(eventEnvelope: EventEnvelope) {
+    const logger = getLogger(this.config, 'EventStore#searchDispatched')
     try {
-      logger.debug('Checking if event has been processed:', eventEnvelope)
-      return await this.config.provider.events.searchProcessed(eventEnvelope, this.config)
+      logger.debug('Checking if event has been dispatched:', eventEnvelope)
+      return await this.config.provider.events.searchDispatched(eventEnvelope, this.config)
     } catch (e) {
-      logger.error('Could not verify if event has been processed')
+      logger.error('Could not verify if event has been dispatched')
       return
     }
   }

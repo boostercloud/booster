@@ -143,7 +143,7 @@ export class BoosterConfig {
     return {
       applicationStack: applicationStackName,
       eventsStore: applicationStackName + '-events-store',
-      processedEventsStore: applicationStackName + '-processed-events',
+      dispatchedEventsStore: applicationStackName + '-dispatched-events',
       eventsDedup: applicationStackName + '-events-dedup',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
       connectionsStore: applicationStackName + '-connections-store',
@@ -245,14 +245,14 @@ export class BoosterConfig {
     }
   }
 
-  // TTL for events stored in processed events table. Default to 5 minutes (i.e., 300 seconds).
-  public processedEventsTtl = 300
+  // TTL for events stored in dispatched events table. Default to 5 minutes (i.e., 300 seconds).
+  public dispatchedEventsTtl = 300
 }
 
 interface ResourceNames {
   applicationStack: string
   eventsStore: string
-  processedEventsStore: string
+  dispatchedEventsStore: string
   eventsDedup: string
   subscriptionsStore: string
   connectionsStore: string

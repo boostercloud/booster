@@ -4,7 +4,7 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeEvents,
-  storeProcessedEvents,
+  storeDispatchedEvents,
   storeSnapshot,
 } from './library/events-adapter'
 import { requestFailed, requestSucceeded } from './library/api-adapter'
@@ -20,7 +20,7 @@ import {
   searchReadModel,
   storeReadModel,
 } from './library/read-model-adapter'
-import { searchEntitiesIds, searchEvents, searchProcessedEvents } from './library/events-search-adapter'
+import { searchEntitiesIds, searchEvents, searchDispatchedEvents } from './library/events-search-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
 import {
   deleteConnectionData,
@@ -81,8 +81,8 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
-    storeProcessed: storeProcessedEvents,
-    searchProcessed: searchProcessedEvents,
+    storeDispatched: storeDispatchedEvents,
+    searchDispatched: searchDispatchedEvents,
   },
   // ProviderReadModelsLibrary
   readModels: {

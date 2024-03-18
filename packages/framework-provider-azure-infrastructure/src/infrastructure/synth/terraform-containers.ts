@@ -32,7 +32,7 @@ export class TerraformContainers {
       cosmosdbDatabase,
       cosmosdbSqlDatabase
     )
-    const processedEventsContainer = this.createProcessedEventsContainer(
+    const dispatchedEventsContainer = this.createDispatchedEventsContainer(
       azureProvider,
       appPrefix,
       terraformStack,
@@ -61,9 +61,12 @@ export class TerraformContainers {
         cosmosdbDatabase,
         cosmosdbSqlDatabase
       )
-      return [cosmosdbSqlEventContainer, processedEventsContainer, subscriptionsContainer, connectionsContainer].concat(
-        readModels
-      )
+      return [
+        cosmosdbSqlEventContainer,
+        dispatchedEventsContainer,
+        subscriptionsContainer,
+        connectionsContainer,
+      ].concat(readModels)
     }
     return [cosmosdbSqlEventContainer].concat(readModels)
   }
@@ -91,7 +94,7 @@ export class TerraformContainers {
     })
   }
 
-  private static createProcessedEventsContainer(
+  private static createDispatchedEventsContainer(
     providerResource: AzurermProvider,
     appPrefix: string,
     terraformStackResource: TerraformStack,
@@ -99,9 +102,9 @@ export class TerraformContainers {
     cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
     cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase
   ): cosmosdbSqlContainer.CosmosdbSqlContainer {
-    const idEvent = toTerraformName(appPrefix, 'processed-events')
+    const idEvent = toTerraformName(appPrefix, 'dispatched-events')
     return new cosmosdbSqlContainer.CosmosdbSqlContainer(terraformStackResource, idEvent, {
-      name: config.resourceNames.processedEventsStore,
+      name: config.resourceNames.dispatchedEventsStore,
       resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
       accountName: cosmosdbDatabaseResource.name,
       databaseName: cosmosdbSqlDatabaseResource.name,
@@ -110,7 +113,7 @@ export class TerraformContainers {
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
-      defaultTtl: config.processedEventsTtl,
+      defaultTtl: config.dispatchedEventsTtl,
       provider: providerResource,
     })
   }

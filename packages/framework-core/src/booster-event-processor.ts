@@ -24,9 +24,9 @@ export class BoosterEventProcessor {
    */
   public static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
-      const unprocessedEvents = await BoosterEventProcessor.filterProcessed(config, eventEnvelopes, eventStore)
+      const eventsNotDispatched = await BoosterEventProcessor.filterDispatched(config, eventEnvelopes, eventStore)
       const eventEnvelopesProcessors = [
-        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(unprocessedEvents, config),
+        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventsNotDispatched, config),
       ]
 
       // Read models are not updated for notification events (events that are not related to an entity but a topic)
@@ -35,24 +35,24 @@ export class BoosterEventProcessor {
           BoosterEventProcessor.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
         )
       }
-      // Store events that were just processed
-      await eventStore.storeProcessedEvents(unprocessedEvents)
+      // Store events that were just dispatched
+      await eventStore.storeDispatchedEvents(eventsNotDispatched)
 
       await Promises.allSettledAndFulfilled(eventEnvelopesProcessors)
     }
   }
 
-  private static async filterProcessed(
+  private static async filterDispatched(
     config: BoosterConfig,
     eventEnvelopes: Array<EventEnvelope>,
     eventStore: EventStore
   ): Promise<Array<EventEnvelope>> {
-    const logger = getLogger(config, 'BoosterEventDispatcher#filterProcessed')
+    const logger = getLogger(config, 'BoosterEventDispatcher#filterDispatched')
     const filteredResults = await Promise.all(
       eventEnvelopes.map(async (eventEnvelope) => {
-        const result = await eventStore.searchProcessed(eventEnvelope)
+        const result = await eventStore.searchDispatched(eventEnvelope)
         if (!result || result.length > 0) {
-          logger.warn('Event has already been processed. Skipping.', eventEnvelope)
+          logger.warn('Event has already been dispatched. Skipping.', eventEnvelope)
         }
         return result?.length === 0
       })

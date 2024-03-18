@@ -130,9 +130,9 @@ describe('BoosterEventProcessor', () => {
         const stubReadModelStore = createStubInstance(ReadModelStore)
 
         const boosterEventProcessor = BoosterEventProcessor as any
-        const fakeFilterProcessed = fake.returns([someEvent])
+        const fakeFilterDispatched = fake.returns([someEvent])
 
-        replace(boosterEventProcessor, 'filterProcessed', fakeFilterProcessed)
+        replace(boosterEventProcessor, 'filterDispatched', fakeFilterDispatched)
         replace(boosterEventProcessor, 'snapshotAndUpdateReadModels', fake())
         replace(boosterEventProcessor, 'dispatchEntityEventsToEventHandlers', fake())
 
@@ -322,21 +322,25 @@ describe('BoosterEventProcessor', () => {
       })
     })
 
-    describe('the `filterProcessed` method', () => {
-      it("removes events if they've been already processed", async () => {
+    describe('the `filterDispatched` method', () => {
+      it("removes events if they've been already dispatched", async () => {
         const boosterEventProcessor = BoosterEventProcessor as any
         const eventStore = createStubInstance(EventStore)
         const someEventEnvelope = { ...someEvent, id: 'event-id' }
-        eventStore.searchProcessed = fake.returns({ id: 'event-id' }) as any
+        eventStore.searchDispatched = fake.returns({ id: 'event-id' }) as any
 
-        const unprocessedEvents = await boosterEventProcessor.filterProcessed(config, [someEventEnvelope], eventStore)
+        const eventsNotDispatched = await boosterEventProcessor.filterDispatched(
+          config,
+          [someEventEnvelope],
+          eventStore
+        )
 
-        expect(eventStore.searchProcessed).to.have.been.called
-        expect(eventStore.searchProcessed).to.have.been.calledOnceWith(someEventEnvelope)
-        expect(unprocessedEvents).to.deep.equal([])
+        expect(eventStore.searchDispatched).to.have.been.called
+        expect(eventStore.searchDispatched).to.have.been.calledOnceWith(someEventEnvelope)
+        expect(eventsNotDispatched).to.deep.equal([])
         expect(config.logger?.warn).to.have.been.calledWith(
-          '[Booster]|BoosterEventDispatcher#filterProcessed: ',
-          'Event has already been processed. Skipping.',
+          '[Booster]|BoosterEventDispatcher#filterDispatched: ',
+          'Event has already been dispatched. Skipping.',
           match.any
         )
       })

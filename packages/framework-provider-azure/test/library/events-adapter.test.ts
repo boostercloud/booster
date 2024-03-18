@@ -63,12 +63,12 @@ describe('Events adapter', () => {
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
       ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.query,
+          .container(mockConfig.resourceNames.eventsStore).items.query
       ).to.have.been.calledWithExactly(
         match({
           query:
@@ -84,7 +84,7 @@ describe('Events adapter', () => {
               value: match.defined,
             },
           ],
-        }),
+        })
       )
     })
   })
@@ -95,12 +95,12 @@ describe('Events adapter', () => {
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
       ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.query,
+          .container(mockConfig.resourceNames.eventsStore).items.query
       ).to.have.been.calledWithExactly(
         match({
           query:
@@ -112,7 +112,7 @@ describe('Events adapter', () => {
               value: partitionKeyForSnapshot(mockEntityName, mockEntityId),
             },
           ],
-        }),
+        })
       )
     })
   })
@@ -123,68 +123,67 @@ describe('Events adapter', () => {
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
       ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.create,
+          .container(mockConfig.resourceNames.eventsStore).items.create
       ).to.have.been.calledWithExactly(
         match({
           ...mockEvents[0],
           [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
             mockEvents[0].entityTypeName,
-            mockEvents[0].entityID,
+            mockEvents[0].entityID
           ),
           [eventsStoreAttributes.sortKey]: match.defined,
-        }),
+        })
       )
     })
   })
 
-  describe('The "storeProcessedEvents" method', () => {
+  describe('The "storeDispatchedEvents" method', () => {
     it('Persists the IDs of the eventEnvelopes passed via parameters', async () => {
-      await EventsAdapter.storeProcessedEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
+      await EventsAdapter.storeDispatchedEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
-      ).to.have.been.calledWithExactly(mockConfig.resourceNames.processedEventsStore)
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(mockConfig.resourceNames.dispatchedEventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.processedEventsStore).items.create,
+          .container(mockConfig.resourceNames.dispatchedEventsStore).items.create
       ).to.have.been.calledWithExactly(
         match({
-          processedEvent: { id: mockEvents[0].id },
-        }),
+          dispatchedEvent: { id: mockEvents[0].id },
+        })
       )
     })
   })
 
-  describe('The "fetchProcessedEvents" method', () => {
-    it('Searches the processed events table for events with the same ID as the eventEnvelope passed via parameters', async () => {
-      await EventsAdapter.fetchProcessedEvents(mockCosmosDbClient as any, mockEvents[0], mockConfig)
+  describe('The "fetchDispatchedEvents" method', () => {
+    it('Searches the dispatched events table for events with the same ID as the eventEnvelope passed via parameters', async () => {
+      await EventsAdapter.fetchDispatchedEvents(mockCosmosDbClient as any, mockEvents[0], mockConfig)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container,
-      ).to.have.been.calledWithExactly(mockConfig.resourceNames.processedEventsStore)
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(mockConfig.resourceNames.dispatchedEventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.processedEventsStore).items.query,
+          .container(mockConfig.resourceNames.dispatchedEventsStore).items.query
       ).to.have.been.calledWithExactly(
         match({
-          query:
-            'SELECT * FROM c WHERE c["processedEvent"]["id"] = @eventId ',
+          query: 'SELECT * FROM c WHERE c["dispatchedEvent"]["id"] = @eventId ',
           parameters: [
             {
               name: '@eventId',
               value: mockEvents[0].id as string,
             },
           ],
-        }),
+        })
       )
     })
   })

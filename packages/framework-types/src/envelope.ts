@@ -60,7 +60,7 @@ export interface EventEnvelope extends NonPersistedEventEnvelope {
   createdAt: string
 }
 
-export interface ProcessedEventEnvelope {
+export interface DispatchedEventEnvelope {
   id: string
 }
 

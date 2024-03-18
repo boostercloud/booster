@@ -5,7 +5,7 @@ import {
   EventEnvelope,
   NonPersistedEntitySnapshotEnvelope,
   NonPersistedEventEnvelope,
-  ProcessedEventEnvelope,
+  DispatchedEventEnvelope,
   UUID,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
@@ -25,7 +25,7 @@ export async function readEntityEventsSince(
   config: BoosterConfig,
   entityTypeName: string,
   entityID: UUID,
-  since?: string,
+  since?: string
 ): Promise<Array<EventEnvelope>> {
   const fromTime = since ? since : originOfTime
   const querySpec: SqlQuerySpec = {
@@ -55,7 +55,7 @@ export async function readEntityLatestSnapshot(
   cosmosDb: CosmosClient,
   config: BoosterConfig,
   entityTypeName: string,
-  entityID: UUID,
+  entityID: UUID
 ): Promise<EntitySnapshotEnvelope | undefined> {
   const logger = getLogger(config, 'events-adapter#readEntityLatestSnapshot')
   const { resources } = await cosmosDb
@@ -78,12 +78,12 @@ export async function readEntityLatestSnapshot(
   if (snapshot) {
     logger.debug(
       `[EventsAdapter#readEntityLatestSnapshot] Snapshot found for entity ${entityTypeName} with ID ${entityID}:`,
-      snapshot,
+      snapshot
     )
     return snapshot as EntitySnapshotEnvelope
   } else {
     logger.debug(
-      `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`,
+      `[EventsAdapter#readEntityLatestSnapshot] No snapshot found for entity ${entityTypeName} with ID ${entityID}.`
     )
     return undefined
   }
@@ -92,7 +92,7 @@ export async function readEntityLatestSnapshot(
 export async function storeEvents(
   cosmosDb: CosmosClient,
   eventEnvelopes: Array<NonPersistedEventEnvelope>,
-  config: BoosterConfig,
+  config: BoosterConfig
 ): Promise<Array<EventEnvelope>> {
   const logger = getLogger(config, 'events-adapter#storeEvents')
   logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
@@ -109,7 +109,7 @@ export async function storeEvents(
         ...persistableEvent,
         [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
           eventEnvelope.entityTypeName,
-          eventEnvelope.entityID,
+          eventEnvelope.entityID
         ),
         [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
       })
@@ -122,7 +122,7 @@ export async function storeEvents(
 export async function storeSnapshot(
   cosmosDb: CosmosClient,
   snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
-  config: BoosterConfig,
+  config: BoosterConfig
 ): Promise<EntitySnapshotEnvelope> {
   const logger = getLogger(config, 'events-adapter#storeSnapshot')
   logger.debug('[EventsAdapter#storeSnapshot] Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
@@ -182,42 +182,42 @@ export async function storeSnapshot(
   return persistableEntitySnapshot
 }
 
-export async function storeProcessedEvents(
+export async function storeDispatchedEvents(
   cosmosDb: CosmosClient,
   eventEnvelopes: Array<EventEnvelope>,
-  config: BoosterConfig,
-): Promise<Array<ProcessedEventEnvelope>> {
-  const logger = getLogger(config, 'events-adapter#storeProcessedEvents')
-  logger.debug('[EventsAdapter#storeProcessedEvents] Storing EventEnvelope with eventEnvelopes:', eventEnvelopes)
-  const processedEvents = []
+  config: BoosterConfig
+): Promise<Array<DispatchedEventEnvelope>> {
+  const logger = getLogger(config, 'events-adapter#storeDispatchedEvents')
+  logger.debug('[EventsAdapter#storeDispatchedEvents] Storing EventEnvelope with eventEnvelopes:', eventEnvelopes)
+  const dispatchedEvents = []
   for (const eventEnvelope of eventEnvelopes) {
-    const processedEvent: ProcessedEventEnvelope = {
+    const dispatchedEvent: DispatchedEventEnvelope = {
       id: eventEnvelope.id as string,
     }
     try {
       await cosmosDb
         .database(config.resourceNames.applicationStack)
-        .container(config.resourceNames.processedEventsStore)
+        .container(config.resourceNames.dispatchedEventsStore)
         .items.create({
-          processedEvent,
+          dispatchedEvent: dispatchedEvent,
         })
-      processedEvents.push(processedEvent)
+      dispatchedEvents.push(dispatchedEvent)
     } catch (e) {
-      logger.error('[EventsAdapter#storeProcessedEvents] Error storing processed event', e)
+      logger.error('[EventsAdapter#storeDispatchedEvents] Error storing dispatched event', e)
     }
   }
-  return processedEvents
+  return dispatchedEvents
 }
 
-export async function fetchProcessedEvents(
+export async function fetchDispatchedEvents(
   cosmosDb: CosmosClient,
   eventEnvelope: EventEnvelope,
-  config: BoosterConfig,
-): Promise<Array<ProcessedEventEnvelope>> {
-  const logger = getLogger(config, 'events-adapter#fetchProcessedEvents')
-  logger.debug('[EventsAdapter#fetchProcessedEvents] Searching processed events for ID:', eventEnvelope.id)
+  config: BoosterConfig
+): Promise<Array<DispatchedEventEnvelope>> {
+  const logger = getLogger(config, 'events-adapter#fetchDispatchedEvents')
+  logger.debug('[EventsAdapter#fetchDispatchedEvents] Searching dispatched events for ID:', eventEnvelope.id)
   const querySpec: SqlQuerySpec = {
-    query: 'SELECT * FROM c WHERE c["processedEvent"]["id"] = @eventId ',
+    query: 'SELECT * FROM c WHERE c["dispatchedEvent"]["id"] = @eventId ',
     parameters: [
       {
         name: '@eventId',
@@ -228,12 +228,12 @@ export async function fetchProcessedEvents(
   try {
     const { resources } = await cosmosDb
       .database(config.resourceNames.applicationStack)
-      .container(config.resourceNames.processedEventsStore)
+      .container(config.resourceNames.dispatchedEventsStore)
       .items.query(querySpec)
       .fetchAll()
     return resources
   } catch (e) {
-    logger.error('[EventsAdapter#fetchProcessedEvents] Error fetching processed events.', e)
+    logger.error('[EventsAdapter#fetchDispatchedEvents] Error fetching dispatched events.', e)
     return []
   }
 }

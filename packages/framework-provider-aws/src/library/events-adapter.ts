@@ -190,8 +190,8 @@ async function persistEvent(
 }
 
 /**
- * Dummy method that'll always return an empty array, since local provider won't be tracking processed events
+ * Dummy method that'll always return an empty array, since local provider won't be tracking dispatched events
  */
-export async function storeProcessedEvents() {
+export async function storeDispatchedEvents() {
   return []
 }

@@ -12,7 +12,7 @@ import {
   NonPersistedEntitySnapshotEnvelope,
   NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
-  ProcessedEventEnvelope,
+  DispatchedEventEnvelope,
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
@@ -147,22 +147,22 @@ export interface ProviderEventsLibrary {
   ): Promise<EntitySnapshotEnvelope>
 
   /**
-   * Stores events envelopes that have been processed in the processed events table
+   * Stores events envelopes that have been dispatched in the dispatched events table
    *
    * @param eventEnvelopes - The `Array<EventEnvelope>` to store
    * @param config - The Booster configuration object
-   * @returns A promise that resolves with the `Array<ProcessedEventEnvelope>` of stored event ID's
+   * @returns A promise that resolves with the `Array<DispatchedEventEnvelope>` of stored event ID's
    */
-  storeProcessed(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<Array<ProcessedEventEnvelope>>
+  storeDispatched(eventEnvelopes: Array<EventEnvelope>, config: BoosterConfig): Promise<Array<DispatchedEventEnvelope>>
 
   /**
-   * Searches the processed events table for IDs that match the input event envelope's ID
+   * Searches the dispatched events table for IDs that match the input event envelope's ID
    *
    * @param eventEnvelope - The `EventEnvelope` to search for stored IDs
    * @param config - The Booster configuration object
-   * @returns A promise that resolves with the `Array<ProcessedEventEnvelope>` of stored event ID's
+   * @returns A promise that resolves with the `Array<DispatchedEventEnvelope>` of stored event ID's
    */
-  searchProcessed(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<Array<ProcessedEventEnvelope>>
+  searchDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<Array<DispatchedEventEnvelope>>
 }
 
 export interface ProviderReadModelsLibrary {

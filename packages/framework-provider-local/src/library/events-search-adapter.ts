@@ -67,8 +67,8 @@ export async function searchEntitiesIds(
 }
 
 /**
- * Dummy method that'll always return an empty array, meaning that no processed event was found for a given event ID
+ * Dummy method that'll always return an empty array, meaning that no dispatched event was found for a given event ID
  */
-export async function searchProcessedEvents() {
+export async function searchDispatchedEvents() {
   return []
 }
