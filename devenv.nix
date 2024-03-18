@@ -5,21 +5,22 @@
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [ pkgs.git ];
+  packages = [ 
+    pkgs.git
+  ];
 
   # https://devenv.sh/scripts/
-  scripts.hello.exec = "echo hello from $GREET";
+  scripts.rush.exec = "node ./common/scripts/install-run-rush.js $@";
 
-  enterShell = ''
-    hello
-    git --version
-  '';
+  # enterShell = ''
+  # '';
 
   # https://devenv.sh/languages/
   # languages.nix.enable = true;
   languages.javascript = {
     enable = true;
     package = pkgs.nodejs_18;
+    pnpm.enable = true;
   };
 
   # https://devenv.sh/pre-commit-hooks/
