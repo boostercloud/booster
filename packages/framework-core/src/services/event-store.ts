@@ -85,18 +85,6 @@ export class EventStore {
     }
   }
 
-  @Trace(TraceActionTypes.CUSTOM)
-  public async searchDispatched(eventEnvelope: EventEnvelope) {
-    const logger = getLogger(this.config, 'EventStore#searchDispatched')
-    try {
-      logger.debug('Checking if event has been dispatched:', eventEnvelope)
-      return await this.config.provider.events.searchDispatched(eventEnvelope, this.config)
-    } catch (e) {
-      logger.error('Could not verify if event has been dispatched')
-      return
-    }
-  }
-
   @Trace(TraceActionTypes.STORE_SNAPSHOT)
   private async storeSnapshot(
     snapshot: NonPersistedEntitySnapshotEnvelope

@@ -5,7 +5,6 @@ import {
   EventEnvelope,
   NonPersistedEntitySnapshotEnvelope,
   NonPersistedEventEnvelope,
-  DispatchedEventEnvelope,
   UUID,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
@@ -182,33 +181,6 @@ export async function storeSnapshot(
   return persistableEntitySnapshot
 }
 
-export async function storeDispatchedEvents(
-  cosmosDb: CosmosClient,
-  eventEnvelopes: Array<EventEnvelope>,
-  config: BoosterConfig
-): Promise<Array<DispatchedEventEnvelope>> {
-  const logger = getLogger(config, 'events-adapter#storeDispatchedEvents')
-  logger.debug('[EventsAdapter#storeDispatchedEvents] Storing EventEnvelope with eventEnvelopes:', eventEnvelopes)
-  const dispatchedEvents = []
-  for (const eventEnvelope of eventEnvelopes) {
-    const dispatchedEvent: DispatchedEventEnvelope = {
-      id: eventEnvelope.id as string,
-    }
-    try {
-      await cosmosDb
-        .database(config.resourceNames.applicationStack)
-        .container(config.resourceNames.dispatchedEventsStore)
-        .items.create({
-          dispatchedEvent: dispatchedEvent,
-        })
-      dispatchedEvents.push(dispatchedEvent)
-    } catch (e) {
-      logger.error('[EventsAdapter#storeDispatchedEvents] Error storing dispatched event', e)
-    }
-  }
-  return dispatchedEvents
-}
-
 export async function storeDispatchedEvent(
   cosmosDb: CosmosClient,
   eventEnvelope: EventEnvelope,
@@ -234,33 +206,4 @@ export async function storeDispatchedEvent(
     }
   }
   return false
-}
-
-export async function fetchDispatchedEvents(
-  cosmosDb: CosmosClient,
-  eventEnvelope: EventEnvelope,
-  config: BoosterConfig
-): Promise<Array<DispatchedEventEnvelope>> {
-  const logger = getLogger(config, 'events-adapter#fetchDispatchedEvents')
-  logger.debug('[EventsAdapter#fetchDispatchedEvents] Searching dispatched events for ID:', eventEnvelope.id)
-  const querySpec: SqlQuerySpec = {
-    query: 'SELECT * FROM c WHERE c["dispatchedEvent"]["id"] = @eventId ',
-    parameters: [
-      {
-        name: '@eventId',
-        value: eventEnvelope.id as string,
-      },
-    ],
-  }
-  try {
-    const { resources } = await cosmosDb
-      .database(config.resourceNames.applicationStack)
-      .container(config.resourceNames.dispatchedEventsStore)
-      .items.query(querySpec)
-      .fetchAll()
-    return resources
-  } catch (e) {
-    logger.error('[EventsAdapter#fetchDispatchedEvents] Error fetching dispatched events.', e)
-    return []
-  }
 }

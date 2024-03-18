@@ -157,30 +157,4 @@ describe('Events adapter', () => {
       ).to.have.been.calledWithExactly(match({ eventId: mockEvents[0].id }))
     })
   })
-
-  describe('The "fetchDispatchedEvents" method', () => {
-    it('Searches the dispatched events table for events with the same ID as the eventEnvelope passed via parameters', async () => {
-      await EventsAdapter.fetchDispatchedEvents(mockCosmosDbClient as any, mockEvents[0], mockConfig)
-
-      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
-      expect(
-        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
-      ).to.have.been.calledWithExactly(mockConfig.resourceNames.dispatchedEventsStore)
-      expect(
-        mockCosmosDbClient
-          .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.dispatchedEventsStore).items.query
-      ).to.have.been.calledWithExactly(
-        match({
-          query: 'SELECT * FROM c WHERE c["dispatchedEvent"]["id"] = @eventId ',
-          parameters: [
-            {
-              name: '@eventId',
-              value: mockEvents[0].id as string,
-            },
-          ],
-        })
-      )
-    })
-  })
 })

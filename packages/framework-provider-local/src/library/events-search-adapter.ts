@@ -65,10 +65,3 @@ export async function searchEntitiesIds(
     cursor: { id: ((limit ? limit : 1) + skipId).toString() },
   } as PaginatedEntitiesIdsResult
 }
-
-/**
- * Dummy method that'll always return an empty array, meaning that no dispatched event was found for a given event ID
- */
-export async function searchDispatchedEvents() {
-  return []
-}

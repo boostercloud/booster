@@ -12,7 +12,6 @@ import {
   NonPersistedEntitySnapshotEnvelope,
   NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
-  DispatchedEventEnvelope,
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
@@ -154,15 +153,6 @@ export interface ProviderEventsLibrary {
    * @returns `true` if the dispatched event was stored, otherwise, returns `false`
    */
   storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
-
-  /**
-   * Searches the dispatched events table for IDs that match the input event envelope's ID
-   *
-   * @param eventEnvelope - The `EventEnvelope` to search for stored IDs
-   * @param config - The Booster configuration object
-   * @returns A promise that resolves with the `Array<DispatchedEventEnvelope>` of stored event ID's
-   */
-  searchDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<Array<DispatchedEventEnvelope>>
 }
 
 export interface ProviderReadModelsLibrary {

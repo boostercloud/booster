@@ -60,10 +60,6 @@ export interface EventEnvelope extends NonPersistedEventEnvelope {
   createdAt: string
 }
 
-export interface DispatchedEventEnvelope {
-  id: string
-}
-
 export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvelope {
   kind: 'snapshot'
   snapshottedEventCreatedAt: string

@@ -3,7 +3,6 @@ import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercl
 import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
-  fetchDispatchedEvents,
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
@@ -107,7 +106,6 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
     storeDispatched: storeDispatchedEvent.bind(null, cosmosClient),
-    searchDispatched: fetchDispatchedEvents.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
