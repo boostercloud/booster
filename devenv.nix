@@ -5,8 +5,10 @@
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [ 
+  packages = [
     pkgs.git
+    pkgs.nixpkgs-fmt
+    pkgs.nodePackages.eslint
   ];
 
   # https://devenv.sh/scripts/

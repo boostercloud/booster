@@ -457,6 +457,12 @@
       "shouldPublish": true,
       "versionPolicyName": "booster",
       "projectFolder": "packages/metadata-booster"
+    },
+    {
+      "packageName": "@boostercloud/framework-runner",
+      "shouldPublish": true,
+      "versionPolicyName": "booster",
+      "projectFolder": "packages/framework-runner"
     }
   ]
 }
