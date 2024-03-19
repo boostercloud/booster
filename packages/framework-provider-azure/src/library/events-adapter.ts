@@ -204,7 +204,7 @@ export async function storeDispatchedEvent(
       return false
     } else {
       logger.error('[EventsAdapter#storeDispatchedEvent] Error storing dispatched event', e)
-      return true
+      throw e
     }
   }
 }

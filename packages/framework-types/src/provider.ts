@@ -151,7 +151,7 @@ export interface ProviderEventsLibrary {
    * @param eventEnvelope - The `EventEnvelope` to store.
    * @param config - The Booster configuration object.
    * @returns `true` if the dispatched event was stored, `false` if the event already exists in the dispatched events
-   * table. Will return `true` on any other error and log error to console.
+   * table, throws an error on any other type of error.
    */
   storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
 }

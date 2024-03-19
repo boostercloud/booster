@@ -80,7 +80,7 @@ export class EventStore {
       logger.debug('Storing event in the dispatched event store:', eventEnvelope)
       return await this.config.provider.events.storeDispatched(eventEnvelope, this.config)
     } catch (e) {
-      logger.debug('Could not store dispatched event. Continue its processing.', eventEnvelope)
+      logger.debug('Could not store dispatched event. Continue its processing.', {error: e, eventEnvelope })
       return true
     }
   }
