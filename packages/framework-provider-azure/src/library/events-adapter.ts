@@ -200,10 +200,11 @@ export async function storeDispatchedEvent(
     if (e.code === 409) {
       // If an item with the same ID already exists in the container, it will return a 409 status code.
       // See https://learn.microsoft.com/en-us/rest/api/cosmos-db/http-status-codes-for-cosmosdb
-      logger.warn('[EventsAdapter#storeDispatchedEvent] Event has already been dispatched', eventEnvelope.id)
+      logger.debug('[EventsAdapter#storeDispatchedEvent] Event has already been dispatched', eventEnvelope.id)
+      return false
     } else {
       logger.error('[EventsAdapter#storeDispatchedEvent] Error storing dispatched event', e)
+      return true
     }
   }
-  return false
 }

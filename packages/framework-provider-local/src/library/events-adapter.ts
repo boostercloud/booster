@@ -110,7 +110,7 @@ export async function storeSnapshot(
 }
 
 /**
- * Dummy method that'll always return an empty array, since local provider won't be tracking dispatched events
+ * Dummy method that'll always return true, since local provider won't be tracking dispatched events
  */
 export async function storeDispatchedEvent() {
   return true

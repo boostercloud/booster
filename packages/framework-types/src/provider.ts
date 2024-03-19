@@ -146,11 +146,12 @@ export interface ProviderEventsLibrary {
   ): Promise<EntitySnapshotEnvelope>
 
   /**
-   * Stores events envelopes that have been dispatched in the dispatched events table
+   * Stores an event envelope that has been dispatched in the dispatched events table.
    *
-   * @param eventEnvelope - The `Array<EventEnvelope>` to store
-   * @param config - The Booster configuration object
-   * @returns `true` if the dispatched event was stored, otherwise, returns `false`
+   * @param eventEnvelope - The `EventEnvelope` to store.
+   * @param config - The Booster configuration object.
+   * @returns `true` if the dispatched event was stored, `false` if the event already exists in the dispatched events
+   * table. Will return `true` on any other error and log error to console.
    */
   storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
 }

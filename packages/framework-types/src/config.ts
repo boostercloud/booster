@@ -102,6 +102,9 @@ export class BoosterConfig {
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
 
+  // TTL for events stored in dispatched events table. Default to 5 minutes (i.e., 300 seconds).
+  public dispatchedEventsTtl = 300
+
   public registerRocketFunction(id: string, func: RocketFunction): void {
     const currentFunction = this.rocketFunctionMap[id]
     if (currentFunction) {
@@ -244,9 +247,6 @@ export class BoosterConfig {
       }
     }
   }
-
-  // TTL for events stored in dispatched events table. Default to 5 minutes (i.e., 300 seconds).
-  public dispatchedEventsTtl = 300
 }
 
 interface ResourceNames {
