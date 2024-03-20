@@ -1,11 +1,11 @@
 import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
 import {
-  EventEnvelope,
   BoosterConfig,
-  UUID,
   EntitySnapshotEnvelope,
-  NonPersistedEventEnvelope,
+  EventEnvelope,
   NonPersistedEntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
@@ -179,4 +179,32 @@ export async function storeSnapshot(
   })
   logger.debug('Snapshot stored', snapshotEnvelope)
   return persistableEntitySnapshot
+}
+
+export async function storeDispatchedEvent(
+  cosmosDb: CosmosClient,
+  eventEnvelope: EventEnvelope,
+  config: BoosterConfig
+): Promise<boolean> {
+  const logger = getLogger(config, 'events-adapter#storeDispatchedEvent')
+  logger.debug('[EventsAdapter#storeDispatchedEvent] Storing EventEnvelope for event with ID: ', eventEnvelope.id)
+  try {
+    await cosmosDb
+      .database(config.resourceNames.applicationStack)
+      .container(config.resourceNames.dispatchedEventsStore)
+      .items.create({
+        eventId: eventEnvelope.id,
+      })
+    return true
+  } catch (e) {
+    if (e.code === 409) {
+      // If an item with the same ID already exists in the container, it will return a 409 status code.
+      // See https://learn.microsoft.com/en-us/rest/api/cosmos-db/http-status-codes-for-cosmosdb
+      logger.debug('[EventsAdapter#storeDispatchedEvent] Event has already been dispatched', eventEnvelope.id)
+      return false
+    } else {
+      logger.error('[EventsAdapter#storeDispatchedEvent] Error storing dispatched event', e)
+      throw e
+    }
+  }
 }

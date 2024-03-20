@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import * as EventsAdapter from '../../src/library/events-adapter'
-import { createStubInstance, fake, restore, match, stub, SinonStubbedInstance } from 'sinon'
+import { createStubInstance, fake, match, restore, SinonStubbedInstance, stub } from 'sinon'
 import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import { eventsStoreAttributes } from '../../src/constants'
@@ -139,6 +139,22 @@ describe('Events adapter', () => {
           [eventsStoreAttributes.sortKey]: match.defined,
         })
       )
+    })
+  })
+
+  describe('The "storeDispatchedEvent" method', () => {
+    it('Persists the IDs of the eventEnvelopes passed via parameters', async () => {
+      await EventsAdapter.storeDispatchedEvent(mockCosmosDbClient as any, mockEvents[0], mockConfig)
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(mockConfig.resourceNames.dispatchedEventsStore)
+      expect(
+        mockCosmosDbClient
+          .database(mockConfig.resourceNames.applicationStack)
+          .container(mockConfig.resourceNames.dispatchedEventsStore).items.create
+      ).to.have.been.calledWithExactly(match({ eventId: mockEvents[0].id }))
     })
   })
 })
