@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.8.0",
+      "tag": "@boostercloud/framework-core_v2.8.0",
+      "date": "Wed, 20 Mar 2024 16:53:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Track processed events in Azure provider to avoid duplication",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "7cf0d74aae463fdc842424ed5bcb6cbd7bafae5e"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.7.1` to `^2.8.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.7.1` to `^2.8.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.7.1` to `^2.8.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.7.1` to `^2.8.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.7.1",
       "tag": "@boostercloud/framework-core_v2.7.1",
       "date": "Thu, 14 Mar 2024 15:18:33 GMT",
