@@ -24,7 +24,7 @@ describe('Scheduled commands', () => {
       },
       (result) => !!result?.data?.CartReadModel,
       10000,
-      90000 // CheckCartCount is run every minute, we need to give this test enough time to make sure AWS does the first call
+      90000 // CheckCartCount is run every minute, we need to give this test enough time to make sure that the cloud provider does the first call
     )
 
     const cartReadModel = cartData?.data?.CartReadModel

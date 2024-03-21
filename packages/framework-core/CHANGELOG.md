@@ -1,6 +1,100 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 10 Oct 2023 12:54:54 GMT and should not be manually modified.
+This log was last generated on Wed, 20 Mar 2024 16:53:38 GMT and should not be manually modified.
+
+## 2.8.0
+Wed, 20 Mar 2024 16:53:38 GMT
+
+### Minor changes
+
+- Track processed events in Azure provider to avoid duplication
+
+## 2.7.1
+Thu, 14 Mar 2024 15:18:33 GMT
+
+### Patches
+
+- Fix peer dependencies issues
+
+## 2.7.0
+Tue, 05 Mar 2024 13:04:14 GMT
+
+### Minor changes
+
+- Add injectable feature
+
+## 2.6.0
+Thu, 15 Feb 2024 12:26:19 GMT
+
+### Minor changes
+
+- Add Azure sku gateway and rus environment variables
+
+### Updates
+
+- changed CosmosDB throughput to use process env
+- fixed documentation env example for cosmosdb throughput
+
+## 2.5.1
+Fri, 02 Feb 2024 13:14:34 GMT
+
+### Patches
+
+- Refactored the core exports and removed the `BoosterApp` to reduce code redund
+
+## 2.5.0
+Thu, 01 Feb 2024 12:48:38 GMT
+
+### Minor changes
+
+- refactor subnet creation for Azure Provider
+
+## 2.4.0
+Tue, 30 Jan 2024 10:48:42 GMT
+
+### Minor changes
+
+- Bump TypeScript to 5.1.6
+
+## 2.3.0
+Thu, 25 Jan 2024 18:03:39 GMT
+
+### Minor changes
+
+- Update Azure infrastructure to use Azure Gateway. Rockets now support multiple functions with specific host.json files
+
+## 2.2.0
+Fri, 17 Nov 2023 14:25:53 GMT
+
+### Minor changes
+
+- Add Azure Event Hub
+
+## 2.1.0
+Thu, 09 Nov 2023 12:10:04 GMT
+
+### Minor changes
+
+- Add health sensor
+
+## 2.0.0
+Wed, 01 Nov 2023 13:01:59 GMT
+
+### Breaking changes
+
+- Bump version to 2.0.0
+
+### Minor changes
+
+- Upgraded for Node18 support
+- Replaced the deprecated dependency `ttypescript` with `ts-patch`
+
+## 1.21.0
+Mon, 30 Oct 2023 16:27:59 GMT
+
+### Minor changes
+
+- Add elapsed time to data migration entities
 
 ## 1.20.0
 Tue, 10 Oct 2023 12:54:54 GMT

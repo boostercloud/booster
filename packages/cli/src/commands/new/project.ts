@@ -1,4 +1,4 @@
-import { Command, flags } from '@oclif/command'
+import { Command, Flags, Args } from '@oclif/core'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
 import {
@@ -16,54 +16,56 @@ import { checkProjectAlreadyExists } from '../../services/project-checker'
 export default class Project extends Command {
   public static description = 'create a new project from scratch'
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    description: flags.string({
+    help: Flags.help({ char: 'h' }),
+    description: Flags.string({
       char: 'd',
       description: 'a short description',
     }),
-    version: flags.string({
+    version: Flags.string({
       char: 'v',
       description: 'the initial version',
     }),
-    author: flags.string({
+    author: Flags.string({
       char: 'a',
       description: 'who is writing this?',
     }),
-    homepage: flags.string({
+    homepage: Flags.string({
       char: 'H',
       description: 'the website of this project',
     }),
-    license: flags.string({
+    license: Flags.string({
       char: 'l',
       description: 'which license will you use?',
     }),
-    repository: flags.string({
+    repository: Flags.string({
       char: 'r',
       description: 'the URL of the repository',
     }),
-    providerPackageName: flags.string({
+    providerPackageName: Flags.string({
       char: 'p',
       description:
-        'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-aws"',
+        'package name implementing the cloud provider integration where the application will be deployed (i.e: "@boostercloud/framework-provider-azure")',
     }),
-    default: flags.boolean({
+    default: Flags.boolean({
       description: 'generates the project with default parameters (i.e. --license=MIT)',
       default: false,
     }),
-    skipInstall: flags.boolean({
+    skipInstall: Flags.boolean({
       description: 'skip dependencies installation',
       default: false,
     }),
-    skipGit: flags.boolean({
+    skipGit: Flags.boolean({
       description: 'skip git initialization',
       default: false,
     }),
   }
 
-  public static args = [{ name: 'projectName' }]
+  public static args = {
+    projectName: Args.string(),
+  }
 
   public async run(): Promise<void> {
-    const { args, flags } = this.parse(Project)
+    const { args, flags } = await this.parse(Project)
     const { projectName } = args
 
     try {
@@ -112,7 +114,7 @@ const getProviderPackageName = async (prompter: Prompter, providerPackageName?: 
   if (providerSelection === Provider.OTHER) {
     return await prompter.defaultOrPrompt(
       undefined,
-      "What's the other provider integration library? e.g. @boostercloud/framework-provider-aws"
+      "What's the other provider integration library? e.g. @boostercloud/framework-provider-azure"
     )
   } else {
     return getSelectedProviderPackage(providerSelection)

@@ -4,7 +4,7 @@ import * as Clean from '../../src/commands/clean'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
 import { oraLogger } from '../../src/services/logger'
-import { IConfig } from '@oclif/config'
+import { Config } from '@oclif/core'
 
 describe('clean', () => {
   describe('Clean class', () => {
@@ -21,12 +21,12 @@ describe('clean', () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Clean.default([], {} as IConfig).init()
+      await new Clean.default([], {} as Config).init()
       expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     it('runs the command', async () => {
-      await new Clean.default([], {} as IConfig).run()
+      await new Clean.default([], {} as Config).run()
       expect(projectChecker.checkCurrentDirIsABoosterProject).to.have.been.called
       expect(configService.cleanProject).to.have.been.called
       expect(oraLogger.start).to.have.been.calledWithMatch('Checking project structure')

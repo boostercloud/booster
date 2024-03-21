@@ -13,8 +13,8 @@ describe('Clean', () => {
     cleanSandboxDir = createSandboxProject(sandboxPathFor('clean'))
   })
 
-  after(() => {
-    removeFolders([cleanSandboxDir])
+  after(async () => {
+    await removeFolders([cleanSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')

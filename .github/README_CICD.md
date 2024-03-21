@@ -11,8 +11,7 @@ account that:
   the user is not confused.
 - It handles the creation and wiring of many cloud components, which are lots of moving pieces, so everything is double-checked
   to prevent errors in deployed environments.
-- It is a multi-cloud framework, and behavior is double-checked both on AWS and Azure, as they are the officially supported cloud
-  providers. Ensuring everything runs smoothly, regardless of the choice of the user.
+- It is a multi-cloud framework, and behavior is double-checked both on AWS and Azure. Ensuring everything runs smoothly, regardless of the choice of the user.
 
 We always keep improving our CI/CD processes, but we always make sure that we have the above covered.
 

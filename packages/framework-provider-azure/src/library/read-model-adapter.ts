@@ -21,7 +21,7 @@ export async function fetchReadModel(
   const { resource } = await db
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.forReadModel(readModelName))
-    .item(readModelID as string, readModelID)
+    .item(readModelID as string, readModelID as string)
     .read()
 
   logger.debug(
@@ -141,7 +141,7 @@ export async function deleteReadModel(
   await db
     .database(config.resourceNames.applicationStack)
     .container(config.resourceNames.forReadModel(readModelName))
-    .item(readModel.id as string, readModel.id)
+    .item(readModel.id as string, readModel.id as string)
     .delete()
   logger.debug(`[ReadModelAdapter#deleteReadModel] Read model deleted. ID = ${readModel.id}`)
 }

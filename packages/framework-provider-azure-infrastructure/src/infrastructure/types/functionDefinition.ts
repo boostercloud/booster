@@ -4,6 +4,12 @@ export interface Binding {
   direction: string
 }
 
+export type HttpBinding = Binding & {
+  authLevel?: string
+  methods?: Array<string>
+  route?: string
+}
+
 export type ScheduleBinding = Binding & {
   schedule: string
 }
@@ -14,12 +20,25 @@ export type GraphQLBinding = Binding & {
 }
 
 export type EventHandlerBinding = Binding & {
-  leaseCollectionName: string
-  connectionStringSetting: string
+  leaseContainerName: string
+  connection: string
   databaseName: string
-  collectionName: string
-  createLeaseCollectionIfNotExists: string
+  containerName: string
+  createLeaseContainerIfNotExists: string
   [key: string]: any
+}
+
+export type EventHubInputBinding = Binding & {
+  eventHubName: string
+  connection: string
+  cardinality: string
+  consumerGroup: string
+  dataType: string
+}
+
+export type EventHubOutBinding = Binding & {
+  connection: string
+  eventHubName: string
 }
 
 export type SubscriptionBinding = Binding & {
@@ -43,11 +62,25 @@ export interface FunctionDefinition<T extends Binding = Binding> {
   }
 }
 
+export interface FunctionAppFunctionsDefinition<T extends Binding = Binding> {
+  functionAppName: string
+  functionsDefinitions: Array<FunctionDefinition<T>>
+  hostJsonPath?: string
+}
+
+export type FunctionAppFunctionsDefinitions = Array<FunctionAppFunctionsDefinition>
+
 export type ScheduleFunctionDefinition = FunctionDefinition<ScheduleBinding>
 
 export type GraphQLFunctionDefinition = FunctionDefinition<GraphQLBinding>
 
+export type HttpFunctionDefinition = FunctionDefinition<HttpBinding>
+
 export type EventHandlerFunctionDefinition = FunctionDefinition<EventHandlerBinding>
+
+export type EventStreamProducerHandlerFunctionDefinition = FunctionDefinition<EventHandlerBinding | EventHubOutBinding>
+
+export type EventStreamConsumerHandlerFunctionDefinition = FunctionDefinition<EventHubInputBinding>
 
 export type SubscriptionsNotifierFunctionDefinition = FunctionDefinition<EventHandlerBinding | SubscriptionBinding>
 

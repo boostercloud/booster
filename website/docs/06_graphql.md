@@ -625,7 +625,6 @@ query {
 
 - Subscriptions don't work for the events API yet
 - You can only query events, but not write them through this API. Use a command for that.
-- Currently, only available on the AWS provider.
 
 ## Filter, Pagination and Projections
 

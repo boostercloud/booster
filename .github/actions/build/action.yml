@@ -5,7 +5,7 @@ runs:
   steps:
     - uses: actions/setup-node@v3
       with:
-        node-version: 16.14
+        node-version: 18.18
 
     # First we cache the rush project, to ensure we don't build multiple times, nor we download more dependencies than needed
     - name: Cache Rush project

@@ -24,9 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16.14
+          node-version: 18.18
 
       # If this was triggered by a /integration command, check out merge commit
       - name: Fork based /integration checkout
@@ -51,7 +51,7 @@ jobs:
       # 1 day. It is also useful because these dependencies could be downloaded by the user to run the
       # integration tests locally, or even test their own Booster applications with this version.
       - name: Upload integration test dependencies
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: inputs.command_sha != ''
         with:
           # suffix the name with the git commit
@@ -60,7 +60,7 @@ jobs:
           retention-days: 1
 
       - name: Upload integration test dependencies
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: inputs.command_sha == ''
         with:
           # suffix the name with the git commit

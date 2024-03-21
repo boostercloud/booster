@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../common/base-command'
 import { cleanProject } from '../services/config-service'
 import { checkCurrentDirIsABoosterProject } from '../services/project-checker'
@@ -16,8 +16,8 @@ export default class Clean extends BaseCommand {
   public static description = 'Clean the current application as configured in your `index.ts` file.'
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    verbose: flags.boolean({
+    help: Flags.help({ char: 'h' }),
+    verbose: Flags.boolean({
       description: 'display full error messages',
       default: false,
     }),
@@ -30,7 +30,7 @@ export default class Clean extends BaseCommand {
   async catch(fullError: Error) {
     const {
       flags: { verbose },
-    } = this.parse(Clean)
+    } = await this.parse(Clean)
 
     if (verbose) {
       console.error(fullError.message)

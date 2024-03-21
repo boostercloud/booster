@@ -1,10 +1,12 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import {
   buildAppPrefix,
-  readProjectConfig,
+  createDomainNameLabel,
   createFunctionResourceGroupName,
   createResourceGroupName,
-  createApiManagementName,
+  createStreamFunctionResourceGroupName,
+  readProjectConfig,
+  toTerraformName,
 } from '../helper/utils'
 import { TerraformStack } from 'cdktf'
 import { TerraformServicePlan } from './terraform-service-plan'
@@ -14,199 +16,152 @@ import { TerraformFunctionApp } from './terraform-function-app'
 import { TerraformCosmosdbSqlDatabase } from './terraform-cosmosdb-sql-database'
 import { TerraformContainers } from './terraform-containers'
 import { TerraformCosmosdbDatabase } from './terraform-cosmosdb-database'
-import { TerraformApiManagement } from './terraform-api-management'
-import { TerraformApiManagementApi } from './terraform-api-management-api'
-import { TerraformApiManagementApiOperation } from './terraform-api-management-api-operation'
-import { TerraformApiManagementApiOperationPolicy } from './terraform-api-management-api-operation-policy'
+import { TerraformApplicationGateway } from './gateway/terraform-application-gateway'
 import { TerraformWebPubsub } from './terraform-web-pubsub'
-import { ApplicationSynthStack } from '../types/application-synth-stack'
+import { ApplicationSynthStack, StackNames } from '../types/application-synth-stack'
 import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
 import { TerraformOutputs } from './terraform-outputs'
 import { TerraformWebPubsubHub } from './terraform-web-pubsub-hub'
 import { TerraformWebPubSubExtensionKey } from './terraform-web-pub-sub-extension-key'
+import { TerraformEventHubNamespace } from './terraform-event-hub-namespace'
+import { TerraformEventHub } from './terraform-event-hub'
+import { windowsFunctionApp } from '@cdktf/provider-azurerm'
+import { TerraformNetworkSecurityGroup } from './gateway/terraform-network-security-group'
+import { TerraformVirtualNetwork } from './gateway/terraform-virtual-network'
+import { TerraformPublicIp } from './gateway/terraform-public-ip'
+import { TerraformPublicIpData } from './gateway/terraform-public-ip-data'
+import { TerraformSubnet } from './gateway/terraform-subnet'
+import { TerraformSubnetSecurity } from './gateway/terraform-subnet-security'
+import { BASIC_SERVICE_PLAN } from '../constants'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
-  readonly appPrefix: string
-  readonly terraformStackResource: TerraformStack
+  readonly stackNames: StackNames
 
-  public constructor(terraformStackResource: TerraformStack) {
-    this.config = readProjectConfig(process.cwd())
-    this.appPrefix = buildAppPrefix(this.config)
-    this.terraformStackResource = terraformStackResource
+  readonly CONSUMPTION_PLAN = {
+    skuName: 'Y1',
+    workerCount: 1,
   }
 
-  public synth(zipFile: string): ApplicationSynthStack {
-    const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
-    const functionAppName = createFunctionResourceGroupName(resourceGroupName)
-    const apiManagementName = createApiManagementName(resourceGroupName)
-    const azurermProvider = new AzurermProvider(this.terraformStackResource, 'azureFeature', {
+  readonly BASIC_PLAN = {
+    skuName: 'B1',
+    workerCount: 2,
+  }
+
+  public constructor(terraformStack: TerraformStack) {
+    this.config = readProjectConfig(process.cwd())
+    const azurermProvider = new AzurermProvider(terraformStack, 'azureFeature', {
       features: {},
     })
-    const hubName = 'booster'
-
-    const resourceGroupResource = TerraformResourceGroup.build(
-      azurermProvider,
-      this.terraformStackResource,
-      this.appPrefix,
-      resourceGroupName
-    )
-    const servicePlanResource = TerraformServicePlan.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      this.appPrefix,
-      resourceGroupName
-    )
-    const storageAccountResource = TerraformStorageAccount.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      this.appPrefix,
-      resourceGroupName
-    )
-    const cosmosdbDatabaseResource = TerraformCosmosdbDatabase.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      this.appPrefix,
-      resourceGroupName
-    )
-    const cosmosdbSqlDatabaseResource = TerraformCosmosdbSqlDatabase.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      this.appPrefix,
-      cosmosdbDatabaseResource,
-      this.config
-    )
-    const containersResource = TerraformContainers.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      this.appPrefix,
-      cosmosdbDatabaseResource,
-      cosmosdbSqlDatabaseResource,
-      this.config
-    )
-
-    let webPubSubResource
-    if (this.config.enableSubscriptions) {
-      webPubSubResource = TerraformWebPubsub.build(
-        azurermProvider,
-        this.terraformStackResource,
-        resourceGroupResource,
-        this.appPrefix
-      )
-    }
-
-    const functionAppResource = TerraformFunctionApp.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      servicePlanResource,
-      storageAccountResource,
-      this.appPrefix,
-      functionAppName,
-      cosmosdbDatabaseResource.name,
-      apiManagementName,
-      cosmosdbDatabaseResource.primaryKey,
-      this.config,
-      zipFile,
-      webPubSubResource
-    )
-
-    const apiManagementResource = TerraformApiManagement.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      apiManagementName,
-      this.appPrefix
-    )
-
-    const apiManagementApiResource = TerraformApiManagementApi.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      apiManagementResource,
-      this.appPrefix,
-      this.config.environmentName,
-      resourceGroupName
-    )
-
-    const graphQLApiManagementApiOperationResource = TerraformApiManagementApiOperation.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      apiManagementApiResource,
-      this.appPrefix,
-      'graphql'
-    )
-
-    const graphQLApiManagementApiOperationPolicyResource = TerraformApiManagementApiOperationPolicy.build(
-      azurermProvider,
-      this.terraformStackResource,
-      resourceGroupResource,
-      graphQLApiManagementApiOperationResource,
-      this.appPrefix,
-      this.config.environmentName,
-      functionAppResource,
-      'graphql'
-    )
-
-    let webPubSubHubResource
-
-    if (webPubSubResource) {
-      const functionAppDataResource = TerraformWebPubSubExtensionKey.build(
-        this.config,
-        azurermProvider,
-        this.terraformStackResource,
-        resourceGroupResource,
-        functionAppResource,
-        this.appPrefix
-      )
-
-      webPubSubHubResource = TerraformWebPubsubHub.build(
-        azurermProvider,
-        this.terraformStackResource,
-        resourceGroupResource,
-        webPubSubResource,
-        this.appPrefix,
-        functionAppResource,
-        functionAppDataResource,
-        hubName
-      )
-    }
-    TerraformOutputs.build(
-      azurermProvider,
-      this.terraformStackResource,
-      this.appPrefix,
-      resourceGroupResource,
-      graphQLApiManagementApiOperationResource,
-      hubName,
-      webPubSubResource
-    )
-
-    return {
-      appPrefix: this.appPrefix,
-      terraformStack: this.terraformStackResource,
-      resourceGroupName: resourceGroupName,
-      apiManagementName: apiManagementName,
-      functionAppName: functionAppName,
-      resourceGroup: resourceGroupResource,
-      applicationServicePlan: servicePlanResource,
-      storageAccount: storageAccountResource,
-      functionApp: functionAppResource,
-      apiManagement: apiManagementResource,
-      apiManagementApi: apiManagementApiResource,
-      graphQLApiManagementApiOperation: graphQLApiManagementApiOperationResource,
-      graphQLApiManagementApiOperationPolicy: graphQLApiManagementApiOperationPolicyResource,
-      cosmosdbDatabase: cosmosdbDatabaseResource,
-      cosmosdbSqlDatabase: cosmosdbSqlDatabaseResource,
-      containers: containersResource,
-      webPubSub: webPubSubResource,
-      webPubSubHub: webPubSubHubResource,
+    const appPrefix = buildAppPrefix(this.config)
+    const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
+    const functionAppName = createFunctionResourceGroupName(resourceGroupName)
+    const streamFunctionAppName = createStreamFunctionResourceGroupName(resourceGroupName)
+    const domainNameLabel = createDomainNameLabel(resourceGroupName)
+    this.stackNames = {
+      appPrefix: appPrefix,
+      terraformStack: terraformStack,
       azureProvider: azurermProvider,
-    } as ApplicationSynthStack
+      resourceGroupName: resourceGroupName,
+      functionAppName: functionAppName,
+      streamFunctionAppName: streamFunctionAppName,
+      domainNameLabel: domainNameLabel,
+      eventHubName: this.config.resourceNames.streamTopic,
+      webPubSubHubName: 'booster',
+    }
+  }
+
+  public synth(zipFile?: string): ApplicationSynthStack {
+    const resourceGroup = TerraformResourceGroup.build(this.stackNames)
+    const stack: ApplicationSynthStack = { ...this.stackNames, resourceGroup: resourceGroup }
+
+    stack.networkSecurityGroup = TerraformNetworkSecurityGroup.build(
+      stack,
+      toTerraformName(this.stackNames.appPrefix, 'sg'),
+      `${this.stackNames.resourceGroupName}rjsg`
+    )
+    stack.virtualNetwork = TerraformVirtualNetwork.build(stack)
+    stack.subnet = TerraformSubnet.build(stack)
+    stack.subnetNetworkSecurityGroupAssociation = TerraformSubnetSecurity.build(stack)
+    stack.publicIP = TerraformPublicIp.build(stack, 'pip')
+    stack.appGateway = TerraformApplicationGateway.build(stack)
+    stack.publicIPData = TerraformPublicIpData.build(stack)
+
+    stack.cosmosdbDatabase = TerraformCosmosdbDatabase.build(stack)
+    stack.cosmosdbSqlDatabase = TerraformCosmosdbSqlDatabase.build(stack, this.config)
+    stack.containers = TerraformContainers.build(stack, this.config)
+    this.buildEventHub(stack)
+    this.buildWebPubSub(stack)
+    if (BASIC_SERVICE_PLAN === 'true') {
+      stack.applicationServicePlan = TerraformServicePlan.build(
+        stack,
+        'psp',
+        this.BASIC_PLAN.skuName,
+        this.BASIC_PLAN.workerCount
+      )
+    } else {
+      stack.applicationServicePlan = TerraformServicePlan.build(
+        stack,
+        'psp',
+        this.CONSUMPTION_PLAN.skuName,
+        this.CONSUMPTION_PLAN.workerCount
+      )
+    }
+    stack.storageAccount = TerraformStorageAccount.build(stack, 'sp')
+    stack.functionApp = this.buildDefaultFunctionApp(stack, zipFile)
+    this.buildWebPubSubHub(stack)
+    TerraformOutputs.build(stack)
+
+    return stack
+  }
+
+  private buildDefaultFunctionApp(
+    stack: ApplicationSynthStack,
+    zipFile?: string
+  ): windowsFunctionApp.WindowsFunctionApp {
+    return TerraformFunctionApp.build(
+      stack,
+      this.config,
+      stack.applicationServicePlan!,
+      stack.storageAccount!,
+      'func',
+      stack.functionAppName,
+      zipFile
+    )
+  }
+
+  private buildEventHub(stack: ApplicationSynthStack): void {
+    if (this.config.eventStreamConfiguration.enabled) {
+      stack.eventHubNamespace = TerraformEventHubNamespace.build(stack)
+      stack.eventHub = TerraformEventHub.build(stack, this.config)
+      const instanceCount = this.config.eventStreamConfiguration.parameters?.partitionCount ?? '3'
+      stack.eventConsumerServicePlan = TerraformServicePlan.build(stack, 'psc', 'B1', instanceCount)
+      stack.eventConsumerStorageAccount = TerraformStorageAccount.build(stack, 'sc')
+      stack.eventConsumerFunctionApp = TerraformFunctionApp.build(
+        stack,
+        this.config,
+        stack.eventConsumerServicePlan,
+        stack.eventConsumerStorageAccount,
+        'fhub',
+        stack.streamFunctionAppName
+      )
+      if (!stack.containers) {
+        stack.containers = []
+      }
+      stack.containers.push(TerraformContainers.createDedupEventsContainer(stack, this.config))
+    }
+  }
+
+  private buildWebPubSub(stack: ApplicationSynthStack): void {
+    if (this.config.enableSubscriptions) {
+      stack.webPubSub = TerraformWebPubsub.build(stack)
+    }
+  }
+
+  private buildWebPubSubHub(stack: ApplicationSynthStack) {
+    if (stack.webPubSub) {
+      stack.dataFunctionAppHostKeys = TerraformWebPubSubExtensionKey.build(stack)
+      stack.webPubSubHub = TerraformWebPubsubHub.build(stack)
+    }
   }
 }

@@ -33,6 +33,11 @@ export interface CommandEnvelope extends TypedEnvelope {
 
 export type QueryEnvelope = CommandEnvelope
 
+export interface HealthEnvelope extends Envelope {
+  componentPath: string
+  token?: string
+}
+
 export interface ScheduledCommandEnvelope extends Envelope {
   typeName: string
 }
@@ -51,6 +56,7 @@ export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
 }
 
 export interface EventEnvelope extends NonPersistedEventEnvelope {
+  id?: string
   createdAt: string
 }
 
@@ -65,6 +71,7 @@ export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelo
   /** Time when this snapshot was actually persisted in the database. */
   persistedAt: string
 }
+
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
 }
@@ -146,6 +153,7 @@ export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
 
 export interface ReadModelByIdRequestArgs {
   id: string
+
   [sequenceKey: string]: string | undefined
 }
 
@@ -161,6 +169,7 @@ export interface GraphQLRequestEnvelope extends Envelope {
   value?: GraphQLOperation | GraphQLClientMessage
   token?: string
 }
+
 export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventType' | 'connectionID' | 'requestID'> & {
   error: Error
 }

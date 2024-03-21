@@ -3,10 +3,11 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeDispatchedEvent,
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
-import { requestSucceeded, requestFailed } from './library/api-adapter'
+import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { EventRegistry, GraphQLService, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
@@ -37,6 +38,17 @@ import { WebSocketRegistry } from './services/web-socket-registry'
 import { connectionsDatabase, subscriptionDatabase } from './paths'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
+import {
+  areDatabaseReadModelsUp,
+  databaseEventsHealthDetails,
+  databaseReadModelsHealthDetails,
+  databaseUrl,
+  graphqlFunctionUrl,
+  isDatabaseEventUp,
+  isGraphQLFunctionUp,
+  rawRequestToSensorHealth,
+} from './library/health-adapter'
+import * as process from 'process'
 
 export * from './paths'
 export * from './services'
@@ -60,12 +72,16 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
+    rawStreamToEnvelopes: notImplemented as any,
+    dedupEventStream: notImplemented as any,
+    produce: notImplemented as any,
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
     storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
+    storeDispatched: storeDispatchedEvent,
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -102,6 +118,16 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   rockets: {
     rawToEnvelopes: rawRocketInputToEnvelope,
   },
+  sensor: {
+    databaseEventsHealthDetails: databaseEventsHealthDetails.bind(null, eventRegistry),
+    databaseReadModelsHealthDetails: databaseReadModelsHealthDetails.bind(null, readModelRegistry),
+    isDatabaseEventUp: isDatabaseEventUp,
+    areDatabaseReadModelsUp: areDatabaseReadModelsUp,
+    databaseUrls: databaseUrl,
+    isGraphQLFunctionUp: isGraphQLFunctionUp,
+    graphQLFunctionUrl: graphqlFunctionUrl,
+    rawRequestToHealthEnvelope: rawRequestToSensorHealth,
+  },
   // ProviderInfrastructureGetter
   infrastructure: () => {
     const infrastructurePackageName = require('../package.json').name + '-infrastructure'
@@ -120,3 +146,5 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     return infrastructure.Infrastructure(rocketDescriptors)
   },
 })
+
+function notImplemented(): void {}

@@ -34,7 +34,7 @@ Booster enhances developers' productivity by focusing only on business logic. Wr
 - **Focus on business value**: The only code that makes sense is the code that makes your application different from any other.
 - **Convention over configuration**: All the supporting code and configuration that is similar in all applications should be out of programmers’ sight.
 - **Truly Serverless**: Why go Serverless to avoid managing infrastructure when you can implicitly infer your Serverless architecture from your code and not even deal with that?
-- **Effective Multicloud**: Booster design makes it possible to run the same application in AWS or Azure with no code changes in your application.
+- **Effective Multicloud**: Booster design makes it possible to run the same application in any of the supported cloud providers with no code changes in your application.
 - **Scale smoothly**: The code you write to handle your first 100 users will still work to handle your first million. You won't need to rewrite your application when it succeeds.
 - **Event-source and CQRS**: Our world is event-driven, businesses are event-driven, and modern software maps better to reality when it’s event-driven.
 - **Principle of Abstraction**: Building an application is hard enough to have to deal with recurring low-level details like SQL, API design, or authentication mechanisms, so we tend to build more semantic abstractions on top of them.
