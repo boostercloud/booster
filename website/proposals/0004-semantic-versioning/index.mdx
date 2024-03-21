@@ -1,0 +1,36 @@
+---
+title: BEEP 4 - Semantic Versioning
+authors: [NickSeagull]
+date: 2024-01-25T00:03
+---
+
+:::tip STATUS - ACCEPTED
+:::
+
+## Introduction
+
+In the context of the Booster Framework ecosystem, we adopt the [Semantic Versioning](https://semver.org/) (SemVer) schema. SemVer is a system of rules and guidelines for assigning and incrementing version numbers within our software development process. By using SemVer, the Booster Framework aims to manage the complexities of dependencies as the ecosystem evolves. The primary goal of implementing Semantic Versioning is to ensure that our version numbers are transparent and informative, effectively communicating the nature of changes in our software to both enterprise and hobbyist developers.
+
+## Impact on Principle of Least Astonishment
+
+Semantic Versioning positively impacts the Principle of Least Astonishment. It is a widely recognized and used schema in numerous open-source projects. Adhering to a clear and consistent version numbering system (Major.Minor.Patch) reduces confusion and surprise for developers and users alike. This predictability in versioning enhances the user experience and facilitates the management of software dependencies.
+
+## Impact on Principle of Developer Happiness
+
+Semantic Versioning aligns with the Principle of Developer Happiness by offering a systematic and standardized approach to versioning. This method simplifies the process of releasing and updating software packages, allowing developers to confidently implement changes. Knowing that version numbers accurately reflect the impact of changes reduces the stress related to dependency management and enables developers to concentrate on innovation and software improvement.
+
+## Impact on Principle of Least Effort
+
+Semantic Versioning supports the Principle of Least Effort by making the management of software dependencies more straightforward. By adhering to SemVer, developers can introduce backward-compatible changes without needing new major releases, thereby minimizing the effort needed for maintaining and updating software. Additionally, the clear documentation of public APIs and the use of version numbers to indicate compatibility simplify the integration of dependencies, reducing the effort needed for seamless software interactions.
+
+## Usage of SemVer in Early Development Phases
+
+During the initial development phases of Booster Framework projects, the major version will remain at 0. This indicates that breaking changes are likely to be frequent as the project evolves. Once the project achieves a stable state, the major version will be incremented to 1, signifying a reduction in the frequency of breaking changes.
+
+## Standardizing the Use of SemVer
+
+We advise using the Semantic Versioning schema as a standard across all Booster Framework projects. This uniformity will ensure coherence within the ecosystem. The Booster CLI tool should facilitate version management by inspecting exported functions and types, suggesting the next version based on the changes made.
+
+## Considerations
+
+It's important to note that changes in the implementation of a function, even without altering the API, can produce different results and are considered breaking changes. These should be reflected in the version number accordingly. For more information and examples, please refer to this [GitHub thread](https://github.com/semver/semver/issues/311).

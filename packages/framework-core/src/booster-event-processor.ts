@@ -1,11 +1,11 @@
 import {
-  TraceActionTypes,
   BoosterConfig,
   EventEnvelope,
   EventHandlerGlobalError,
   EventHandlerInterface,
   EventInterface,
   Register,
+  TraceActionTypes,
   UUID,
 } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
@@ -24,8 +24,10 @@ export class BoosterEventProcessor {
    */
   public static eventProcessor(eventStore: EventStore, readModelStore: ReadModelStore): EventsStreamingCallback {
     return async (entityName, entityID, eventEnvelopes, config) => {
+      // Filter events that have already been dispatched
+      const eventsNotDispatched = await BoosterEventProcessor.filterDispatched(config, eventEnvelopes, eventStore)
       const eventEnvelopesProcessors = [
-        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventEnvelopes, config),
+        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventsNotDispatched, config),
       ]
 
       // Read models are not updated for notification events (events that are not related to an entity but a topic)
@@ -37,6 +39,25 @@ export class BoosterEventProcessor {
 
       await Promises.allSettledAndFulfilled(eventEnvelopesProcessors)
     }
+  }
+
+  private static async filterDispatched(
+    config: BoosterConfig,
+    eventEnvelopes: Array<EventEnvelope>,
+    eventStore: EventStore
+  ): Promise<Array<EventEnvelope>> {
+    const logger = getLogger(config, 'BoosterEventDispatcher#filterDispatched')
+    const filteredResults = await Promise.all(
+      eventEnvelopes.map(async (eventEnvelope) => {
+        const result = await eventStore.storeDispatchedEvent(eventEnvelope)
+        if (!result) {
+          logger.warn('Event has already been dispatched. Skipping.', eventEnvelope)
+        }
+        return result
+      })
+    )
+
+    return eventEnvelopes.filter((_, index) => filteredResults[index])
   }
 
   private static async snapshotAndUpdateReadModels(

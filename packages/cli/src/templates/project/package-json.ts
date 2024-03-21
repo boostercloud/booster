@@ -29,10 +29,10 @@ export const template = `{
     "@types/jsonwebtoken": "9.0.1",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
-    "typescript": "4.7.4",
+    "typescript": "5.1.6",
     "ts-node": "9.1.1",
-    "@types/node": "^18.15.3",
-    "ts-patch": "2.0.2",
+    "@types/node": "^18.18.2",
+    "ts-patch": "3.1.2",
     "graphql": "^16.6.0"
   },
   "engines": {

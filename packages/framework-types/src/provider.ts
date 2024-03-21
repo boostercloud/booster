@@ -3,19 +3,19 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EntitySnapshotEnvelope,
-  NonPersistedEntitySnapshotEnvelope,
   EventEnvelope,
-  NonPersistedEventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
+  HealthEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
   SubscriptionEnvelope,
-  HealthEnvelope,
 } from './envelope'
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
@@ -144,6 +144,16 @@ export interface ProviderEventsLibrary {
     snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
     config: BoosterConfig
   ): Promise<EntitySnapshotEnvelope>
+
+  /**
+   * Stores an event envelope that has been dispatched in the dispatched events table.
+   *
+   * @param eventEnvelope - The `EventEnvelope` to store.
+   * @param config - The Booster configuration object.
+   * @returns `true` if the dispatched event was stored, `false` if the event already exists in the dispatched events
+   * table, throws an error on any other type of error.
+   */
+  storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
 }
 
 export interface ProviderReadModelsLibrary {

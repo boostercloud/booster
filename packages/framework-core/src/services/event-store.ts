@@ -73,6 +73,18 @@ export class EventStore {
     }
   }
 
+  @Trace(TraceActionTypes.CUSTOM)
+  public async storeDispatchedEvent(eventEnvelope: EventEnvelope): Promise<boolean | undefined> {
+    const logger = getLogger(this.config, 'EventStore#storeDispatchedEvent')
+    try {
+      logger.debug('Storing event in the dispatched event store:', eventEnvelope)
+      return await this.config.provider.events.storeDispatched(eventEnvelope, this.config)
+    } catch (e) {
+      logger.debug('Could not store dispatched event. Continue its processing.', {error: e, eventEnvelope })
+      return true
+    }
+  }
+
   @Trace(TraceActionTypes.STORE_SNAPSHOT)
   private async storeSnapshot(
     snapshot: NonPersistedEntitySnapshotEnvelope

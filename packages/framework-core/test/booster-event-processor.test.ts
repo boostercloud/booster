@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { fake, replace, restore, createStubInstance } from 'sinon'
+import { createStubInstance, fake, match, replace, restore } from 'sinon'
 import {
   BoosterConfig,
-  EntitySnapshotEnvelope,
-  UUID,
   EntityInterface,
-  ProviderLibrary,
-  Register,
+  EntitySnapshotEnvelope,
   EventInterface,
   NonPersistedEventEnvelope,
+  ProviderLibrary,
+  Register,
+  UUID,
 } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { ReadModelStore } from '../src/services/read-model-store'
@@ -24,6 +24,7 @@ class SomeEvent {
   public entityID(): UUID {
     return this.id
   }
+
   public getPrefixedId(prefix: string): string {
     return `${prefix}-${this.id}`
   }
@@ -129,6 +130,9 @@ describe('BoosterEventProcessor', () => {
         const stubReadModelStore = createStubInstance(ReadModelStore)
 
         const boosterEventProcessor = BoosterEventProcessor as any
+        const fakeFilterDispatched = fake.returns([someEvent])
+
+        replace(boosterEventProcessor, 'filterDispatched', fakeFilterDispatched)
         replace(boosterEventProcessor, 'snapshotAndUpdateReadModels', fake())
         replace(boosterEventProcessor, 'dispatchEntityEventsToEventHandlers', fake())
 
@@ -315,6 +319,30 @@ describe('BoosterEventProcessor', () => {
 
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister)
         expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
+      })
+    })
+
+    describe('the `filterDispatched` method', () => {
+      it("removes events if they've been already dispatched", async () => {
+        const boosterEventProcessor = BoosterEventProcessor as any
+        const eventStore = createStubInstance(EventStore)
+        const someEventEnvelope = { ...someEvent, id: 'event-id' }
+        eventStore.storeDispatchedEvent = fake.returns(false) as any
+
+        const eventsNotDispatched = await boosterEventProcessor.filterDispatched(
+          config,
+          [someEventEnvelope],
+          eventStore
+        )
+
+        expect(eventStore.storeDispatchedEvent).to.have.been.called
+        expect(eventStore.storeDispatchedEvent).to.have.been.calledOnceWith(someEventEnvelope)
+        expect(eventsNotDispatched).to.deep.equal([])
+        expect(config.logger?.warn).to.have.been.calledWith(
+          '[Booster]|BoosterEventDispatcher#filterDispatched: ',
+          'Event has already been dispatched. Skipping.',
+          match.any
+        )
       })
     })
 

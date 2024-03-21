@@ -6,6 +6,7 @@ export const template = `{
     "importHelpers": true,
     "module": "commonjs",
     "strict": true,
+    "skipLibCheck": true,
     "target": "es2017",
     "noImplicitReturns": true,
     "noImplicitThis": true,
