@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "replace nedb with seald",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
