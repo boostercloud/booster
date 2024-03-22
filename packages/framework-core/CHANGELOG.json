@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.9.0",
+      "tag": "@boostercloud/framework-core_v2.9.0",
+      "date": "Fri, 22 Mar 2024 17:48:10 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "replace nedb with seald",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "3a06285d956a7a2aeef8fbed60aff028162f0558"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.8.0` to `^2.9.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.8.0` to `^2.9.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.8.0` to `^2.9.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.8.0` to `^2.9.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.8.0",
       "tag": "@boostercloud/framework-core_v2.8.0",
       "date": "Wed, 20 Mar 2024 16:53:38 GMT",

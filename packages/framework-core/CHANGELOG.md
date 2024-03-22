@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 20 Mar 2024 16:53:38 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Mar 2024 17:48:10 GMT and should not be manually modified.
+
+## 2.9.0
+Fri, 22 Mar 2024 17:48:10 GMT
+
+### Minor changes
+
+- replace nedb with seald
 
 ## 2.8.0
 Wed, 20 Mar 2024 16:53:38 GMT
