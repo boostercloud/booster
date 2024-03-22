@@ -209,12 +209,12 @@ describe('the read model registry', () => {
       const id = '1'
       mockReadModelEnvelope.value.id = id
 
-      readModelRegistry.readModels.remove = stub().yields(null, mockReadModelEnvelope)
+      readModelRegistry.readModels.removeAsync = stub().returns(mockReadModelEnvelope)
 
       await readModelRegistry.store(mockReadModelEnvelope, 1)
       await readModelRegistry.deleteById(id, mockReadModelEnvelope.typeName)
 
-      expect(readModelRegistry.readModels.remove).to.have.been.calledWith(
+      expect(readModelRegistry.readModels.removeAsync).to.have.been.calledWith(
         { typeName: mockReadModelEnvelope.typeName, 'value.id': id },
         { multi: false }
       )
@@ -231,10 +231,10 @@ describe('the read model registry', () => {
         'value.boosterMetadata.version': 2,
       }
 
-      readModelRegistry.readModels.update = stub().yields(null, readModel)
+      readModelRegistry.readModels.updateAsync = stub().returns(readModel)
 
       await readModelRegistry.store(readModel, 2)
-      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, readModel, {
+      expect(readModelRegistry.readModels.updateAsync).to.have.been.calledWith(expectedQuery, readModel, {
         upsert: false,
         returnUpdatedDocs: true,
       })

@@ -179,12 +179,7 @@ describe('Read models end-to-end tests', () => {
         await Promise.all(changeCartPromises)
       })
 
-      // TODO this test is failing in local because of local provider doesn't provides optimistic concurrency control
-      // TODO Remove condition when it will be fixed
       it('should retrieve expected cart', async () => {
-        if (process.env.TESTED_PROVIDER === 'LOCAL') {
-          return
-        }
         const queryResult = await waitForIt(
           () => {
             return client.query({
