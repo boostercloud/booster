@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ReadModelEnvelope } from '@boostercloud/framework-types'
+import { ProjectionFor, ReadModelEnvelope } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as faker from 'faker'
-import { stub, restore } from 'sinon'
+import { random } from 'faker'
+import { restore, stub } from 'sinon'
 import { ReadModelRegistry } from '../../src/services'
 import {
   assertOrderByAgeAndIdDesc,
   assertOrderByAgeDesc,
   createMockReadModelEnvelope,
 } from '../helpers/read-model-helper'
-import { random } from 'faker'
 
 describe('the read model registry', () => {
   let initialReadModelsCount: number
@@ -178,6 +178,28 @@ describe('the read model registry', () => {
 
       expect(result.length).to.be.equal(initialReadModelsCount)
       expect(result[0]).to.not.deep.include(mockReadModel)
+    })
+
+    it('should return only projected fields', async () => {
+      const result = await readModelRegistry.query(
+        {
+          value: mockReadModel.value,
+          typeName: mockReadModel.typeName,
+        },
+        undefined,
+        undefined,
+        undefined,
+        ['id', 'age'] as ProjectionFor<unknown>
+      )
+
+      expect(result.length).to.be.equal(1)
+      const expectedReadModel = {
+        value: {
+          id: mockReadModel.value.id,
+          age: mockReadModel.value.age,
+        },
+      }
+      expect(result[0]).to.deep.include(expectedReadModel)
     })
   })
 

@@ -385,7 +385,8 @@ describe('BoosterReadModelReader', () => {
           {},
           undefined,
           undefined,
-          false
+          false,
+          undefined
         )
         expect(result).to.be.deep.equal(expectedReadModels)
       })
@@ -408,7 +409,8 @@ describe('BoosterReadModelReader', () => {
           {},
           undefined,
           undefined,
-          false
+          false,
+          undefined
         )
         expect(result).to.be.deep.equal(expectedReadModels)
         expect(migratorStub).to.have.been.calledTwice
@@ -438,10 +440,84 @@ describe('BoosterReadModelReader', () => {
           {},
           undefined,
           undefined,
-          true
+          true,
+          undefined
         )
         expect(result).to.be.deep.equal(searchResult)
         expect(migratorStub).to.have.been.calledTwice
+      })
+
+      context('when there are projections fields', () => {
+        it('calls the provider search function with the right parameters', async () => {
+          const readModelWithProjectionRequestEnvelope: ReadModelRequestEnvelope<TestReadModel> = {
+            class: TestReadModel,
+            className: TestReadModel.name,
+            requestID: random.uuid(),
+            version: 1,
+            filters,
+            currentUser,
+            select: ['id'],
+            skipInstance: false,
+          } as any
+
+          const expectedReadModels = [new TestReadModel(), new TestReadModel()]
+          const providerSearcherFunctionFake = fake.returns(expectedReadModels)
+          replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
+
+          replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+
+          migratorStub.callsFake(async (readModel, readModelName) => readModel)
+
+          const result = await readModelReader.search(readModelWithProjectionRequestEnvelope)
+
+          expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
+            match.any,
+            TestReadModel.name,
+            filters,
+            {},
+            undefined,
+            undefined,
+            false,
+            ['id']
+          )
+          expect(result).to.be.deep.equal(expectedReadModels)
+        })
+
+        it('do not  call migrates if skipInstance is true', async () => {
+          const readModelWithProjectionRequestEnvelope: ReadModelRequestEnvelope<TestReadModel> = {
+            class: TestReadModel,
+            className: TestReadModel.name,
+            requestID: random.uuid(),
+            version: 1,
+            filters,
+            currentUser,
+            select: ['id'],
+            skipInstance: true,
+          } as any
+
+          const expectedResult = [new TestReadModel(), new TestReadModel()]
+          const providerSearcherFunctionFake = fake.returns(expectedResult)
+          replace(config.provider.readModels, 'search', providerSearcherFunctionFake)
+
+          replace(Booster, 'config', config) // Needed because the function `Booster.readModel` references `this.config` from `searchFunction`
+
+          migratorStub.callsFake(async (readModel, readModelName) => readModel)
+
+          const result = await readModelReader.search(readModelWithProjectionRequestEnvelope)
+
+          expect(providerSearcherFunctionFake).to.have.been.calledOnceWithExactly(
+            match.any,
+            TestReadModel.name,
+            filters,
+            {},
+            undefined,
+            undefined,
+            false,
+            ['id']
+          )
+          expect(result).to.be.deep.equal(expectedResult)
+          expect(migratorStub).to.have.not.been.called
+        })
       })
 
       context('when there is only one before hook function', () => {

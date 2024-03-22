@@ -1,8 +1,12 @@
-import { ReadModelEnvelope, SortFor, UUID } from '@boostercloud/framework-types'
+import { ProjectionFor, ReadModelEnvelope, SortFor, UUID } from '@boostercloud/framework-types'
 import * as DataStore from 'nedb'
 import { readModelsDatabase } from '../paths'
 
 interface LocalSortedFor {
+  [key: string]: number
+}
+
+interface LocalSelectFor {
   [key: string]: number
 }
 
@@ -21,9 +25,10 @@ export class ReadModelRegistry {
     query: object,
     sortBy?: SortFor<unknown>,
     skip?: number,
-    limit?: number
+    limit?: number,
+    select?: ProjectionFor<unknown>
   ): Promise<Array<ReadModelEnvelope>> {
-    let cursor = this.readModels.find(query)
+    let cursor = this.readModels.find(query, this.toLocalSelectFor(select))
     const sortByList = this.toLocalSortFor(sortBy)
     if (sortByList) {
       cursor = cursor.sort(sortByList)
@@ -112,5 +117,13 @@ export class ReadModelRegistry {
       }
     })
     return sortedList
+  }
+
+  toLocalSelectFor(select?: ProjectionFor<unknown>): LocalSelectFor {
+    if (!select || select.length === 0) return {}
+    const result: LocalSelectFor = {}
+    return select.reduce((acc, field) => {
+      return { ...acc, [`value.${field}`]: 1 }
+    }, result)
   }
 }

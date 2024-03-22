@@ -9,7 +9,9 @@ export type SearcherFunction<TObject> = (
   sortBy: SortFor<TObject>,
   limit?: number,
   afterCursor?: any,
-  paginatedVersion?: boolean
+  paginatedVersion?: boolean,
+  select?: ProjectionFor<TObject>,
+  skipInstance?: boolean
 ) => Promise<Array<TObject> | ReadModelListResult<TObject>>
 
 export type FinderByKeyFunction<TObject> = (
@@ -36,6 +38,8 @@ export class Searcher<TObject> {
   private filters: FilterFor<TObject> = {}
   private _sortByList: SortFor<TObject> = {}
   private _paginatedVersion = false
+  private _selectFor?: ProjectionFor<TObject>
+  private _skipInstance = false
 
   /**
    * @param objectClass The class of the object you want to run the search for.
@@ -69,6 +73,16 @@ export class Searcher<TObject> {
     return this
   }
 
+  public select(select?: ProjectionFor<TObject>): this {
+    if (select) this._selectFor = select
+    return this
+  }
+
+  public skipInstance(skipInstance: boolean): this {
+    if (skipInstance) this._skipInstance = skipInstance
+    return this
+  }
+
   public limit(limit?: number): this {
     if (limit) this._limit = limit
     return this
@@ -99,7 +113,8 @@ export class Searcher<TObject> {
       this._sortByList,
       1, // Forces limit 1
       this._afterCursor,
-      false // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
+      false, // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
+      this._selectFor
     )
     return (searchResult as TObject[])[0]
   }
@@ -114,10 +129,39 @@ export class Searcher<TObject> {
       this._sortByList,
       this._limit,
       this._afterCursor,
-      this._paginatedVersion
+      this._paginatedVersion,
+      this._selectFor,
+      this._skipInstance
     )
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+// type KeyOf<TType> = {
+//   [K in keyof TType & (string | number)]: TType[K] extends object ? `${K}` | `${K}.${KeyOf<TType[K]>}` : `${K}`
+// }[keyof TType & (string | number)]
+
+// Explicitly depth-limit recursive type so that by default things only descend four levels
+type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+type KeyOf<TType, D extends Prev[number] = 4> = [D] extends [never]
+  ? never
+  : {
+      [K in keyof TType & (string | number)]: TType[K] extends object
+        ? `${K}` | `${K}.${KeyOf<TType[K], Prev[D]>}`
+        : `${K}`
+    }[keyof TType & (string | number)]
+
+// type KeyOf<
+//   TType,
+//   R = {
+//     [K in keyof TType & (string | number | bigint | boolean | null | undefined)]: TType[K] extends object
+//       ? `${K}` | `${K}.${KeyOf<TType[K]>}`
+//       : `${K}`
+//   }[keyof TType & (string | number)]
+// > = R
+
+export type ProjectionFor<TType> = Array<KeyOf<TType>>
 
 export type SortFor<TType> = {
   [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
