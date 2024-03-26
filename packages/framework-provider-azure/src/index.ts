@@ -7,7 +7,6 @@ import {
   readEntityEventsSince,
   readEntityLatestSnapshot,
   storeDispatchedEvent,
-  storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
@@ -47,6 +46,7 @@ import {
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
 } from './library/health-adapter'
+import { storeEvents } from './library/events-store-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
