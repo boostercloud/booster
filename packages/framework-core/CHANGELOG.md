@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 22 Mar 2024 17:48:10 GMT and should not be manually modified.
+This log was last generated on Tue, 26 Mar 2024 12:46:41 GMT and should not be manually modified.
+
+## 2.9.1
+Tue, 26 Mar 2024 12:46:41 GMT
+
+### Patches
+
+- Bump express dependency version
 
 ## 2.9.0
 Fri, 22 Mar 2024 17:48:10 GMT
