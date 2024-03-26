@@ -9,7 +9,7 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
     const filterInterfaceFunctionName = f.createUniqueName('filterInterface')
     return (sourceFile) => {
       const importedTypes: Record<string, string> = {}
-      function visitor(node: ts.Node): ts.VisitResult<ts.Node> {
+      function visitor(node: ts.Node): ts.VisitResult<ts.Node | undefined> {
         if (ts.isImportDeclaration(node)) {
           // To ensure we import 'reflect-metadata', delete it from the file in case it is already there.
           // Later we will add it.
@@ -35,11 +35,10 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
               filterInterfaceFunctionName,
               importedTypes
             )
-            const newDecorators = [...(node.decorators ?? []), metadataDecorator]
+            const newModifiers = [...(node.modifiers ?? []), metadataDecorator]
             return f.updateClassDeclaration(
               node,
-              newDecorators,
-              node.modifiers,
+              newModifiers,
               node.name,
               node.typeParameters,
               node.heritageClauses,
@@ -49,9 +48,9 @@ const transformer: (program: ts.Program) => ts.TransformerFactory<ts.SourceFile>
         }
         return ts.visitEachChild(node, visitor, context)
       }
-      const modifiedSourceFile = ts.visitNode(sourceFile, visitor)
+      const modifiedSourceFile = ts.visitNode(sourceFile, visitor) as ts.SourceFile
       return f.updateSourceFile(modifiedSourceFile, [
-        f.createImportDeclaration(undefined, undefined, undefined, f.createStringLiteral('reflect-metadata')),
+        f.createImportDeclaration(undefined, undefined, f.createStringLiteral('reflect-metadata')),
         ...modifiedSourceFile.statements,
         createFilterInterfaceFunction(f, filterInterfaceFunctionName),
       ])

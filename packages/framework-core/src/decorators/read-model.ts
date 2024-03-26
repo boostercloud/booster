@@ -15,7 +15,7 @@ import { getClassMetadata } from './metadata'
  */
 export function ReadModel(
   attributes: ReadModelRoleAccess & ReadModelFilterHooks
-): (readModelClass: Class<ReadModelInterface>) => void {
+): (readModelClass: Class<ReadModelInterface>, context?: ClassDecoratorContext) => void {
   return (readModelClass) => {
     Booster.configureCurrentEnv((config): void => {
       if (config.readModels[readModelClass.name]) {

@@ -90,9 +90,9 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
       [(t) => t.isClass(), 'Class'],
       [(t) => t.isInterface(), 'Interface'],
       [(t) => t.getAliasSymbol() != null, 'Type'],
+      [isReadonlyArray, 'ReadonlyArray'],
       [(t) => t.isArray(), 'Array'],
       [(t) => t.getCallSignatures().length > 0, 'Function'],
-      [isReadonlyArray, 'ReadonlyArray'],
       [(t) => t.isObject(), 'Object'],
     ]
 
@@ -155,7 +155,24 @@ function getTypeInfo(tp: Type, nd?: Node): TypeInfo {
         break
     }
 
-    if (typeInfo.typeName === '') throw new Error(`Could not extract typeName for type ${JSON.stringify(typeInfo)}`)
+    if (typeInfo.typeName === '') {
+      typeInfo.typeName = typeInfo.name
+    }
+
+    if (typeInfo.typeName === '')
+      throw new Error(`
+    Could not extract typeName for type ${JSON.stringify(typeInfo)}
+
+    This is probably a bug in the metadata extractor.
+
+    More information
+    ----------------
+
+    typeInfo: ${JSON.stringify(typeInfo)}
+    type: ${JSON.stringify(type.getText())}
+    node: ${JSON.stringify(node?.getText())}
+    depth: ${depth}
+    `)
 
     return typeInfo
   }

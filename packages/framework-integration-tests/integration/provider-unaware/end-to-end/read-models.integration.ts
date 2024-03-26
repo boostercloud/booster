@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { commerce, finance, internet, lorem, random } from 'faker'
-import { expect } from 'chai'
+import { expect } from '../../helper/expect'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
@@ -179,12 +179,7 @@ describe('Read models end-to-end tests', () => {
         await Promise.all(changeCartPromises)
       })
 
-      // TODO this test is failing in local because of local provider doesn't provides optimistic concurrency control
-      // TODO Remove condition when it will be fixed
       it('should retrieve expected cart', async () => {
-        if (process.env.TESTED_PROVIDER === 'LOCAL') {
-          return
-        }
         const queryResult = await waitForIt(
           () => {
             return client.query({

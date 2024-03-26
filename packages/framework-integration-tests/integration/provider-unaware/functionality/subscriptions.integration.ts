@@ -257,7 +257,7 @@ describe('subscriptions', () => {
         })
       })
     })
-    
+
     context('with a user without the required role', () => {
       let loggedClient: DisconnectableApolloClient
 

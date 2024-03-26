@@ -1,5 +1,8 @@
 name: Azure Integration Tests
 
+env:
+  BOOSTER_AZURE_SERVICE_PLAN_BASIC: 'true'
+
 on:
   workflow_call:
     inputs:

@@ -1,6 +1,81 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 17 Nov 2023 14:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 26 Mar 2024 12:46:41 GMT and should not be manually modified.
+
+## 2.9.1
+Tue, 26 Mar 2024 12:46:41 GMT
+
+### Patches
+
+- Bump express dependency version
+
+## 2.9.0
+Fri, 22 Mar 2024 17:48:10 GMT
+
+### Minor changes
+
+- replace nedb with seald
+
+## 2.8.0
+Wed, 20 Mar 2024 16:53:38 GMT
+
+### Minor changes
+
+- Track processed events in Azure provider to avoid duplication
+
+## 2.7.1
+Thu, 14 Mar 2024 15:18:33 GMT
+
+### Patches
+
+- Fix peer dependencies issues
+
+## 2.7.0
+Tue, 05 Mar 2024 13:04:14 GMT
+
+### Minor changes
+
+- Add injectable feature
+
+## 2.6.0
+Thu, 15 Feb 2024 12:26:19 GMT
+
+### Minor changes
+
+- Add Azure sku gateway and rus environment variables
+
+### Updates
+
+- changed CosmosDB throughput to use process env
+- fixed documentation env example for cosmosdb throughput
+
+## 2.5.1
+Fri, 02 Feb 2024 13:14:34 GMT
+
+### Patches
+
+- Refactored the core exports and removed the `BoosterApp` to reduce code redund
+
+## 2.5.0
+Thu, 01 Feb 2024 12:48:38 GMT
+
+### Minor changes
+
+- refactor subnet creation for Azure Provider
+
+## 2.4.0
+Tue, 30 Jan 2024 10:48:42 GMT
+
+### Minor changes
+
+- Bump TypeScript to 5.1.6
+
+## 2.3.0
+Thu, 25 Jan 2024 18:03:39 GMT
+
+### Minor changes
+
+- Update Azure infrastructure to use Azure Gateway. Rockets now support multiple functions with specific host.json files
 
 ## 2.2.0
 Fri, 17 Nov 2023 14:25:53 GMT

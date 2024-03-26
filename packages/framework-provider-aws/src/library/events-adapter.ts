@@ -188,3 +188,10 @@ async function persistEvent(
     throw e
   }
 }
+
+/**
+ * Dummy method that'll always return true, since local provider won't be tracking dispatched events
+ */
+export async function storeDispatchedEvent() {
+  return true
+}

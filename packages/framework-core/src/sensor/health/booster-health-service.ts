@@ -13,10 +13,14 @@ import { defaultBoosterHealthIndicators } from './health-indicators'
 import { BoosterTokenVerifier } from '../../booster-token-verifier'
 import { BoosterAuthorizer } from '../../booster-authorizer'
 
+/**
+ * This class is in charge of handling the health check requests
+ * and dispatching the health checks to the corresponding health indicators
+ */
 export class BoosterHealthService {
   constructor(readonly config: BoosterConfig) {}
 
-  public async boosterHealth(request: any): Promise<unknown> {
+  public async boosterHealth(request: unknown): Promise<unknown> {
     try {
       const healthEnvelope: HealthEnvelope = this.config.provider.sensor.rawRequestToHealthEnvelope(request)
       await this.validate(healthEnvelope)
