@@ -14,7 +14,7 @@
   "dependencies": {
     "@boostercloud/framework-core": "workspace:^2.9.0",
     "@boostercloud/framework-types": "workspace:^2.9.0",
-    "@oclif/core": "^3.9.0",
+    "@oclif/core": "3.15.0",
     "@oclif/plugin-help": "^5",
     "chalk": "^2.4.2",
     "child-process-promise": "^2.2.1",

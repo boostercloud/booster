@@ -27,7 +27,7 @@
     "@boostercloud/framework-provider-local": "workspace:^2.9.0",
     "@boostercloud/framework-types": "workspace:^2.9.0",
     "cors": "2.8.5",
-    "express": "^4.17.1",
+    "express": "^4.19.2",
     "node-schedule": "^2.1.0",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4"
@@ -50,7 +50,7 @@
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/cors": "^2.8.12",
-    "@types/express": "^4.17.13",
+    "@types/express": "^4.17.21",
     "@types/faker": "5.1.5",
     "@types/mocha": "10.0.1",
     "@types/node": "^18.18.2",
