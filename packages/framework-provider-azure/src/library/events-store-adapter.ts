@@ -30,9 +30,7 @@ export async function storeEvents(
   const envelopesWithCreatedAt: Array<EventEnvelope> = []
 
   const eventsPerPartitionKey = eventEnvelopes.reduce(groupByPartitionKey, {})
-  for (const eventsPerPartitionKeyEntry of Object.entries(eventsPerPartitionKey)) {
-    const partitionKey = eventsPerPartitionKeyEntry[0]
-    const eventsInPartitionKey = eventsPerPartitionKeyEntry[1]
+  for (const [partitionKey, eventsInPartitionKey] of Object.entries(eventsPerPartitionKey)) {
     const chunksOfEventsInPartitionKey = chunkEvents(eventsInPartitionKey, DEFAULT_CHUNK_SIZE)
     for (const eventListInChunk of chunksOfEventsInPartitionKey) {
       const eventEnvelopesChunkWithCreatedAt = toEventEnvelopes(eventListInChunk)
@@ -42,8 +40,8 @@ export async function storeEvents(
 
       // Batch is transactional and will roll back all operations if one fails
       if (batchResponse?.code !== 200) {
-        logger.error(batchResponse)
-        throw new Error(`Error ${batchResponse.substatus} storing events`)
+        logger.error(`An error ocurred storing a batch of events. Batch response: ${batchResponse}`)
+        throw new Error(`Error ${batchResponse.substatus} storing events: ${batchResponse}`)
       }
       const result = batchResponse.result
       logger.debug(`EventEnvelopes with ${partitionKey} stored: ${result}`)
