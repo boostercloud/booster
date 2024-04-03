@@ -46,7 +46,7 @@
     "effect": "^2.4.6",
     "@effect/cli": "^0.35.2",
     "@effect/platform": "^0.48.3",
-    "@effect/printer": "^0.31.13",
+    "@effect/printer": "^0.32.2",
     "@effect/printer-ansi": "^0.32.13",
     "@effect/schema": "^0.64.2",
     "@effect/typeclass": "^0.23.4",
