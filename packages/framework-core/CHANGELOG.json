@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.9.2",
+      "tag": "@boostercloud/framework-core_v2.9.2",
+      "date": "Thu, 04 Apr 2024 11:10:00 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix peer dependency issue with @effect/printer",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "02ca38b95327a1bee8328dc933850ad56b0e2200"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.9.1` to `^2.9.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.9.1` to `^2.9.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.9.1` to `^2.9.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.9.1` to `^2.9.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.1",
       "tag": "@boostercloud/framework-core_v2.9.1",
       "date": "Tue, 26 Mar 2024 12:46:41 GMT",
