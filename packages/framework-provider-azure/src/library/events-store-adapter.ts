@@ -118,7 +118,7 @@ function storableResource(config: BoosterConfig, eventEnvelope: EventEnvelope): 
       [eventsStoreAttributes.partitionKey]: partitionKey,
       [eventsStoreAttributes.sortKey]: eventEnvelope.createdAt,
     }
-    return JSON.parse(JSON.stringify(eventEnvelopeWithEntityID))
+    return eventEnvelopeWithEntityID as unknown as JSONObject
   } catch (e) {
     logger.error(`Could not parse eventEnvelope ${eventEnvelope} to JSONObject`, e)
     throw e
