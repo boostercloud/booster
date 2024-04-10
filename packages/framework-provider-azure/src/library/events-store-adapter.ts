@@ -40,8 +40,8 @@ export async function storeEvents(
 
       // Batch is transactional and will roll back all operations if one fails
       if (batchResponse?.code !== 200) {
-        logger.error(`An error ocurred storing a batch of events. Batch response: ${batchResponse}`)
-        throw new Error(`Error ${batchResponse.substatus} storing events: ${batchResponse}`)
+        logger.error(`An error ocurred storing a batch of events. Batch response: ${JSON.stringify(batchResponse)}`)
+        throw new Error(`Error ${batchResponse.substatus} storing events: ${JSON.stringify(batchResponse)}`)
       }
       const result = batchResponse.result
       logger.debug(`EventEnvelopes with ${partitionKey} stored: ${result}`)
