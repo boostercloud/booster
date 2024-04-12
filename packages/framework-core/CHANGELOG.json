@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.10.0",
+      "tag": "@boostercloud/framework-core_v2.10.0",
+      "date": "Fri, 12 Apr 2024 15:06:00 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Store Azure events in batch",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "0c58d89a07cae92df9513762ef875dc588ed9618"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.9.2` to `^2.10.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.9.2` to `^2.10.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.9.2` to `^2.10.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.9.2` to `^2.10.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.2",
       "tag": "@boostercloud/framework-core_v2.9.2",
       "date": "Thu, 04 Apr 2024 11:10:00 GMT",
