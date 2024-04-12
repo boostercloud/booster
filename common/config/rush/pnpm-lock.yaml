@@ -8,8 +8,8 @@ importers:
   ../../packages/application-tester:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@types/jsonwebtoken': 9.0.1
       '@types/node': ^18.18.2
@@ -70,10 +70,10 @@ importers:
 
   ../../packages/cli:
     specifiers:
-      '@boostercloud/application-tester': workspace:^2.9.2
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-core': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/application-tester': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-core': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@oclif/core': 3.15.0
       '@oclif/plugin-help': ^5
@@ -183,8 +183,8 @@ importers:
 
   ../../packages/framework-common-helpers:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -254,10 +254,10 @@ importers:
 
   ../../packages/framework-core:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
-      '@boostercloud/metadata-booster': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/metadata-booster': workspace:^2.10.0
       '@effect/cli': ^0.35.2
       '@effect/platform': ^0.48.3
       '@effect/platform-node': ^0.45.5
@@ -374,19 +374,19 @@ importers:
   ../../packages/framework-integration-tests:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/application-tester': workspace:^2.9.2
-      '@boostercloud/cli': workspace:^2.9.2
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-core': workspace:^2.9.2
-      '@boostercloud/framework-provider-aws': workspace:^2.9.2
-      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.9.2
-      '@boostercloud/framework-provider-azure': workspace:^2.9.2
-      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.9.2
-      '@boostercloud/framework-provider-local': workspace:^2.9.2
-      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
-      '@boostercloud/metadata-booster': workspace:^2.9.2
+      '@boostercloud/application-tester': workspace:^2.10.0
+      '@boostercloud/cli': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-core': workspace:^2.10.0
+      '@boostercloud/framework-provider-aws': workspace:^2.10.0
+      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.10.0
+      '@boostercloud/framework-provider-azure': workspace:^2.10.0
+      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.10.0
+      '@boostercloud/framework-provider-local': workspace:^2.10.0
+      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/metadata-booster': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@effect/cli': ^0.35.2
       '@effect/platform': ^0.48.3
@@ -530,9 +530,9 @@ importers:
 
   ../../packages/framework-provider-aws:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
@@ -626,10 +626,10 @@ importers:
       '@aws-cdk/core': ^1.170.0
       '@aws-cdk/custom-resources': ^1.170.0
       '@aws-cdk/cx-api': ^1.170.0
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-provider-aws': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-provider-aws': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@types/archiver': 5.1.0
       '@types/aws-lambda': 8.10.48
@@ -743,9 +743,9 @@ importers:
       '@azure/functions': ^1.2.2
       '@azure/identity': ~2.1.0
       '@azure/web-pubsub': ~1.1.0
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -817,11 +817,11 @@ importers:
       '@azure/arm-resources': ^5.0.1
       '@azure/cosmos': ^4.0.0
       '@azure/identity': ~2.1.0
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-core': workspace:^2.9.2
-      '@boostercloud/framework-provider-azure': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-core': workspace:^2.10.0
+      '@boostercloud/framework-provider-azure': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@cdktf/provider-azurerm': 11.2.0
       '@cdktf/provider-time': 9.0.2
       '@effect-ts/core': ^0.60.4
@@ -928,9 +928,9 @@ importers:
 
   ../../packages/framework-provider-local:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@seald-io/nedb': 4.0.2
       '@types/chai': 4.2.18
@@ -1007,10 +1007,10 @@ importers:
 
   ../../packages/framework-provider-local-infrastructure:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/framework-common-helpers': workspace:^2.9.2
-      '@boostercloud/framework-provider-local': workspace:^2.9.2
-      '@boostercloud/framework-types': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/framework-common-helpers': workspace:^2.10.0
+      '@boostercloud/framework-provider-local': workspace:^2.10.0
+      '@boostercloud/framework-types': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -1090,8 +1090,8 @@ importers:
 
   ../../packages/framework-types:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.9.2
-      '@boostercloud/metadata-booster': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/metadata-booster': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@effect-ts/node': ~0.39.0
       '@effect/cli': ^0.35.2
@@ -1175,7 +1175,7 @@ importers:
 
   ../../packages/metadata-booster:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.9.2
+      '@boostercloud/eslint-config': workspace:^2.10.0
       '@effect-ts/core': ^0.60.4
       '@types/node': ^18.18.2
       '@typescript-eslint/eslint-plugin': ^5.0.0
@@ -2732,6 +2732,9 @@ packages:
       This package is no longer being updated, and users should migrate to AWS CDK v2.
 
       For more information on how to migrate, see https://docs.aws.amazon.com/cdk/v2/guide/migrating-v2.html
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.6.0
     dev: false
     bundledDependencies:
       - jsonschema
@@ -6370,7 +6373,7 @@ packages:
     dependencies:
       semver: 7.6.0
       shelljs: 0.8.5
-      typescript: 5.5.0-dev.20240409
+      typescript: 5.5.0-dev.20240412
 
   /duration/0.2.2:
     resolution: {integrity: sha512-06kgtea+bGreF5eKYgI/36A6pLXggY7oR4p1pq4SmdFBn1ReOL5D8RhG64VrqfTTKNucqqtBAwEj8aB88mcqrg==}
@@ -11519,8 +11522,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  /typescript/5.5.0-dev.20240409:
-    resolution: {integrity: sha512-nQUzu2O0eRlESMnU/Xd9a2CD7MAvKPI1bCLB4Iu5aNA+cUymUnBAq8P3xaWipea0a3zRabE1UqwwxswMKp3X8g==}
+  /typescript/5.5.0-dev.20240412:
+    resolution: {integrity: sha512-DfE8jAzZf9/FHHo0CMnIL6uFZ6Q1bJ4PCtpBd9Ytbfi0pRREKVJofJEHFbRXADT6Kq1twB4iiqvdc/rGbiBq7g==}
     engines: {node: '>=14.17'}
     hasBin: true
 
