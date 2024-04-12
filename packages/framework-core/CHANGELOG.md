@@ -1,6 +1,20 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 26 Mar 2024 12:46:41 GMT and should not be manually modified.
+This log was last generated on Fri, 12 Apr 2024 15:06:00 GMT and should not be manually modified.
+
+## 2.10.0
+Fri, 12 Apr 2024 15:06:00 GMT
+
+### Minor changes
+
+- Store Azure events in batch
+
+## 2.9.2
+Thu, 04 Apr 2024 11:10:00 GMT
+
+### Patches
+
+- Fix peer dependency issue with @effect/printer
 
 ## 2.9.1
 Tue, 26 Mar 2024 12:46:41 GMT
