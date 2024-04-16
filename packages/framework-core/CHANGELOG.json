@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.10.1",
+      "tag": "@boostercloud/framework-core_v2.10.1",
+      "date": "Tue, 16 Apr 2024 12:37:20 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Pin effect library version and related dependencies",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "543ebce2aa2f0062227e95258f96b4b3cdeb705f"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.10.0` to `^2.10.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.10.0` to `^2.10.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.10.0` to `^2.10.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.10.0` to `^2.10.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.0",
       "tag": "@boostercloud/framework-core_v2.10.0",
       "date": "Fri, 12 Apr 2024 15:06:00 GMT",
