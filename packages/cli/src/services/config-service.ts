@@ -1,4 +1,4 @@
-import { BoosterApp, BoosterConfig } from '@boostercloud/framework-types'
+import { BoosterConfig, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { guardError } from '../common/errors'
 import { checkItIsABoosterProject } from './project-checker'
@@ -87,21 +87,20 @@ const cleanProjectEff = (projectPath: string) =>
 function readProjectConfig(userProjectPath: string): Promise<BoosterConfig> {
   const userProject = loadUserProject(userProjectPath)
   return new Promise((resolve): void => {
-    const app: BoosterApp = userProject.Booster
-    app.configureCurrentEnv((config: BoosterConfig): void => {
-      checkEnvironmentWasConfigured(app)
+    userProject.Booster.configureCurrentEnv((config: BoosterConfig): void => {
+      checkEnvironmentWasConfigured(userProject)
       resolve(config)
     })
   })
 }
 
-function loadUserProject(userProjectPath: string): { Booster: BoosterApp } {
+function loadUserProject(userProjectPath: string): UserApp {
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
   return require(projectIndexJSPath)
 }
 
-function checkEnvironmentWasConfigured(app: BoosterApp): void {
-  if (app.configuredEnvironments.size == 0) {
+function checkEnvironmentWasConfigured(userProject: UserApp): void {
+  if (userProject.Booster.configuredEnvironments.size == 0) {
     throw new Error(
       "You haven't configured any environment. Please make sure you have at least one environment configured by calling 'Booster.configure' method (normally done inside the folder 'src/config')"
     )
@@ -112,10 +111,10 @@ function checkEnvironmentWasConfigured(app: BoosterApp): void {
       "You haven't provided any environment. Please make sure you are using option '-e' with a valid environment name"
     )
   }
-  if (!app.configuredEnvironments.has(currentEnv)) {
+  if (!userProject.Booster.configuredEnvironments.has(currentEnv)) {
     throw new Error(
       `The environment '${currentEnv}' does not match any of the environments you used to configure your Booster project, which are: '${Array.from(
-        app.configuredEnvironments
+        userProject.Booster.configuredEnvironments
       ).join(', ')}'`
     )
   }

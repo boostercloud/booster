@@ -29,23 +29,24 @@ export const template = `{
     "@types/jsonwebtoken": "9.0.1",
     "nyc": "15.1.0",
     "prettier":  "2.3.0",
-    "typescript": "4.7.4",
+    "typescript": "5.1.6",
     "ts-node": "9.1.1",
-    "@types/node": "16.11.7",
-    "ttypescript": "1.5.15",
+    "@types/node": "^18.18.2",
+    "ts-patch": "3.1.2",
     "graphql": "^16.6.0"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=18.0.0 <19.0.0"
   },
   "homepage": "{{{homepage}}}",
   "license": "{{{license}}}",
   "main": "dist/index.js",
   "repository": "{{{repository}}}",
   "scripts": {
+    "prepare": "ts-patch install -s",
     "lint:check": "eslint --ext '.js,.ts' **/*.ts",
     "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
-    "build": "ttsc -b tsconfig.json",
+    "build": "tsc -b tsconfig.json",
     "clean": "rimraf ./dist tsconfig.tsbuildinfo"
   },
   "types": "lib/index.d.ts"

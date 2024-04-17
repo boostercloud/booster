@@ -13,8 +13,8 @@ describe('Event handler', () => {
     eventHandlerSandboxDir = createSandboxProject(sandboxPathFor('event-handler'))
   })
 
-  after(() => {
-    removeFolders([eventHandlerSandboxDir])
+  after(async () => {
+    await removeFolders([eventHandlerSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')

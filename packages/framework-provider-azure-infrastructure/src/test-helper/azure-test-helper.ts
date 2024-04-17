@@ -7,6 +7,7 @@ import { AzureQueries } from './azure-queries'
 interface ApplicationOutputs {
   graphqlURL: string
   websocketURL: string
+  healthURL: string
 }
 
 export class AzureTestHelper {
@@ -29,6 +30,7 @@ export class AzureTestHelper {
       {
         graphqlURL: await this.graphqlURL(resourceGroup),
         websocketURL: await this.websocketURL(resourceGroup, 'booster'),
+        healthURL: await this.healthURL(resourceGroup),
       },
       new AzureCounters(appName, cosmosConnectionString),
       new AzureQueries(appName, cosmosConnectionString)
@@ -62,13 +64,24 @@ export class AzureTestHelper {
     return mainDbConnection.connectionString
   }
   public static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
-    const environment = process.env.BOOSTER_ENV ?? 'azure'
-    const url = `https://${resourceGroup.name}apis.azure-api.net/${environment}/graphql`
+    const environment = process.env.BOOSTER_ENV ?? 'DEFAULT'
+    const region = this.getRegion()
+    const url = `http://${resourceGroup.name}apis.${region}.cloudapp.azure.com/${environment}/graphql`
     console.log(`service Url: ${url}`)
     return url
   }
 
+  public static async healthURL(resourceGroup: ResourceGroup): Promise<string> {
+    const environment = process.env.BOOSTER_ENV ?? 'azure'
+    const region = this.getRegion()
+    return `http://${resourceGroup.name}apis.${region}.cloudapp.azure.com/${environment}/sensor/health/`
+  }
+
   private static async websocketURL(resourceGroup: ResourceGroup, hubName: string): Promise<string> {
     return `wss://${resourceGroup.name}wps.webpubsub.azure.com:443/client/hubs/${hubName}`
+  }
+
+  private static getRegion() {
+    return (process.env['REGION'] ?? '').toLowerCase().replace(/ /g, '')
   }
 }

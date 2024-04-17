@@ -1,24 +1,24 @@
-import { TerraformStack } from 'cdktf'
 import { toTerraformName } from '../helper/utils'
-import { resourceGroup, webPubsub } from '@cdktf/provider-azurerm'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { webPubsub } from '@cdktf/provider-azurerm'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformWebPubsub {
-  static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    appPrefix: string
-  ): webPubsub.WebPubsub {
+  static build({
+    terraformStack,
+    azureProvider,
+    appPrefix,
+    resourceGroupName,
+    resourceGroup,
+  }: ApplicationSynthStack): webPubsub.WebPubsub {
     const id = toTerraformName(appPrefix, 'wps')
 
-    return new webPubsub.WebPubsub(terraformStackResource, id, {
-      name: `${resourceGroupResource.name}wps`,
-      location: resourceGroupResource.location,
-      resourceGroupName: resourceGroupResource.name,
+    return new webPubsub.WebPubsub(terraformStack, id, {
+      name: `${resourceGroupName}wps`,
+      location: resourceGroup.location,
+      resourceGroupName: resourceGroupName,
       sku: 'Free_F1',
       capacity: 1,
-      provider: providerResource,
+      provider: azureProvider,
     })
   }
 }

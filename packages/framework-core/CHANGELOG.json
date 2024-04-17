@@ -2,6 +2,506 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.10.1",
+      "tag": "@boostercloud/framework-core_v2.10.1",
+      "date": "Tue, 16 Apr 2024 12:37:20 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Pin effect library version and related dependencies",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "543ebce2aa2f0062227e95258f96b4b3cdeb705f"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.10.0` to `^2.10.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.10.0` to `^2.10.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.10.0` to `^2.10.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.10.0` to `^2.10.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.10.0",
+      "tag": "@boostercloud/framework-core_v2.10.0",
+      "date": "Fri, 12 Apr 2024 15:06:00 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Store Azure events in batch",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "0c58d89a07cae92df9513762ef875dc588ed9618"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.9.2` to `^2.10.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.9.2` to `^2.10.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.9.2` to `^2.10.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.9.2` to `^2.10.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.2",
+      "tag": "@boostercloud/framework-core_v2.9.2",
+      "date": "Thu, 04 Apr 2024 11:10:00 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix peer dependency issue with @effect/printer",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "02ca38b95327a1bee8328dc933850ad56b0e2200"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.9.1` to `^2.9.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.9.1` to `^2.9.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.9.1` to `^2.9.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.9.1` to `^2.9.2`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.1",
+      "tag": "@boostercloud/framework-core_v2.9.1",
+      "date": "Tue, 26 Mar 2024 12:46:41 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Bump express dependency version",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "983309856bf0dc2b39552cb7a657bcc043c4b704"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.9.0` to `^2.9.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.9.0` to `^2.9.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.9.0` to `^2.9.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.9.0` to `^2.9.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.9.0",
+      "tag": "@boostercloud/framework-core_v2.9.0",
+      "date": "Fri, 22 Mar 2024 17:48:10 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "replace nedb with seald",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "3a06285d956a7a2aeef8fbed60aff028162f0558"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.8.0` to `^2.9.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.8.0` to `^2.9.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.8.0` to `^2.9.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.8.0` to `^2.9.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.8.0",
+      "tag": "@boostercloud/framework-core_v2.8.0",
+      "date": "Wed, 20 Mar 2024 16:53:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Track processed events in Azure provider to avoid duplication",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "7cf0d74aae463fdc842424ed5bcb6cbd7bafae5e"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.7.1` to `^2.8.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.7.1` to `^2.8.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.7.1` to `^2.8.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.7.1` to `^2.8.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.1",
+      "tag": "@boostercloud/framework-core_v2.7.1",
+      "date": "Thu, 14 Mar 2024 15:18:33 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix peer dependencies issues",
+            "author": "Nick Seagull <nick@booster.cloud>",
+            "commit": "6388640759d054aa4355f0a33c849ddd8b4e1bf7"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.7.0` to `^2.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.7.0` to `^2.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.7.0` to `^2.7.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.7.0` to `^2.7.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.7.0",
+      "tag": "@boostercloud/framework-core_v2.7.0",
+      "date": "Tue, 05 Mar 2024 13:04:14 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add injectable feature",
+            "author": "Nick Seagull <nick@booster.cloud>",
+            "commit": "75dfa29621570f967f7fa7aa2c7701c7a796603d"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.6.0` to `^2.7.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.6.0` to `^2.7.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.6.0` to `^2.7.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.6.0` to `^2.7.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.6.0",
+      "tag": "@boostercloud/framework-core_v2.6.0",
+      "date": "Thu, 15 Feb 2024 12:26:19 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add Azure sku gateway and rus environment variables",
+            "author": "Gonzalo Garcia Jaubert <gonzalo@theagilemonkeys.com>",
+            "commit": "bc371e18f8821592d943c4e202aa80ce3f3ec7a8"
+          }
+        ],
+        "none": [
+          {
+            "comment": "changed CosmosDB throughput to use process env",
+            "author": "heavylemon1 <146999297+heavylemon1@users.noreply.github.com>",
+            "commit": "4d7959114110b8528e1ba9668814c2a2d8166529"
+          },
+          {
+            "comment": "fixed documentation env example for cosmosdb throughput",
+            "author": "heavylemon1 <146999297+heavylemon1@users.noreply.github.com>",
+            "commit": "4d7959114110b8528e1ba9668814c2a2d8166529"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.5.1` to `^2.6.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.5.1` to `^2.6.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.5.1` to `^2.6.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.5.1` to `^2.6.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.5.1",
+      "tag": "@boostercloud/framework-core_v2.5.1",
+      "date": "Fri, 02 Feb 2024 13:14:34 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Refactored the core exports and removed the `BoosterApp` to reduce code redund",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "883c447417544056251783397d51a416d775c165"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.5.0` to `^2.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.5.0` to `^2.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.5.0` to `^2.5.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.5.0` to `^2.5.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.5.0",
+      "tag": "@boostercloud/framework-core_v2.5.0",
+      "date": "Thu, 01 Feb 2024 12:48:38 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "refactor subnet creation for Azure Provider",
+            "author": "Gonzalo Garcia Jaubert <gonzalo@theagilemonkeys.com>",
+            "commit": "2206386848773d2ba44558ff4341a8d631e4e987"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.4.0` to `^2.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.4.0` to `^2.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.4.0` to `^2.5.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.4.0` to `^2.5.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.4.0",
+      "tag": "@boostercloud/framework-core_v2.4.0",
+      "date": "Tue, 30 Jan 2024 10:48:42 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Bump TypeScript to 5.1.6",
+            "author": "Nick Seagull <nick@booster.cloud>",
+            "commit": "f331e03be3832a8517aedcd782322f003ee24630"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.3.0` to `^2.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.3.0` to `^2.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.3.0` to `^2.4.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.3.0` to `^2.4.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.3.0",
+      "tag": "@boostercloud/framework-core_v2.3.0",
+      "date": "Thu, 25 Jan 2024 18:03:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Update Azure infrastructure to use Azure Gateway. Rockets now support multiple functions with specific host.json files",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "6f315815a197c7e66e03ba61b125c3b85b5a3b96"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.2.0` to `^2.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.2.0` to `^2.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.2.0` to `^2.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.2.0` to `^2.3.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.2.0",
+      "tag": "@boostercloud/framework-core_v2.2.0",
+      "date": "Fri, 17 Nov 2023 14:25:53 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add Azure Event Hub",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "46181ee3ae888df6a88bc7ac92e6143899f66560"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.1.0` to `^2.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.1.0` to `^2.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.1.0` to `^2.2.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.1.0` to `^2.2.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.1.0",
+      "tag": "@boostercloud/framework-core_v2.1.0",
+      "date": "Thu, 09 Nov 2023 12:10:04 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add health sensor",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "4969203d640226fa7dd504c034e58c2e847e9323"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.0.0` to `^2.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.0.0` to `^2.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.0.0` to `^2.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.0.0` to `^2.1.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.0.0",
+      "tag": "@boostercloud/framework-core_v2.0.0",
+      "date": "Wed, 01 Nov 2023 13:01:59 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Upgraded for Node18 support",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "5e85f6e717fa7124ee1819ad5cc3be4177763611"
+          },
+          {
+            "comment": "Replaced the deprecated dependency `ttypescript` with `ts-patch`",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "663a15e6a26144577bccdb4d35fc2cc8903a6c5c"
+          }
+        ],
+        "major": [
+          {
+            "comment": "Bump version to 2.0.0",
+            "author": "Javier Toledo <javier@theagilemonkeys.com>",
+            "commit": "7d0927048409c823b39add8b1b937f494500f55c"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.21.0` to `^2.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.21.0` to `^2.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.21.0` to `^2.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^1.21.0` to `^2.0.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "1.21.0",
+      "tag": "@boostercloud/framework-core_v1.21.0",
+      "date": "Mon, 30 Oct 2023 16:27:59 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add elapsed time to data migration entities",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "b37bb4430ee9dc6708f53f7b0f56431bb717464d"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^1.20.0` to `^1.21.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^1.20.0` to `^1.21.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^1.20.0` to `^1.21.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^1.20.0` to `^1.21.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.20.0",
       "tag": "@boostercloud/framework-core_v1.20.0",
       "date": "Tue, 10 Oct 2023 12:54:54 GMT",

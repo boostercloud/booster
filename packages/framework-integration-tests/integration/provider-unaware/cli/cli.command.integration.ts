@@ -15,8 +15,8 @@ describe('Command', () => {
     commandSandboxDir = createSandboxProject(sandboxPathFor('command'))
   })
 
-  after(() => {
-    removeFolders([commandSandboxDir])
+  after(async () => {
+    await removeFolders([commandSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')

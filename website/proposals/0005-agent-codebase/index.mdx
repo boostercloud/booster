@@ -1,0 +1,91 @@
+---
+title: BEEP 5 - Agent-Based Codebase Structure
+authors: [NickSeagull]
+date: 2024-01-25T00:04
+---
+
+:::tip STATUS - DRAFT
+:::
+
+## Introduction
+
+This document proposes a significant reorganization of the Booster Framework's folder structure to address current challenges in codebase management and to align with the principles of modularity and scalability. The current structure, `src/{commands,events,entities,read-models}/*.ts`, while functional, has shown limitations in managing complexity as the framework and the team grow.
+
+This proposal introduces a new structure based on the concept of "Agents" in event sourcing/event-driven systems, aiming to bring conceptual clarity and improved organization to the codebase. It can be thought as **the microservices approach, but more tailored to the event-driven** nature of Booster Framework.
+
+## Current Challenges
+
+The existing folder structure in the Booster Framework presents several challenges:
+
+- **Lack of Modularity**: The mixed nature of components (commands, events, entities, read-models) in a flat structure leads to difficulties in isolating specific functionalities or use cases.
+- **Scalability Concerns**: As the team and the codebase grow, the lack of hierarchical organization makes it increasingly challenging to manage and navigate the codebase.
+- **Interdependency Issues**: The current structure does not clearly delineate dependencies and relationships between different components, leading to potential conflicts and complexities.
+
+## Proposed Folder Structure
+
+The new folder structure is organized around the concept of "Agents", where each use case is encapsulated within its own subfolder. This approach mirrors the modular and event-driven nature of the Booster Framework.
+
+### Structure Overview
+
+- `src/`
+  - `agents/`
+    - `agent-name-1/`
+      - `commands/`
+      - `events/`
+      - `entities/`
+      - `read-models/`
+    - `agent-name-2/`
+      - `commands/`
+      - `events/`
+      - `entities/`
+      - `read-models/`
+    - ...
+  - `shared/`
+    - `common-entities/`
+    - `utilities/`
+    - ...
+
+### Guidelines for Naming Subfolders
+
+- **Reflective of Use Case**: Each subfolder (agent) should be named in a way that clearly reflects its specific use case or domain.
+- **Consistent Naming Convention**: A uniform naming convention should be adopted across all agents to maintain consistency and readability.
+
+## Benefits of the Reorganization
+
+- **Improved Modularity**: Each agent acts as a self-contained module, enhancing the clarity and separation of different aspects of the codebase.
+- **Enhanced Scalability**: This structure supports the growth of the team and the codebase, allowing for easier navigation and management.
+- **Facilitated Collaboration**: Teams can focus on specific agents without interfering with others, simplifying collaboration and reducing the risk of conflicts.
+- **Repository Splitting**: The modular nature of this structure allows for splitting the codebase into separate repositories if necessary for better scalability and management.
+
+## Addressing Potential Challenges
+
+### Interaction and Communication Between Agents
+
+- **Well-Defined Interfaces**: Clear interfaces and communication protocols between agents must be established to ensure smooth interactions.
+- **Shared Resources Management**: The `shared/` folder will house common entities and utilities, accessible to all agents while maintaining their independence.
+
+### Technical and Implementation Considerations
+
+- **Incremental Transition**: A phased approach to migrating to the new structure is recommended to minimize disruption.
+  - The team can start by putting everything in the `shared/` folder, then gradually move to the new structure.
+- **Documentation and Communication**: The team should be in charge of having documentation and communication sessions in order to ensure that everyone is on the same page and responsibilities are not duplicated.
+
+## Additional Ideas
+
+### Integration of AI Agents
+
+In line with the event-driven architecture of the Booster Framework, an intriguing extension to the proposed semantic codebase structure is the **incorporation of AI agents**. These agents, mirroring the structure of traditionally-programmed agents with `commands`, `events`, `read-models`, etc., would have their internal logic powered by **Large Language Models (LLMs)**.
+
+This integration aligns with the scalable and modular design of the framework, allowing AI agents to **autonomously handle specific tasks or workflows within their domain**. The use of AI agents could significantly enhance the framework's capabilities in areas such as:
+
+- **Automated decision-making**
+- **Predictive analytics**
+- **Personalized user interactions**
+
+Each AI agent would operate within its designated subfolder, ensuring a **clear delineation and manageable interaction** with regular agents, while adhering to the same communication protocols and interface standards established in the overall framework.
+
+This innovative approach opens new avenues for efficiency, creativity, and advanced functionalities within the Booster Framework ecosystem.
+
+## Conclusion
+
+The proposed semantic codebase structure for Booster Framework aims to address current challenges in codebase management while aligning with the principles of modularity and scalability. This reorganization, centered around the concept of "Agents", offers numerous benefits, including improved code separation, easier collaboration, and the potential for scalable codebase management.

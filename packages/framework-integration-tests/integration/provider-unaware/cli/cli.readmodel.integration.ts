@@ -23,8 +23,8 @@ describe('Read model', () => {
     readModelSandboxDir = createSandboxProject(sandboxPathFor('read-model'))
   })
 
-  after(() => {
-    removeFolders([readModelSandboxDir])
+  after(async () => {
+    await removeFolders([readModelSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')

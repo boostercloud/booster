@@ -1,15 +1,16 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/palenight')
+const { themes } = require('prism-react-renderer')
+const lightCodeTheme = themes.palenight
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Booster Framework',
   staticDirectories: ['static'],
-  url: 'https://boosterframework.com',
+  url: 'https://docs.boosterframework.com',
   baseUrl: '/',
-  onBrokenLinks: 'throw',
+  onBrokenLinks: 'warn',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.png',
 
@@ -39,7 +40,17 @@ const config = {
           // Remove this to remove the "edit this page" links.
           editUrl: 'https://github.com/boostercloud/booster/tree/main/website/',
         },
-        blog: false,
+        blog: {
+          path: 'proposals',
+          exclude: ['README.md'],
+          sortPosts: 'ascending',
+          blogTitle: 'BEEP',
+          blogDescription: 'Booster Evolution Enhancement Proposals',
+          blogSidebarTitle: 'Proposals Index',
+          blogSidebarCount: 'ALL',
+          editUrl: ({ locale, blogDirPath, blogPath, permalink }) =>
+            `https://github.com/boostercloud/booster/edit/main/website/proposals/${blogPath}`,
+        },
         theme: {
           customCss: [require.resolve('./src/custom.css')],
         },
@@ -67,6 +78,11 @@ const config = {
           docId: 'ai-assistant',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          to: 'blog',
+          label: 'Proposals',
+          position: 'left',
         },
         {
           href: 'https://github.com/boostercloud/booster',

@@ -5,24 +5,26 @@ import {
   EntityMetadata,
   EventHandlerInterface,
   EventMetadata,
+  EventStreamConfiguration,
   GlobalErrorHandlerMetadata,
-  TokenVerifier,
-  QueryMetadata,
   NotificationMetadata,
   ProjectionMetadata,
+  QueryMetadata,
+  ReadModelInterface,
   ReadModelMetadata,
   ReducerMetadata,
   RoleMetadata,
   ScheduledCommandMetadata,
   SchemaMigrationMetadata,
-  ReadModelInterface,
+  TokenVerifier,
 } from './concepts'
 import { ProviderLibrary } from './provider'
 import { Level } from './logger'
 import * as path from 'path'
 import { RocketDescriptor, RocketFunction } from './rockets'
-import { Logger } from '.'
+import { DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS, HealthIndicatorMetadata, Logger, SensorConfiguration } from '.'
 import { TraceConfiguration } from './instrumentation/trace-types'
+import { Context } from 'effect'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -32,21 +34,36 @@ export class BoosterConfig {
   public logLevel: Level = Level.debug
   public logPrefix?: string
   public logger?: Logger
+
   private _provider?: ProviderLibrary
   public providerPackage?: string
+
   public rockets?: Array<RocketDescriptor>
+
   public appName = 'new-booster-app'
+
   public assets?: Array<string>
+
   public defaultResponseHeaders: Record<string, string> = {}
+
+  public injectable?: unknown
+
   public readonly subscriptions = {
     maxConnectionDurationInSeconds: 7 * 24 * 60 * 60, // 7 days
     maxDurationInSeconds: 2 * 24 * 60 * 60, // 2 days
   }
+
   public enableGraphQLIntrospection = true
+
   private _userProjectRootPath?: string
+
   public readonly codeRelativePath: string = 'dist'
+
   public readonly eventDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterEventDispatcher')
+  public readonly eventStreamConsumer: string = path.join(this.codeRelativePath, 'index.boosterConsumeEventStream')
+  public readonly eventStreamProducer: string = path.join(this.codeRelativePath, 'index.boosterProduceEventStream')
   public readonly serveGraphQLHandler: string = path.join(this.codeRelativePath, 'index.boosterServeGraphQL')
+  public readonly sensorHealthHandler: string = path.join(this.codeRelativePath, 'index.boosterHealth')
   public readonly scheduledTaskHandler: string = path.join(
     this.codeRelativePath,
     'index.boosterTriggerScheduledCommand'
@@ -55,6 +72,7 @@ export class BoosterConfig {
   public readonly rocketDispatcherHandler: string = path.join(this.codeRelativePath, 'index.boosterRocketDispatcher')
 
   public readonly functionRelativePath: string = path.join('..', this.codeRelativePath, 'index.js')
+
   public readonly events: Record<EventName, EventMetadata> = {}
   public readonly notifications: Record<EventName, NotificationMetadata> = {}
   public readonly partitionKeys: Record<EventName, string> = {}
@@ -72,11 +90,25 @@ export class BoosterConfig {
   public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}
   public readonly scheduledCommandHandlers: Record<ScheduledCommandName, ScheduledCommandMetadata> = {}
   public readonly dataMigrationHandlers: Record<DataMigrationName, DataMigrationMetadata> = {}
+  public userHealthIndicators: Record<string, HealthIndicatorMetadata> = {}
+  public readonly sensorConfiguration: SensorConfiguration = {
+    health: {
+      globalAuthorizer: {
+        authorize: 'all',
+      },
+      booster: DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS,
+    },
+  }
+
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
   public enableSubscriptions = true
   public readonly nonExposedGraphQLMetadataKey: Record<string, Array<string>> = {}
 
   private rocketFunctionMap: Record<string, RocketFunction> = {}
+
+  // TTL for events stored in dispatched events table. Default to 5 minutes (i.e., 300 seconds).
+  public dispatchedEventsTtl = 300
+
   public registerRocketFunction(id: string, func: RocketFunction): void {
     const currentFunction = this.rocketFunctionMap[id]
     if (currentFunction) {
@@ -86,6 +118,7 @@ export class BoosterConfig {
     }
     this.rocketFunctionMap[id] = func
   }
+
   public getRegisteredRocketFunction(id: string): RocketFunction | undefined {
     return this.rocketFunctionMap[id]
   }
@@ -96,6 +129,8 @@ export class BoosterConfig {
     onStart: async (): Promise<void> => {},
     onEnd: async (): Promise<void> => {},
   }
+
+  public eventStreamConfiguration: EventStreamConfiguration = { enabled: false }
 
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
@@ -115,8 +150,11 @@ export class BoosterConfig {
     return {
       applicationStack: applicationStackName,
       eventsStore: applicationStackName + '-events-store',
+      dispatchedEventsStore: applicationStackName + '-dispatched-events',
+      eventsDedup: applicationStackName + '-events-dedup',
       subscriptionsStore: applicationStackName + '-subscriptions-store',
       connectionsStore: applicationStackName + '-connections-store',
+      streamTopic: this.eventStreamConfiguration.parameters?.streamTopic ?? 'booster_events',
       forReadModel(readModelName: string): string {
         return applicationStackName + '-' + readModelName
       },
@@ -215,11 +253,17 @@ export class BoosterConfig {
   }
 }
 
+export const BoosterConfigTag = Context.GenericTag<BoosterConfig>('BoosterConfig')
+
 interface ResourceNames {
   applicationStack: string
   eventsStore: string
+  dispatchedEventsStore: string
+  eventsDedup: string
   subscriptionsStore: string
   connectionsStore: string
+  streamTopic: string
+
   forReadModel(entityName: string): string
 }
 

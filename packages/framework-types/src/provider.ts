@@ -3,13 +3,14 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EntitySnapshotEnvelope,
-  NonPersistedEntitySnapshotEnvelope,
   EventEnvelope,
-  NonPersistedEventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
+  HealthEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
   ReadModelEnvelope,
   ReadModelListResult,
@@ -19,6 +20,7 @@ import {
 import { FilterFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor, RocketEnvelope } from './rockets'
+import { EventStream } from './stream-types'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -29,10 +31,22 @@ export interface ProviderLibrary {
   scheduled: ScheduledCommandsLibrary
   infrastructure: () => ProviderInfrastructure
   rockets: ProviderRocketLibrary
+  sensor: ProviderSensorLibrary
 }
 
 export interface ProviderRocketLibrary {
   rawToEnvelopes(config: BoosterConfig, request: unknown): RocketEnvelope
+}
+
+export interface ProviderSensorLibrary {
+  databaseEventsHealthDetails(config: BoosterConfig): Promise<unknown>
+  databaseReadModelsHealthDetails(config: BoosterConfig): Promise<unknown>
+  isDatabaseEventUp(config: BoosterConfig): Promise<boolean>
+  areDatabaseReadModelsUp(config: BoosterConfig): Promise<boolean>
+  databaseUrls(config: BoosterConfig): Promise<Array<string>>
+  isGraphQLFunctionUp(config: BoosterConfig): Promise<boolean>
+  graphQLFunctionUrl(config: BoosterConfig): Promise<string>
+  rawRequestToHealthEnvelope(rawRequest: unknown): HealthEnvelope
 }
 
 export interface ProviderEventsLibrary {
@@ -43,6 +57,17 @@ export interface ProviderEventsLibrary {
    * @returns An array of EventEnvelope objects
    */
   rawToEnvelopes(rawEvents: unknown): Array<EventEnvelope>
+
+  rawStreamToEnvelopes(config: BoosterConfig, context: unknown, dedupEventStream: EventStream): Array<EventEnvelope>
+
+  dedupEventStream(config: BoosterConfig, rawEvents: unknown): Promise<EventStream>
+
+  produce(
+    entityName: string,
+    entityID: UUID,
+    eventEnvelopes: Array<EventEnvelope>,
+    config: BoosterConfig
+  ): Promise<void>
 
   /**
    * Retrieves events for a specific entity since a given time
@@ -119,6 +144,16 @@ export interface ProviderEventsLibrary {
     snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
     config: BoosterConfig
   ): Promise<EntitySnapshotEnvelope>
+
+  /**
+   * Stores an event envelope that has been dispatched in the dispatched events table.
+   *
+   * @param eventEnvelope - The `EventEnvelope` to store.
+   * @param config - The Booster configuration object.
+   * @returns `true` if the dispatched event was stored, `false` if the event already exists in the dispatched events
+   * table, throws an error on any other type of error.
+   */
+  storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
 }
 
 export interface ProviderReadModelsLibrary {

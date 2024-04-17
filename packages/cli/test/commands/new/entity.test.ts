@@ -3,7 +3,7 @@ import { restore, replace, fake, stub } from 'sinon'
 import Entity from '../../../src/commands/new/entity'
 import Mustache = require('mustache')
 import * as fs from 'fs-extra'
-import { IConfig } from '@oclif/config'
+import { Config } from '@oclif/core'
 import { expect } from '../../expect'
 import { template } from '../../../src/services/generator'
 
@@ -75,25 +75,25 @@ describe('new', (): void => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Entity([], {} as IConfig).init()
+      await new Entity([], {} as Config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {
       it('with no fields and no reduces', async () => {
-        await new Entity([entityName], {} as IConfig).run()
+        await new Entity([entityName], {} as Config).run()
         const renderedEntity = renderEntity(defaultEntityImports, entityName, [], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field', async () => {
-        await new Entity([entityName, '--fields', 'title:string'], {} as IConfig).run()
+        await new Entity([entityName, '--fields', 'title:string'], {} as Config).run()
         const renderedEntity = renderEntity(defaultEntityImports, entityName, [{ name: 'title', type: 'string' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field reducing PostCreated', async () => {
-        await new Entity([entityName, '--fields', 'title:string', '--reduces', 'PostCreated'], {} as IConfig).run()
+        await new Entity([entityName, '--fields', 'title:string', '--reduces', 'PostCreated'], {} as Config).run()
         const renderedEntity = renderEntity(
           reducingEntityImports,
           entityName,
@@ -104,7 +104,7 @@ describe('new', (): void => {
       })
 
       it('creates Entity with a number field', async () => {
-        await new Entity([entityName, '--fields', 'quantity:number'], {} as IConfig).run()
+        await new Entity([entityName, '--fields', 'quantity:number'], {} as Config).run()
         const renderedEntity = renderEntity(
           defaultEntityImports,
           entityName,
@@ -115,7 +115,7 @@ describe('new', (): void => {
       })
 
       it('creates Entity with a number field reducing PostCreated', async () => {
-        await new Entity([entityName, '--fields', 'quantity:number', '--reduces', 'PostCreated'], {} as IConfig).run()
+        await new Entity([entityName, '--fields', 'quantity:number', '--reduces', 'PostCreated'], {} as Config).run()
         const renderedEntity = renderEntity(
           reducingEntityImports,
           entityName,
@@ -126,7 +126,7 @@ describe('new', (): void => {
       })
 
       it('creates Entity with UUID field', async () => {
-        await new Entity([entityName, '--fields', 'identifier:UUID'], {} as IConfig).run()
+        await new Entity([entityName, '--fields', 'identifier:UUID'], {} as Config).run()
         const renderedEntity = renderEntity(
           defaultEntityImports,
           entityName,
@@ -137,7 +137,7 @@ describe('new', (): void => {
       })
 
       it('creates Entity with UUID field reducing PostCreated', async () => {
-        await new Entity([entityName, '--fields', 'identifier:UUID', '--reduces', 'PostCreated'], {} as IConfig).run()
+        await new Entity([entityName, '--fields', 'identifier:UUID', '--reduces', 'PostCreated'], {} as Config).run()
         const renderedEntity = renderEntity(
           reducingEntityImports,
           entityName,
@@ -150,7 +150,7 @@ describe('new', (): void => {
       it('creates Entity with multiple fields', async () => {
         await new Entity(
           [entityName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
-          {} as IConfig
+          {} as Config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -164,7 +164,7 @@ describe('new', (): void => {
       it('creates Entity with multiple fields reducing PostCreated', async () => {
         await new Entity(
           [entityName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID', '--reduces', 'PostCreated'],
-          {} as IConfig
+          {} as Config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -187,7 +187,7 @@ describe('new', (): void => {
             'PostCreated',
             'CommentCreated',
           ],
-          {} as IConfig
+          {} as Config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -205,7 +205,7 @@ describe('new', (): void => {
     describe('displays an error', () => {
       it('with empty Entity name', async () => {
         replace(console, 'error', fake.resolves({}))
-        await new Entity([], {} as IConfig).run()
+        await new Entity([], {} as Config).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entitysRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an entity name/)
       })
@@ -214,7 +214,7 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields'], {} as IConfig).run()
+          await new Entity([entityName, '--fields'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -227,7 +227,7 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', 'title:string', '--reduces'], {} as IConfig).run()
+          await new Entity([entityName, '--fields', 'title:string', '--reduces'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -236,24 +236,37 @@ describe('new', (): void => {
         expect(exceptionMessage).to.contain('--reduces expects a value')
       })
 
-      it('with empty fields and reduces', async () => {
+      it('with empty fields', async () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', '--reduces'], {} as IConfig).run()
+          await new Entity([entityName, '--fields', '--reduces'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Error parsing field --reduces')
+        expect(exceptionMessage).to.contain('Flag --fields expects a value')
+      })
+
+      it('with empty reduces', async () => {
+        let exceptionThrown = false
+        let exceptionMessage = ''
+        try {
+          await new Entity([entityName, '--fields', 'title', '--reduces'], {} as Config).run()
+        } catch (e) {
+          exceptionThrown = true
+          exceptionMessage = e.message
+        }
+        expect(exceptionThrown).to.be.equal(true)
+        expect(exceptionMessage).to.contain('Flag --reduces expects a value')
       })
 
       it('with field with no type', async () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', 'title'], {} as IConfig).run()
+          await new Entity([entityName, '--fields', 'title'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -266,7 +279,7 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', 'title:'], {} as IConfig).run()
+          await new Entity([entityName, '--fields', 'title:'], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -282,7 +295,7 @@ describe('new', (): void => {
         try {
           await new Entity(
             [entityName, '--fields', 'title:string', 'title:string', 'quantity:number'],
-            {} as IConfig
+            {} as Config
           ).run()
         } catch (e) {
           exceptionThrown = true

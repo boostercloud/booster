@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../common/base-command'
 import { deployToCloudProvider } from '../services/provider-service'
 import {
@@ -26,19 +26,19 @@ export default class Deploy extends BaseCommand {
   public static description = 'Deploy the current application as configured in your `index.ts` file.'
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    environment: flags.string({
+    help: Flags.help({ char: 'h' }),
+    environment: Flags.string({
       char: 'e',
       description: 'environment configuration to run',
     }),
-    verbose: flags.boolean({
+    verbose: Flags.boolean({
       description: 'display full error messages',
       default: false,
     }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Deploy)
+    const { flags } = await this.parse(Deploy)
 
     if (initializeEnvironment(logger, flags.environment)) {
       const deploymentProjectPath = await createDeploymentSandbox()
@@ -49,7 +49,7 @@ export default class Deploy extends BaseCommand {
   async catch(fullError: Error) {
     const {
       flags: { verbose },
-    } = this.parse(Deploy)
+    } = await this.parse(Deploy)
 
     if (verbose) {
       console.error(fullError.message)

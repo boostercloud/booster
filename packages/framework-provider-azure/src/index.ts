@@ -4,9 +4,9 @@ import { requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
   rawEventsToEnvelopes,
-  storeEvents,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeDispatchedEvent,
   storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
@@ -33,12 +33,55 @@ import {
   storeConnectionData,
 } from './library/connections-adapter'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
+import { produceEventsStream } from './library/events-stream-producer-adapter'
+import { EventHubProducerClient, RetryMode } from '@azure/event-hubs'
+import { dedupEventStream, rawEventsStreamToEnvelopes } from './library/events-stream-consumer-adapter'
+import {
+  areDatabaseReadModelsUp,
+  databaseEventsHealthDetails,
+  databaseReadModelsHealthDetails,
+  databaseUrl,
+  graphqlFunctionUrl,
+  isDatabaseEventUp,
+  isGraphQLFunctionUp,
+  rawRequestToSensorHealth,
+} from './library/health-adapter'
+import { storeEvents } from './library/events-store-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
   cosmosClient = {} as any
 } else {
   cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
+}
+
+let producer: EventHubProducerClient
+const eventHubConnectionString = process.env[environmentVarNames.eventHubConnectionString]
+const eventHubName = process.env[environmentVarNames.eventHubName]
+const DEFAULT_MAX_RETRY = 5
+const DEFAULT_EVENT_HUB_MODE = RetryMode.Exponential
+if (
+  typeof eventHubConnectionString === 'undefined' ||
+  typeof eventHubName === 'undefined' ||
+  eventHubConnectionString === '' ||
+  eventHubName === ''
+) {
+  producer = {} as any
+} else {
+  const maxRetries = process.env[environmentVarNames.eventHubMaxRetries]
+    ? Number(process.env[environmentVarNames.eventHubMaxRetries])
+    : DEFAULT_MAX_RETRY
+  const mode =
+    process.env[environmentVarNames.eventHubMaxRetries] &&
+    process.env[environmentVarNames.eventHubMode]?.toUpperCase() === 'FIXED'
+      ? RetryMode.Fixed
+      : DEFAULT_EVENT_HUB_MODE
+  producer = new EventHubProducerClient(eventHubConnectionString, eventHubName, {
+    retryOptions: {
+      maxRetries: maxRetries,
+      mode: mode,
+    },
+  })
 }
 
 /* We load the infrastructure package dynamically here to avoid including it in the
@@ -53,12 +96,16 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
+    rawStreamToEnvelopes: rawEventsStreamToEnvelopes,
+    dedupEventStream: dedupEventStream.bind(null, cosmosClient),
+    produce: produceEventsStream.bind(null, producer),
     store: storeEvents.bind(null, cosmosClient),
     storeSnapshot: storeSnapshot.bind(null, cosmosClient),
     forEntitySince: readEntityEventsSince.bind(null, cosmosClient),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
+    storeDispatched: storeDispatchedEvent.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -94,6 +141,16 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   },
   rockets: {
     rawToEnvelopes: rawRocketInputToEnvelope,
+  },
+  sensor: {
+    databaseEventsHealthDetails: databaseEventsHealthDetails.bind(null, cosmosClient),
+    databaseReadModelsHealthDetails: databaseReadModelsHealthDetails.bind(null, cosmosClient),
+    isDatabaseEventUp: isDatabaseEventUp.bind(null, cosmosClient),
+    areDatabaseReadModelsUp: areDatabaseReadModelsUp.bind(null, cosmosClient),
+    databaseUrls: databaseUrl.bind(null, cosmosClient),
+    graphQLFunctionUrl: graphqlFunctionUrl,
+    isGraphQLFunctionUp: isGraphQLFunctionUp,
+    rawRequestToHealthEnvelope: rawRequestToSensorHealth,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

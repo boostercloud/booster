@@ -16,7 +16,7 @@ describe('RawEventsParser', () => {
     restore()
   })
 
-  const rawEvents = {} // This value doesn't matter, because we are going to fake 'rawToEnvelopes"
+  const rawEvents = {} // This value doesn't matter, because we are going to fake 'rawToEnvelopes'
   const entityAName = 'EntityA'
   const entityAID = 'EntityAID'
   const entityBName = 'EntityB'
@@ -79,13 +79,15 @@ describe('RawEventsParser', () => {
   describe('streamPerEntityEvents', () => {
     it('strips all snapshots', async () => {
       const callbackFunction = fake()
-      await RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)
+      const events = config.provider.events.rawToEnvelopes(rawEvents)
+      await RawEventsParser.streamPerEntityEvents(config, events, callbackFunction)
       expect(callbackFunction).not.to.have.been.calledWith(snapshottedEntityName)
     })
 
     it('calls the callback function with ordered groups of event envelopes per entity name and ID', async () => {
       const callbackFunction = fake()
-      await RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)
+      const events = config.provider.events.rawToEnvelopes(rawEvents)
+      await RawEventsParser.streamPerEntityEvents(config, events, callbackFunction)
       expect(callbackFunction).to.have.been.calledTwice
       expect(callbackFunction).to.have.been.calledWithExactly(
         entityAName,
@@ -117,8 +119,8 @@ describe('RawEventsParser', () => {
           events.push(...eventEnvelopes)
         }
       )
-
-      await expect(RawEventsParser.streamPerEntityEvents(config, rawEvents, callbackFunction)).to.be.eventually
+      const eventsEnvelopes = config.provider.events.rawToEnvelopes(rawEvents)
+      await expect(RawEventsParser.streamPerEntityEvents(config, eventsEnvelopes, callbackFunction)).to.be.eventually
         .fulfilled
 
       expect(callbackFunction).to.have.been.calledTwice

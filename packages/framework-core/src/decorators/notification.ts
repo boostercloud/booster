@@ -37,7 +37,7 @@ export const Notification =
  */
 export function partitionKey(
   notificationClass: Class<NotificationInterface>,
-  _functionName: string,
+  _: string | undefined,
   parameterIndex: number
 ): void {
   const args = getFunctionArguments(notificationClass)

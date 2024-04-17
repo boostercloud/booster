@@ -2,7 +2,7 @@ import { GlobalErrorContainer } from './global-error-container'
 import { NonPersistedEntitySnapshotEnvelope } from '../envelope'
 
 /**
- * @deprecated Errors when persisting snapshots can be safely ignored because
+ * @deprecated [EOL v3] Errors when persisting snapshots can be safely ignored because
  * this problem is likely caused by a temporary network error, and the events,
  * which are the true source of truth are kept in any case.
  * The next time the entity is fetched, the snapshot will be recalculated and

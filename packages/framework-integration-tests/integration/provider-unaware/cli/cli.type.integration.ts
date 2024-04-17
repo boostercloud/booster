@@ -13,8 +13,8 @@ describe('Type', () => {
     typeSandboxDir = createSandboxProject(sandboxPathFor('type'))
   })
 
-  after(() => {
-    removeFolders([typeSandboxDir])
+  after(async () => {
+    await removeFolders([typeSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
