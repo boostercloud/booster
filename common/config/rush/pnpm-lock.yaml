@@ -8,8 +8,8 @@ importers:
   ../../packages/application-tester:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@types/jsonwebtoken': 9.0.1
       '@types/node': ^18.18.2
@@ -70,10 +70,10 @@ importers:
 
   ../../packages/cli:
     specifiers:
-      '@boostercloud/application-tester': workspace:^2.10.0
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-core': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/application-tester': workspace:^2.10.1
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-core': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@oclif/core': 3.15.0
       '@oclif/plugin-help': ^5
@@ -183,8 +183,8 @@ importers:
 
   ../../packages/framework-common-helpers:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -254,10 +254,10 @@ importers:
 
   ../../packages/framework-core:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
-      '@boostercloud/metadata-booster': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
+      '@boostercloud/metadata-booster': workspace:^2.10.1
       '@effect/cli': 0.35.26
       '@effect/platform': 0.48.24
       '@effect/platform-node': 0.45.26
@@ -374,19 +374,19 @@ importers:
   ../../packages/framework-integration-tests:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/application-tester': workspace:^2.10.0
-      '@boostercloud/cli': workspace:^2.10.0
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-core': workspace:^2.10.0
-      '@boostercloud/framework-provider-aws': workspace:^2.10.0
-      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.10.0
-      '@boostercloud/framework-provider-azure': workspace:^2.10.0
-      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.10.0
-      '@boostercloud/framework-provider-local': workspace:^2.10.0
-      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
-      '@boostercloud/metadata-booster': workspace:^2.10.0
+      '@boostercloud/application-tester': workspace:^2.10.1
+      '@boostercloud/cli': workspace:^2.10.1
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-core': workspace:^2.10.1
+      '@boostercloud/framework-provider-aws': workspace:^2.10.1
+      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.10.1
+      '@boostercloud/framework-provider-azure': workspace:^2.10.1
+      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.10.1
+      '@boostercloud/framework-provider-local': workspace:^2.10.1
+      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
+      '@boostercloud/metadata-booster': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@effect/cli': 0.35.26
       '@effect/platform': 0.48.24
@@ -530,9 +530,9 @@ importers:
 
   ../../packages/framework-provider-aws:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
@@ -626,10 +626,10 @@ importers:
       '@aws-cdk/core': ^1.170.0
       '@aws-cdk/custom-resources': ^1.170.0
       '@aws-cdk/cx-api': ^1.170.0
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-provider-aws': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-provider-aws': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@types/archiver': 5.1.0
       '@types/aws-lambda': 8.10.48
@@ -743,9 +743,9 @@ importers:
       '@azure/functions': ^1.2.2
       '@azure/identity': ~2.1.0
       '@azure/web-pubsub': ~1.1.0
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -817,11 +817,11 @@ importers:
       '@azure/arm-resources': ^5.0.1
       '@azure/cosmos': ^4.0.0
       '@azure/identity': ~2.1.0
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-core': workspace:^2.10.0
-      '@boostercloud/framework-provider-azure': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-core': workspace:^2.10.1
+      '@boostercloud/framework-provider-azure': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@cdktf/provider-azurerm': 11.2.0
       '@cdktf/provider-time': 9.0.2
       '@effect-ts/core': ^0.60.4
@@ -928,9 +928,9 @@ importers:
 
   ../../packages/framework-provider-local:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@seald-io/nedb': 4.0.2
       '@types/chai': 4.2.18
@@ -1007,10 +1007,10 @@ importers:
 
   ../../packages/framework-provider-local-infrastructure:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/framework-common-helpers': workspace:^2.10.0
-      '@boostercloud/framework-provider-local': workspace:^2.10.0
-      '@boostercloud/framework-types': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/framework-common-helpers': workspace:^2.10.1
+      '@boostercloud/framework-provider-local': workspace:^2.10.1
+      '@boostercloud/framework-types': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -1090,8 +1090,8 @@ importers:
 
   ../../packages/framework-types:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.10.0
-      '@boostercloud/metadata-booster': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
+      '@boostercloud/metadata-booster': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@effect-ts/node': ~0.39.0
       '@effect/cli': 0.35.26
@@ -1175,7 +1175,7 @@ importers:
 
   ../../packages/metadata-booster:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.10.0
+      '@boostercloud/eslint-config': workspace:^2.10.1
       '@effect-ts/core': ^0.60.4
       '@types/node': ^18.18.2
       '@typescript-eslint/eslint-plugin': ^5.0.0
@@ -3556,7 +3556,7 @@ packages:
       '@cdktf/hcl2json': 0.19.2
       '@cdktf/node-pty-prebuilt-multiarch': 0.10.1-pre.11
       '@cdktf/provider-schema': 0.19.2
-      '@sentry/node': 7.110.1
+      '@sentry/node': 7.111.0
       archiver: 5.3.2
       cdktf: 0.19.2_constructs@10.3.0
       chalk: 4.1.2
@@ -3598,7 +3598,7 @@ packages:
       xstate: 4.38.3
       yargs: 17.7.2
       yoga-layout-prebuilt: 1.10.0
-      zod: 3.22.4
+      zod: 3.22.5
     transitivePeerDependencies:
       - '@types/react'
       - bufferutil
@@ -3611,7 +3611,7 @@ packages:
   /@cdktf/commons/0.19.2:
     resolution: {integrity: sha512-5rOeb0cSREHQa5XVsGFEV6Ce8Zwo2WxE8GIhmGd/JzeSAByhK8scHFlD3+eENl83W/8lwIkm/nSl9oDHEkENIg==}
     dependencies:
-      '@sentry/node': 7.110.1
+      '@sentry/node': 7.111.0
       cdktf: 0.19.2_constructs@10.3.0
       ci-info: 3.9.0
       codemaker: 1.97.0
@@ -3644,7 +3644,7 @@ packages:
       jsii-rosetta: 5.4.2
       prettier: 2.8.8
       reserved-words: 0.1.2
-      zod: 3.22.4
+      zod: 3.22.5
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -3750,10 +3750,10 @@ packages:
       yaml: 2.4.1
     dev: false
 
-  /@effect/platform-node-shared/0.3.28_cahjalgelcnk6vcj6x2oc46m3a:
-    resolution: {integrity: sha512-7OBftCRgRSp5y2A0vUTaN4XsIpKRGbU10JPrv8oX29ppOe6K3xupCAu+vehkhfRxr2fWr5PhUb4F4K/xuptizA==}
+  /@effect/platform-node-shared/0.3.29_cahjalgelcnk6vcj6x2oc46m3a:
+    resolution: {integrity: sha512-wP5tO8AX0FX969RLiFVUHbrpRqycNUYOjYiMRv+SQ3Tfv24LMIxksKItlmz3EV2cXk5tk5d1iLN+5d60/92wPw==}
     peerDependencies:
-      '@effect/platform': ^0.48.28
+      '@effect/platform': ^0.48.29
       effect: ^2.4.19
     dependencies:
       '@effect/platform': 0.48.24_dyvpp6bxxcuou3trhs4x4ygr5y
@@ -3769,7 +3769,7 @@ packages:
       effect: ^2.4.17
     dependencies:
       '@effect/platform': 0.48.24_dyvpp6bxxcuou3trhs4x4ygr5y
-      '@effect/platform-node-shared': 0.3.28_cahjalgelcnk6vcj6x2oc46m3a
+      '@effect/platform-node-shared': 0.3.29_cahjalgelcnk6vcj6x2oc46m3a
       effect: 2.4.17
       mime: 3.0.0
       undici: 6.13.0
@@ -4200,8 +4200,8 @@ packages:
       - typescript
     dev: false
 
-  /@oclif/core/3.26.3:
-    resolution: {integrity: sha512-e6Vwu+cb2Sn4qFFpmY1fQLRWIY5ugruMuN94xb7+kyUzxrirYjJATPhuCT1G5xj9Dk+hTMH+Sp6XcHcVTS1lHg==}
+  /@oclif/core/3.26.4:
+    resolution: {integrity: sha512-ntfo2ut7enNtAn/jB/dryMUPBM2Fh8Fydmi3k/Ybo6lCGU/hmsPFkBRjCEJAQMyNkK2yVZARaWogdOrcVgFz+w==}
     engines: {node: '>=18.0.0'}
     dependencies:
       '@types/cli-progress': 3.11.5
@@ -4250,7 +4250,7 @@ packages:
     resolution: {integrity: sha512-9h6rMHnFS7zf0CLmfqtbAmdDSLpYF8otu25YpeqQXOX3b9TYeyfOvD61TkkxJ2T3zpqnrViNzifsF6gfM6xanQ==}
     engines: {node: '>=18.0.0'}
     dependencies:
-      '@oclif/core': 3.26.3
+      '@oclif/core': 3.26.4
       chai: 4.4.1
       fancy-test: 3.0.14
     transitivePeerDependencies:
@@ -4404,39 +4404,39 @@ packages:
       localforage: 1.10.0
       util: 0.12.5
 
-  /@sentry-internal/tracing/7.110.1:
-    resolution: {integrity: sha512-4kTd6EM0OP1SVWl2yLn3KIwlCpld1lyhNDeR8G1aKLm1PN+kVsR6YB/jy9KPPp4Q3lN3W9EkTSES3qhP4jVffQ==}
+  /@sentry-internal/tracing/7.111.0:
+    resolution: {integrity: sha512-CgXly8rsdu4loWVKi2RqpInH3C2cVBuaYsx4ZP5IJpzSinsUAMyyr3Pc0PZzCyoVpBBXGBGj/4HhFsY3q6Z0Vg==}
     engines: {node: '>=8'}
     dependencies:
-      '@sentry/core': 7.110.1
-      '@sentry/types': 7.110.1
-      '@sentry/utils': 7.110.1
+      '@sentry/core': 7.111.0
+      '@sentry/types': 7.111.0
+      '@sentry/utils': 7.111.0
 
-  /@sentry/core/7.110.1:
-    resolution: {integrity: sha512-yC1yeUFQlmHj9u/KxKmwOMVanBmgfX+4MZnZU31QPqN95adyZTwpaYFZl4fH5kDVnz7wXJI0qRP8SxuMePtqhw==}
+  /@sentry/core/7.111.0:
+    resolution: {integrity: sha512-/ljeMjZu8CSrLGrseBi/7S2zRIFsqMcvfyG6Nwgfc07J9nbHt8/MqouE1bXZfiaILqDBpK7BK9MLAAph4mkAWg==}
     engines: {node: '>=8'}
     dependencies:
-      '@sentry/types': 7.110.1
-      '@sentry/utils': 7.110.1
+      '@sentry/types': 7.111.0
+      '@sentry/utils': 7.111.0
 
-  /@sentry/node/7.110.1:
-    resolution: {integrity: sha512-n6sNzZJ/ChfyCI1FxuGWgloeevC8j2vax3vXM4IZrSIm5hS1d9L2oCJ4HEPuxGUxCkQ1f4kXPcdmNaQsWH0JBw==}
+  /@sentry/node/7.111.0:
+    resolution: {integrity: sha512-bTLZNETT7W89HEk04rwsch02KSpu++Yec/BEyM3AxUNY+ZQ9ZLL/lrNZuCwbe7fURpKoZrvGAhxpPjgs5UcB9w==}
     engines: {node: '>=8'}
     dependencies:
-      '@sentry-internal/tracing': 7.110.1
-      '@sentry/core': 7.110.1
-      '@sentry/types': 7.110.1
-      '@sentry/utils': 7.110.1
+      '@sentry-internal/tracing': 7.111.0
+      '@sentry/core': 7.111.0
+      '@sentry/types': 7.111.0
+      '@sentry/utils': 7.111.0
 
-  /@sentry/types/7.110.1:
-    resolution: {integrity: sha512-sZxOpM5gfyxvJeWVvNpHnxERTnlqcozjqNcIv29SZ6wonlkekmxDyJ3uCuPv85VO54WLyA4uzskPKnNFHacI8A==}
+  /@sentry/types/7.111.0:
+    resolution: {integrity: sha512-Oti4pgQ55+FBHKKcHGu51ZUxO1u52G5iVNK4mbtAN+5ArSCy/2s1H8IDJiOMswn3acfUnCR0oB/QsbEgAPZ26g==}
     engines: {node: '>=8'}
 
-  /@sentry/utils/7.110.1:
-    resolution: {integrity: sha512-eibLo2m1a7sHkOHxYYmRujr3D7ek2l9sv26F1SLoQBVDF7Afw5AKyzPmtA1D+4M9P/ux1okj7cGj3SaBrVpxXA==}
+  /@sentry/utils/7.111.0:
+    resolution: {integrity: sha512-CB5rz1EgCSwj3xoXogsCZ5pQtfERrURc/ItcCuoaijUhkD0iMq5MCNWMHW3mBsBrqx/Oba+XGvDu0t/5+SWwBg==}
     engines: {node: '>=8'}
     dependencies:
-      '@sentry/types': 7.110.1
+      '@sentry/types': 7.111.0
 
   /@serverless/dashboard-plugin/6.4.0_supports-color@8.1.1:
     resolution: {integrity: sha512-2yJQym94sXZhEFbcOVRMJgJ4a2H9Qly94UeUesPwf8bfWCxtiB4l5rxLnCB2aLTuUf/djcuD5/VrNPY1pRU7DA==}
@@ -4711,7 +4711,7 @@ packages:
     resolution: {integrity: sha512-bGyep3JqPCRry1wq+O5n7oiBgGWmeIJXPjXXCo8EK0u8duZGSYar7cGqd3ML2JUsLGeB7fmc06KYo9fLGWqPvQ==}
     dependencies:
       '@types/node': 18.19.31
-      '@types/qs': 6.9.14
+      '@types/qs': 6.9.15
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
 
@@ -4720,7 +4720,7 @@ packages:
     dependencies:
       '@types/body-parser': 1.19.5
       '@types/express-serve-static-core': 4.19.0
-      '@types/qs': 6.9.14
+      '@types/qs': 6.9.15
       '@types/serve-static': 1.15.7
 
   /@types/faker/5.1.5:
@@ -4843,8 +4843,8 @@ packages:
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
     dev: true
 
-  /@types/qs/6.9.14:
-    resolution: {integrity: sha512-5khscbd3SwWMhFqylJBLQ0zIu7c1K6Vz0uBIt915BI3zV0q1nfjRQD3RqSBcPaO6PHEF4ov/t9y89fSiyThlPA==}
+  /@types/qs/6.9.15:
+    resolution: {integrity: sha512-uXHQKES6DQKKCLh441Xv/dwxOq1TVS3JPUMlEqoEglvlhR6Mxnlew/Xq/LRVHpLyk7iK3zODe1qYHIMltO7XGg==}
 
   /@types/range-parser/1.2.7:
     resolution: {integrity: sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==}
@@ -5431,8 +5431,8 @@ packages:
       fsevents: 2.3.2
     dev: false
 
-  /aws-sdk/2.1599.0:
-    resolution: {integrity: sha512-jPb1LAN+s1TLTK+VR3TTJLr//sb3AhhT60Bm9jxB5G/fVeeRczXtBtixNpQ00gksQdkstILYLc9S6MuKMsksxA==}
+  /aws-sdk/2.1602.0:
+    resolution: {integrity: sha512-DJ3JOqa8PHmwrZirIFbzpa4hlBvL/jz3RulNQL4FmzNX6IANiUKUTR4zw6tU9Sdt48YpsL0+xIyuBuxKmcLz7Q==}
     engines: {node: '>= 10.0.0'}
     requiresBuild: true
     dependencies:
@@ -5550,8 +5550,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001610
-      electron-to-chromium: 1.4.736
+      caniuse-lite: 1.0.30001611
+      electron-to-chromium: 1.4.744
       node-releases: 2.0.14
       update-browserslist-db: 1.0.13_browserslist@4.23.0
     dev: true
@@ -5665,8 +5665,8 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  /caniuse-lite/1.0.30001610:
-    resolution: {integrity: sha512-QFutAY4NgaelojVMjY63o6XlZyORPaLfyMnsl3HgnWdJUcX6K0oaJymHjH8PT5Gk7sTm8rvC/c5COUQKXqmOMA==}
+  /caniuse-lite/1.0.30001611:
+    resolution: {integrity: sha512-19NuN1/3PjA3QI8Eki55N8my4LzfkMCRLgCVfrl/slbSAchQfV0+GwjPrK3rq37As4UCLlM/DHajbKkAqbv92Q==}
     dev: true
 
   /cardinal/2.1.1:
@@ -5688,7 +5688,7 @@ packages:
       '@aws-cdk/cloud-assembly-schema': 2.39.1
       '@aws-cdk/cx-api': 2.39.1
       archiver: 5.3.2
-      aws-sdk: 2.1599.0
+      aws-sdk: 2.1602.0
       glob: 7.2.3
       mime: 2.6.0
       yargs: 16.2.0
@@ -5703,7 +5703,7 @@ packages:
       '@cdktf/hcl2cdk': 0.19.2
       '@cdktf/hcl2json': 0.19.2
       '@inquirer/prompts': 2.3.1
-      '@sentry/node': 7.110.1
+      '@sentry/node': 7.111.0
       cdktf: 0.19.2_constructs@10.3.0
       ci-info: 3.9.0
       codemaker: 1.97.0
@@ -5722,7 +5722,7 @@ packages:
       xml-js: 1.6.11
       yargs: 17.7.2
       yoga-layout-prebuilt: 1.10.0
-      zod: 3.22.4
+      zod: 3.22.5
     transitivePeerDependencies:
       - '@types/react'
       - bufferutil
@@ -6601,7 +6601,7 @@ packages:
     dependencies:
       semver: 7.6.0
       shelljs: 0.8.5
-      typescript: 5.5.0-dev.20240415
+      typescript: 5.5.0-dev.20240419
 
   /duration/0.2.2:
     resolution: {integrity: sha512-06kgtea+bGreF5eKYgI/36A6pLXggY7oR4p1pq4SmdFBn1ReOL5D8RhG64VrqfTTKNucqqtBAwEj8aB88mcqrg==}
@@ -6632,8 +6632,8 @@ packages:
     dependencies:
       jake: 10.8.7
 
-  /electron-to-chromium/1.4.736:
-    resolution: {integrity: sha512-Rer6wc3ynLelKNM4lOCg7/zPQj8tPOCB2hzD32PX9wd3hgRRi9MxEbmkFCokzcEhRVMiOVLjnL9ig9cefJ+6+Q==}
+  /electron-to-chromium/1.4.744:
+    resolution: {integrity: sha512-nAGcF0yeKKfrP13LMFr5U1eghfFSvFLg302VUFzWlcjPOnUYd52yU5x6PBYrujhNbc4jYmZFrGZFK+xasaEzVA==}
     dev: true
 
   /emoji-regex/7.0.3:
@@ -9585,8 +9585,8 @@ packages:
       - supports-color
     dev: true
 
-  /node-abi/3.57.0:
-    resolution: {integrity: sha512-Dp+A9JWxRaKuHP35H77I4kCKesDy5HUDEmScia2FyncMTOXASMyg251F5PhFoDA5uqBrDDffiLpbqnrZmNXW+g==}
+  /node-abi/3.59.0:
+    resolution: {integrity: sha512-HyyfzvTLCE8b1SX2nWimlra8cibEsypcSu/Az4SXMhWhtuctkwAX7qsEYNjUOIoYtPV884oN3wtYTN+iZKBtvw==}
     engines: {node: '>=10'}
     dependencies:
       semver: 7.6.0
@@ -10184,7 +10184,7 @@ packages:
       minimist: 1.2.8
       mkdirp-classic: 0.5.3
       napi-build-utils: 1.0.2
-      node-abi: 3.57.0
+      node-abi: 3.59.0
       pump: 3.0.0
       rc: 1.2.8
       simple-get: 4.0.1
@@ -10800,7 +10800,7 @@ packages:
       ajv: 8.12.0
       ajv-formats: 2.1.1
       archiver: 5.3.0
-      aws-sdk: 2.1599.0
+      aws-sdk: 2.1602.0
       bluebird: 3.7.2
       cachedir: 2.4.0
       chalk: 4.1.2
@@ -11776,8 +11776,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  /typescript/5.5.0-dev.20240415:
-    resolution: {integrity: sha512-2FlWR0afPLL3qaO+AcMp6rWmV6nrLoRhwDYAgGn7/Kw1/K8hcW83bZnn+gzGNWfXozx/EdJuG0KfN7V/RGysjg==}
+  /typescript/5.5.0-dev.20240419:
+    resolution: {integrity: sha512-8ypxI/j8ctX5QljMci0V6iljmCDnSmardVThnbxKC8p3eRc83c2Ip6K4MmGO5yHgeEyz9rpusbM2iY/6lDZBdw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -12307,5 +12307,5 @@ packages:
       compress-commons: 4.1.2
       readable-stream: 3.6.2
 
-  /zod/3.22.4:
-    resolution: {integrity: sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==}
+  /zod/3.22.5:
+    resolution: {integrity: sha512-HqnGsCdVZ2xc0qWPLdO25WnseXThh0kEYKIdV5F/hTHO75hNZFp8thxSeHhiPrHZKrFTo1SOgkAj9po5bexZlw==}
