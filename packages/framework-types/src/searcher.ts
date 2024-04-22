@@ -136,32 +136,9 @@ export class Searcher<TObject> {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-// type KeyOf<TType> = {
-//   [K in keyof TType & (string | number)]: TType[K] extends object ? `${K}` | `${K}.${KeyOf<TType[K]>}` : `${K}`
-// }[keyof TType & (string | number)]
+type Paths<T> = T extends object ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K]>}`}` }[keyof T] : never
 
-// Explicitly depth-limit recursive type so that by default things only descend four levels
-type Prev = [never, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-type KeyOf<TType, D extends Prev[number] = 4> = [D] extends [never]
-  ? never
-  : {
-      [K in keyof TType & (string | number)]: TType[K] extends object
-        ? `${K}` | `${K}.${KeyOf<TType[K], Prev[D]>}`
-        : `${K}`
-    }[keyof TType & (string | number)]
-
-// type KeyOf<
-//   TType,
-//   R = {
-//     [K in keyof TType & (string | number | bigint | boolean | null | undefined)]: TType[K] extends object
-//       ? `${K}` | `${K}.${KeyOf<TType[K]>}`
-//       : `${K}`
-//   }[keyof TType & (string | number)]
-// > = R
-
-export type ProjectionFor<TType> = Array<KeyOf<TType>>
+export type ProjectionFor<TType> = Array<Paths<TType>>
 
 export type SortFor<TType> = {
   [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
