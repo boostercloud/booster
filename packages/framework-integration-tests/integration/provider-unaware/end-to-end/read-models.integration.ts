@@ -1628,20 +1628,17 @@ describe('Read models end-to-end tests', () => {
         )
       })
 
-      it('with skipInstance true and paginatedVersion', async () => {
+      it('with paginatedVersion true', async () => {
         const queryResult = await waitForIt(
           () => {
             return client.mutate({
               variables: {
                 cartId: mockCartId,
-                skipInstance: true,
                 paginatedVersion: true,
               },
               mutation: gql`
-                mutation CartShippingAddress($cartId: ID!, $skipInstance: Boolean!, $paginatedVersion: Boolean!) {
-                  CartShippingAddress(
-                    input: { cartId: $cartId, skipInstance: $skipInstance, paginatedVersion: $paginatedVersion }
-                  )
+                mutation CartShippingAddress($cartId: ID!, $paginatedVersion: Boolean!) {
+                  CartShippingAddress(input: { cartId: $cartId, paginatedVersion: $paginatedVersion })
                 }
               `,
             })
@@ -1672,65 +1669,17 @@ describe('Read models end-to-end tests', () => {
         })
       })
 
-      it('with skipInstance false and paginatedVersion', async () => {
+      it('with paginatedVersion false', async () => {
         const queryResult = await waitForIt(
           () => {
             return client.mutate({
               variables: {
                 cartId: mockCartId,
-                skipInstance: false,
-                paginatedVersion: true,
-              },
-              mutation: gql`
-                mutation CartShippingAddress($cartId: ID!, $skipInstance: Boolean!, $paginatedVersion: Boolean!) {
-                  CartShippingAddress(
-                    input: { cartId: $cartId, skipInstance: $skipInstance, paginatedVersion: $paginatedVersion }
-                  )
-                }
-              `,
-            })
-          },
-          (result) => result?.data?.CartShippingAddress != null
-        )
-
-        const cartShippingAddress = queryResult.data.CartShippingAddress
-
-        expect(cartShippingAddress).to.deep.equal({
-          items: [
-            {
-              id: mockCartId,
-              shippingAddress: {
-                firstName: mockAddress.firstName,
-                lastName: mockAddress.lastName,
-                country: mockAddress.country,
-                state: mockAddress.state,
-                postalCode: mockAddress.postalCode,
-                address: mockAddress.address,
-              },
-              testProperty: 1,
-            },
-          ],
-          count: 1,
-          cursor: {
-            id: '1',
-          },
-        })
-      })
-
-      it('with skipInstance true and paginatedVersion false', async () => {
-        const queryResult = await waitForIt(
-          () => {
-            return client.mutate({
-              variables: {
-                cartId: mockCartId,
-                skipInstance: true,
                 paginatedVersion: false,
               },
               mutation: gql`
-                mutation CartShippingAddress($cartId: ID!, $skipInstance: Boolean!, $paginatedVersion: Boolean!) {
-                  CartShippingAddress(
-                    input: { cartId: $cartId, skipInstance: $skipInstance, paginatedVersion: $paginatedVersion }
-                  )
+                mutation CartShippingAddress($cartId: ID!, $paginatedVersion: Boolean!) {
+                  CartShippingAddress(input: { cartId: $cartId, paginatedVersion: $paginatedVersion })
                 }
               `,
             })
@@ -1751,45 +1700,6 @@ describe('Read models end-to-end tests', () => {
               postalCode: mockAddress.postalCode,
               address: mockAddress.address,
             },
-          },
-        ])
-      })
-
-      it('with skipInstance false and paginatedVersion false', async () => {
-        const queryResult = await waitForIt(
-          () => {
-            return client.mutate({
-              variables: {
-                cartId: mockCartId,
-                skipInstance: false,
-                paginatedVersion: false,
-              },
-              mutation: gql`
-                mutation CartShippingAddress($cartId: ID!, $skipInstance: Boolean!, $paginatedVersion: Boolean!) {
-                  CartShippingAddress(
-                    input: { cartId: $cartId, skipInstance: $skipInstance, paginatedVersion: $paginatedVersion }
-                  )
-                }
-              `,
-            })
-          },
-          (result) => result?.data?.CartShippingAddress != null
-        )
-
-        const cartShippingAddress = queryResult.data.CartShippingAddress
-
-        expect(cartShippingAddress).to.deep.equal([
-          {
-            id: mockCartId,
-            shippingAddress: {
-              firstName: mockAddress.firstName,
-              lastName: mockAddress.lastName,
-              country: mockAddress.country,
-              state: mockAddress.state,
-              postalCode: mockAddress.postalCode,
-              address: mockAddress.address,
-            },
-            testProperty: 1,
           },
         ])
       })

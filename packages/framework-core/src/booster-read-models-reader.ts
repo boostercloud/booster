@@ -73,8 +73,7 @@ export class BoosterReadModelsReader {
       readModelTransformedRequest.limit,
       readModelTransformedRequest.afterCursor,
       readModelTransformedRequest.paginatedVersion,
-      readModelTransformedRequest.select,
-      readModelTransformedRequest.skipInstance
+      readModelTransformedRequest.select
     )
   }
 
@@ -86,8 +85,7 @@ export class BoosterReadModelsReader {
     limit?: number,
     afterCursor?: any,
     paginatedVersion?: boolean,
-    select?: ProjectionFor<TReadModel>,
-    skipInstance?: boolean
+    select?: ProjectionFor<TReadModel>
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
     const readModelName = readModelClass.name
     const searchResult = await this.config.provider.readModels.search<TReadModel>(
@@ -101,7 +99,7 @@ export class BoosterReadModelsReader {
       select
     )
 
-    if (skipInstance) {
+    if (select) {
       return searchResult
     }
     const readModels = this.createReadModelInstances(searchResult, readModelClass)

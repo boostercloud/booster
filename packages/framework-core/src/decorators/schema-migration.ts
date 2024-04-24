@@ -4,6 +4,9 @@ import 'reflect-metadata'
 
 const migrationMethodsMetadataKey = 'booster:migrationsMethods'
 
+/**
+ * @deprecated Using this decorator for read model migrations is discouraged. Prefer using `@DataMigration` instead.
+ */
 export function SchemaMigration(conceptClass: AnyClass): (schemaMigrationClass: AnyClass) => void {
   return (schemaMigrationClass) => {
     Booster.configureCurrentEnv((config) => {

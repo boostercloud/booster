@@ -457,7 +457,6 @@ describe('BoosterReadModelReader', () => {
             filters,
             currentUser,
             select: ['id'],
-            skipInstance: false,
           } as any
 
           const expectedReadModels = [new TestReadModel(), new TestReadModel()]
@@ -483,7 +482,7 @@ describe('BoosterReadModelReader', () => {
           expect(result).to.be.deep.equal(expectedReadModels)
         })
 
-        it('do not  call migrates if skipInstance is true', async () => {
+        it('do not  call migrates if select is set', async () => {
           const readModelWithProjectionRequestEnvelope: ReadModelRequestEnvelope<TestReadModel> = {
             class: TestReadModel,
             className: TestReadModel.name,
@@ -492,7 +491,6 @@ describe('BoosterReadModelReader', () => {
             filters,
             currentUser,
             select: ['id'],
-            skipInstance: true,
           } as any
 
           const expectedResult = [new TestReadModel(), new TestReadModel()]

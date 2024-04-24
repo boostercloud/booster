@@ -10,8 +10,7 @@ export type SearcherFunction<TObject> = (
   limit?: number,
   afterCursor?: any,
   paginatedVersion?: boolean,
-  select?: ProjectionFor<TObject>,
-  skipInstance?: boolean
+  select?: ProjectionFor<TObject>
 ) => Promise<Array<TObject> | ReadModelListResult<TObject>>
 
 export type FinderByKeyFunction<TObject> = (
@@ -39,7 +38,6 @@ export class Searcher<TObject> {
   private _sortByList: SortFor<TObject> = {}
   private _paginatedVersion = false
   private _selectFor?: ProjectionFor<TObject>
-  private _skipInstance = false
 
   /**
    * @param objectClass The class of the object you want to run the search for.
@@ -75,11 +73,6 @@ export class Searcher<TObject> {
 
   public select(select?: ProjectionFor<TObject>): this {
     if (select) this._selectFor = select
-    return this
-  }
-
-  public skipInstance(skipInstance: boolean): this {
-    if (skipInstance) this._skipInstance = skipInstance
     return this
   }
 
@@ -130,8 +123,7 @@ export class Searcher<TObject> {
       this._limit,
       this._afterCursor,
       this._paginatedVersion,
-      this._selectFor,
-      this._skipInstance
+      this._selectFor
     )
   }
 }

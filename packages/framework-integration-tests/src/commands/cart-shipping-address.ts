@@ -6,7 +6,7 @@ import { CartReadModel } from '../read-models/cart-read-model'
   authorize: 'all',
 })
 export class CartShippingAddress {
-  public constructor(readonly cartId: UUID, readonly skipInstance: boolean, readonly paginatedVersion: boolean) {}
+  public constructor(readonly cartId: UUID, readonly paginatedVersion: boolean) {}
 
   public static async handle(command: CartShippingAddress, register: Register): Promise<unknown> {
     return (await Booster.readModel(CartReadModel)
@@ -17,7 +17,6 @@ export class CartShippingAddress {
       })
       .select(['id', 'shippingAddress'])
       .paginatedVersion(command.paginatedVersion)
-      .skipInstance(command.skipInstance)
       .search()) as Array<unknown>
   }
 }
