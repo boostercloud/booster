@@ -12,7 +12,7 @@ export class ReadModelSchemaMigrator {
   public constructor(private config: BoosterConfig) {}
 
   /**
-   * @deprecated Read model schema migration is discouraged. Prefer data migration.
+   * **NOTE:** Read model schema migration is deprecated. Prefer data migration.
    */
   @Trace(TraceActionTypes.READ_MODEL_SCHEMA_MIGRATOR_MIGRATE)
   public async migrate<TMigratableReadModel extends ReadModelInterface>(
