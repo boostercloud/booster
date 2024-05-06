@@ -1,15 +1,15 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { applicationUnderTest } from './setup'
 import { internet, random } from 'faker'
 import { expect } from './expect'
-import gql from 'graphql-tag'
 import {
   commandHandlerBeforeErrorCartId,
   commandHandlerBeforeErrorCartMessage,
   commandHandlerErrorCartId,
   commandHandlerErrorCartMessage,
   commandHandlerErrorIgnoredCartId,
+  queryHandlerErrorCartId,
+  queryHandlerErrorCartMessage,
 } from '../../../src/constants'
 import 'mocha'
 
@@ -70,6 +70,24 @@ describe('Global error handler', async () => {
           mutation: gql`
             mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
               ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+      ).to.be.eventually.rejectedWith(expectedErrorMessage)
+    })
+  })
+
+  context('QueryHandler', async () => {
+    it('should update error object when handler fails', async () => {
+      const expectedErrorMessage = `${queryHandlerErrorCartMessage}-onQueryHandlerError-onError`
+      await expect(
+        client.mutate({
+          variables: {
+            cartId: queryHandlerErrorCartId,
+          },
+          mutation: gql`
+            query CartTotalQuantity($cartId: ID!) {
+              CartTotalQuantity(input: { cartId: $cartId })
             }
           `,
         })

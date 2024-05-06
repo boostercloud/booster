@@ -1,6 +1,10 @@
 {
   "folders": [
     {
+      "name": "✨ root",
+      "path": "."
+    },
+    {
       "name": "📦 @boostercloud/application-tester",
       "path": "packages/application-tester"
     },
@@ -35,14 +39,6 @@
     {
       "name": "📦 @boostercloud/framework-provider-azure-infrastructure",
       "path": "packages/framework-provider-azure-infrastructure"
-    },
-    {
-      "name": "📦 @boostercloud/framework-provider-kubernetes",
-      "path": "packages/framework-provider-kubernetes"
-    },
-    {
-      "name": "📦 @boostercloud/framework-provider-kubernetes-infrastructure",
-      "path": "packages/framework-provider-kubernetes-infrastructure"
     },
     {
       "name": "📦 @boostercloud/framework-provider-local",

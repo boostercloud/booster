@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { EventEnvelope, EntitySnapshotEnvelope } from '@boostercloud/framework-types'
+import { EntitySnapshotEnvelope, EventEnvelope } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as faker from 'faker'
-import { stub, restore } from 'sinon'
-import { EventRegistry } from '../../src/services'
+import { date, random } from 'faker'
+import { restore, stub } from 'sinon'
 import {
+  createMockEntitySnapshotEnvelope,
   createMockEventEnvelope,
   createMockEventEnvelopeForEntity,
-  createMockEntitySnapshotEnvelope,
 } from '../helpers/event-helper'
-import { date, random } from 'faker'
+import { EventRegistry } from '../../src/services'
 
 describe('the event registry', () => {
   let initialEventsCount: number
@@ -155,10 +155,10 @@ describe('the event registry', () => {
     it('should insert events into the events database', async () => {
       const mockEvent: EventEnvelope = createMockEventEnvelope()
 
-      eventRegistry.events.insert = stub().yields(null, mockEvent)
+      eventRegistry.events.insertAsync = stub().returns(mockEvent)
 
       await eventRegistry.store(mockEvent)
-      return expect(eventRegistry.events.insert).to.have.been.called
+      return expect(eventRegistry.events.insertAsync).to.have.been.called
     })
 
     it('should throw if the database `insert` fails', async () => {
@@ -178,9 +178,9 @@ describe('the event registry', () => {
 
       const error = new Error(faker.random.words())
 
-      eventRegistry.events.insert = stub().yields(error, null)
+      eventRegistry.events.insertAsync = stub().throws(error)
 
-      return expect(eventRegistry.store(event)).to.be.rejectedWith(error)
+      await expect(eventRegistry.store(event)).to.be.rejectedWith(error)
     })
   })
 })

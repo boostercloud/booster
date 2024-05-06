@@ -1,4 +1,4 @@
-import { IConfig } from '@oclif/config'
+import { Config } from '@oclif/core'
 import * as fs from 'fs-extra'
 import { join } from 'path'
 import { restore, replace, fake, stub, SinonSpy, spy } from 'sinon'
@@ -18,6 +18,7 @@ describe('stub', async () => {
     const directoryFileMocks: fs.Dirent[] = [
       {
         name: 'fake-command.stub',
+        path: '/someDir',
         isFile: () => true,
         isDirectory: () => false,
         isBlockDevice: () => false,
@@ -28,6 +29,7 @@ describe('stub', async () => {
       },
       {
         name: 'fake-event.stub',
+        path: '/someDir',
         isFile: () => true,
         isDirectory: () => false,
         isBlockDevice: () => false,
@@ -38,6 +40,7 @@ describe('stub', async () => {
       },
       {
         name: 'fake-directory',
+        path: '/someDir',
         isFile: () => false,
         isDirectory: () => true,
         isBlockDevice: () => false,
@@ -68,7 +71,7 @@ describe('stub', async () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Publish([], {} as IConfig).init()
+      await new Publish([], {} as Config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
@@ -77,7 +80,7 @@ describe('stub', async () => {
         stub(fs, 'existsSync').returns(false)
         spy(Prompter, 'confirmPrompt')
 
-        await new Publish([], {} as IConfig).run()
+        await new Publish([], {} as Config).run()
 
         expect(fs.existsSync).to.have.been.calledOnce
         expect(fs.existsSync).to.have.been.returned(false)
@@ -101,7 +104,7 @@ describe('stub', async () => {
         stub(inquirer, 'prompt').resolves({ confirm: true })
         spy(Prompter, 'confirmPrompt')
 
-        await new Publish([], {} as IConfig).run()
+        await new Publish([], {} as Config).run()
 
         expect(fs.existsSync).to.have.been.calledOnce
         expect(fs.existsSync).to.have.been.returned(true)
@@ -125,7 +128,7 @@ describe('stub', async () => {
         stub(fs, 'existsSync').returns(true)
         spy(Prompter, 'confirmPrompt')
 
-        await new Publish(['--force'], {} as IConfig).run()
+        await new Publish(['--force'], {} as Config).run()
 
         expect(fs.existsSync).to.have.been.calledOnce
         expect(fs.existsSync).to.have.been.returned(true)
@@ -156,7 +159,7 @@ describe('stub', async () => {
         let exceptionMessage = ''
 
         try {
-          await new Publish([], {} as IConfig).run()
+          await new Publish([], {} as Config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message

@@ -6,10 +6,10 @@ import { ApplicationSynthStack } from './types/application-synth-stack'
 export class AzureStack extends TerraformStack {
   readonly applicationStack: ApplicationSynthStack
 
-  constructor(scope: Construct, name: string) {
+  constructor(scope: Construct, name: string, zipFile?: string) {
     super(scope, name)
 
     const applicationSynth = new ApplicationSynth(this)
-    this.applicationStack = applicationSynth.synth()
+    this.applicationStack = applicationSynth.synth(zipFile)
   }
 }

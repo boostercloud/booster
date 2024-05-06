@@ -2,33 +2,39 @@ import DocCardList from '@theme/DocCardList'
 
 # Extending Booster with Rockets!
 
-You can extend Booster by creating rockets. A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for many things:
+You can extend Booster by creating rockets (Booster Framework extensions). A rocket is just a node package that implements the public Booster rocket interfaces. You can use them for:
 
 1. Extend your infrastructure: You can write a rocket that adds provider resources to your application stack.
-2. Runtime extensions (Not yet implemented): Add new annotations and interfaces, which combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
-3. Deploy and init hooks (Not yet implemented): Run custom scripts before or after deployment, or before a Booster application is loaded.
+2. Runtime extensions: Add new annotations and interfaces, which combined with infrastructure extensions, could implement new abstractions on top of highly requested use cases.
 
-This extension mechanism is very new, but we're planning to port most of the functionality as rockets. This has two benefits:
+If you want to create a rocket that supports several cloud providers or want to provide extra decorators and functionality on top of the infrastructure extensions, you'll probably need to distribute it as a set of separate packages. In this scenario we recommend using a monorepo management tool like [Microsoft Rush](https://rushjs.io) to maintail them all together in a single repository, but this is not a requirement. Your packages will work perfectly fine if you maintain them in separate repositories.
 
-- Composability: You can use the default rockets or configure your application to suit your needs without adding anything extra.
-- Easier to manage feature sets in different providers: It would be really hard for the core team and contributors to implement and test every new feature in every supported provider, so by providing functionality like rockets, you'll have access to the most advanced features for your provider faster, and the rockets library can be built on-demand for each provider.
+### Create an Infrastructure Rocket package to extend the default Booster-provided infrastructure
 
-### Create your own Rocket
+A rocket is an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are shortly.
 
-A rocket is nothing more than an npm package that extends your current Booster architecture. The structure is simple, and it mainly has 2 methods: `mountStack` and `unmountStack`. We'll explain what they are shortly.
+*Infrastructure Rocket* interfaces are provider-dependant because each provider defines their own way to manage context, so *Infrastructure Rockets* must import the corresponding booster infrastructure package for their chosen provider:
 
-Rockets are usually composed of many packages, so we recommend using [Lerna](https://lerna.js.org) for development and publishing.
+* For AWS: `@boostercloud/framework-provider-aws-infrastructure`
+* For Azure: `@boostercloud/framework-provider-azure-infrastructure`
+* For Local (dev environment): `@boostercloud/framework-provider-local-infrastructure`
+ 
+Notice that, as the only thing you'll need from that package is the `InfrastructureRocket` interface, it is preferable to import it as a dev dependency to avoid including such a big package in your deployed lambdas.
 
-*Infrastructure Rocket* interfaces are provider-dependant, so *Infrastructure Rockets* must import the corresponding booster infrastructure package for their chosen provider. For AWS, that's `@boostercloud/framework-provider-aws-infrastructure`. Notice that, as the only thing we use of that package is the `InfrastructureRocket` interface, you can import it as a dev dependency to avoid including that big package in your deployed lambdas.
-
-So let's start by creating a new package and adding this dependency:`
+So let's start by creating a new package and adding the provider-depdendent dependency as well as the `typescript` and `@boostercloud/framework-types` packages:
 
 ```sh
 mkdir rocket-your-rocket-name-aws-infrastructure
 cd rocket-your-rocket-name-aws-infrastructure
 npm init
 ...
-npm install --save @boostercloud/framework-provider-aws-infrastructure
+npm install --save-dev @boostercloud/framework-provider-aws-infrastructure @boostercloud/framework-types typescript
+```
+
+In the case of AWS we use the [AWS CDK for TypeScript](https://docs.aws.amazon.com/cdk/v2/guide/work-with-cdk-typescript.html), so you'll also need to import the AWS CDK package:
+
+```sh
+npm install --save-dev @aws-cdk/core
 ```
 
 The basic structure of an *Infrastructure Rocket* project is quite simple as you can see here:
@@ -45,11 +51,16 @@ rocket-your-rocket-name-aws-infrastructure
 `<your-main-class>.ts`  can be named as you want and this is where we define the mountStack and unmount methods.
 
 ```typescript
+import { RocketUtils } from '@boostercloud/framework-provider-aws-infrastructure'
+import { BoosterConfig } from '@boostercloud/framework-types'
+import { Stack } from '@aws-cdk/core'
+import { YourRocketParams } from '.'
+
 export class YourMainClass {
   public static mountStack(params: YourRocketParams, stack: Stack, config: BoosterConfig): void {
     /* CDK code to expand your Booster infrastructure */
   }
-  public static unmountStack?(params: YourRocketParams, utils: RocketUtils): void {
+  public static unmountStack(params: YourRocketParams, utils: RocketUtils): void {
     /* Optional code that runs before removing the stack */
   }
 }
@@ -57,14 +68,14 @@ export class YourMainClass {
 
 Let's look in more detail these two special functions:
 
-- **mountStack**: Whenever we are deploying our Booster application (`boost deploy`) this method will also be run.  It receives three params:
-  - `params`: The parameters required by your *Infrastructure Rocket* initializator, you will receive them from your Booster app's `config.ts` file.
+- **mountStack**: Whenever we are deploying our Booster application (`boost deploy`) this method will also be run.  It receives two params:
   - `stack`: An initialized AWS CDK stack that you can use to add new resources. Check out [the Stack API in the official CDK documentation](https://docs.aws.amazon.com/cdk/latest/guide/stacks.html#stack_api). This is the same stack instance that Booster uses to deploy its resources, so your resources will automatically be deployed along with the Booster's ones on the same stack.
   - `config`: It includes properties of the Booster project (e.g. project name) that come in handy for your rocket.
 
-- **unmountStack**: It will run when you run the `boost nuke` command. When you nuke your Booster application, all the resources added by your rocket are automatically destroyed along with the application stack, but there are some situations where you might or need to specify any additional step in the deletion process. The `unmountStack` function will run the code you intend for this purpose. For instance, in AWS, before destroying your stack (where you have some S3 buckets) you need to first empty them in order to delete them. You can accomplish this action in the `unmountStack` method.
+- **unmountStack**: This function executes when you run the `boost nuke` command, just before starting the deletion of the cloud resources. When you nuke your Booster application, resources added by your rocket are automatically destroyed with the rest of the application stack. However, in certain cases, you may need extra steps during the deletion process. The `unmountStack` function serves this purpose. For example, in AWS, you must first empty any S3 buckets before deleting your stack. You can achieve this within the `unmountStack` method.
 
-We also have an index.ts file to export these two functions:
+In addition to your main rocket class, you'll need an `index.ts` file that default exports an object that conforms to the `InfrastructureRocket` interface:
+
 ```typescript
 export interface InfrastructureRocket {
   mountStack: (stack: Stack, config: BoosterConfig) => void
@@ -75,6 +86,13 @@ export interface InfrastructureRocket {
 You'll have to implement a default exported function that accepts a parameters object and returns an initialized `InfrastructureRocket` object:
 
 ```typescript
+import { InfrastructureRocket } from '@boostercloud/framework-provider-aws-infrastructure'
+import { YourMainClass } from './your-main-class';
+
+export interface YourRocketParams {
+  param1: string
+}
+
 const YourRocketInitializator = (params: YourRocketParams): InfrastructureRocket => ({
   mountStack: SomePrivateObject.mountStack.bind(null, params),
   unmountStack: SomePrivateObject.unmountStack.bind(null, params),
@@ -83,7 +101,7 @@ const YourRocketInitializator = (params: YourRocketParams): InfrastructureRocket
 export default YourRocketInitializator
 ```
 
-Notice that *Infrastructure Rockets* should not be included in the Booster application code to avoid including the CDK and other unused dependencies in the lambdas, as there are some strict restrictions on code size on most platforms. That's why *Infrastructure Rockets* are dynamically loaded by Booster passing the package names as strings in the application config file:
+Note that *Infrastructure Rockets* must not be part of the Booster application code to prevent including the CDK and other unnecessary dependencies in the deployed lambdas. This is due to strict code size restrictions on most platforms. To address this, *Infrastructure Rockets* are dynamically loaded by Booster, using package names as strings in the application config file:
 
 _src/config/production.ts:_
 
@@ -93,15 +111,115 @@ Booster.configure('development', (config: BoosterConfig): void => {
   config.providerPackage = '@boostercloud/framework-provider-aws'
   config.rockets = [
     {
-      packageName: 'rocket-your-rocket-name-aws-infrastructure', // The name of your infrastructure rocket package
+      packageName: 'rocket-your-rocket-name-aws-infrastructure', // Your infrastructure rocket package name
       parameters: {
-        // An arbitrary object with the parameters required by your infrastructure rocket initializator
+        // A custom object with the parameters needed by your infrastructure rocket initializer
         hello: 'world',
       },
     },
   ]
 })
 ```
+
+Your rocket implementation will have access to the stack (CDK in AWS or Terraform in Azure) just after Booster has finished to add all its default resources, so while the most common scenario to implement a rocket is to create additional resources, it's also possible to inspect or alter the Booster stack. If you're considering creating and maintaining your own fork of one of the default provider runtime implementations, it could be easier to create a rocket instead.
+
+### Provide new abtractions with custom decorators
+
+Rockets can be utilized to extend the Booster framework by providing additional decorators that offer new abstractions. When creating a decorator as part of your rocket, you should deliver it as a package that, once compiled, does not have any infrastructure dependencies, so if your rocket provides both infrastructure and runtime extensions, it's advisable to deliver it as a pair of packages or more.
+
+A common pattern when creating decorators for Booster is to use a singleton object to store metadata about the decorated structures. This singleton object stores data generated during the decorator's execution, which can then be accessed from other parts of the user's project, the rocket's infrastructure package or even other rockets. This data can be used during deployment to generate extra tables, endpoints, or other resources.
+
+To create a new custom decorator for the Booster framework with singleton storage, follow these steps:
+
+1. Create a new npm package for your rocket. This package should not have any infrastructure dependencies once compiled.
+
+```sh
+$ mkdir my-booster-rocket
+$ cd my-booster-rocket
+$ npm init
+```
+
+2. Add typescript as a dependency
+
+```sh
+$ npm install typescript --save-dev
+```
+
+3. Create a src directory to hold your decorator code:
+
+```sh
+$ mkdir src
+```
+
+4. Inside the src directory, create a new TypeScript file for your singleton object, e.g., `RocketSingleton.ts`:
+
+```sh
+$ touch src/RocketSingleton.ts
+```
+
+5. Implement your singleton object to store your metadata, for instance, a list of special classes that we will "mark" for later:
+
+```typescript
+// src/RocketSingleton.ts
+export class RocketSingleton {
+  public static specialClasses: Function[] = [];
+
+  private constructor() {}
+
+  public static addSpecialClass(target: Function): void {
+    RocketSingleton.specialClasses.push(target)
+  }
+}
+```
+
+6. Create a new TypeScript file for your custom decorator, e.g., `MyCustomDecorator.ts`:
+
+```sh
+$ touch src/MyCustomDecorator.ts
+```
+
+7. Implement your custom decorator using the singleton object:
+
+```typescript
+// src/MyCustomDecorator.ts
+import { RocketSingleton } from "./RocketSingleton"
+
+export function MyCustomDecorator(): (target: Function) => void {
+  return (target: Function) => {
+    // Implement your decorator logic here.
+    console.log(`MyCustomDecorator applied on ${target.name}`)
+    RocketSingleton.addSpecialClass(target)
+  }
+}
+```
+
+8. Export your decorator from the package's entry point, e.g., index.ts:
+
+```typescript
+// src/index.ts
+export * from './MyCustomDecorator';
+export * from './RocketSingleton';
+```
+
+Now you have a custom decorator that can be used within the Booster framework. Users can install your rocket package and use the decorator in their Booster applications:
+
+```sh
+$ npm install my-booster-rocket
+```
+
+```typescript
+// src/MySpecialClass.ts
+import { MyCustomDecorator, RocketSingleton } from 'my-booster-rocket';
+
+@MyCustomDecorator()
+class MySpecialClass {
+  // Application logic here
+}
+
+console.log(RocketSingleton.specialClasses) // [ [Function: MySpecialClass] ]
+```
+
+This example demonstrates how to create a custom decorator with a singleton object for storing data and package it as a rocket for use with the Booster framework. Following this pattern will allow you to extend Booster with new abstractions and provide additional functionality for users. The singleton object can be used to store and retrieve data across different parts of the user's project, enabling features such as generating extra tables or endpoints during deployment. This approach ensures a consistent and flexible way to extend the Booster framework while maintaining ease of use for developers.
 
 ### Naming recommendations
 
@@ -119,26 +237,6 @@ If you want to support the same functionality in several providers, it could be 
 - `rocket-file-uploader-aws-infrastructure`: Adds a dedicated S3 bucket.
 - `rocket-file-uploader-azure`: Implements the API calls to Azure Storage to get the uploaded files.
 - `rocket-file-uploader-azure-infrastructure`: Configures file storage.
-
-### How to publish a Rocket
-
-1. Upload your rocket to a git repository.
-2. Run :
-    ```shell
-        > lerna bootstrap
-    ```
-    This will bootstrap the packages, install all their dependencies and link any cross-dependencies.
-3. Ensure you have the option `publishConfig.access` set to `public` in the `package.json` file of every package.
-4. Make sure you are logged into NPM by running:
-   ```shell
-        > npm login
-    ```
-5. Run :
-    ```shell
-        > lerna publish
-    ```
-    Creates a new release of the packages that have been updated. It will update all the packages in git and npm, and it will prompt for a new version of the rocket package.
-6. If the previous step finished successfully, the package will be available in NPM.
 
 ### Booster Rockets list
 

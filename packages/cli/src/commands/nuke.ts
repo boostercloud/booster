@@ -1,4 +1,4 @@
-import { flags } from '@oclif/command'
+import { Flags } from '@oclif/core'
 import BaseCommand from '../common/base-command'
 import { nukeCloudProviderResources } from '../services/provider-service'
 import { compileProjectAndLoadConfig } from '../services/config-service'
@@ -41,24 +41,24 @@ export default class Nuke extends BaseCommand {
     'Remove all resources used by the current application as configured in your `index.ts` file.'
 
   public static flags = {
-    help: flags.help({ char: 'h' }),
-    environment: flags.string({
+    help: Flags.help({ char: 'h' }),
+    environment: Flags.string({
       char: 'e',
       description: 'environment configuration to run',
     }),
-    force: flags.boolean({
+    force: Flags.boolean({
       char: 'f',
       description:
         'Run nuke without asking for confirmation. Be EXTRA CAUTIOUS with this option, all your application data will be irreversibly DELETED without confirmation.',
     }),
-    verbose: flags.boolean({
+    verbose: Flags.boolean({
       description: 'display full error messages',
       default: false,
     }),
   }
 
   public async run(): Promise<void> {
-    const { flags } = this.parse(Nuke)
+    const { flags } = await this.parse(Nuke)
 
     if (initializeEnvironment(logger, flags.environment)) {
       await runTasks(
@@ -71,7 +71,7 @@ export default class Nuke extends BaseCommand {
   async catch(fullError: Error) {
     const {
       flags: { verbose },
-    } = this.parse(Nuke)
+    } = await this.parse(Nuke)
 
     if (verbose) {
       console.error(fullError.message)

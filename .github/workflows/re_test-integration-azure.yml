@@ -1,10 +1,13 @@
 name: Azure Integration Tests
 
+env:
+  BOOSTER_AZURE_SERVICE_PLAN_BASIC: 'true'
+
 on:
   workflow_call:
     inputs:
       azure-region:
-        default: 'Central US'
+        default: 'East US'
         required: false
         type: string
       azure-publisher-email:
@@ -34,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
@@ -60,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one
@@ -85,7 +88,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run integration test
         uses: ./.github/actions/test-integration-run-one

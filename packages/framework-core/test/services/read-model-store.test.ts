@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe } from 'mocha'
-import { restore, fake, replace, spy } from 'sinon'
+import { beforeEach, describe } from 'mocha'
+import { fake, replace, restore, SinonFakeTimers, spy, useFakeTimers } from 'sinon'
 import { ReadModelStore } from '../../src/services/read-model-store'
 import { createInstance } from '@boostercloud/framework-common-helpers'
 import {
-  Level,
   BoosterConfig,
-  UUID,
+  EntitySnapshotEnvelope,
+  Level,
+  OptimisticConcurrencyUnexpectedVersionError,
+  ProjectionMetadata,
+  ProjectionResult,
   ProviderLibrary,
   ReadModelAction,
-  OptimisticConcurrencyUnexpectedVersionError,
-  ProjectionResult,
   ReadModelInterface,
-  ProjectionMetadata,
-  EntitySnapshotEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import { BoosterAuthorizer } from '../../src/booster-authorizer'
@@ -48,14 +48,17 @@ describe('ReadModelStore', () => {
 
   class SomeReadModel {
     public constructor(readonly id: UUID) {}
+
     public static someObserver(entity: AnImportantEntity, obj: any): any {
       const count = (obj?.count || 0) + entity.count
       return { id: entity.someKey, kind: 'some', count: count }
     }
+
     public static someObserverArray(entity: AnImportantEntity, readModelID: UUID, obj: any): any {
       const count = (obj?.count || 0) + entity.count
       return { id: readModelID, kind: 'some', count: count }
     }
+
     public getId(): UUID {
       return this.id
     }
@@ -80,6 +83,7 @@ describe('ReadModelStore', () => {
 
   class AnotherReadModel {
     public constructor(readonly id: UUID) {}
+
     public static anotherObserver(entity: AnImportantEntity, obj: any): any {
       const count = (obj?.count || 0) + entity.count
       return { id: entity.someKey, kind: 'another', count: count }
@@ -239,6 +243,15 @@ describe('ReadModelStore', () => {
     })
 
     context("when the corresponding read models don't exist", () => {
+      let clock: SinonFakeTimers
+      before(() => {
+        clock = useFakeTimers(0)
+      })
+
+      after(() => {
+        clock.restore()
+      })
+
       it('creates new instances of the read models', async () => {
         replace(config.provider.readModels, 'store', fake())
         const readModelStore = new ReadModelStore(config)
@@ -258,14 +271,34 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 123,
-          boosterMetadata: { version: 1, schemaVersion: 1 },
+          boosterMetadata: {
+            version: 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserver',
+            },
+          },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, null)
         expect(AnotherReadModel.anotherObserver).to.have.returned({
           id: 'joinColumnID',
           kind: 'another',
           count: 123,
-          boosterMetadata: { version: 1, schemaVersion: 1 },
+          boosterMetadata: {
+            version: 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'AnotherReadModel.anotherObserver',
+            },
+          },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
         expect(config.provider.readModels.store).to.have.been.calledWith(
@@ -275,7 +308,17 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'some',
             count: 123,
-            boosterMetadata: { version: 1, schemaVersion: 1 },
+            boosterMetadata: {
+              version: 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserver',
+              },
+            },
           },
           0
         )
@@ -286,7 +329,17 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'another',
             count: 123,
-            boosterMetadata: { version: 1, schemaVersion: 1 },
+            boosterMetadata: {
+              version: 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'AnotherReadModel.anotherObserver',
+              },
+            },
           },
           0
         )
@@ -294,6 +347,15 @@ describe('ReadModelStore', () => {
     })
 
     context('when the corresponding read model did exist', () => {
+      let clock: SinonFakeTimers
+      before(() => {
+        clock = useFakeTimers(0)
+      })
+
+      after(() => {
+        clock.restore()
+      })
+
       it('updates the read model', async () => {
         replace(config.provider.readModels, 'store', fake())
         const readModelStore = new ReadModelStore(config)
@@ -304,13 +366,36 @@ describe('ReadModelStore', () => {
           'fetchReadModel',
           fake((className: string, id: UUID) => {
             if (className == SomeReadModel.name) {
-              return { id: id, kind: 'some', count: 77, boosterMetadata: { version: someReadModelStoredVersion } }
+              return {
+                id: id,
+                kind: 'some',
+                count: 77,
+                boosterMetadata: {
+                  version: someReadModelStoredVersion,
+                  lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                  lastProjectionInfo: {
+                    entityId: 'importantEntityID',
+                    entityName: 'AnImportantEntity',
+                    entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                    projectionMethod: 'SomeReadModel.someObserver',
+                  },
+                },
+              }
             } else {
               return {
                 id: id,
                 kind: 'another',
                 count: 177,
-                boosterMetadata: { version: anotherReadModelStoredVersion },
+                boosterMetadata: {
+                  version: anotherReadModelStoredVersion,
+                  lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                  lastProjectionInfo: {
+                    entityId: 'importantEntityID',
+                    entityName: 'AnImportantEntity',
+                    entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                    projectionMethod: 'AnotherReadModel.anotherObserver',
+                  },
+                },
               }
             }
           })
@@ -329,25 +414,63 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 77,
-          boosterMetadata: { version: someReadModelStoredVersion },
+          boosterMetadata: {
+            version: someReadModelStoredVersion,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserver',
+            },
+          },
         })
         expect(SomeReadModel.someObserver).to.have.returned({
           id: 'joinColumnID',
           kind: 'some',
           count: 200,
-          boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
+          boosterMetadata: {
+            version: someReadModelStoredVersion + 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserver',
+            },
+          },
         })
         expect(AnotherReadModel.anotherObserver).to.have.been.calledOnceWith(anEntityInstance, {
           id: 'joinColumnID',
           kind: 'another',
           count: 177,
-          boosterMetadata: { version: anotherReadModelStoredVersion },
+          boosterMetadata: {
+            version: anotherReadModelStoredVersion,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'AnotherReadModel.anotherObserver',
+            },
+          },
         })
         expect(AnotherReadModel.anotherObserver).to.have.returned({
           id: 'joinColumnID',
           kind: 'another',
           count: 300,
-          boosterMetadata: { version: anotherReadModelStoredVersion + 1, schemaVersion: 1 },
+          boosterMetadata: {
+            version: anotherReadModelStoredVersion + 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntity',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'AnotherReadModel.anotherObserver',
+            },
+          },
         })
         expect(config.provider.readModels.store).to.have.been.calledTwice
         expect(config.provider.readModels.store).to.have.been.calledWith(
@@ -357,7 +480,17 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'some',
             count: 200,
-            boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
+            boosterMetadata: {
+              version: someReadModelStoredVersion + 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserver',
+              },
+            },
           },
           someReadModelStoredVersion
         )
@@ -368,7 +501,17 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'another',
             count: 300,
-            boosterMetadata: { version: anotherReadModelStoredVersion + 1, schemaVersion: 1 },
+            boosterMetadata: {
+              version: anotherReadModelStoredVersion + 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntity',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'AnotherReadModel.anotherObserver',
+              },
+            },
           },
           anotherReadModelStoredVersion
         )
@@ -397,6 +540,15 @@ describe('ReadModelStore', () => {
     })
 
     context('when there is high contention and optimistic concurrency is needed', () => {
+      let clock: SinonFakeTimers
+      before(() => {
+        clock = useFakeTimers(0)
+      })
+
+      after(() => {
+        clock.restore()
+      })
+
       it('retries 5 times when the error OptimisticConcurrencyUnexpectedVersionError happens 4 times', async () => {
         let tryNumber = 1
         const expectedTries = 5
@@ -421,7 +573,17 @@ describe('ReadModelStore', () => {
               id: 'joinColumnID',
               kind: 'some',
               count: 123,
-              boosterMetadata: { version: 1, schemaVersion: 1 },
+              boosterMetadata: {
+                version: 1,
+                schemaVersion: 1,
+                lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                lastProjectionInfo: {
+                  entityId: 'importantEntityID',
+                  entityName: 'AnImportantEntity',
+                  entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                  projectionMethod: 'SomeReadModel.someObserver',
+                },
+              },
             },
             0,
           ])
@@ -430,6 +592,15 @@ describe('ReadModelStore', () => {
     })
 
     context('when multiple read models are projected from Array joinKey', () => {
+      let clock: SinonFakeTimers
+      before(() => {
+        clock = useFakeTimers(0)
+      })
+
+      after(() => {
+        clock.restore()
+      })
+
       it('creates non-existent read models and updates existing read models', async () => {
         replace(config.provider.readModels, 'store', fake())
         const readModelStore = new ReadModelStore(config)
@@ -442,7 +613,21 @@ describe('ReadModelStore', () => {
               if (id == 'anotherJoinColumnID') {
                 return null
               } else {
-                return { id: id, kind: 'some', count: 77, boosterMetadata: { version: someReadModelStoredVersion } }
+                return {
+                  id: id,
+                  kind: 'some',
+                  count: 77,
+                  boosterMetadata: {
+                    version: someReadModelStoredVersion,
+                    lastUpdateAt: '1970-01-01T00:00:00.000Z',
+                    lastProjectionInfo: {
+                      entityId: 'importantEntityID',
+                      entityName: 'AnImportantEntityWithArray',
+                      entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                      projectionMethod: 'SomeReadModel.someObserverArray',
+                    },
+                  },
+                }
               }
             }
             return null
@@ -462,13 +647,32 @@ describe('ReadModelStore', () => {
           id: 'joinColumnID',
           kind: 'some',
           count: 77,
-          boosterMetadata: { version: someReadModelStoredVersion },
+          boosterMetadata: {
+            version: someReadModelStoredVersion,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntityWithArray',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserverArray',
+            },
+          },
         })
         expect(SomeReadModel.someObserverArray).to.have.returned({
           id: 'joinColumnID',
           kind: 'some',
           count: 200,
-          boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
+          boosterMetadata: {
+            version: someReadModelStoredVersion + 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntityWithArray',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserverArray',
+            },
+          },
         })
         expect(SomeReadModel.someObserverArray).to.have.been.calledWithMatch(
           anEntityInstance,
@@ -479,7 +683,17 @@ describe('ReadModelStore', () => {
           id: 'anotherJoinColumnID',
           kind: 'some',
           count: 123,
-          boosterMetadata: { version: 1, schemaVersion: 1 },
+          boosterMetadata: {
+            version: 1,
+            schemaVersion: 1,
+            lastUpdateAt: '1970-01-01T00:00:00.000Z',
+            lastProjectionInfo: {
+              entityId: 'importantEntityID',
+              entityName: 'AnImportantEntityWithArray',
+              entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+              projectionMethod: 'SomeReadModel.someObserverArray',
+            },
+          },
         })
 
         expect(config.provider.readModels.store).to.have.been.calledTwice
@@ -490,7 +704,17 @@ describe('ReadModelStore', () => {
             id: 'joinColumnID',
             kind: 'some',
             count: 200,
-            boosterMetadata: { version: someReadModelStoredVersion + 1, schemaVersion: 1 },
+            boosterMetadata: {
+              version: someReadModelStoredVersion + 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntityWithArray',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserverArray',
+              },
+            },
           },
           someReadModelStoredVersion
         )
@@ -501,7 +725,17 @@ describe('ReadModelStore', () => {
             id: 'anotherJoinColumnID',
             kind: 'some',
             count: 123,
-            boosterMetadata: { version: 1, schemaVersion: 1 },
+            boosterMetadata: {
+              version: 1,
+              schemaVersion: 1,
+              lastUpdateAt: '1970-01-01T00:00:00.000Z',
+              lastProjectionInfo: {
+                entityId: 'importantEntityID',
+                entityName: 'AnImportantEntityWithArray',
+                entityUpdatedAt: '1970-01-01T00:00:00.000Z',
+                projectionMethod: 'SomeReadModel.someObserverArray',
+              },
+            },
           },
           0
         )

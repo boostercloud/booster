@@ -3,11 +3,12 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeDispatchedEvent,
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
-import { requestSucceeded, requestFailed } from './library/api-adapter'
-import { EventRegistry, ReadModelRegistry } from './services'
+import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { EventRegistry, GraphQLService, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
 import * as path from 'path'
@@ -21,18 +22,47 @@ import {
 } from './library/read-model-adapter'
 import { searchEntitiesIds, searchEvents } from './library/events-search-adapter'
 import { rawScheduledInputToEnvelope } from './library/scheduled-adapter'
+import {
+  deleteConnectionData,
+  fetchConnectionData,
+  sendMessageToConnection,
+  storeConnectionData,
+} from './library/connections-adapter'
+import {
+  deleteAllSubscriptions,
+  deleteSubscription,
+  fetchSubscriptions,
+  subscribeToReadModel,
+} from './library/subscription-adapter'
+import { WebSocketRegistry } from './services/web-socket-registry'
+import { connectionsDatabase, subscriptionDatabase } from './paths'
 import { rawRocketInputToEnvelope } from './library/rocket-adapter'
+import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
+import {
+  areDatabaseReadModelsUp,
+  databaseEventsHealthDetails,
+  databaseReadModelsHealthDetails,
+  databaseUrl,
+  graphqlFunctionUrl,
+  isDatabaseEventUp,
+  isGraphQLFunctionUp,
+  rawRequestToSensorHealth,
+} from './library/health-adapter'
+import * as process from 'process'
 
 export * from './paths'
 export * from './services'
 
 const eventRegistry = new EventRegistry()
 const readModelRegistry = new ReadModelRegistry()
+const connectionRegistry = new WebSocketRegistry(connectionsDatabase)
+const subscriptionRegistry = new WebSocketRegistry(subscriptionDatabase)
 const userApp: UserApp = require(path.join(process.cwd(), 'dist', 'index.js'))
+const graphQLService = new GraphQLService(userApp)
 
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependencies that are deployed in the lambda functions. The infrastructure
- * package is only used during the deploy.
+ * package is only used during the deployment.
  */
 export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
   return require(packageName)
@@ -42,30 +72,28 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   // ProviderEventsLibrary
   events: {
     rawToEnvelopes: rawEventsToEnvelopes,
+    rawStreamToEnvelopes: notImplemented as any,
+    dedupEventStream: notImplemented as any,
+    produce: notImplemented as any,
     forEntitySince: readEntityEventsSince.bind(null, eventRegistry),
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, eventRegistry),
     store: storeEvents.bind(null, userApp, eventRegistry),
     storeSnapshot: storeSnapshot.bind(null, eventRegistry),
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
+    storeDispatched: storeDispatchedEvent,
   },
   // ProviderReadModelsLibrary
   readModels: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     rawToEnvelopes: rawReadModelEventsToEnvelopes,
     fetch: fetchReadModel.bind(null, readModelRegistry),
     search: searchReadModel.bind(null, readModelRegistry),
-    store: storeReadModel.bind(null, readModelRegistry),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    store: storeReadModel.bind(null, graphQLService, readModelRegistry),
     delete: deleteReadModel.bind(null, readModelRegistry),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchSubscriptions: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deleteSubscription: undefined as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deleteAllSubscriptions: undefined as any,
+    subscribe: subscribeToReadModel.bind(null, subscriptionRegistry),
+    fetchSubscriptions: fetchSubscriptions.bind(null, subscriptionRegistry),
+    deleteSubscription: deleteSubscription.bind(null, subscriptionRegistry),
+    deleteAllSubscriptions: deleteAllSubscriptions.bind(null, subscriptionRegistry),
   },
   // ProviderGraphQLLibrary
   graphQL: {
@@ -78,14 +106,10 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     requestFailed,
   },
   connections: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    storeData: notImplemented as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    fetchData: notImplemented as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    deleteData: notImplemented as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sendMessage: notImplemented as any,
+    storeData: storeConnectionData.bind(null, connectionRegistry),
+    fetchData: fetchConnectionData.bind(null, connectionRegistry),
+    deleteData: deleteConnectionData.bind(null, connectionRegistry),
+    sendMessage: sendMessageToConnection.bind(null, new WebSocketServerAdapter(graphQLService, userApp.Booster.config)),
   },
   // ScheduledCommandsLibrary
   scheduled: {
@@ -93,6 +117,16 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   },
   rockets: {
     rawToEnvelopes: rawRocketInputToEnvelope,
+  },
+  sensor: {
+    databaseEventsHealthDetails: databaseEventsHealthDetails.bind(null, eventRegistry),
+    databaseReadModelsHealthDetails: databaseReadModelsHealthDetails.bind(null, readModelRegistry),
+    isDatabaseEventUp: isDatabaseEventUp,
+    areDatabaseReadModelsUp: areDatabaseReadModelsUp,
+    databaseUrls: databaseUrl,
+    isGraphQLFunctionUp: isGraphQLFunctionUp,
+    graphQLFunctionUrl: graphqlFunctionUrl,
+    rawRequestToHealthEnvelope: rawRequestToSensorHealth,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

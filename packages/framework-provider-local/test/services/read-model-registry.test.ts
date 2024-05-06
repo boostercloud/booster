@@ -34,13 +34,13 @@ describe('the read model registry', () => {
       const publishPromises: Array<Promise<any>> = []
 
       for (let i = 0; i < initialReadModelsCount; i++) {
-        publishPromises.push(readModelRegistry.store(createMockReadModelEnvelope()))
+        publishPromises.push(readModelRegistry.store(createMockReadModelEnvelope(), 0))
       }
 
       await Promise.all(publishPromises)
 
       mockReadModel = createMockReadModelEnvelope()
-      await readModelRegistry.store(mockReadModel)
+      await readModelRegistry.store(mockReadModel, 1)
     })
 
     it('should return expected read model', async () => {
@@ -187,12 +187,12 @@ describe('the read model registry', () => {
       const id = '1'
       mockReadModelEnvelope.value.id = id
 
-      readModelRegistry.readModels.remove = stub().yields(null, mockReadModelEnvelope)
+      readModelRegistry.readModels.removeAsync = stub().returns(mockReadModelEnvelope)
 
-      await readModelRegistry.store(mockReadModelEnvelope)
+      await readModelRegistry.store(mockReadModelEnvelope, 1)
       await readModelRegistry.deleteById(id, mockReadModelEnvelope.typeName)
 
-      expect(readModelRegistry.readModels.remove).to.have.been.calledWith(
+      expect(readModelRegistry.readModels.removeAsync).to.have.been.calledWith(
         { typeName: mockReadModelEnvelope.typeName, 'value.id': id },
         { multi: false }
       )
@@ -202,13 +202,19 @@ describe('the read model registry', () => {
   describe('the store method', () => {
     it('should upsert read models into the read models database', async () => {
       const readModel: ReadModelEnvelope = createMockReadModelEnvelope()
-      const expectedQuery = { typeName: readModel.typeName, 'value.id': readModel.value.id }
+      readModel.value.boosterMetadata!.version = 2
+      const expectedQuery = {
+        typeName: readModel.typeName,
+        'value.id': readModel.value.id,
+        'value.boosterMetadata.version': 2,
+      }
 
-      readModelRegistry.readModels.update = stub().yields(null, readModel)
+      readModelRegistry.readModels.updateAsync = stub().returns(readModel)
 
-      await readModelRegistry.store(readModel)
-      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, readModel, {
-        upsert: true,
+      await readModelRegistry.store(readModel, 2)
+      expect(readModelRegistry.readModels.updateAsync).to.have.been.calledWith(expectedQuery, readModel, {
+        upsert: false,
+        returnUpdatedDocs: true,
       })
     })
 
@@ -224,7 +230,7 @@ describe('the read model registry', () => {
 
       readModelRegistry.readModels.update = stub().yields(error, null)
 
-      void expect(readModelRegistry.store(readModel)).to.be.rejectedWith(error)
+      void expect(readModelRegistry.store(readModel, 1)).to.be.rejectedWith(error)
     })
   })
 })

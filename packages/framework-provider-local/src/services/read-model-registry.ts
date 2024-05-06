@@ -1,15 +1,29 @@
 import { ReadModelEnvelope, SortFor, UUID } from '@boostercloud/framework-types'
-import * as DataStore from 'nedb'
 import { readModelsDatabase } from '../paths'
+const DataStore = require('@seald-io/nedb')
 
 interface LocalSortedFor {
   [key: string]: number
 }
 
+export type NedbError = Error & { [key: string | number | symbol]: unknown }
+
+export const UNIQUE_VIOLATED_ERROR_TYPE = 'uniqueViolated'
+
 export class ReadModelRegistry {
-  public readonly readModels: DataStore<ReadModelEnvelope> = new DataStore(readModelsDatabase)
+  public readonly readModels
+  public isLoaded = false
+
   constructor() {
-    this.readModels.loadDatabase()
+    this.readModels = new DataStore({ filename: readModelsDatabase })
+  }
+
+  async loadDatabaseIfNeeded(): Promise<void> {
+    if (!this.isLoaded) {
+      this.isLoaded = true
+      await this.readModels.loadDatabaseAsync()
+      await this.readModels.ensureIndexAsync({ fieldName: 'uniqueKey', unique: true, sparse: true })
+    }
   }
 
   public async query(
@@ -18,7 +32,8 @@ export class ReadModelRegistry {
     skip?: number,
     limit?: number
   ): Promise<Array<ReadModelEnvelope>> {
-    let cursor = this.readModels.find(query)
+    await this.loadDatabaseIfNeeded()
+    let cursor = this.readModels.findAsync(query)
     const sortByList = this.toLocalSortFor(sortBy)
     if (sortByList) {
       cursor = cursor.sort(sortByList)
@@ -29,39 +44,49 @@ export class ReadModelRegistry {
     if (limit) {
       cursor = cursor.limit(limit)
     }
-    const queryPromise = new Promise((resolve, reject) =>
-      cursor.exec((err, docs) => {
-        if (err) reject(err)
-        else resolve(docs)
-      })
-    )
-
-    return queryPromise as Promise<Array<ReadModelEnvelope>>
+    return await cursor.execAsync()
   }
 
-  public async store(readModel: ReadModelEnvelope): Promise<void> {
-    return new Promise((resolve, reject) => {
-      this.readModels.update(
-        //use nedb dot notation value.id to match the record (see https://github.com/louischatriot/nedb#finding-documents)
-        { typeName: readModel.typeName, 'value.id': readModel.value.id },
-        readModel,
-        { upsert: true },
-        (err) => {
-          err ? reject(err) : resolve()
-        }
-      )
-    })
+  public async store(readModel: ReadModelEnvelope, expectedCurrentVersion: number): Promise<void> {
+    await this.loadDatabaseIfNeeded()
+    const uniqueReadModel: ReadModelEnvelope & { uniqueKey?: string } = readModel
+    uniqueReadModel.uniqueKey = `${readModel.typeName}_${readModel.value.id}_${readModel.value.boosterMetadata?.version}`
+    if (uniqueReadModel.value.boosterMetadata?.version === 1) {
+      return this.insert(readModel)
+    }
+    return this.update(uniqueReadModel, expectedCurrentVersion)
+  }
+
+  private async insert(readModel: ReadModelEnvelope): Promise<void> {
+    await this.loadDatabaseIfNeeded()
+    await this.readModels.insertAsync(readModel)
+  }
+
+  private async update(readModel: ReadModelEnvelope, expectedCurrentVersion: number): Promise<void> {
+    await this.loadDatabaseIfNeeded()
+    const { numAffected } = await this.readModels.updateAsync(
+      {
+        typeName: readModel.typeName,
+        'value.id': readModel.value.id,
+        'value.boosterMetadata.version': expectedCurrentVersion,
+      },
+      readModel,
+      { upsert: false, returnUpdatedDocs: true }
+    )
+    if (numAffected === 0) {
+      const error: NedbError = new Error(
+        `Can't update readModel ${JSON.stringify(
+          readModel
+        )} with expectedCurrentVersion = ${expectedCurrentVersion} . Optimistic concurrency error`
+      ) as NedbError
+      error.errorType = UNIQUE_VIOLATED_ERROR_TYPE
+      throw error
+    }
   }
 
   public async deleteById(id: UUID, typeName: string): Promise<number> {
-    const deletePromise = new Promise((resolve, reject) =>
-      this.readModels.remove({ typeName: typeName, 'value.id': id }, { multi: false }, (err, numRemoved: number) => {
-        if (err) reject(err)
-        else resolve(numRemoved)
-      })
-    )
-
-    return deletePromise as Promise<number>
+    await this.loadDatabaseIfNeeded()
+    return await this.readModels.removeAsync({ typeName: typeName, 'value.id': id }, { multi: false })
   }
 
   toLocalSortFor(

@@ -85,7 +85,7 @@ export class Searcher<TObject> {
   }
 
   /**
-   * @deprecated Use searchOnce instead
+   * @deprecated [EOL v3] Use searchOnce instead
    */
   public async findById(id: UUID, sequenceKey?: SequenceKey): Promise<TObject | ReadOnlyNonEmptyArray<TObject>> {
     return this.finderByKeyFunction(this.objectClass, id, sequenceKey)
@@ -167,6 +167,8 @@ interface ScalarOperators<TType> extends BooleanOperators<TType> {
 interface StringOperators<TType> extends ScalarOperators<TType> {
   beginsWith?: TType
   contains?: TType
+  regex?: TType
+  iRegex?: TType
 }
 
 interface ArrayOperators<TElementType> {

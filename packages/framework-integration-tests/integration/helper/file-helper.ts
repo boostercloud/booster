@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'fs'
 import * as path from 'path'
+import { sleep } from './sleep'
 
 export const loadFixture = (fixturePath: string, replacements?: Array<Array<string>>): string => {
   const template = readFileContent(`integration/fixtures/${fixturePath}`)
@@ -31,8 +32,28 @@ export const createFolder = (folder: string): void => {
   }
 }
 
-export const removeFolders = (paths: Array<string>): void => {
-  paths.map((path: string) => rmSync(path, { recursive: true, force: true }))
+export const removeFolders = async (paths: Array<string>): Promise<void> => {
+  for (const path of paths) {
+    let retries = 5
+    while (retries > 0) {
+      try {
+        rmSync(path, { recursive: true, force: true })
+        break // Break out of the while loop if the deletion succeeds
+      } catch (error) {
+        // Although we're using parameters recursive and force, sometimes the deletion fails with ENOTEMPTY
+        // because the OS haven't had the time to fully release the files. We retry a few times before giving up.
+        if (error.code === 'ENOTEMPTY' && retries > 0) {
+          retries--
+          console.warn(`Retrying deletion of ${path}, ${retries} retries remaining...`)
+          await sleep(1000) // Wait for 1 second before retrying
+        } else {
+          // After the retries are exhausted, we silently desist. It's not worth failing integration tests because of this
+          console.warn(`Failed to delete ${path}, skipping...`)
+          break
+        }
+      }
+    }
+  }
 }
 
 export const fileExists = existsSync

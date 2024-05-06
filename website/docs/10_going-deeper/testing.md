@@ -7,6 +7,7 @@ Booster applications are fully tested by default. This means that you can be sur
 To properly test a Booster application, you should create a `test` folder at the same level as the `src` one. Apart from that, tests' names should have the `<my_test>.test.ts` format.
 
 When a Booster application is generated, you will have a script in a `package.json` like this:
+
 ```typescript
 "scripts": {
   "test": "nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""

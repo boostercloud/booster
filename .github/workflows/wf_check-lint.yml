@@ -3,7 +3,6 @@ on:
   pull_request:
     branches:
       - main
-      - '1.0.0'
     paths-ignore:
       - '**.md'
       - 'website/**'
@@ -16,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build
         uses: ./.github/actions/build

@@ -4,6 +4,7 @@ import { LocalCounters } from './local-counters'
 interface ApplicationOutputs {
   graphqlURL: string
   websocketURL: string
+  healthURL: string
 }
 
 export class LocalTestHelper {
@@ -19,6 +20,7 @@ export class LocalTestHelper {
       {
         graphqlURL: await this.graphqlURL(),
         websocketURL: await this.websocketURL(),
+        healthURL: await this.healthURL(),
       },
       new LocalCounters(`${appName}-app`),
       new LocalQueries()
@@ -34,8 +36,12 @@ export class LocalTestHelper {
     return url
   }
 
+  private static async healthURL(): Promise<string> {
+    return 'http://localhost:3000/sensor/health/'
+  }
+
   private static async websocketURL(): Promise<string> {
-    const url = 'SOME-URL'
+    const url = 'ws://localhost:65529/websocket'
     return url
   }
 }

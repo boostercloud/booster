@@ -10,6 +10,7 @@ import {
   SequenceKey,
   ProjectionGlobalError,
   EntitySnapshotEnvelope,
+  BoosterMetadata,
 } from '@boostercloud/framework-types'
 import { Promises, retryIfError, createInstance, getLogger } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
@@ -57,7 +58,8 @@ export class ReadModelStore {
                 projectionMetadata,
                 readModelName,
                 readModelID,
-                sequenceKey
+                sequenceKey,
+                entitySnapshotEnvelope
               ),
             OptimisticConcurrencyUnexpectedVersionError,
             logger
@@ -96,7 +98,8 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface>,
     readModelName: string,
     readModelID: UUID,
-    sequenceKey?: SequenceKey
+    sequenceKey?: SequenceKey,
+    lastProjectedEntity?: EntitySnapshotEnvelope
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#applyProjectionToReadModel')
     const readModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
@@ -136,7 +139,14 @@ export class ReadModelStore {
       ...migratedReadModel?.boosterMetadata,
       version: currentReadModelVersion + 1,
       schemaVersion: schemaVersion,
-    }
+      lastUpdateAt: new Date().toISOString(),
+      lastProjectionInfo: {
+        entityId: entity.id,
+        entityName: lastProjectedEntity?.entityTypeName,
+        entityUpdatedAt: lastProjectedEntity?.createdAt,
+        projectionMethod: `${projectionMetadata.class.name}.${projectionMetadata.methodName}`,
+      },
+    } as BoosterMetadata
     logger.debug(
       `[ReadModelStore#project] Storing new version of read model ${readModelName} with ID ${readModelID}:`,
       newReadModel

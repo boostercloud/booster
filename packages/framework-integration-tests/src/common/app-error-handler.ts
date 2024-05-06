@@ -9,6 +9,7 @@ import {
   EventInterface,
   NotificationInterface,
   ProjectionMetadata,
+  QueryEnvelope,
   ReadModelInterface,
   ReducerMetadata,
   ScheduledCommandEnvelope,
@@ -20,6 +21,7 @@ import {
   commandHandlerErrorIgnoredCartId,
   dispatchEventErrorCartId,
   projectionErrorCartId,
+  queryHandlerErrorCartId,
   reducerErrorCartId,
 } from '../constants'
 
@@ -40,6 +42,13 @@ export class AppErrorHandler {
     }
     if (commandEnvelope.value.cartId === commandHandlerBeforeErrorCartId) {
       return new Error(`${error.message}-onBeforeCommandHandlerError with metadata: ${JSON.stringify(commandMetadata)}`)
+    }
+    return error
+  }
+
+  public static async onQueryHandlerError(error: Error, query: QueryEnvelope): Promise<Error | undefined> {
+    if (query.value.cartId === queryHandlerErrorCartId) {
+      return new Error(error.message + '-onQueryHandlerError')
     }
     return error
   }

@@ -32,12 +32,12 @@ export function getKeyWithClient(client: JwksClient, header: jwt.JwtHeader, call
     callback(new Error('JWT kid not found'))
     return
   }
-  client.getSigningKey(header.kid, function (err: Error | null, key: SigningKey) {
+  client.getSigningKey(header.kid, function (err: Error | null, key?: SigningKey) {
     if (err) {
       callback(err)
       return
     }
-    callback(null, key.getPublicKey())
+    callback(null, key?.getPublicKey())
   })
 }
 

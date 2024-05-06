@@ -1,9 +1,9 @@
 ---
 name: Documentation issue
 about: Use this template for reporting issue or improvements for documentation.
+labels: documentation
 ---
-
-## Documentation bug, improvement
+# Documentation issue
 
 ## Description
 

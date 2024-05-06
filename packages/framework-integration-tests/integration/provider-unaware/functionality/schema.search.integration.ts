@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { expect } from 'chai'
-import gql from 'graphql-tag'
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { applicationUnderTest } from '../end-to-end/setup'
 
 const __TYPE = '__Type'
@@ -15,7 +13,7 @@ const DATE = 'Date'
 const LIST = 'LIST'
 const STRING = 'String'
 const OBJECT_KIND = 'OBJECT'
-describe('schemas', async () => {
+describe('schema search', async () => {
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
@@ -57,6 +55,82 @@ describe('schemas', async () => {
       fields = type.fields
     })
 
+    it('NonExposed properties are not included', () => {
+      const fieldsNames = fields.map((field: any) => field.name)
+      expect(fieldsNames).to.have.members([
+        'readOnlyProperty',
+        'privateProperty',
+        'publicProperty',
+        'id',
+        'date',
+        'array0',
+        'array1',
+        'unionArrays',
+        'unionWithNull',
+        'unionWithUndefined',
+        'unionWithAny',
+        'unionWithObject',
+        'unionWithUnknown',
+        'func0',
+        'any0',
+        'unknown0',
+        'record',
+        'generic',
+        'child',
+        'optionalString',
+        'optionalNull',
+        'optionalUndefined',
+        'optionalUnknown',
+        'optionalAny',
+        'optionalRecord',
+        'optionalGeneric',
+        'optionalChild',
+        'readonlyArray',
+      ])
+    })
+
+    it('For read only property', () => {
+      const expectedResult = {
+        __typename: __Field,
+        name: 'readOnlyProperty',
+        type: {
+          __typename: __TYPE,
+          name: STRING,
+          kind: SCALAR,
+          ofType: null,
+        },
+      }
+      expect(fields[0]).to.be.eql(expectedResult)
+    })
+
+    it('For private property', () => {
+      const expectedResult = {
+        __typename: __Field,
+        name: 'privateProperty',
+        type: {
+          __typename: __TYPE,
+          name: STRING,
+          kind: SCALAR,
+          ofType: null,
+        },
+      }
+      expect(fields[1]).to.be.eql(expectedResult)
+    })
+
+    it('For public property', () => {
+      const expectedResult = {
+        __typename: __Field,
+        name: 'publicProperty',
+        type: {
+          __typename: __TYPE,
+          name: STRING,
+          kind: SCALAR,
+          ofType: null,
+        },
+      }
+      expect(fields[2]).to.be.eql(expectedResult)
+    })
+
     it('For id (UUID)', () => {
       const expectedResult = {
         __typename: __Field,
@@ -72,7 +146,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[0]).to.be.eql(expectedResult)
+      expect(fields[3]).to.be.eql(expectedResult)
     })
 
     it('For dates', () => {
@@ -90,7 +164,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[1]).to.be.eql(expectedResult)
+      expect(fields[4]).to.be.eql(expectedResult)
     })
 
     it('For string arrays defined with brackets', () => {
@@ -108,7 +182,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[2]).to.be.eql(expectedResult)
+      expect(fields[5]).to.be.eql(expectedResult)
     })
 
     it('For string arrays defined with Array', () => {
@@ -126,7 +200,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[3]).to.be.eql(expectedResult)
+      expect(fields[6]).to.be.eql(expectedResult)
     })
 
     it('For union arrays', () => {
@@ -144,7 +218,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[4]).to.be.eql(expectedResult)
+      expect(fields[7]).to.be.eql(expectedResult)
     })
 
     it('For union with null', () => {
@@ -158,7 +232,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[5]).to.be.eql(expectedResult)
+      expect(fields[8]).to.be.eql(expectedResult)
     })
 
     it('For union with undefined', () => {
@@ -172,7 +246,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[6]).to.be.eql(expectedResult)
+      expect(fields[9]).to.be.eql(expectedResult)
     })
 
     it('For union with any', () => {
@@ -190,7 +264,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[7]).to.be.eql(expectedResult)
+      expect(fields[10]).to.be.eql(expectedResult)
     })
 
     it('For union with object', () => {
@@ -208,7 +282,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[8]).to.be.eql(expectedResult)
+      expect(fields[11]).to.be.eql(expectedResult)
     })
 
     it('For union with unknown', () => {
@@ -226,7 +300,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[9]).to.be.eql(expectedResult)
+      expect(fields[12]).to.be.eql(expectedResult)
     })
 
     it('For functions', () => {
@@ -244,7 +318,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[10]).to.be.eql(expectedResult)
+      expect(fields[13]).to.be.eql(expectedResult)
     })
 
     it('For any', () => {
@@ -262,7 +336,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[11]).to.be.eql(expectedResult)
+      expect(fields[14]).to.be.eql(expectedResult)
     })
 
     it('For unknown', () => {
@@ -280,7 +354,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[12]).to.be.eql(expectedResult)
+      expect(fields[15]).to.be.eql(expectedResult)
     })
 
     it('For record', () => {
@@ -298,24 +372,24 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[13]).to.be.eql(expectedResult)
+      expect(fields[16]).to.be.eql(expectedResult)
     })
 
     it('For generic', async () => {
       // @ts-ignore
-      expect(fields[14].name).to.be.eql('generic')
+      expect(fields[17].name).to.be.eql('generic')
       // @ts-ignore
-      expect(fields[14].__typename).to.be.eql(__Field)
+      expect(fields[17].__typename).to.be.eql(__Field)
       // @ts-ignore
-      expect(fields[14].type.kind).to.be.eql(NON_NULL)
+      expect(fields[17].type.kind).to.be.eql(NON_NULL)
       // @ts-ignore
-      expect(fields[14].type.name).to.be.null
+      expect(fields[17].type.name).to.be.null
       // @ts-ignore
-      expect(fields[14].type.ofType.__typename).to.be.eql(__TYPE)
+      expect(fields[17].type.ofType.__typename).to.be.eql(__TYPE)
       // @ts-ignore
-      expect(fields[14].type.ofType.name).to.be.eql(JSON_OBJECT)
+      expect(fields[17].type.ofType.name).to.be.eql(JSON_OBJECT)
       // @ts-ignore
-      expect(fields[14].type.ofType.kind).to.be.eql(SCALAR)
+      expect(fields[17].type.ofType.kind).to.be.eql(SCALAR)
     })
 
     it('For base class', () => {
@@ -333,7 +407,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[15]).to.be.eql(expectedResult)
+      expect(fields[18]).to.be.eql(expectedResult)
     })
 
     it('For optional string', () => {
@@ -347,7 +421,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[16]).to.be.eql(expectedResult)
+      expect(fields[19]).to.be.eql(expectedResult)
     })
 
     it('For optional null', () => {
@@ -361,7 +435,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[17]).to.be.eql(expectedResult)
+      expect(fields[20]).to.be.eql(expectedResult)
     })
 
     it('For optional undefined', () => {
@@ -375,7 +449,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[18]).to.be.eql(expectedResult)
+      expect(fields[21]).to.be.eql(expectedResult)
     })
 
     it('For optional unknown', () => {
@@ -389,7 +463,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[19]).to.be.eql(expectedResult)
+      expect(fields[22]).to.be.eql(expectedResult)
     })
 
     it('For optional any', () => {
@@ -403,7 +477,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[20]).to.be.eql(expectedResult)
+      expect(fields[23]).to.be.eql(expectedResult)
     })
 
     it('For optional record', () => {
@@ -417,7 +491,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[21]).to.be.eql(expectedResult)
+      expect(fields[24]).to.be.eql(expectedResult)
     })
 
     it('For optional generic', async () => {
@@ -431,7 +505,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[22]).to.be.eql(expectedResult)
+      expect(fields[25]).to.be.eql(expectedResult)
     })
 
     it('For optional base class', async () => {
@@ -445,7 +519,7 @@ describe('schemas', async () => {
           ofType: null,
         },
       }
-      expect(fields[23]).to.be.eql(expectedResult)
+      expect(fields[26]).to.be.eql(expectedResult)
     })
 
     it('For readonly array', () => {
@@ -463,7 +537,7 @@ describe('schemas', async () => {
           },
         },
       }
-      expect(fields[24]).to.be.eql(expectedResult)
+      expect(fields[27]).to.be.eql(expectedResult)
     })
   })
 })

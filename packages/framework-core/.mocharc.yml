@@ -1,5 +1,7 @@
 diff: true
-require: 'ts-node/register'
+require:
+  - 'ts-node/register'
+  - 'ts-patch/compiler'
 extension:
   - ts
 package: './package.json'
