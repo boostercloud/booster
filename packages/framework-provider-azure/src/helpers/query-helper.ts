@@ -42,11 +42,13 @@ export async function search<TResult>(
   }
 
   logger.debug('Running search with the following params: \n', querySpec)
-  const { resources } = await cosmosDb
+  let { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
     .container(containerName)
     .items.query(querySpec)
     .fetchAll()
+
+  resources = nestProperties(resources)
 
   if (paginatedVersion) {
     return {
@@ -221,5 +223,78 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
   if (typeof projections !== 'object') {
     return projections
   }
-  return 'c.' + Object.values(projections).join(', c.')
+
+  // Group fields by the root property
+  const groupedFields: any = {}
+  Object.values(projections).forEach((field: string) => {
+    const root: string = field.split('.')[0]
+    if (!groupedFields[root]) {
+      groupedFields[root] = []
+    }
+    groupedFields[root].push(field)
+  })
+
+  return Object.keys(groupedFields)
+    .map((root: string): string => {
+      const fields = groupedFields[root]
+      if (root.endsWith('[]')) {
+        const arrayRoot: string = root.slice(0, -2)
+        const subFields = fields.map((f: string) => f.replace(`${root}.`, 'item.')).join(', ')
+        return `ARRAY(SELECT ${subFields} FROM item IN c.${arrayRoot}) AS ${arrayRoot}`
+      } else if (fields.length === 1 && !fields[0].includes('.')) {
+        // Simple field
+        return `c.${fields[0]}`
+      } else {
+        // Nested object fields
+        return fields.map((f: string) => `c.${f} AS "${f}"`).join(', ')
+      }
+    })
+    .join(', ')
+}
+
+function nestProperties(obj: any): any {
+  const result = {}
+
+  function setNestedProperty(obj: any, path: string[], value: any): void {
+    let current = obj
+    for (let i = 0; i < path.length - 1; i++) {
+      if (!current[path[i]]) {
+        current[path[i]] = {}
+      }
+      current = current[path[i]]
+    }
+    current[path[path.length - 1]] = value
+  }
+
+  function processObject(input: any, output: any): void {
+    for (const key in input) {
+      if (Object.prototype.hasOwnProperty.call(input, key)) {
+        const value = input[key]
+        const keys = key.split('.')
+        setNestedProperty(output, keys, value)
+      }
+    }
+  }
+
+  function processArray(arr: any[]): any[] {
+    return arr.map((item: any): any => {
+      if (Array.isArray(item)) {
+        return processArray(item)
+      } else if (item !== null && typeof item === 'object') {
+        const nestedItem = {}
+        processObject(item, nestedItem)
+        return nestedItem
+      } else {
+        return item
+      }
+    })
+  }
+
+  if (Array.isArray(obj)) {
+    return processArray(obj)
+  } else if (obj !== null && typeof obj === 'object') {
+    processObject(obj, result)
+  }
+
+  return result
 }

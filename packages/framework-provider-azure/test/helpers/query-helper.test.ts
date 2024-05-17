@@ -121,7 +121,45 @@ describe('Query helper', () => {
           .query
       ).to.have.been.calledWith(
         match({
-          query: 'SELECT c.id, c.other, c.first.second.third FROM c ',
+          query: 'SELECT c.id, c.other, c.first.second.third AS "first.second.third" FROM c ',
+          parameters: [],
+        })
+      )
+    })
+
+    it('Executes a SQL query with a projectionFor projection that has array fields and nested objects in the read model table', async () => {
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        {},
+        undefined,
+        undefined,
+        false,
+        undefined,
+        [
+          'id',
+          'other',
+          'arrayProp[].prop1',
+          'arrayProp[].prop2',
+          'a.b.c1',
+          'a.b.c2',
+          'arr[].x.y',
+          'arr[].x.z',
+        ] as ProjectionFor<unknown>
+      )
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT c.id, c.other, ARRAY(SELECT item.prop1, item.prop2 FROM item IN c.arrayProp) AS arrayProp, c.a.b.c1 AS "a.b.c1", c.a.b.c2 AS "a.b.c2", ARRAY(SELECT item.x.y, item.x.z FROM item IN c.arr) AS arr FROM c ',
           parameters: [],
         })
       )

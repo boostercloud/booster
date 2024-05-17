@@ -93,7 +93,9 @@ export async function searchReadModel(
   const query = { ...queryFor, typeName: readModelName }
   logger.debug('Got query ', query)
   const skipId = afterCursor?.id ? parseInt(afterCursor?.id) : 0
+  select = select?.map((item: string) => item.replace('!', '')) as ProjectionFor<unknown>
   const result = await db.query(query, sortBy, skipId, limit, select)
+  // result = nestProperties(result)
   logger.debug('Search result: ', result)
   const items = result?.map((envelope) => envelope.value) ?? []
   if (paginatedVersion) {
@@ -117,3 +119,50 @@ export async function deleteReadModel(
   await db.deleteById(readModel.id, readModelName)
   logger.debug(`Read model deleted. ID=${readModel.id}. Name=${readModelName}`)
 }
+
+// function nestProperties(obj: any): any {
+//   const result = {}
+//
+//   function setNestedProperty(obj: any, path: string[], value: any): void {
+//     let current = obj
+//     for (let i = 0; i < path.length; i++) {
+//       if (!current[path[i]]) {
+//         current[path[i]] = {}
+//       }
+//       current = current[path[i]]
+//     }
+//     current[path[path.length - 1]] = value
+//   }
+//
+//   function processObject(input: any, output: any): void {
+//     for (const key in input) {
+//       if (Object.prototype.hasOwnProperty.call(input, key)) {
+//         const value = input[key]
+//         const keys = key.split('.')
+//         setNestedProperty(output, keys, value)
+//       }
+//     }
+//   }
+//
+//   function processArray(arr: any[]): any[] {
+//     return arr.map((item: any): any => {
+//       if (Array.isArray(item)) {
+//         return processArray(item)
+//       } else if (item !== null && typeof item === 'object') {
+//         const nestedItem = {}
+//         processObject(item, nestedItem)
+//         return nestedItem
+//       } else {
+//         return item
+//       }
+//     })
+//   }
+//
+//   if (Array.isArray(obj)) {
+//     return processArray(obj)
+//   } else if (obj !== null && typeof obj === 'object') {
+//     processObject(obj, result)
+//   }
+//
+//   return result
+// }
