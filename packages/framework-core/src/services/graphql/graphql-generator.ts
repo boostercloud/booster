@@ -106,7 +106,6 @@ export class GraphQLGenerator {
       let isPaginated = false
       const fields: ProjectionFor<unknown> = this.getFields(info) as ProjectionFor<unknown>
       let select: ProjectionFor<unknown> | undefined = fields.length > 0 ? fields : undefined
-      console.log(`**** ${select}`)
       if (info?.fieldName === `List${pluralize(readModelClass.name)}`) {
         isPaginated = true
         if (select) {
