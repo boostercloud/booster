@@ -50,7 +50,45 @@ export class ReadModelRegistry {
     if (limit) {
       cursor = cursor.limit(limit)
     }
-    return await cursor.execAsync()
+
+    const arrayFields: { [key: string]: string[] } = {}
+    select?.forEach((field: string) => {
+      const parts = field.split('.')
+      const topLevelField = parts[0]
+      if (topLevelField.endsWith('[]')) {
+        const arrayField = topLevelField.slice(0, -2)
+        if (!arrayFields[arrayField]) {
+          arrayFields[arrayField] = []
+        }
+        const subField = parts.slice(1).join('.')
+        if (subField) {
+          arrayFields[arrayField].push(subField)
+        }
+      }
+    })
+
+    // Fetch results from the cursor
+    const results = await cursor.execAsync()
+
+    // Process each result to filter the array fields
+    results.forEach((result: any) => {
+      Object.keys(arrayFields).forEach((arrayField) => {
+        const subFields = arrayFields[arrayField]
+        if (result.value && Array.isArray(result.value[arrayField])) {
+          result.value[arrayField] = result.value[arrayField].map((item: any) => {
+            const filteredItem: { [key: string]: any } = {}
+            subFields.forEach((subField) => {
+              if (subField in item) {
+                filteredItem[subField] = item[subField]
+              }
+            })
+            return filteredItem
+          })
+        }
+      })
+    })
+
+    return results
   }
 
   public async store(readModel: ReadModelEnvelope, expectedCurrentVersion: number): Promise<void> {
@@ -114,9 +152,29 @@ export class ReadModelRegistry {
 
   toLocalSelectFor(select?: ProjectionFor<unknown>): LocalSelectFor {
     if (!select || select.length === 0) return {}
+
     const result: LocalSelectFor = {}
-    return select.reduce((acc, field) => {
-      return { ...acc, [`value.${field}`]: 1 }
+    const seenFields = new Set<string>()
+
+    return select.reduce((acc: LocalSelectFor, field: string) => {
+      // Split the field into parts
+      const parts = field.split('.')
+      const topLevelField = parts[0]
+
+      // Check if the field is an array field
+      if (topLevelField.endsWith('[]')) {
+        const arrayField = `value.${topLevelField.slice(0, -2)}`
+
+        // Only add the array field if it hasn't been added yet
+        if (!seenFields.has(arrayField)) {
+          seenFields.add(arrayField)
+          return { ...acc, [arrayField]: 1}
+        }
+      } else {
+        // Handle non-array fields normally
+        return { ...acc, [`value.${field}`]: 1 }
+      }
+      return acc
     }, result)
   }
 }

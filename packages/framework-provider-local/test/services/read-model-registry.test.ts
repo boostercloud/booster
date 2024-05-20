@@ -201,6 +201,29 @@ describe('the read model registry', () => {
       }
       expect(result[0]).to.deep.include(expectedReadModel)
     })
+
+    it('should return only projected fields with array fields', async () => {
+      const result = await readModelRegistry.query(
+        {
+          value: mockReadModel.value,
+          typeName: mockReadModel.typeName,
+        },
+        undefined,
+        undefined,
+        undefined,
+        ['id', 'age', 'arr[].id'] as ProjectionFor<unknown>
+      )
+
+      expect(result.length).to.be.equal(1)
+      const expectedReadModel = {
+        value: {
+          id: mockReadModel.value.id,
+          age: mockReadModel.value.age,
+          arr: mockReadModel.value.arr.map((item: any) => ({ id: item.id })),
+        },
+      }
+      expect(result[0]).to.deep.include(expectedReadModel)
+    })
   })
 
   describe('delete by id', () => {
