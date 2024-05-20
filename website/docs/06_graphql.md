@@ -855,18 +855,36 @@ export class GetProductsCount {
               ],
             })
             .select(['sku', 'description'])
-            .skipInstance(true)
     const result = await searcher.search()
     return { count: result.length }
   }
 }
 ```
 
-The searcher result using `skipInstance` will generate an array of objects with the `sku` and `description` fields of the `ProductReadModel` read model. If you don't use `skipInstance` the result will be an array of `ProductReadModel` instances.
+The searcher result using `select` will generate an array of objects with the `sku` and `description` fields of the `ProductReadModel` read model. If you don't use `select` the result will be an array of `ProductReadModel` instances.
+You can also select properties in objects which are part of an array property in a model. For that, the parent array properties need to be notated with the `[]` suffix. For example:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class GetCartItems {
+  public constructor(readonly filters: Record<string, any>) {}
+
+  public static async handle(): Promise<unknown> {
+    const searcher = Booster.readModel(CartReadModel)
+            .select(['id', 'cartItems[].productId'])
+    const result = await searcher.search()
+    return { count: result.length }
+  }
+}
+```
+
+The above search will return an array of carts with their `id` property, as well as an array of the `cartItems` of each cart with only the `productId` for each item.
 
 > **Warning**: Only available for Azure and Local Providers. `select` will be ignored for AWS Provider.
 
-> **Warning**: Using `skipInstance` will skip any Read Models migrations that need to be applied to the result. If you need to apply migrations to the result, don't use `skipInstance`.
+> **Warning**: Using `select` will skip any Read Models migrations that need to be applied to the result. If you need to apply migrations to the result, don't use `select`.
 
 
 > **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
