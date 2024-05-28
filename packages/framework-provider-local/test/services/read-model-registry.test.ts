@@ -211,7 +211,7 @@ describe('the read model registry', () => {
         undefined,
         undefined,
         undefined,
-        ['id', 'age', 'arr[].id'] as ProjectionFor<unknown>
+        ['id', 'age', 'arr[].id', 'prop.items[].name'] as ProjectionFor<unknown>
       )
 
       expect(result.length).to.be.equal(1)
@@ -220,6 +220,7 @@ describe('the read model registry', () => {
           id: mockReadModel.value.id,
           age: mockReadModel.value.age,
           arr: mockReadModel.value.arr.map((item: any) => ({ id: item.id })),
+          prop: { items: mockReadModel.value.prop.items.map((item: any) => ({ name: item.name })) },
         },
       }
       expect(result[0]).to.deep.include(expectedReadModel)

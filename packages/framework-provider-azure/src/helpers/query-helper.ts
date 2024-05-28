@@ -225,7 +225,7 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
   }
 
   // Group fields by the root property
-  const groupedFields: any = {}
+  const groupedFields: { [key: string]: string[] } = {}
   Object.values(projections).forEach((field: string) => {
     const root: string = field.split('.')[0]
     if (!groupedFields[root]) {
@@ -246,7 +246,31 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
         return `c.${fields[0]}`
       } else {
         // Nested object fields
-        return fields.map((f: string) => `c.${f} AS "${f}"`).join(', ')
+        const nestedFields: { [key: string]: string[] } = {}
+        fields.forEach((f: string) => {
+          const parts = f.split('.').slice(1)
+          if (parts.length > 0) {
+            const nestedRoot = parts[0]
+            if (!nestedFields[nestedRoot]) {
+              nestedFields[nestedRoot] = []
+            }
+            nestedFields[nestedRoot].push(parts.join('.'))
+          }
+        })
+
+        return Object.keys(nestedFields)
+          .map((nestedRoot: string) => {
+            const subFields = nestedFields[nestedRoot].map((f: string) => `c.${root}.${f} AS "${root}.${f}"`).join(', ')
+            if (nestedRoot.endsWith('[]')) {
+              const arrayNestedRoot = nestedRoot.slice(0, -2)
+              const subArrayFields = nestedFields[nestedRoot]
+                .map((f: string) => `item.${f.split('.').slice(1).join('.')}`)
+                .join(', ')
+              return `ARRAY(SELECT ${subArrayFields} FROM item IN c.${root}.${arrayNestedRoot}) AS "${root}.${arrayNestedRoot}"`
+            }
+            return subFields
+          })
+          .join(', ')
       }
     })
     .join(', ')

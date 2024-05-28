@@ -23,6 +23,18 @@ export function createMockReadModelEnvelope(): ReadModelEnvelope {
           name: random.word(),
         },
       ],
+      prop: {
+        items: [
+          {
+            id: random.uuid(),
+            name: random.word(),
+          },
+          {
+            id: random.uuid(),
+            name: random.word(),
+          },
+        ],
+      },
     },
     typeName: random.word(),
   }

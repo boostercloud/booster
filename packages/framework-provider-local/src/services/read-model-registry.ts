@@ -51,18 +51,34 @@ export class ReadModelRegistry {
       cursor = cursor.limit(limit)
     }
 
-    const arrayFields: { [key: string]: string[] } = {}
+    const arrayFields: { [key: string]: any } = {}
     select?.forEach((field: string) => {
       const parts = field.split('.')
-      const topLevelField = parts[0]
-      if (topLevelField.endsWith('[]')) {
-        const arrayField = topLevelField.slice(0, -2)
-        if (!arrayFields[arrayField]) {
-          arrayFields[arrayField] = []
-        }
-        const subField = parts.slice(1).join('.')
-        if (subField) {
-          arrayFields[arrayField].push(subField)
+      let currentLevel = arrayFields
+      let isArrayField = false
+      for (let i = 0; i < parts.length; ++i) {
+        const part = parts[i]
+        if (part.endsWith('[]')) {
+          const arrayField = part.slice(0, -2)
+          if (!currentLevel[arrayField]) {
+            currentLevel[arrayField] = {}
+          }
+          currentLevel = currentLevel[arrayField]
+          isArrayField = true
+        } else {
+          if (i === parts.length - 1) {
+            if (isArrayField) {
+              if (!currentLevel['__fields']) {
+                currentLevel['__fields'] = []
+              }
+              currentLevel['__fields'].push(part)
+            }
+          } else {
+            if (!currentLevel[part]) {
+              currentLevel[part] = {}
+            }
+            currentLevel = currentLevel[part]
+          }
         }
       }
     })
@@ -72,20 +88,7 @@ export class ReadModelRegistry {
 
     // Process each result to filter the array fields
     results.forEach((result: any) => {
-      Object.keys(arrayFields).forEach((arrayField) => {
-        const subFields = arrayFields[arrayField]
-        if (result.value && Array.isArray(result.value[arrayField])) {
-          result.value[arrayField] = result.value[arrayField].map((item: any) => {
-            const filteredItem: { [key: string]: any } = {}
-            subFields.forEach((subField) => {
-              if (subField in item) {
-                filteredItem[subField] = item[subField]
-              }
-            })
-            return filteredItem
-          })
-        }
-      })
+      result.value = this.filterObjectByArrayFields(result.value, arrayFields)
     })
 
     return results
@@ -156,25 +159,70 @@ export class ReadModelRegistry {
     const result: LocalSelectFor = {}
     const seenFields = new Set<string>()
 
-    return select.reduce((acc: LocalSelectFor, field: string) => {
-      // Split the field into parts
+    select.forEach((field: string) => {
       const parts = field.split('.')
       const topLevelField = parts[0]
 
-      // Check if the field is an array field
       if (topLevelField.endsWith('[]')) {
         const arrayField = `value.${topLevelField.slice(0, -2)}`
-
-        // Only add the array field if it hasn't been added yet
         if (!seenFields.has(arrayField)) {
           seenFields.add(arrayField)
-          return { ...acc, [arrayField]: 1}
+          result[arrayField] = 1
         }
       } else {
-        // Handle non-array fields normally
-        return { ...acc, [`value.${field}`]: 1 }
+        if (parts.some((part) => part.endsWith('[]'))) {
+          const arrayIndex = parts.findIndex((part) => part.endsWith('[]'))
+          const arrayField = `value.${parts
+            .slice(0, arrayIndex + 1)
+            .join('.')
+            .slice(0, -2)}`
+          if (!seenFields.has(arrayField)) {
+            seenFields.add(arrayField)
+            result[arrayField] = 1
+          }
+        } else {
+          const fullPath = `value.${field}`
+          if (!seenFields.has(fullPath)) {
+            seenFields.add(fullPath)
+            result[fullPath] = 1
+          }
+        }
       }
-      return acc
-    }, result)
+    })
+
+    return result
+  }
+
+  filterArrayFields(item: any, fields: { [key: string]: any; __fields?: string[] }): any {
+    const filteredItem: { [key: string]: any } = {}
+    if (fields.__fields) {
+      fields.__fields.forEach((field) => {
+        if (field in item) {
+          filteredItem[field] = item[field]
+        }
+      })
+    }
+    Object.keys(fields).forEach((key) => {
+      if (key !== '__fields' && item[key] && Array.isArray(item[key])) {
+        filteredItem[key] = item[key].map((subItem: any) => this.filterArrayFields(subItem, fields[key]))
+      }
+    })
+    return filteredItem
+  }
+
+  filterObjectByArrayFields(obj: any, arrayFields: { [key: string]: any; __fields?: string[] }): any {
+    const filteredObj: { [key: string]: any } = {}
+    Object.keys(obj).forEach((key) => {
+      if (key in arrayFields) {
+        if (Array.isArray(obj[key])) {
+          filteredObj[key] = obj[key].map((item: any) => this.filterArrayFields(item, arrayFields[key]))
+        } else {
+          filteredObj[key] = this.filterObjectByArrayFields(obj[key], arrayFields[key])
+        }
+      } else {
+        filteredObj[key] = obj[key]
+      }
+    })
+    return filteredObj
   }
 }
