@@ -886,6 +886,7 @@ The above search will return an array of carts with their `id` property, as well
 
 > **Warning**: Using `select` will skip any Read Models migrations that need to be applied to the result. If you need to apply migrations to the result, don't use `select`.
 
+> **Warning**: Support for selecting fields from objects inside arrays is limited to arrays that are at most nested inside another property, e.g., `['category.relatedCategories[].name']`. Selecting fields from arrays that are nested deeper than that (e.g., `['foo.bar.items[].id']`) is not expected to yield the expected results.
 
 > **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
 
