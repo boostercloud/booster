@@ -244,7 +244,6 @@ export class GraphQLGenerator {
           const field = parentType.getFields()[fieldName]
 
           if (!field) {
-            console.error(`Field ${fieldName} not found on type ${parentType.name}. Skipping.`) // @TODO: remove
             return
           }
 
