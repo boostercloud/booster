@@ -222,9 +222,36 @@ export class GraphQLGenerator {
     }
   }
 
+  /**
+   * Extracts the fields from a GraphQLResolveInfo object. This object is part of a GraphQL request and the goal is to
+   * identify the fields in the request. For example, for the following GraphQL query request:
+   *
+   * ```graphql
+   * query {
+   *   CartReadModel {
+   *     id
+   *     cartItems {
+   *       id
+   *       quantity
+   *     }
+   *   }
+   * }
+   * ```
+   *
+   * it will return the following list of fields: `['id', 'cartItems[].id', 'cartItems[].quantity']`
+   *
+   * @param {GraphQLResolveInfo} info - The GraphQLResolveInfo object.
+   * @returns {string[]} - The extracted fields.
+   * @private
+   */
   private static getFields(info: GraphQLResolveInfo): string[] {
     let fields: string[] = []
 
+    /**
+     * Checks if a type is a list.
+     * @param {any} type - The type to check.
+     * @returns {boolean} - True if the type is a list, false otherwise.
+     */
     const isList = (type: any): boolean => {
       if (type instanceof GraphQLNonNull) {
         return type.ofType instanceof GraphQLList
@@ -232,6 +259,13 @@ export class GraphQLGenerator {
       return type instanceof GraphQLList
     }
 
+    /**
+     * Extracts fields from a selection set.
+     * @param {SelectionSetNode} selectionSet - The selection set.
+     * @param {string[]} path - The current path.
+     * @param {GraphQLObjectType | any} parentType - The parent type.
+     * @returns {string[]} - The extracted fields.
+     */
     const extractFields = (
       selectionSet: SelectionSetNode,
       path: string[] = [],

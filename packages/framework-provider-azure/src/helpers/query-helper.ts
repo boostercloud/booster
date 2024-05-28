@@ -276,9 +276,45 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
     .join(', ')
 }
 
+/**
+ * Transforms the flat properties returned by Cosmos DB into a nested structure. For example, the following object:
+ *
+ * ```json
+ * {
+ *   "foo.bar": "baz",
+ *   "items": [{"qux.quux": "corge"}]
+ * }
+ * ```
+ *
+ * is transformed to this:
+ *
+ * ```json
+ * {
+ *   "foo": {
+ *     "bar": "baz"
+ *   },
+ *   "items": [
+ *     {
+ *       "qux": {
+ *           "quux": "corge"
+ *         }
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * @param {any} obj - The object to be nested.
+ * @returns {any} - The nested object.
+ */
 function nestProperties(obj: any): any {
   const result = {}
 
+  /**
+   * Sets a nested property on an object.
+   * @param {any} obj - The object on which to set the property.
+   * @param {string[]} path - The path to the property.
+   * @param {any} value - The value to set.
+   */
   function setNestedProperty(obj: any, path: string[], value: any): void {
     let current = obj
     for (let i = 0; i < path.length - 1; i++) {
@@ -290,6 +326,11 @@ function nestProperties(obj: any): any {
     current[path[path.length - 1]] = value
   }
 
+  /**
+   * Processes an object, nesting its properties.
+   * @param {any} input - The object to process.
+   * @param {any} output - The object to output.
+   */
   function processObject(input: any, output: any): void {
     for (const key in input) {
       if (Object.prototype.hasOwnProperty.call(input, key)) {
@@ -300,6 +341,11 @@ function nestProperties(obj: any): any {
     }
   }
 
+  /**
+   * Processes an array, nesting its properties.
+   * @param {any[]} arr - The array to process.
+   * @returns {any[]} - The processed array.
+   */
   function processArray(arr: any[]): any[] {
     return arr.map((item: any): any => {
       if (Array.isArray(item)) {
