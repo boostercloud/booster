@@ -60,7 +60,7 @@ export class ReadModelRegistry {
         const part = parts[i]
         if (part.endsWith('[]')) {
           const arrayField = part.slice(0, -2)
-          if (!currentLevel[arrayField]) {
+          if (!Object.prototype.hasOwnProperty.call(currentLevel, arrayField)) {
             currentLevel[arrayField] = {}
           }
           currentLevel = currentLevel[arrayField]
@@ -74,7 +74,7 @@ export class ReadModelRegistry {
               currentLevel['__fields'].push(part)
             }
           } else {
-            if (!currentLevel[part]) {
+            if (!Object.prototype.hasOwnProperty.call(currentLevel, part)) {
               currentLevel[part] = {}
             }
             currentLevel = currentLevel[part]
