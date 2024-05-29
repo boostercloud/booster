@@ -61,7 +61,7 @@ export class ReadModelRegistry {
         if (part.endsWith('[]')) {
           const arrayField = part.slice(0, -2)
           if (!currentLevel[arrayField]) {
-            currentLevel[arrayField] = Object.create(null)
+            currentLevel[arrayField] = {}
           }
           currentLevel = currentLevel[arrayField]
           isArrayField = true
@@ -75,7 +75,7 @@ export class ReadModelRegistry {
             }
           } else {
             if (!currentLevel[part]) {
-              currentLevel[part] = Object.create(null)
+              currentLevel[part] = {}
             }
             currentLevel = currentLevel[part]
           }
