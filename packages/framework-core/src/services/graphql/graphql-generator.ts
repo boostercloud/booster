@@ -109,6 +109,7 @@ export class GraphQLGenerator {
       if (info?.fieldName === `List${pluralize(readModelClass.name)}`) {
         isPaginated = true
         if (select) {
+          // In paginated queries, the `items[].` field needs to be removed from the select fields before querying the database
           select = select
             .map((field: string) => {
               return field.split('.').slice(1).join('.')
