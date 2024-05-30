@@ -86,7 +86,8 @@
     "ts-patch": "3.1.2",
     "typescript": "5.1.6",
     "sinon": "9.2.3",
-    "eslint-plugin-unicorn": "~44.0.2"
+    "eslint-plugin-unicorn": "~44.0.2",
+    "concurrently": "~8.2.2"
   },
   "engines": {
     "node": ">=18.0.0 <19.0.0"
@@ -111,11 +112,12 @@
     "integration/aws-end-to-end": "echo 'Skipping integration tests.' # TODO 'Enable it again when AWS Provider will be upgrade it' TS_NODE_PROJECT=\"./tsconfig.integration.json\" TESTED_PROVIDER=AWS AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=production mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",
     "integration/aws-load": "echo 'Skipping integration tests.' # TS_NODE_PROJECT=\"./tsconfig.integration.json\" TESTED_PROVIDER=AWS AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=production mocha --forbid-only --exit --config \"integration/provider-unaware/load/.mocharc.yml\" \"integration/provider-unaware/load/**/*.load.ts\"",
     "integration/aws-nuke": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" AWS_SDK_LOAD_CONFIG=true BOOSTER_ENV=production mocha --forbid-only --exit --config \"integration/provider-specific/aws/nuke/.mocharc.yml\" \"integration/provider-specific/aws/nuke/**/*.integration.ts\"",
-    "integration/local": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" npm run integration/local-start && npm run integration/local-end-to-end && npm run integration/local-stop",
+    "integration/local": "concurrently \"npm run integration/local-start\" \"npm run integration/local-delayed-end-to-end\"",
     "integration/local-ongoing": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" npm run integration/local-start && npm run integration/local-stop",
-    "integration/local-start": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/start/.mocharc.yml\" \"integration/provider-specific/local/start/*.integration.ts\"",
+    "integration/local-start": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" BOOSTER_ENV=local mocha --forbid-only --config \"integration/provider-specific/local/start/.mocharc.yml\" \"integration/provider-specific/local/start/*.integration.ts\"",
     "integration/local-func": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/functionality/.mocharc.yml\" \"integration/provider-unaware/functionality/**/*.integration.ts\"",
     "integration/local-end-to-end": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" TESTED_PROVIDER=LOCAL BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-unaware/end-to-end/.mocharc.yml\" \"integration/provider-unaware/end-to-end/**/*.integration.ts\"",
+    "integration/local-delayed-end-to-end": "sleep 180 && npm run integration/local-end-to-end && npm run integration/local-stop",
     "integration/local-stop": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" BOOSTER_ENV=local mocha --forbid-only --exit --config \"integration/provider-specific/local/stop/.mocharc.yml\" \"integration/provider-specific/local/stop/*.integration.ts\"",
     "integration/azure": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" npm run integration/azure-deploy && npm run integration/azure-end-to-end && npm run integration/azure-func && npm run integration/azure-nuke",
     "integration/azure-deploy": "TS_NODE_PROJECT=\"./tsconfig.integration.json\" TESTED_PROVIDER=AZURE BOOSTER_ENV=azure mocha --forbid-only --exit --config \"integration/provider-specific/azure/deployment/.mocharc.yml\" \"integration/provider-specific/azure/deployment/**/*.integration.ts\"",

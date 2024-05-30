@@ -1539,6 +1539,171 @@ describe('Read models end-to-end tests', () => {
         }
       })
     })
+
+    context('projecting fields', () => {
+      if (process.env.TESTED_PROVIDER === 'AWS') {
+        console.log('AWS Provider ReadModel projecting field is not supported')
+        return
+      }
+
+      const mockCartId: string = random.uuid()
+      const mockProductId: string = random.uuid()
+      const mockQuantity: number = random.number({ min: 1 })
+      const mockAddress = {
+        firstName: random.word(),
+        lastName: random.word(),
+        country: random.word(),
+        state: random.word(),
+        postalCode: random.word(),
+        address: random.word(),
+      }
+
+      beforeEach(async () => {
+        // provisioning a cart
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
+
+        // update shipping address
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            address: mockAddress,
+          },
+          mutation: gql`
+            mutation UpdateShippingAddress($cartId: ID!, $address: AddressInput!) {
+              UpdateShippingAddress(input: { cartId: $cartId, address: $address })
+            }
+          `,
+        })
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    shippingAddress {
+                      firstName
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) =>
+            result?.data?.CartReadModel != null &&
+            result?.data?.CartReadModel?.shippingAddress?.firstName === mockAddress.firstName
+        )
+      })
+
+      it('with paginatedVersion true', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.mutate({
+              variables: {
+                cartId: mockCartId,
+                paginatedVersion: true,
+              },
+              mutation: gql`
+                mutation CartShippingAddress($cartId: ID!, $paginatedVersion: Boolean!) {
+                  CartShippingAddress(input: { cartId: $cartId, paginatedVersion: $paginatedVersion })
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartShippingAddress != null
+        )
+
+        const cartShippingAddress = queryResult.data.CartShippingAddress
+
+        expect(cartShippingAddress).to.deep.equal({
+          items: [
+            {
+              id: mockCartId,
+              shippingAddress: {
+                firstName: mockAddress.firstName,
+                lastName: mockAddress.lastName,
+                country: mockAddress.country,
+                state: mockAddress.state,
+                postalCode: mockAddress.postalCode,
+                address: mockAddress.address,
+              },
+            },
+          ],
+          count: 1,
+          cursor: {
+            id: '1',
+          },
+        })
+      })
+
+      it('with paginatedVersion false', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.mutate({
+              variables: {
+                cartId: mockCartId,
+                paginatedVersion: false,
+              },
+              mutation: gql`
+                mutation CartShippingAddress($cartId: ID!, $paginatedVersion: Boolean!) {
+                  CartShippingAddress(input: { cartId: $cartId, paginatedVersion: $paginatedVersion })
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartShippingAddress != null
+        )
+
+        const cartShippingAddress = queryResult.data.CartShippingAddress
+
+        expect(cartShippingAddress).to.deep.equal([
+          {
+            id: mockCartId,
+            shippingAddress: {
+              firstName: mockAddress.firstName,
+              lastName: mockAddress.lastName,
+              country: mockAddress.country,
+              state: mockAddress.state,
+              postalCode: mockAddress.postalCode,
+              address: mockAddress.address,
+            },
+          },
+        ])
+      })
+    })
   })
 
   describe('projecting two entities', () => {

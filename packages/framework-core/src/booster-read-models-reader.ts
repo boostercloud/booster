@@ -13,6 +13,7 @@ import {
   ReadOnlyNonEmptyArray,
   SortFor,
   SubscriptionEnvelope,
+  ProjectionFor,
 } from '@boostercloud/framework-types'
 import { createInstance, createInstances, getLogger } from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
@@ -71,7 +72,8 @@ export class BoosterReadModelsReader {
       readModelTransformedRequest.sortBy,
       readModelTransformedRequest.limit,
       readModelTransformedRequest.afterCursor,
-      readModelTransformedRequest.paginatedVersion
+      readModelTransformedRequest.paginatedVersion,
+      readModelTransformedRequest.select
     )
   }
 
@@ -82,7 +84,8 @@ export class BoosterReadModelsReader {
     sort?: SortFor<unknown>,
     limit?: number,
     afterCursor?: any,
-    paginatedVersion?: boolean
+    paginatedVersion?: boolean,
+    select?: ProjectionFor<TReadModel>
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
     const readModelName = readModelClass.name
     const searchResult = await this.config.provider.readModels.search<TReadModel>(
@@ -92,9 +95,13 @@ export class BoosterReadModelsReader {
       sort ?? {},
       limit,
       afterCursor,
-      paginatedVersion ?? false
+      paginatedVersion ?? false,
+      select
     )
 
+    if (select) {
+      return searchResult
+    }
     const readModels = this.createReadModelInstances(searchResult, readModelClass)
     return this.migrateReadModels(readModels, readModelName)
   }

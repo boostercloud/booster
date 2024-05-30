@@ -13,6 +13,28 @@ export function createMockReadModelEnvelope(): ReadModelEnvelope {
         version: 1,
         schemaVersion: 1,
       },
+      arr: [
+        {
+          id: random.uuid(),
+          name: random.word(),
+        },
+        {
+          id: random.uuid(),
+          name: random.word(),
+        },
+      ],
+      prop: {
+        items: [
+          {
+            id: random.uuid(),
+            name: random.word(),
+          },
+          {
+            id: random.uuid(),
+            name: random.word(),
+          },
+        ],
+      },
     },
     typeName: random.word(),
   }

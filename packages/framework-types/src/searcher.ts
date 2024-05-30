@@ -9,7 +9,8 @@ export type SearcherFunction<TObject> = (
   sortBy: SortFor<TObject>,
   limit?: number,
   afterCursor?: any,
-  paginatedVersion?: boolean
+  paginatedVersion?: boolean,
+  select?: ProjectionFor<TObject>
 ) => Promise<Array<TObject> | ReadModelListResult<TObject>>
 
 export type FinderByKeyFunction<TObject> = (
@@ -36,6 +37,7 @@ export class Searcher<TObject> {
   private filters: FilterFor<TObject> = {}
   private _sortByList: SortFor<TObject> = {}
   private _paginatedVersion = false
+  private _selectFor?: ProjectionFor<TObject>
 
   /**
    * @param objectClass The class of the object you want to run the search for.
@@ -69,6 +71,11 @@ export class Searcher<TObject> {
     return this
   }
 
+  public select(select?: ProjectionFor<TObject>): this {
+    if (select) this._selectFor = select
+    return this
+  }
+
   public limit(limit?: number): this {
     if (limit) this._limit = limit
     return this
@@ -99,7 +106,8 @@ export class Searcher<TObject> {
       this._sortByList,
       1, // Forces limit 1
       this._afterCursor,
-      false // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
+      false, // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
+      this._selectFor
     )
     return (searchResult as TObject[])[0]
   }
@@ -114,10 +122,15 @@ export class Searcher<TObject> {
       this._sortByList,
       this._limit,
       this._afterCursor,
-      this._paginatedVersion
+      this._paginatedVersion,
+      this._selectFor
     )
   }
 }
+
+type Paths<T> = T extends object ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K]>}`}` }[keyof T] : never
+
+export type ProjectionFor<TType> = Array<Paths<TType>>
 
 export type SortFor<TType> = {
   [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
