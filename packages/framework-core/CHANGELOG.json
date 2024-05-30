@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.11.0",
+      "tag": "@boostercloud/framework-core_v2.11.0",
+      "date": "Thu, 30 May 2024 15:58:21 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Allow define projection fields in read model queries",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "f747847ae1830f7ee373d6128d316e522172ca05"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.10.1` to `^2.11.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.10.1` to `^2.11.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.10.1` to `^2.11.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.10.1` to `^2.11.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.1",
       "tag": "@boostercloud/framework-core_v2.10.1",
       "date": "Tue, 16 Apr 2024 12:37:20 GMT",

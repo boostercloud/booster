@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 16 Apr 2024 12:37:20 GMT and should not be manually modified.
+This log was last generated on Thu, 30 May 2024 15:58:21 GMT and should not be manually modified.
+
+## 2.11.0
+Thu, 30 May 2024 15:58:21 GMT
+
+### Minor changes
+
+- Allow define projection fields in read model queries
 
 ## 2.10.1
 Tue, 16 Apr 2024 12:37:20 GMT
