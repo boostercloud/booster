@@ -208,6 +208,7 @@ describe('read-models-adapter', () => {
         },
         undefined,
         0,
+        undefined,
         undefined
       )
     })
@@ -222,6 +223,7 @@ describe('read-models-adapter', () => {
           { typeName: mockReadModel.typeName, 'value.foo': 1 },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -235,6 +237,7 @@ describe('read-models-adapter', () => {
           { typeName: mockReadModel.typeName, 'value.foo': { $ne: 1 } },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -248,6 +251,7 @@ describe('read-models-adapter', () => {
           { typeName: mockReadModel.typeName, 'value.foo': { $lt: 1 } },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -262,6 +266,7 @@ describe('read-models-adapter', () => {
           { typeName: mockReadModel.typeName, 'value.foo': { $gt: 1 } },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -275,6 +280,7 @@ describe('read-models-adapter', () => {
           { typeName: mockReadModel.typeName, 'value.foo': { $lte: 1 } },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -288,6 +294,7 @@ describe('read-models-adapter', () => {
           { typeName: mockReadModel.typeName, 'value.foo': { $gte: 1 } },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -304,6 +311,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -320,6 +328,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -336,6 +345,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -352,6 +362,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -368,6 +379,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -384,6 +396,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -412,6 +425,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -428,6 +442,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -444,6 +459,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -460,6 +476,7 @@ describe('read-models-adapter', () => {
           },
           undefined,
           0,
+          undefined,
           undefined
         )
       })
@@ -496,7 +513,8 @@ describe('read-models-adapter', () => {
             },
           ],
           5,
-          3
+          3,
+          undefined
         )
       })
     })
