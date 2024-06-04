@@ -1,10 +1,18 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { Booster } from '../booster'
-import { QueryAuthorizer, QueryInterface, QueryRoleAccess } from '@boostercloud/framework-types'
+import {
+  CommandFilterHooks,
+  QueryAuthorizer,
+  QueryInterface,
+  QueryMetadata,
+  QueryRoleAccess,
+} from '@boostercloud/framework-types'
 import { getClassMetadata } from './metadata'
 import { BoosterAuthorizer } from '../booster-authorizer'
 
-export function Query(attributes: QueryRoleAccess): <TCommand>(queryClass: QueryInterface<TCommand>) => void {
+export function Query(
+  attributes: QueryRoleAccess & CommandFilterHooks
+): <TCommand>(queryClass: QueryInterface<TCommand>) => void {
   return (queryClass) => {
     Booster.configureCurrentEnv((config): void => {
       if (config.queryHandlers[queryClass.name]) {
@@ -18,7 +26,8 @@ export function Query(attributes: QueryRoleAccess): <TCommand>(queryClass: Query
         authorizer: BoosterAuthorizer.build(attributes) as QueryAuthorizer,
         properties: metadata.fields,
         methods: metadata.methods,
-      }
+        before: attributes.before ?? [],
+      } as QueryMetadata
     })
   }
 }

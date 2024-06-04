@@ -9,6 +9,8 @@ import {
   ReadModelRoleAccess,
   CommandAuthorizer,
   ReadModelAuthorizer,
+  HealthRoleAccess,
+  HealthAuthorizer,
 } from '@boostercloud/framework-types'
 
 export class BoosterAuthorizer {
@@ -28,9 +30,10 @@ export class BoosterAuthorizer {
   }
 
   public static build(
-    attributes: CommandRoleAccess | QueryRoleAccess | ReadModelRoleAccess
-  ): CommandAuthorizer | QueryAuthorizer | ReadModelAuthorizer {
-    let authorizer: CommandAuthorizer | QueryAuthorizer | ReadModelAuthorizer = BoosterAuthorizer.denyAccess
+    attributes: CommandRoleAccess | QueryRoleAccess | ReadModelRoleAccess | HealthRoleAccess
+  ): CommandAuthorizer | QueryAuthorizer | ReadModelAuthorizer | HealthAuthorizer {
+    let authorizer: CommandAuthorizer | QueryAuthorizer | ReadModelAuthorizer | HealthAuthorizer =
+      BoosterAuthorizer.denyAccess
     if (attributes.authorize === 'all') {
       authorizer = BoosterAuthorizer.allowAccess
     } else if (Array.isArray(attributes.authorize)) {

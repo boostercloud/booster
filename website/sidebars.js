@@ -39,6 +39,7 @@ const sidebars = {
         'architecture/entity',
         'architecture/read-model',
         'architecture/notifications',
+        'architecture/queries',
       ],
     },
     {
@@ -75,7 +76,7 @@ const sidebars = {
       items: [
         'going-deeper/environment-configuration',
         {
-          type: 'doc', 
+          type: 'doc',
           label: 'The Register object',
           id: 'going-deeper/register',
         },
@@ -95,10 +96,24 @@ const sidebars = {
             'going-deeper/rockets/rocket-webhook',
           ]
         },
+        {
+          type: 'category',
+          label: 'Sensors',
+          link: {
+            type: 'doc',
+            id: 'going-deeper/sensor'
+          },
+          items: [
+            'going-deeper/health/sensor-health',
+          ]
+        },
         'going-deeper/testing',
         'going-deeper/data-migrations',
+        'going-deeper/touch-entities',
         'going-deeper/custom-templates',
         'going-deeper/framework-packages',
+        'going-deeper/instrumentation',
+        'going-deeper/azure-scale'
       ],
     },
     'frequently-asked-questions',

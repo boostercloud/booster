@@ -1,6 +1,6 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { createStubInstance, replace, restore, SinonStub, SinonStubbedInstance, stub } from 'sinon'
-import { searchEntitiesIds } from '../../dist/library/events-search-adapter'
+import { searchEntitiesIds } from '../../src/library/events-search-adapter'
 import { expect } from '../expect'
 import { WebSocketRegistry } from '../../src/services/web-socket-registry'
 

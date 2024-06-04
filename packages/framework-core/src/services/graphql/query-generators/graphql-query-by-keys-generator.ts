@@ -26,7 +26,10 @@ export class GraphqlQueryByKeysGenerator {
   }
 
   private generateByIdQuery(readModel: AnyClass): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
-    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
+    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(
+      readModel,
+      this.config.nonExposedGraphQLMetadataKey[readModel.name]
+    )
     return {
       type: graphQLType,
       args: {
@@ -40,7 +43,10 @@ export class GraphqlQueryByKeysGenerator {
     readModel: AnyClass,
     sequenceKeyName: string
   ): GraphQLFieldConfig<unknown, GraphQLResolverContext> {
-    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
+    const graphQLType = this.typeInformer.generateGraphQLTypeForClass(
+      readModel,
+      this.config.nonExposedGraphQLMetadataKey[readModel.name]
+    )
     return {
       type: new GraphQLList(graphQLType),
       args: {

@@ -1,15 +1,11 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { random, commerce, finance, lorem, internet } from 'faker'
 import { expect } from 'chai'
-import gql from 'graphql-tag'
-import { sleep, waitForIt } from '../../helper/sleep'
+import { waitForIt } from '../../helper/sleep'
 import { applicationUnderTest } from './setup'
 import { UUID } from '@boostercloud/framework-types'
 import { NEW_CART_IDS, QUANTITY_AFTER_DATA_MIGRATION_V2, QUANTITY_TO_MIGRATE_DATA } from '../../../src/constants'
 import { ProductType } from '../../../src/entities/product'
-
-const secs = 10
 
 describe('Entities end-to-end tests', () => {
   let client: ApolloClient<NormalizedCacheObject>
@@ -149,9 +145,6 @@ describe('Entities end-to-end tests', () => {
         `,
       })
 
-      console.log(`Waiting ${secs} second${secs > 1 ? 's' : ''} for deletion to complete...`)
-      await sleep(secs * 1000)
-
       client = applicationUnderTest.graphql.client(userToken)
       // Retrieve updated entity
       const queryResult = await waitForIt(
@@ -180,7 +173,7 @@ describe('Entities end-to-end tests', () => {
             `,
           })
         },
-        () => true
+        (result) => !result?.data?.ProductReadModel
       )
 
       const productData = queryResult.data.ProductReadModel

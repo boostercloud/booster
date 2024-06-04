@@ -6,43 +6,54 @@ import { GraphQLStackMembers } from './graphql-stack'
 import { ScheduledCommandStackMembers } from './scheduled-commands-stack'
 import { EventsStackMembers } from './events-stack'
 import { Function } from '@aws-cdk/aws-lambda'
+import { BoosterConfig } from '@boostercloud/framework-types'
 
 export const setupPermissions = (
+  config: BoosterConfig,
   graphQLStack: GraphQLStackMembers,
   eventsStack: EventsStackMembers,
   readModelTables: Array<Table>,
-  websocketAPI: CfnApi,
+  websocketAPI?: CfnApi,
   scheduledCommandStack?: ScheduledCommandStackMembers
 ): void => {
+  if (config.enableSubscriptions && !websocketAPI) {
+    throw new Error('WebsocketAPI undefined with enableSubscriptions enabled')
+  }
   const { graphQLLambda, subscriptionsStore, subscriptionNotifier, connectionsStore } = graphQLStack
   const { eventsLambda, eventsStore } = eventsStack
   const scheduledLambda = scheduledCommandStack?.scheduledLambda
-  const websocketManageConnectionsPolicy = createPolicyStatement(
-    [
-      Fn.join(':', [
-        'arn',
-        Fn.ref('AWS::Partition'),
-        'execute-api',
-        Fn.ref('AWS::Region'),
-        Fn.ref('AWS::AccountId'),
-        `${websocketAPI.ref}/*`,
-      ]),
-    ],
-    ['execute-api:ManageConnections']
-  )
+  if (websocketAPI) {
+    const websocketManageConnectionsPolicy = createPolicyStatement(
+      [
+        Fn.join(':', [
+          'arn',
+          Fn.ref('AWS::Partition'),
+          'execute-api',
+          Fn.ref('AWS::Region'),
+          Fn.ref('AWS::AccountId'),
+          `${websocketAPI.ref}/*`,
+        ]),
+      ],
+      ['execute-api:ManageConnections']
+    )
+    if (subscriptionsStore && connectionsStore && subscriptionNotifier) {
+      grantFullAccessToSubscriptionsStore(subscriptionsStore, graphQLLambda)
+      graphQLLambda.addToRolePolicy(
+        createPolicyStatement(
+          [connectionsStore.tableArn],
+          ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem']
+        )
+      )
+      graphQLLambda.addToRolePolicy(websocketManageConnectionsPolicy)
+      // Subscription notifier lambda permissions
+      subscriptionNotifier.addToRolePolicy(createPolicyStatement([subscriptionsStore.tableArn], ['dynamodb:Query*']))
+      subscriptionNotifier.addToRolePolicy(websocketManageConnectionsPolicy)
+    }
+  }
 
   // GraphQL Lambda permissions
   grantFullAccessToEventStore(eventsStore, graphQLLambda)
   grantReadAccessToReadModels(readModelTables, graphQLLambda)
-  grantFullAccessToSubscriptionsStore(subscriptionsStore, graphQLLambda)
-  graphQLLambda.addToRolePolicy(
-    createPolicyStatement([connectionsStore.tableArn], ['dynamodb:GetItem', 'dynamodb:PutItem', 'dynamodb:DeleteItem'])
-  )
-  graphQLLambda.addToRolePolicy(websocketManageConnectionsPolicy)
-
-  // Subscription notifier lambda permissions
-  subscriptionNotifier.addToRolePolicy(createPolicyStatement([subscriptionsStore.tableArn], ['dynamodb:Query*']))
-  subscriptionNotifier.addToRolePolicy(websocketManageConnectionsPolicy)
 
   // Events Lambda permissions
   grantFullAccessToEventStore(eventsStore, eventsLambda)

@@ -1,8 +1,11 @@
 import {
+  TraceActionTypes,
   BOOSTER_SUPER_KIND,
   BoosterConfig,
+  EntityInterface,
   EntitySnapshotEnvelope,
   EventEnvelope,
+  Instance,
   InvalidParameterError,
   NonPersistedEntitySnapshotEnvelope,
   ReducerGlobalError,
@@ -13,6 +16,8 @@ import { createInstance, getLogger } from '@boostercloud/framework-common-helper
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
+import { BoosterEntityTouched } from '../core-concepts/touch-entity/events/booster-entity-touched'
+import { Trace } from '../instrumentation'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -27,6 +32,7 @@ export class EventStore {
    * Also, in order to make next calls faster, this method caches the newly calculated
    * snapshot storing it at the end of the process.
    */
+  @Trace(TraceActionTypes.FETCH_ENTITY_SNAPSHOT)
   public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
@@ -67,6 +73,19 @@ export class EventStore {
     }
   }
 
+  @Trace(TraceActionTypes.CUSTOM)
+  public async storeDispatchedEvent(eventEnvelope: EventEnvelope): Promise<boolean | undefined> {
+    const logger = getLogger(this.config, 'EventStore#storeDispatchedEvent')
+    try {
+      logger.debug('Storing event in the dispatched event store:', eventEnvelope)
+      return await this.config.provider.events.storeDispatched(eventEnvelope, this.config)
+    } catch (e) {
+      logger.debug('Could not store dispatched event. Continue its processing.', {error: e, eventEnvelope })
+      return true
+    }
+  }
+
+  @Trace(TraceActionTypes.STORE_SNAPSHOT)
   private async storeSnapshot(
     snapshot: NonPersistedEntitySnapshotEnvelope
   ): Promise<EntitySnapshotEnvelope | undefined> {
@@ -89,6 +108,7 @@ export class EventStore {
     }
   }
 
+  @Trace(TraceActionTypes.LOAD_LATEST_SNAPSHOT)
   private async loadLatestSnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#loadLatestSnapshot')
     logger.debug(`Loading latest snapshot for entity ${entityName} and ID ${entityID}`)
@@ -99,26 +119,39 @@ export class EventStore {
     return undefined
   }
 
-  private loadEventStreamSince(entityTypeName: string, entityID: UUID, timestamp: string): Promise<EventEnvelope[]> {
+  @Trace(TraceActionTypes.LOAD_EVENT_STREAM_SINCE)
+  private async loadEventStreamSince(
+    entityTypeName: string,
+    entityID: UUID,
+    timestamp: string
+  ): Promise<EventEnvelope[]> {
     const logger = getLogger(this.config, 'EventStore#loadEventStreamSince')
     logger.debug(`Loading list of pending events for entity ${entityTypeName} with ID ${entityID} since ${timestamp}`)
     return this.config.provider.events.forEntitySince(this.config, entityTypeName, entityID, timestamp)
   }
 
+  @Trace(TraceActionTypes.ENTITY_REDUCER)
   private async entityReducer(
     eventEnvelope: EventEnvelope,
     latestSnapshot?: NonPersistedEntitySnapshotEnvelope
-  ): Promise<NonPersistedEntitySnapshotEnvelope> {
+  ): Promise<NonPersistedEntitySnapshotEnvelope | undefined> {
     const logger = getLogger(this.config, 'EventStore#entityReducer')
     try {
       if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
+        if (eventEnvelope.typeName === BoosterEntityTouched.name) {
+          return this.reduceEntityTouched(eventEnvelope, latestSnapshot)
+        }
         if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
-          return this.toBoosterEntityMigratedSnapshot(eventEnvelope)
+          return this.reduceEntityMigrated(eventEnvelope)
         }
       }
 
       logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
       const eventMetadata = this.config.events[eventEnvelope.typeName]
+      if (!eventMetadata) {
+        logger.error(`No event registered for event ${eventEnvelope.typeName}`)
+        throw new InvalidParameterError(`No event registered for event ${eventEnvelope.typeName}`)
+      }
       const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
       const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
       const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
@@ -150,11 +183,34 @@ export class EventStore {
     }
   }
 
-  private toBoosterEntityMigratedSnapshot(eventEnvelope: EventEnvelope): NonPersistedEntitySnapshotEnvelope {
-    const logger = getLogger(this.config, 'EventStore#toBoosterEntityMigratedSnapshot')
-    const value = eventEnvelope.value as BoosterEntityMigrated
-    const entity = value.newEntity
-    const className = value.newEntityName
+  private reduceEntityMigrated(eventEnvelope: EventEnvelope): NonPersistedEntitySnapshotEnvelope {
+    const event = eventEnvelope.value as BoosterEntityMigrated
+    return this.toBoosterEntitySnapshot(eventEnvelope, event.newEntity, event.newEntityName)
+  }
+
+  private reduceEntityTouched(
+    eventEnvelope: EventEnvelope,
+    latestSnapshot: NonPersistedEntitySnapshotEnvelope | undefined
+  ): NonPersistedEntitySnapshotEnvelope | undefined {
+    const logger = getLogger(this.config, 'EventStore#reduceEntityTouched')
+    logger.debug('Reducing ', eventEnvelope, ' with latestSnapshot')
+    if (!latestSnapshot) {
+      logger.debug('Latest snapshot not found, returning')
+      return
+    }
+
+    const event = eventEnvelope.value as BoosterEntityTouched
+    const entityMetadata = this.config.entities[event.entityName]
+    const snapshotInstance = createInstance(entityMetadata.class, latestSnapshot.value)
+    return this.toBoosterEntitySnapshot(eventEnvelope, snapshotInstance, event.entityName)
+  }
+
+  private toBoosterEntitySnapshot(
+    eventEnvelope: EventEnvelope,
+    entity: Instance & EntityInterface,
+    className: string
+  ): NonPersistedEntitySnapshotEnvelope {
+    const logger = getLogger(this.config, 'EventStore#toBoosterEntitySnapshot')
     const boosterMigratedSnapshot: NonPersistedEntitySnapshotEnvelope = {
       version: this.config.currentVersionFor(className),
       kind: 'snapshot',
@@ -166,7 +222,7 @@ export class EventStore {
       value: entity,
       snapshottedEventCreatedAt: eventEnvelope.createdAt,
     }
-    logger.debug('BoosterEntityMigrated result: ', boosterMigratedSnapshot)
+    logger.debug('BoosterEntitySnapshot result: ', boosterMigratedSnapshot)
     return boosterMigratedSnapshot
   }
 

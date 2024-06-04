@@ -44,7 +44,7 @@ export function Command(
  *
  * @param commandClass The command that this method will handle
  *
- * @deprecated The method is not needed anymore and will be removed in future versions
+ * @deprecated [EOL v3] The method is not needed anymore and will be removed in future versions
  *
  * TODO Remove this method as it's not needed
  */
@@ -63,7 +63,7 @@ export function Returns<TReturn>(
 
     For more information, check out the docs:
 
-    https://docs.booster.cloud/chapters/03_booster-architecture?id=returning-a-valuehttps://docs.booster.cloud/chapters/03_booster-architecture?id=returning-a-value
+    https://docs.boosterframework.com/architecture/command#returning-a-value
   `)
   return (commandClass) => {}
 }

@@ -1,8 +1,6 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { commerce, finance, random } from 'faker'
-import { expect } from 'chai'
-import gql from 'graphql-tag'
+import { expect } from '../../helper/expect'
 import { applicationUnderTest } from './setup'
 
 describe('Commands end-to-end tests', () => {

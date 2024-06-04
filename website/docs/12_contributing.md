@@ -26,7 +26,7 @@ Booster is divided in many different packages. The criteria to split the code in
 
 - They must be run separately, for instance, the CLI is run locally, while the support code for the project is run on the cloud.
 - They contain code that is used by at least two of the other packages.
-- They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by AWS is in separate packages).
+- They're a vendor-specific specialization of some abstract part of the framework (for instance, all the code that is required by Azure is in separate packages).
 
 The packages are managed using [rush](https://rushjs.io/) and [npm](https://npmjs.com), if you run `rush build`, it will build all the packages.
 
@@ -35,8 +35,8 @@ The packages are published to `npmjs` under the prefix `@boostercloud/`, their p
 - `cli` - You guessed it! This package is the `boost` command-line tool, it interacts only with the core package in order to load the project configuration. The specific provider packages to interact with the cloud providers are loaded dynamically from the project config.
 - `framework-core` - This one contains all the framework runtime vendor-independent logic. Stuff like the generation of the config or the commands and events handling happens here. The specific provider packages to interact with the cloud providers are loaded dynamically from the project config.
 - `framework-integration-tests` - Implements integration tests for all supported vendors. Tests are run on real infrastructure using the same mechanisms than a production application. This package `src` folder includes a synthetic Booster application that can be deployed to a real provider for testing purposes.
-- `framework-provider-aws` - Implements all the required adapters to make the booster core run on top of AWS technologies like Lambda and DynamoDB using the AWS SDK under the hoods.
-- `framework-provider-aws-infrastructure` - Implements all the required adapters to allow Booster applications to be deployed to AWS using the AWS CDK under the hoods.
+- `framework-provider-aws` (Currently Deprecated) - Implements all the required adapters to make the booster core run on top of AWS technologies like Lambda and DynamoDB using the AWS SDK under the hoods.
+- `framework-provider-aws-infrastructure` (Currently Deprecated) - Implements all the required adapters to allow Booster applications to be deployed to AWS using the AWS CDK under the hoods.
 - `framework-provider-local` - Implements all the required adapters to run the Booster application on a local express server to be able to debug your code before deploying it to a real cloud provider.
 - `framework-provider-local-infrastructure` - Implements all the required code to run the local development server.
 - `framework-types` - This package defines types that the rest of the project will use. This is useful for avoiding cyclic dependencies. Note that this package should not contain stuff that are not types, or very simple methods related directly to them, i.e. a getter or setter. This package defines the main booster concepts like:
@@ -79,7 +79,7 @@ Enhancement suggestions are tracked as GitHub issues. Make sure you provide the 
 
 ### Improving documentation
 
-[Booster documentation](https://docs.booster.cloud) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
+[Booster documentation](https://docs.boosterframework.com) is treated as a live document that continues improving on a daily basis. If you find something that is missing or can be improved, please contribute, it will be of great help for other developers.
 To contribute you can use the button "Edit on github" at the top of each chapter.
 
 #### Documentation principles and practices
@@ -225,7 +225,7 @@ The Booster Framework project is organized following the ["rush monorepo"](https
 
 - The "package.json" files that are on each package root should contain the dependencies used by that specific package. Be sure to correctly differentiate which dependency is only for development and which one is for production.
 
-Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "aws-sdk" in version 1.2.3, you should add `"aws-sdk": "1.2.3"` to the corresponding "package.json" file, and never `"aws-sdk": "^1.2.3"` or `"aws-sdk": "~1.2.3"`. This restriction comes from hard problems we've had in the past.
+Finally, **always use exact numbers for dependency versions**. This means that if you want to add the dependency "graphql" in version 1.2.3, you should add `"graphql": "1.2.3"` to the corresponding "package.json" file, and never `"graphql": "^1.2.3"` or `"graphql": "~1.2.3"`. This restriction comes from hard problems we've had in the past.
 
 ### Running unit tests
 
@@ -249,15 +249,36 @@ Integration tests are run automatically in Github Actions when a PR is locked, b
 
 These are the available scripts to run integration tests:
 
-- `rushx integration -v`: Run all the integration test suites in the right order.
-- `rushx integration/aws-deploy -v`: This test just checks that the sample project in `packages/framework-integration-tests/src` can be successfully deployed to AWS. The deployment process takes several minutes and this project is used by all the other AWS integration tests, so it's a requirement to run this test before.
-- `rushx integration/aws-func -v`: AWS functional integration tests. They stress the deployed app write API and checks that the results are the expected ones both in the databases and the read APIs.
-- `rushx integration/end-to-end -v`: Runs complete and realistic use cases on several cloud providers. This tests are intended to verify that a single project can be deployed to different cloud providers. Currently, only AWS is implemented though.
-- `rushx integration/aws-nuke -v`: This test checks that the application deployed to AWS can be properly nuked. This test should be the last one after other test suites related to AWS have finished.
-- `rushx integration/local -v`: Checks that the test application can be launched locally and that the APIs and the databases behave as expected.
-- `rushx integration/cli -v`: Checks cli commands and check that they produce the expected results.
+1. **General Integration Tests:**
+    - `rushx integration -v`: Run all integration test scripts.
 
-AWS integration tests are run in real AWS resources, so you'll need to have your AWS credentials properly set in your development machine. By default, the sample project will be deployed to your default account. Basically, if you can deploy a Booster project to AWS, you should be good to go ([See more details about setting up an AWS account in the docs](https://github.com/boostercloud/booster/tree/main/docs#set-up-an-aws-account)). Notice that while all resources used by Booster are included in the AWS free tier, running these tests in your own AWS account could incur in some expenses.
+2. **CLI Integration Tests:**
+    - `rushx integration/cli -v`: Tests CLI commands and verifies that they produce the expected results.
+
+3. **Local Integration Tests:**
+    - `rushx integration/local -v`: Runs all integration scripts in the local development server.
+    - `rushx integration/local-ongoing -v`: Runs the start and stop integration tests.
+    - `rushx integration/local-start -v`: Checks the start functionality of the local environment.
+    - `rushx integration/local-func -v`: Functional tests for the local environment.
+    - `rushx integration/local-end-to-end -v`: Runs end-to-end tests in the local environment.
+    - `rushx integration/local-stop -v`: Checks the stop functionality of the local environment.
+
+4. **AWS Integration Tests:**
+    - `rushx integration/aws -v`: Runs all integration test scripts for provider AWS.
+    - `rushx integration/aws-deploy -v`: Tests the deployment of a sample project to AWS.
+    - `rushx integration/aws-func -v`: Runs functional tests on AWS, stressing the deployed app's write API and verifying the results in databases and read APIs.
+    - `rushx integration/aws-end-to-end -v`: Performs end-to-end tests on AWS.
+    - `rushx integration/aws-load -v`: (Currently skipped) Intended for load tests on AWS.
+    - `rushx integration/aws-nuke -v`: Verifies that the deployed application on AWS can be properly nuked.
+
+5. **Azure Integration Tests:**
+    - `rushx integration/azure -v`: Runs all integration test scripts for provider Azure.
+    - `rushx integration/azure-deploy -v`: Tests the deployment of a project to Azure.
+    - `rushx integration/azure-func -v`: Runs functional tests on Azure.
+    - `rushx integration/azure-end-to-end -v`: Performs end-to-end tests on Azure.
+    - `rushx integration/azure-nuke -v`: Verifies that the deployed application on Azure can be properly nuked.
+
+Azure and AWS integration tests run in real environments, so you'll need to have your credentials properly set in your development machine in order to run them. They will deploy a sample project to your default account, run the tests and nuke the application when the process finishes. Notice that running integration tests in your cloud account could incur in some expenses.
 
 ### Github flow
 

@@ -31,6 +31,6 @@ before(async () => {
 after(async () => {
   console.log('stopping local server...')
   serverProcess.kill('SIGINT')
-  console.log('removing sandbox project')
-  removeFolders([sandboxPath])
+  console.log('removing sandbox project...')
+  await removeFolders([sandboxPath])
 })

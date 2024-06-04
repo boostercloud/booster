@@ -3,22 +3,24 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EntitySnapshotEnvelope,
-  NonPersistedEntitySnapshotEnvelope,
   EventEnvelope,
-  NonPersistedEventEnvelope,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
+  HealthEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
   SubscriptionEnvelope,
 } from './envelope'
-import { FilterFor, SortFor } from './searcher'
+import { FilterFor, ProjectionFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor, RocketEnvelope } from './rockets'
+import { EventStream } from './stream-types'
 
 export interface ProviderLibrary {
   events: ProviderEventsLibrary
@@ -29,10 +31,22 @@ export interface ProviderLibrary {
   scheduled: ScheduledCommandsLibrary
   infrastructure: () => ProviderInfrastructure
   rockets: ProviderRocketLibrary
+  sensor: ProviderSensorLibrary
 }
 
 export interface ProviderRocketLibrary {
   rawToEnvelopes(config: BoosterConfig, request: unknown): RocketEnvelope
+}
+
+export interface ProviderSensorLibrary {
+  databaseEventsHealthDetails(config: BoosterConfig): Promise<unknown>
+  databaseReadModelsHealthDetails(config: BoosterConfig): Promise<unknown>
+  isDatabaseEventUp(config: BoosterConfig): Promise<boolean>
+  areDatabaseReadModelsUp(config: BoosterConfig): Promise<boolean>
+  databaseUrls(config: BoosterConfig): Promise<Array<string>>
+  isGraphQLFunctionUp(config: BoosterConfig): Promise<boolean>
+  graphQLFunctionUrl(config: BoosterConfig): Promise<string>
+  rawRequestToHealthEnvelope(rawRequest: unknown): HealthEnvelope
 }
 
 export interface ProviderEventsLibrary {
@@ -43,6 +57,17 @@ export interface ProviderEventsLibrary {
    * @returns An array of EventEnvelope objects
    */
   rawToEnvelopes(rawEvents: unknown): Array<EventEnvelope>
+
+  rawStreamToEnvelopes(config: BoosterConfig, context: unknown, dedupEventStream: EventStream): Array<EventEnvelope>
+
+  dedupEventStream(config: BoosterConfig, rawEvents: unknown): Promise<EventStream>
+
+  produce(
+    entityName: string,
+    entityID: UUID,
+    eventEnvelopes: Array<EventEnvelope>,
+    config: BoosterConfig
+  ): Promise<void>
 
   /**
    * Retrieves events for a specific entity since a given time
@@ -119,6 +144,16 @@ export interface ProviderEventsLibrary {
     snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
     config: BoosterConfig
   ): Promise<EntitySnapshotEnvelope>
+
+  /**
+   * Stores an event envelope that has been dispatched in the dispatched events table.
+   *
+   * @param eventEnvelope - The `EventEnvelope` to store.
+   * @param config - The Booster configuration object.
+   * @returns `true` if the dispatched event was stored, `false` if the event already exists in the dispatched events
+   * table, throws an error on any other type of error.
+   */
+  storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
 }
 
 export interface ProviderReadModelsLibrary {
@@ -158,6 +193,7 @@ export interface ProviderReadModelsLibrary {
    * @param limit - The maximum number of results to return (optional).
    * @param afterCursor - A cursor that specifies the position after which results should be returned (optional).
    * @param paginatedVersion - A boolean value that indicates whether the results should be paginated (optional).
+   * @param select - An object that specifies fields to be returned (optional).
    * @returns A promise that resolves to an array of `TReadModel` objects or a `ReadModelListResult` object.
    */
   search<TReadModel extends ReadModelInterface>(
@@ -167,7 +203,8 @@ export interface ProviderReadModelsLibrary {
     sortBy?: SortFor<unknown>,
     limit?: number,
     afterCursor?: unknown,
-    paginatedVersion?: boolean
+    paginatedVersion?: boolean,
+    select?: ProjectionFor<TReadModel>
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>>
 
   /**

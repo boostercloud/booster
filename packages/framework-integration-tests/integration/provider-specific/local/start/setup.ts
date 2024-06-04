@@ -27,6 +27,6 @@ before(async () => {
     throw new Error('Pid not found')
   }
   storePIDFor(sandboxPath, serverProcess.pid) //store pid to kill process on stop
-  await sleep(2000)
+  await sleep(10000)
   console.log('local server ready')
 })

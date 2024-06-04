@@ -1,32 +1,29 @@
-import { TerraformOutput, TerraformStack } from 'cdktf'
-import { apiManagementApiOperation, resourceGroup, webPubsub } from '@cdktf/provider-azurerm'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { TerraformOutput } from 'cdktf'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformOutputs {
-  static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    appPrefix: string,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    graphQLApiManagementApiOperationResource: apiManagementApiOperation.ApiManagementApiOperation,
-    webPubsubResource: webPubsub.WebPubsub,
-    hubName: string
-  ): void {
+  static build(applicationSynthStack: ApplicationSynthStack): void {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
-    const baseUrl = `https://${resourceGroupResource.name}apis.azure-api.net/${environment}`
+    const fdqn = applicationSynthStack.publicIPData?.fqdn ?? 'localhost'
+    const baseUrl = `http://${fdqn}/${environment}`
 
-    new TerraformOutput(providerResource, 'httpURL', {
+    new TerraformOutput(applicationSynthStack.azureProvider, 'httpURL', {
       value: baseUrl,
       description: 'The base URL for all the auth endpoints',
     })
-    new TerraformOutput(providerResource, 'graphqlURL', {
-      value: baseUrl + graphQLApiManagementApiOperationResource.urlTemplate,
+    new TerraformOutput(applicationSynthStack.azureProvider, 'graphqlURL', {
+      value: `${baseUrl}/graphql`,
       description: 'The base URL for sending GraphQL mutations and queries',
     })
-
-    new TerraformOutput(providerResource, 'websocketURL', {
-      value: `wss://${webPubsubResource.hostname}/client/hubs/${hubName}`,
-      description: 'The URL for the websocket communication. Used for subscriptions',
+    new TerraformOutput(applicationSynthStack.azureProvider, 'sensorHealthURL', {
+      value: `${baseUrl}/sensor/health`,
+      description: 'The base URL for getting health information',
     })
+    if (applicationSynthStack.webPubSub) {
+      new TerraformOutput(applicationSynthStack.azureProvider, 'websocketURL', {
+        value: `wss://${applicationSynthStack.webPubSub.hostname}/client/hubs/${applicationSynthStack.eventHubName}`,
+        description: 'The URL for the websocket communication. Used for subscriptions',
+      })
+    }
   }
 }

@@ -10,10 +10,12 @@
   "mocha.requires": ["ts-node/register"],
   "mocha.files.glob": "packages/*/test/**/*.ts",
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": false
+    "source.fixAll.eslint": "never"
   },
   "monorepoWorkspace.includeRoot": false,
   "cSpell.words": ["codeql", "codesee"],
   "mochaExplorer.files": "packages/**test/**/*.test.ts",
-  "mochaExplorer.require": "ts-node/register"
+  "mochaExplorer.require": "ts-node/register",
+  "typescript.tsdk": "packages/framework-core/node_modules/typescript/lib",
+  "typewriterAutoScroll.offset": 5
 }

@@ -1,12 +1,49 @@
 import { Booster, PublicKeyTokenVerifier } from '@boostercloud/framework-core'
-import { BoosterConfig, DecodedToken } from '@boostercloud/framework-types'
+import { BoosterConfig, DecodedToken, TraceActionTypes } from '@boostercloud/framework-types'
 import * as fs from 'fs'
 import * as path from 'path'
+import { CustomTracer } from '../common/custom-tracer'
+import { CustomLogger } from '../common/custom-logger'
+import injectable from './injectable'
 
 class CustomPublicKeyTokenVerifier extends PublicKeyTokenVerifier {
   public async verify(token: string): Promise<DecodedToken> {
     await super.verify(token)
     throw new Error('Unauthorized')
+  }
+}
+
+function configureLogger(config: BoosterConfig): void {
+  config.logger = new CustomLogger()
+}
+
+function configureInvocationsHandler(config: BoosterConfig) {
+  config.traceConfiguration = {
+    enableTraceNotification: [TraceActionTypes.COMMAND_HANDLER, 'CHANGE_CART_ITEM_HANDLER'],
+    includeInternal: false,
+    onStart: CustomTracer.onStart,
+    onEnd: CustomTracer.onEnd,
+  }
+}
+
+function configureBoosterSensorHealth(config: BoosterConfig) {
+  Object.values(config.sensorConfiguration.health.booster).forEach((indicator) => {
+    indicator.enabled = true
+  })
+}
+
+function configureSubscriptions(config: BoosterConfig) {
+  config.enableSubscriptions = true
+}
+
+function configureEventHub(config: BoosterConfig) {
+  config.eventStreamConfiguration = {
+    enabled: true,
+    parameters: {
+      streamTopic: 'test',
+      partitionCount: 3,
+      messageRetention: 1,
+    },
   }
 }
 
@@ -27,12 +64,29 @@ Booster.configure('local', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  config.enableSubscriptions = false
+  config.eventStreamConfiguration = {
+    enabled: false,
+  }
+  config.injectable = injectable
+  configureInvocationsHandler(config)
+  configureLogger(config)
+  configureBoosterSensorHealth(config)
+  configureEventHub(config)
+  configureSubscriptions(config)
 })
 
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-aws'
   config.assets = ['assets', 'assetFile.txt']
+  config.enableSubscriptions = false
+  config.eventStreamConfiguration = {
+    enabled: false,
+  }
+  config.injectable = injectable
+  configureInvocationsHandler(config)
+  configureBoosterSensorHealth(config)
 })
 
 Booster.configure('production', (config: BoosterConfig): void => {
@@ -40,6 +94,10 @@ Booster.configure('production', (config: BoosterConfig): void => {
    * running integration tests for different branches concurrently.
    */
   const appNameSuffix = process.env.BOOSTER_APP_SUFFIX ?? 'default'
+  config.enableSubscriptions = false
+  config.eventStreamConfiguration = {
+    enabled: false,
+  }
 
   // The app suffix must be copied to the test app lambdas
   config.env['BOOSTER_APP_SUFFIX'] = appNameSuffix
@@ -61,6 +119,9 @@ Booster.configure('production', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  config.injectable = injectable
+  configureInvocationsHandler(config)
+  configureBoosterSensorHealth(config)
 })
 
 Booster.configure('azure', (config: BoosterConfig): void => {
@@ -89,4 +150,10 @@ Booster.configure('azure', (config: BoosterConfig): void => {
       'booster:role'
     ),
   ]
+  config.injectable = injectable
+  configureInvocationsHandler(config)
+  configureLogger(config)
+  configureBoosterSensorHealth(config)
+  configureEventHub(config)
+  configureSubscriptions(config)
 })

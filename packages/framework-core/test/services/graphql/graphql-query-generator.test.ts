@@ -117,9 +117,9 @@ describe('GraphQLQueryGenerator', () => {
 
             expect(result.name).to.be.equal('Query')
             expect(result.description).to.be.undefined
-            expect(result.extensions).to.be.undefined
+            expect(result.extensions).to.be.empty
             expect(result.astNode).to.be.undefined
-            expect(result.extensionASTNodes).to.be.undefined
+            expect(result.extensionASTNodes).to.be.empty
 
             const config: any = result.toConfig()
             expect(config.fields[mockTargetTypeName].description).to.be.undefined
@@ -127,7 +127,7 @@ describe('GraphQLQueryGenerator', () => {
             expect(config.fields[mockTargetTypeName].resolve).to.be.undefined
             expect(config.fields[mockTargetTypeName].subscribe).to.be.undefined
             expect(config.fields[mockTargetTypeName].deprecationReason).to.be.undefined
-            expect(config.fields[mockTargetTypeName].extensions).to.be.undefined
+            expect(config.fields[mockTargetTypeName].extensions).to.be.empty
             expect(config.fields[mockTargetTypeName].astNode).to.be.undefined
 
             expect(config.fields[`${mockTargetTypeName}s`].description).to.be.undefined
@@ -137,7 +137,7 @@ describe('GraphQLQueryGenerator', () => {
             expect(config.fields[`${mockTargetTypeName}s`].deprecationReason).to.be.equal(
               'Method is deprecated. Use List* methods'
             )
-            expect(config.fields[`${mockTargetTypeName}s`].extensions).to.be.undefined
+            expect(config.fields[`${mockTargetTypeName}s`].extensions).to.be.empty
             expect(config.fields[`${mockTargetTypeName}s`].astNode).to.be.undefined
           })
 
@@ -148,7 +148,7 @@ describe('GraphQLQueryGenerator', () => {
 
             beforeEach(() => {
               // Provision target types
-              mockPropertyName = random.alphaNumeric(10)
+              mockPropertyName = '_a' + random.alphaNumeric(10)
               mockTargetType = Array
               mockTargetTypeName = mockTargetType.name
               mockPropertyType = Boolean
@@ -224,7 +224,7 @@ describe('GraphQLQueryGenerator', () => {
                   expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
                   expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
                   expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
-                  expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
+                  expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.empty
 
                   const booleansTypeFilterConfig =
                     config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[mockPropertyName]
@@ -238,7 +238,7 @@ describe('GraphQLQueryGenerator', () => {
                     expect(booleansTypeFilterConfig.type.getFields()[fieldKey].description).to.be.undefined
                     expect(booleansTypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal('Boolean')
                     expect(booleansTypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
-                    expect(booleansTypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
+                    expect(booleansTypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.empty
                     expect(booleansTypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                   })
 
@@ -246,7 +246,7 @@ describe('GraphQLQueryGenerator', () => {
                   expect(sortBy.description).to.be.undefined
                   expect(sortBy.defaultValue).to.be.undefined
                   expect(sortBy.deprecationReason).to.be.undefined
-                  expect(sortBy.extensions).to.be.undefined
+                  expect(sortBy.extensions).to.be.empty
                   expect(sortBy.astNode).to.be.undefined
                   const booleansTypeSortConfig = sortBy.type.getFields()[mockPropertyName]
                   expect(booleansTypeSortConfig.type.toString()).to.not.be.undefined
@@ -263,7 +263,7 @@ describe('GraphQLQueryGenerator', () => {
                 })
 
                 it('When Number', () => {
-                  mockPropertyName = random.alphaNumeric(10)
+                  mockPropertyName = '_a' + random.alphaNumeric(10)
                   mockTargetType = Array
                   mockTargetTypeName = mockTargetType.name
                   mockPropertyType = Number
@@ -305,7 +305,7 @@ describe('GraphQLQueryGenerator', () => {
                   expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
                   expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
                   expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
-                  expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
+                  expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.empty
 
                   const TypeFilterConfig =
                     config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[mockPropertyName]
@@ -327,7 +327,7 @@ describe('GraphQLQueryGenerator', () => {
                     } // The in filter expects an array of the element
                     expect(TypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal(type)
                     expect(TypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
-                    expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
+                    expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.empty
                     expect(TypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                   })
 
@@ -335,7 +335,7 @@ describe('GraphQLQueryGenerator', () => {
                   expect(sortBy.description).to.be.undefined
                   expect(sortBy.defaultValue).to.be.undefined
                   expect(sortBy.deprecationReason).to.be.undefined
-                  expect(sortBy.extensions).to.be.undefined
+                  expect(sortBy.extensions).to.be.empty
                   expect(sortBy.astNode).to.be.undefined
                   const booleansTypeSortConfig = sortBy.type.getFields()[mockPropertyName]
                   expect(booleansTypeSortConfig.type.toString()).to.not.be.undefined
@@ -352,7 +352,7 @@ describe('GraphQLQueryGenerator', () => {
                 })
 
                 it('When String', () => {
-                  mockPropertyName = random.alphaNumeric(10)
+                  mockPropertyName = '_a' + random.alphaNumeric(10)
                   mockTargetType = Array
                   mockTargetTypeName = mockTargetType.name
                   mockPropertyType = String
@@ -394,7 +394,7 @@ describe('GraphQLQueryGenerator', () => {
                   expect(config.fields[mockTargetTypeName].args['id'].astNode).to.be.undefined
                   expect(config.fields[mockTargetTypeName].args['id'].defaultValue).to.be.undefined
                   expect(config.fields[mockTargetTypeName].args['id'].description).to.be.undefined
-                  expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.undefined
+                  expect(config.fields[mockTargetTypeName].args['id'].extensions).to.be.empty
 
                   const TypeFilterConfig =
                     config.fields[`${mockTargetTypeName}s`].args.filter.type.getFields()[mockPropertyName]
@@ -429,7 +429,7 @@ describe('GraphQLQueryGenerator', () => {
                     } // The in filter expects an array of the element
                     expect(TypeFilterConfig.type.getFields()[fieldKey].type.toString()).to.be.equal(type)
                     expect(TypeFilterConfig.type.getFields()[fieldKey].defaultValue).to.be.undefined
-                    expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.undefined
+                    expect(TypeFilterConfig.type.getFields()[fieldKey].extensions).to.be.empty
                     expect(TypeFilterConfig.type.getFields()[fieldKey].astNode).to.be.undefined
                   })
 
@@ -437,7 +437,7 @@ describe('GraphQLQueryGenerator', () => {
                   expect(sortBy.description).to.be.undefined
                   expect(sortBy.defaultValue).to.be.undefined
                   expect(sortBy.deprecationReason).to.be.undefined
-                  expect(sortBy.extensions).to.be.undefined
+                  expect(sortBy.extensions).to.be.empty
                   expect(sortBy.astNode).to.be.undefined
                   const booleansTypeSortConfig = sortBy.type.getFields()[mockPropertyName]
                   expect(booleansTypeSortConfig.type.toString()).to.not.be.undefined

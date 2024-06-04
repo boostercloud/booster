@@ -1,9 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
 import { commerce, finance, internet, lorem, random } from 'faker'
-import { expect } from 'chai'
-import gql from 'graphql-tag'
+import { expect } from '../../helper/expect'
 import { waitForIt } from '../../helper/sleep'
 import { CartItem } from '../../../src/common/cart-item'
 import { applicationUnderTest } from './setup'
@@ -181,12 +179,7 @@ describe('Read models end-to-end tests', () => {
         await Promise.all(changeCartPromises)
       })
 
-      // TODO this test is failing in local because of local provider doesn't provides optimistic concurrency control
-      // TODO Remove condition when it will be fixed
       it('should retrieve expected cart', async () => {
-        if (process.env.TESTED_PROVIDER === 'LOCAL') {
-          return
-        }
         const queryResult = await waitForIt(
           () => {
             return client.query({
@@ -1544,6 +1537,171 @@ describe('Read models end-to-end tests', () => {
           expect(currentPageCartData.length).to.equal(1)
           expect(cursor).to.not.be.undefined
         }
+      })
+    })
+
+    context('projecting fields', () => {
+      if (process.env.TESTED_PROVIDER === 'AWS') {
+        console.log('AWS Provider ReadModel projecting field is not supported')
+        return
+      }
+
+      const mockCartId: string = random.uuid()
+      const mockProductId: string = random.uuid()
+      const mockQuantity: number = random.number({ min: 1 })
+      const mockAddress = {
+        firstName: random.word(),
+        lastName: random.word(),
+        country: random.word(),
+        state: random.word(),
+        postalCode: random.word(),
+        address: random.word(),
+      }
+
+      beforeEach(async () => {
+        // provisioning a cart
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
+
+        // update shipping address
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            address: mockAddress,
+          },
+          mutation: gql`
+            mutation UpdateShippingAddress($cartId: ID!, $address: AddressInput!) {
+              UpdateShippingAddress(input: { cartId: $cartId, address: $address })
+            }
+          `,
+        })
+
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    shippingAddress {
+                      firstName
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) =>
+            result?.data?.CartReadModel != null &&
+            result?.data?.CartReadModel?.shippingAddress?.firstName === mockAddress.firstName
+        )
+      })
+
+      it('with paginatedVersion true', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.mutate({
+              variables: {
+                cartId: mockCartId,
+                paginatedVersion: true,
+              },
+              mutation: gql`
+                mutation CartShippingAddress($cartId: ID!, $paginatedVersion: Boolean!) {
+                  CartShippingAddress(input: { cartId: $cartId, paginatedVersion: $paginatedVersion })
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartShippingAddress != null
+        )
+
+        const cartShippingAddress = queryResult.data.CartShippingAddress
+
+        expect(cartShippingAddress).to.deep.equal({
+          items: [
+            {
+              id: mockCartId,
+              shippingAddress: {
+                firstName: mockAddress.firstName,
+                lastName: mockAddress.lastName,
+                country: mockAddress.country,
+                state: mockAddress.state,
+                postalCode: mockAddress.postalCode,
+                address: mockAddress.address,
+              },
+            },
+          ],
+          count: 1,
+          cursor: {
+            id: '1',
+          },
+        })
+      })
+
+      it('with paginatedVersion false', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.mutate({
+              variables: {
+                cartId: mockCartId,
+                paginatedVersion: false,
+              },
+              mutation: gql`
+                mutation CartShippingAddress($cartId: ID!, $paginatedVersion: Boolean!) {
+                  CartShippingAddress(input: { cartId: $cartId, paginatedVersion: $paginatedVersion })
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartShippingAddress != null
+        )
+
+        const cartShippingAddress = queryResult.data.CartShippingAddress
+
+        expect(cartShippingAddress).to.deep.equal([
+          {
+            id: mockCartId,
+            shippingAddress: {
+              firstName: mockAddress.firstName,
+              lastName: mockAddress.lastName,
+              country: mockAddress.country,
+              state: mockAddress.state,
+              postalCode: mockAddress.postalCode,
+              address: mockAddress.address,
+            },
+          },
+        ])
       })
     })
   })

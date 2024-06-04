@@ -23,7 +23,7 @@ jobs:
     needs: integration-tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # required for Rush change
           token: ${{ secrets.GITHUB_TOKEN_ACTION }}
@@ -44,9 +44,9 @@ jobs:
           USER_NAME: ${{ secrets.DEPLOYING_USER_NAME }}
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN_ACTION }} # Token for pushing
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 18.18
           registry-url: https://registry.npmjs.org/
 
       - name: Rush Update

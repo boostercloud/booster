@@ -14,8 +14,8 @@ describe('Build', () => {
     buildSandboxDir = createSandboxProject(sandboxPathFor('build'))
   })
 
-  after(() => {
-    removeFolders([buildSandboxDir])
+  after(async () => {
+    await removeFolders([buildSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -52,8 +52,8 @@ describe('Compile fallback', () => {
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
   })
 
-  after(() => {
-    removeFolders([compileSandboxDir])
+  after(async () => {
+    await removeFolders([compileSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')

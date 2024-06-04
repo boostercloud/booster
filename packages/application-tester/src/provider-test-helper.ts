@@ -1,6 +1,7 @@
 export interface ApplicationOutputs {
   graphqlURL: string
   websocketURL: string
+  healthURL: string
 }
 
 export interface Counters {

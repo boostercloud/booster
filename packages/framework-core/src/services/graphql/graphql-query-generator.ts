@@ -32,18 +32,20 @@ export class GraphQLQueryGenerator {
       typeInformer,
       byIDResolverBuilder
     )
-    this.graphqlQueryGenerator = new GraphqlQueryGenerator(targetTypes, typeInformer, queryResolverBuilder)
+    this.graphqlQueryGenerator = new GraphqlQueryGenerator(targetTypes, typeInformer, queryResolverBuilder, config)
     this.graphqlQueryFiltersGenerator = new GraphqlQueryFiltersGenerator(
       readModels,
       typeInformer,
       filterResolverBuilder,
-      generatedFiltersByTypeName
+      generatedFiltersByTypeName,
+      config
     )
     this.graphqlQueryListedGenerator = new GraphqlQueryListedGenerator(
       readModels,
       typeInformer,
       filterResolverBuilder,
-      generatedFiltersByTypeName
+      generatedFiltersByTypeName,
+      config
     )
     this.graphqlQueryEventsGenerator = new GraphqlQueryEventsGenerator(config, byIDResolverBuilder, eventsResolver)
   }

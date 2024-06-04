@@ -4,8 +4,8 @@ import { expect } from '../../../helper/expect'
 import { applicationName, checkAndGetCurrentEnv, getProviderTestHelper } from '../../../helper/app-helper'
 import { internet, random, commerce, finance } from 'faker'
 import { waitForIt } from '../../../helper/sleep'
-import { gql } from 'graphql-tag'
 import { ApplicationTester } from '@boostercloud/application-tester'
+import { gql } from '@apollo/client'
 
 describe('After deployment', () => {
   describe('the ARM template', () => {
@@ -70,7 +70,7 @@ describe('After deployment', () => {
         },
         (result) => result != null,
         30000,
-        3600000
+        7200000
       )
       expect(mutationResult?.data).to.exist
     })

@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags, Args } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
@@ -17,18 +17,20 @@ import { checkCurrentDirIsABoosterProject } from '../../services/project-checker
 export default class Query extends BaseCommand {
   public static description = "generate new query resource, write 'boost new' to see options"
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-    fields: Oclif.flags.string({
+    help: Flags.help({ char: 'h' }),
+    fields: Flags.string({
       char: 'f',
       description: 'field list that this query will contain',
       multiple: true,
     }),
   }
 
-  public static args = [{ name: 'queryName' }]
+  public static args = {
+    queryName: Args.string(),
+  }
 
   public async run(): Promise<void> {
-    const { args, flags } = this.parse(Query)
+    const { args, flags } = await this.parse(Query)
     try {
       const fields = flags.fields || []
       if (!args.queryName) throw "You haven't provided a query name, but it is required, run with --help for usage"
@@ -52,7 +54,7 @@ function generateImports(info: QueryInfo): Array<ImportDeclaration> {
   const queryFieldTypes = info.fields.map((f) => f.type)
   const queryUsesUUID = queryFieldTypes.some((type) => type == 'UUID')
 
-  const componentsFromBoosterTypes = ['Register']
+  const componentsFromBoosterTypes = ['QueryInfo']
   if (queryUsesUUID) {
     componentsFromBoosterTypes.push('UUID')
   }

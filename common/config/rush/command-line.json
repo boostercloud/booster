@@ -39,6 +39,14 @@
       "enableParallelism": true
     },
     {
+      "commandKind": "bulk",
+      "name": "prepare",
+      "summary": "Installs ts-patch",
+      "safeForSimultaneousRushProcesses": true,
+      "ignoreMissingScript": true,
+      "enableParallelism": true
+    },
+    {
       "commandKind": "global",
       "name": "pack-integration-deps",
       "summary": "Packs the dependencies of the integration tests",

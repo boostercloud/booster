@@ -101,10 +101,9 @@ export function createFilterInterfaceFunction(
   return f.createFunctionDeclaration(
     undefined,
     undefined,
-    undefined,
     filterInterfaceFunctionName,
     undefined,
-    [f.createParameterDeclaration(undefined, undefined, undefined, 'typeName', undefined, undefined, undefined)],
+    [f.createParameterDeclaration(undefined, undefined, 'typeName', undefined, undefined, undefined)],
     undefined,
     f.createBlock(
       [

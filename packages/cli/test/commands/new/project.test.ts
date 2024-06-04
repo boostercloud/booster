@@ -2,7 +2,7 @@ import { restore, replace, fake, spy } from 'sinon'
 import { ProjectInitializerConfig } from '../../../src/services/project-initializer'
 import { oraLogger } from '../../../src/services/logger'
 import * as fs from 'fs-extra'
-import { IConfig } from '@oclif/config'
+import { Config } from '@oclif/core'
 import { expect } from '../../expect'
 import * as Project from '../../../src/commands/new/project'
 import * as ProjectInitializer from '../../../src/services/project-initializer'
@@ -74,7 +74,7 @@ describe('new', (): void => {
         it('without flags', async () => {
           replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-          await new Project.default([projectName], {} as IConfig).run()
+          await new Project.default([projectName], {} as Config).run()
 
           expect(ProjectInitializer.initializeGit).to.have.been.called
           expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -85,7 +85,7 @@ describe('new', (): void => {
         it('skip dependencies installation with --skipInstall', async () => {
           replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-          await new Project.default([projectName, '--skipInstall'], {} as IConfig).run()
+          await new Project.default([projectName, '--skipInstall'], {} as Config).run()
 
           expect(ProjectInitializer.installDependencies).to.have.not.been.called
           expect(ProjectInitializer.initializeGit).to.have.been.called
@@ -96,7 +96,7 @@ describe('new', (): void => {
         it('generates project with default parameters when using --default flag', async () => {
           const parseConfigSpy = spy(Project, 'parseConfig')
 
-          await new Project.default([projectName, '--default'], { version: '0.5.1' } as IConfig).run()
+          await new Project.default([projectName, '--default'], { version: '0.5.1' } as Config).run()
 
           expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
           expectFilesAndDirectoriesCreated(projectName)
@@ -113,7 +113,7 @@ describe('new', (): void => {
         it('skips git repository initialization with --skipGit', async () => {
           replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-          await new Project.default([projectName, '--skipGit'], {} as IConfig).run()
+          await new Project.default([projectName, '--skipGit'], {} as Config).run()
 
           expect(oraLogger.info).to.have.been.calledWithMatch('Project generated!')
           expect(ProjectInitializer.initializeGit).to.have.not.been.called
@@ -124,10 +124,10 @@ describe('new', (): void => {
 
         describe('define homepage', () => { 
           it('with --homepage', async () => {
-            const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
+            const config = { ...defaultProjectInitializerConfig, homepage: 'boosterframework.com' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--homepage',"'booster.cloud'"], {} as IConfig).run()
+            await new Project.default([projectName,'--homepage',"'boosterframework.com'"], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -137,10 +137,10 @@ describe('new', (): void => {
           })
 
           it('with -H', async () => {
-            const config = { ...defaultProjectInitializerConfig, homepage: 'booster.cloud' }
+            const config = { ...defaultProjectInitializerConfig, homepage: 'boosterframework.com' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-H',"'booster.cloud'"], {} as IConfig).run()
+            await new Project.default([projectName,'-H',"'boosterframework.com'"], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -155,7 +155,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, author: 'John Doe' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--author',"'John Doe'"], {} as IConfig).run()
+            await new Project.default([projectName,'--author',"'John Doe'"], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -168,7 +168,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, author: 'John Doe' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-a',"'John Doe'"], {} as IConfig).run()
+            await new Project.default([projectName,'-a',"'John Doe'"], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -183,7 +183,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--description',"'a short description'"], {} as IConfig).run()
+            await new Project.default([projectName,'--description',"'a short description'"], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -196,7 +196,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, description: 'a short description' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-d',"'a short description'"], {} as IConfig).run()
+            await new Project.default([projectName,'-d',"'a short description'"], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -211,7 +211,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, license: 'GPL' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--license','GPL'], {} as IConfig).run()
+            await new Project.default([projectName,'--license','GPL'], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -224,7 +224,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, license: 'GPL' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-l','GPL'], {} as IConfig).run()
+            await new Project.default([projectName,'-l','GPL'], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -238,7 +238,7 @@ describe('new', (): void => {
           it('with --providerPackageName', async () => {
             replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-            await new Project.default([projectName,'--providerPackageName',defaultProvider], {} as IConfig).run()
+            await new Project.default([projectName,'--providerPackageName',defaultProvider], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -249,7 +249,7 @@ describe('new', (): void => {
           it('with -p', async () => {
             replace(Project, 'parseConfig', fake.returns(defaultProjectInitializerConfig))
 
-            await new Project.default([projectName,'-p',defaultProvider], {} as IConfig).run()
+            await new Project.default([projectName,'-p',defaultProvider], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -263,7 +263,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, repository: defaultRepository }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--repository',defaultRepository], {} as IConfig).run()
+            await new Project.default([projectName,'--repository',defaultRepository], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -276,7 +276,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, repository: defaultRepository }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-r',defaultRepository], {} as IConfig).run()
+            await new Project.default([projectName,'-r',defaultRepository], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -291,7 +291,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, version: '1.0.0' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'--version','1.0.0'], {} as IConfig).run()
+            await new Project.default([projectName,'--version','1.0.0'], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -304,7 +304,7 @@ describe('new', (): void => {
             const config = { ...defaultProjectInitializerConfig, version: '1.0.0' }
             replace(Project, 'parseConfig', fake.returns(config))
 
-            await new Project.default([projectName,'-v','1.0.0'], {} as IConfig).run()
+            await new Project.default([projectName,'-v','1.0.0'], {} as Config).run()
 
             expect(ProjectInitializer.initializeGit).to.have.been.called
             expect(ProjectInitializer.installDependencies).to.have.been.called
@@ -320,13 +320,13 @@ describe('new', (): void => {
                 '--version','1.0.0',
                 '--author',"'John Doe'",
                 '--description',"'a new description'",
-                '--homepage','booster.cloud',
+                '--homepage','boosterframework.com',
                 '--repository','github.com/boostercloud/booster.git',
                 '--license','GPL',
                 '--providerPackageName',defaultProvider,
                 '--skipInstall',
                 '--skipGit'
-              ], {} as IConfig).run()
+              ], {} as Config).run()
   
               expect(ProjectInitializer.initializeGit).to.have.not.been.called
               expect(ProjectInitializer.installDependencies).to.have.not.been.called
@@ -339,13 +339,13 @@ describe('new', (): void => {
                   '-v','1.0.0',
                   '-a',"'John Doe'",
                   '-d',"'a new description'",
-                  '-H','booster.cloud',
+                  '-H','boosterframework.com',
                   '-r','github.com/boostercloud/booster.git',
                   '-l','GPL',
                   '-p',defaultProvider,
                   '--skipInstall',
                   '--skipGit'
-                ], {} as IConfig).run()
+                ], {} as Config).run()
     
                 expect(ProjectInitializer.initializeGit).to.have.not.been.called
                 expect(ProjectInitializer.installDependencies).to.have.not.been.called
@@ -358,7 +358,7 @@ describe('new', (): void => {
       describe('displays an error', () => {
         it('with empty project name', async () => {
           replace(console,'error', fake.resolves({}))
-          await new Project.default([], {} as IConfig).run()
+          await new Project.default([], {} as Config).run()
           expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
           expect(console.error).to.have.been.calledWithMatch(/You haven't provided a project name/)
           expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
@@ -368,13 +368,13 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--nonexistingoption'], {} as IConfig).run()
+              await new Project.default([projectName,'--nonexistingoption'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
             }
             expect(exceptionThrown).to.be.equal(true)
-            expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+            expect(exceptionMessage).to.contain('Nonexistent flag: --nonexistingoption')
             expect(oraLogger.info).to.have.not.been.calledWithMatch('Project generated!')
             expect(fs.mkdirs).to.have.not.been.calledWithMatch(`${projectName}/src`)
         })
@@ -386,7 +386,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--homepage'], {} as IConfig).run()
+              await new Project.default([projectName,'--homepage'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -401,7 +401,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-H'], {} as IConfig).run()
+              await new Project.default([projectName,'-H'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -418,7 +418,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--author'], {} as IConfig).run()
+              await new Project.default([projectName,'--author'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -433,7 +433,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-a'], {} as IConfig).run()
+              await new Project.default([projectName,'-a'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -450,7 +450,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--description'], {} as IConfig).run()
+              await new Project.default([projectName,'--description'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -465,7 +465,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-d'], {} as IConfig).run()
+              await new Project.default([projectName,'-d'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -482,7 +482,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--license'], {} as IConfig).run()
+              await new Project.default([projectName,'--license'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -497,7 +497,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-l'], {} as IConfig).run()
+              await new Project.default([projectName,'-l'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -514,7 +514,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--providerPackageName'], {} as IConfig).run()
+              await new Project.default([projectName,'--providerPackageName'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -529,7 +529,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-p'], {} as IConfig).run()
+              await new Project.default([projectName,'-p'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -546,7 +546,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--repository'], {} as IConfig).run()
+              await new Project.default([projectName,'--repository'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -561,7 +561,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-r'], {} as IConfig).run()
+              await new Project.default([projectName,'-r'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -578,7 +578,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--version'], {} as IConfig).run()
+              await new Project.default([projectName,'--version'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -593,7 +593,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'-v'], {} as IConfig).run()
+              await new Project.default([projectName,'-v'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -612,7 +612,7 @@ describe('new', (): void => {
             let exceptionThrown = false
             let exceptionMessage = ''
             try {
-              await new Project.default([projectName,'--providerPackageName','nonexistingProvider'], {} as IConfig).run()
+              await new Project.default([projectName,'--providerPackageName','nonexistingProvider'], {} as Config).run()
             } catch(e) {
               exceptionThrown = true
               exceptionMessage = e.message
@@ -629,7 +629,7 @@ describe('new', (): void => {
               let exceptionThrown = false
               let exceptionMessage = ''
               try {
-                await new Project.default([projectName,'--repository','invalidUrl'], {} as IConfig).run()
+                await new Project.default([projectName,'--repository','invalidUrl'], {} as Config).run()
               } catch(e) {
                 exceptionThrown = true
                 exceptionMessage = e.message

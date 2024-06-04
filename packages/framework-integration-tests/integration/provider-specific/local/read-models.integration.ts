@@ -1,20 +1,19 @@
-import { ApolloClient } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, NormalizedCacheObject } from '@apollo/client'
 import { changeCartItem, graphQLClient } from './utils'
 import { random } from 'faker'
 import { expect } from 'chai'
-import * as DataStore from 'nedb'
+import Datastore from '@seald-io/nedb'
 import { sandboxPath } from './constants'
 import * as path from 'path'
 import { waitForIt } from '../../helper/sleep'
 
 describe('read-models', () => {
-  let readModels: DataStore<unknown>
+  let readModels: Datastore<unknown>
 
   let client: ApolloClient<NormalizedCacheObject>
 
   before(async () => {
-    readModels = new DataStore(path.join(sandboxPath, '.booster', 'read_models.json'))
+    readModels = new Datastore(path.join(sandboxPath, '.booster', 'read_models.json'))
     client = await graphQLClient()
   })
 

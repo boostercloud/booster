@@ -7,8 +7,9 @@ import {
   GraphQLOperation,
   GraphQLRequestEnvelopeError,
   graphQLWebsocketSubprotocolHeaders,
+  TraceActionTypes,
 } from '@boostercloud/framework-types'
-import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError } from 'graphql'
+import { GraphQLSchema, DocumentNode, ExecutionResult, GraphQLError, OperationTypeNode } from 'graphql'
 import * as graphql from 'graphql'
 import { GraphQLGenerator } from './services/graphql/graphql-generator'
 import { BoosterReadModelsReader } from './booster-read-models-reader'
@@ -17,6 +18,7 @@ import { NoopReadModelPubSub } from './services/pub-sub/noop-read-model-pub-sub'
 import { GraphQLWebsocketHandler } from './services/graphql/websocket-protocol/graphql-websocket-protocol'
 import { BoosterTokenVerifier } from './booster-token-verifier'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+import { Trace } from './instrumentation'
 
 type DispatchResult = AsyncIterableIterator<ExecutionResult> | ExecutionResult | void
 
@@ -42,6 +44,7 @@ export class BoosterGraphQLDispatcher {
     )
   }
 
+  @Trace(TraceActionTypes.GRAPHQL_DISPATCH)
   public async dispatch(request: unknown): Promise<unknown> {
     const logger = getLogger(this.config, 'BoosterGraphQLDispatcher#dispatch')
     const envelopeOrError = await this.config.provider.graphQL.rawToEnvelope(this.config, request)
@@ -97,6 +100,7 @@ export class BoosterGraphQLDispatcher {
     return this.runGraphQLOperation(envelopeOrError, responseHeaders)
   }
 
+  @Trace(TraceActionTypes.GRAPHQL_RUN_OPERATION)
   private async runGraphQLOperation(
     envelope: GraphQLRequestEnvelope | GraphQLRequestEnvelopeError,
     responseHeaders: Record<string, string> = {}
@@ -149,10 +153,10 @@ export class BoosterGraphQLDispatcher {
       }
 
       switch (operationData.operation) {
-        case 'query':
-        case 'mutation':
+        case OperationTypeNode.QUERY:
+        case OperationTypeNode.MUTATION:
           return await this.handleQueryOrMutation(queryDocument, resolverContext)
-        case 'subscription':
+        case OperationTypeNode.SUBSCRIPTION:
           return await this.handleSubscription(queryDocument, resolverContext)
       }
     } catch (e) {

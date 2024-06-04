@@ -22,7 +22,7 @@ export default function CustomNavbarItem(props: { imageURL: string; altText: str
   }
 
   const handleSearch = async (query: string, controller: AbortController) => {
-    if (query?.trim() === '' || query === null) {
+    if (query?.trim() === '') {
       return
     }
 
@@ -125,12 +125,7 @@ export default function CustomNavbarItem(props: { imageURL: string; altText: str
           resetSearchResponse={null}
         />
         <AskAIDisclaimer />
-        <ChatResponse 
-          questionId={questionId}
-          response={response} 
-          loading={loading} 
-          hasFinished={hasFinished} 
-        />
+        <ChatResponse questionId={questionId} response={response} loading={loading} hasFinished={hasFinished} />
       </Modal>
     </>
   )

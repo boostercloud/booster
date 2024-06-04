@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ReadModelEnvelope } from '@boostercloud/framework-types'
+import { ProjectionFor, ReadModelEnvelope } from '@boostercloud/framework-types'
 import { expect } from '../expect'
 import * as faker from 'faker'
-import { stub, restore } from 'sinon'
+import { random } from 'faker'
+import { restore, stub } from 'sinon'
 import { ReadModelRegistry } from '../../src/services'
 import {
   assertOrderByAgeAndIdDesc,
   assertOrderByAgeDesc,
   createMockReadModelEnvelope,
 } from '../helpers/read-model-helper'
-import { random } from 'faker'
 
 describe('the read model registry', () => {
   let initialReadModelsCount: number
@@ -34,13 +34,13 @@ describe('the read model registry', () => {
       const publishPromises: Array<Promise<any>> = []
 
       for (let i = 0; i < initialReadModelsCount; i++) {
-        publishPromises.push(readModelRegistry.store(createMockReadModelEnvelope()))
+        publishPromises.push(readModelRegistry.store(createMockReadModelEnvelope(), 0))
       }
 
       await Promise.all(publishPromises)
 
       mockReadModel = createMockReadModelEnvelope()
-      await readModelRegistry.store(mockReadModel)
+      await readModelRegistry.store(mockReadModel, 1)
     })
 
     it('should return expected read model', async () => {
@@ -179,6 +179,52 @@ describe('the read model registry', () => {
       expect(result.length).to.be.equal(initialReadModelsCount)
       expect(result[0]).to.not.deep.include(mockReadModel)
     })
+
+    it('should return only projected fields', async () => {
+      const result = await readModelRegistry.query(
+        {
+          value: mockReadModel.value,
+          typeName: mockReadModel.typeName,
+        },
+        undefined,
+        undefined,
+        undefined,
+        ['id', 'age'] as ProjectionFor<unknown>
+      )
+
+      expect(result.length).to.be.equal(1)
+      const expectedReadModel = {
+        value: {
+          id: mockReadModel.value.id,
+          age: mockReadModel.value.age,
+        },
+      }
+      expect(result[0]).to.deep.include(expectedReadModel)
+    })
+
+    it('should return only projected fields with array fields', async () => {
+      const result = await readModelRegistry.query(
+        {
+          value: mockReadModel.value,
+          typeName: mockReadModel.typeName,
+        },
+        undefined,
+        undefined,
+        undefined,
+        ['id', 'age', 'arr[].id', 'prop.items[].name'] as ProjectionFor<unknown>
+      )
+
+      expect(result.length).to.be.equal(1)
+      const expectedReadModel = {
+        value: {
+          id: mockReadModel.value.id,
+          age: mockReadModel.value.age,
+          arr: mockReadModel.value.arr.map((item: any) => ({ id: item.id })),
+          prop: { items: mockReadModel.value.prop.items.map((item: any) => ({ name: item.name })) },
+        },
+      }
+      expect(result[0]).to.deep.include(expectedReadModel)
+    })
   })
 
   describe('delete by id', () => {
@@ -187,12 +233,12 @@ describe('the read model registry', () => {
       const id = '1'
       mockReadModelEnvelope.value.id = id
 
-      readModelRegistry.readModels.remove = stub().yields(null, mockReadModelEnvelope)
+      readModelRegistry.readModels.removeAsync = stub().returns(mockReadModelEnvelope)
 
-      await readModelRegistry.store(mockReadModelEnvelope)
+      await readModelRegistry.store(mockReadModelEnvelope, 1)
       await readModelRegistry.deleteById(id, mockReadModelEnvelope.typeName)
 
-      expect(readModelRegistry.readModels.remove).to.have.been.calledWith(
+      expect(readModelRegistry.readModels.removeAsync).to.have.been.calledWith(
         { typeName: mockReadModelEnvelope.typeName, 'value.id': id },
         { multi: false }
       )
@@ -202,13 +248,19 @@ describe('the read model registry', () => {
   describe('the store method', () => {
     it('should upsert read models into the read models database', async () => {
       const readModel: ReadModelEnvelope = createMockReadModelEnvelope()
-      const expectedQuery = { typeName: readModel.typeName, 'value.id': readModel.value.id }
+      readModel.value.boosterMetadata!.version = 2
+      const expectedQuery = {
+        typeName: readModel.typeName,
+        'value.id': readModel.value.id,
+        'value.boosterMetadata.version': 2,
+      }
 
-      readModelRegistry.readModels.update = stub().yields(null, readModel)
+      readModelRegistry.readModels.updateAsync = stub().returns(readModel)
 
-      await readModelRegistry.store(readModel)
-      expect(readModelRegistry.readModels.update).to.have.been.calledWith(expectedQuery, readModel, {
-        upsert: true,
+      await readModelRegistry.store(readModel, 2)
+      expect(readModelRegistry.readModels.updateAsync).to.have.been.calledWith(expectedQuery, readModel, {
+        upsert: false,
+        returnUpdatedDocs: true,
       })
     })
 
@@ -224,7 +276,7 @@ describe('the read model registry', () => {
 
       readModelRegistry.readModels.update = stub().yields(error, null)
 
-      void expect(readModelRegistry.store(readModel)).to.be.rejectedWith(error)
+      void expect(readModelRegistry.store(readModel, 1)).to.be.rejectedWith(error)
     })
   })
 })

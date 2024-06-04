@@ -1,9 +1,10 @@
 ---
 name: Feature request
 about: Use this template to suggest an idea for this project.
+labels: feature-request
 ---
 
-## Feature Request
+# Feature Request
 
 ## Description
 

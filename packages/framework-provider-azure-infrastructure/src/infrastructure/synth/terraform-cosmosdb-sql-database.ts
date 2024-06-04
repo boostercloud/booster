@@ -1,29 +1,27 @@
-import { TerraformStack } from 'cdktf'
-import { cosmosdbAccount, cosmosdbSqlDatabase, resourceGroup } from '@cdktf/provider-azurerm'
+import { cosmosdbSqlDatabase } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
 
 import { MAX_DATABASE_THROUGHPUT } from '../constants'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformCosmosdbSqlDatabase {
   static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    appPrefix: string,
-    cosmosdbAccountResource: cosmosdbAccount.CosmosdbAccount,
+    { terraformStack, azureProvider, appPrefix, resourceGroupName, cosmosdbDatabase }: ApplicationSynthStack,
     config: BoosterConfig
   ): cosmosdbSqlDatabase.CosmosdbSqlDatabase {
+    if (!cosmosdbDatabase) {
+      throw new Error('Undefined cosmosdbDatabase resource')
+    }
     const idDatabase = toTerraformName(appPrefix, 'dbd')
-    return new cosmosdbSqlDatabase.CosmosdbSqlDatabase(terraformStackResource, idDatabase, {
+    return new cosmosdbSqlDatabase.CosmosdbSqlDatabase(terraformStack, idDatabase, {
       name: config.resourceNames.applicationStack,
-      resourceGroupName: resourceGroupResource.name,
-      accountName: cosmosdbAccountResource.name,
+      resourceGroupName: resourceGroupName,
+      accountName: cosmosdbDatabase.name,
       autoscaleSettings: {
         maxThroughput: MAX_DATABASE_THROUGHPUT,
       },
-      provider: providerResource,
+      provider: azureProvider,
     })
   }
 }

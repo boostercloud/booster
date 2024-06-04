@@ -15,3 +15,9 @@ export interface DataMigrationMetadata {
   readonly class: DataMigrationInterface
   migrationOptions: DataMigrationParameters
 }
+
+export interface BoosterDataMigrationEntityDuration {
+  start: string
+  end?: string
+  elapsedMilliseconds?: number
+}

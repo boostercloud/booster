@@ -17,7 +17,7 @@ describe('Users want to use utility methods', () => {
 
     it('with a long name and suffix return last name characters and the whole suffix', () => {
       const result = toTerraformName('0123456789012345678901234', 'suffix')
-      expect(result).to.be.equal('789012345678901234suffix')
+      expect(result).to.be.equal('B89012345678901234suffix')
     })
 
     it('with a name and a 24 characters suffix return name and first suffix characters', () => {

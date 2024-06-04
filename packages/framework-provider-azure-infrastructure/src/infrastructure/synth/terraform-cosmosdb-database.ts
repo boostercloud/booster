@@ -1,21 +1,20 @@
-import { TerraformStack } from 'cdktf'
-import { cosmosdbAccount, resourceGroup } from '@cdktf/provider-azurerm'
+import { cosmosdbAccount } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformCosmosdbDatabase {
-  static build(
-    providerResource: AzurermProvider,
-    terraformStackResource: TerraformStack,
-    resourceGroupResource: resourceGroup.ResourceGroup,
-    appPrefix: string,
-    resourceGroupName: string
-  ): cosmosdbAccount.CosmosdbAccount {
+  static build({
+    terraformStack,
+    azureProvider,
+    appPrefix,
+    resourceGroup,
+    resourceGroupName,
+  }: ApplicationSynthStack): cosmosdbAccount.CosmosdbAccount {
     const idAccount = toTerraformName(appPrefix, 'dba')
-    return new cosmosdbAccount.CosmosdbAccount(terraformStackResource, idAccount, {
+    return new cosmosdbAccount.CosmosdbAccount(terraformStack, idAccount, {
       name: `${resourceGroupName}cdba`,
-      location: resourceGroupResource.location,
-      resourceGroupName: resourceGroupResource.name,
+      location: resourceGroup.location,
+      resourceGroupName: resourceGroupName,
       offerType: 'Standard',
       kind: 'GlobalDocumentDB',
       enableMultipleWriteLocations: false,
@@ -23,15 +22,15 @@ export class TerraformCosmosdbDatabase {
       enableAutomaticFailover: true,
       geoLocation: [
         {
-          location: resourceGroupResource.location,
+          location: resourceGroup.location,
           failoverPriority: 0,
         },
       ],
       consistencyPolicy: {
         consistencyLevel: 'Session',
       },
-      dependsOn: [resourceGroupResource],
-      provider: providerResource,
+      dependsOn: [resourceGroup],
+      provider: azureProvider,
     })
   }
 }
