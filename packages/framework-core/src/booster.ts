@@ -119,7 +119,8 @@ export class Booster {
       return readModels[0] as TReadModel
     }
     const boosterReadModelsReader = new BoosterReadModelsReader(this.config)
-    const searcherFunction: SearcherFunction<TReadModel> =
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const searcherFunction: SearcherFunction<TReadModel, any> =
       boosterReadModelsReader.readModelSearch.bind(boosterReadModelsReader)
     return new Searcher(readModelClass, searcherFunction, finderByIdFunction)
   }
