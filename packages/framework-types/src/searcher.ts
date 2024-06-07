@@ -147,7 +147,13 @@ type SearcherAfterPaginatedVersion<
   Paginated extends boolean
 > = Searcher<TObject, TSingleResult, Paginated extends true ? ReadModelListResult<any> : Array<any>>
 
-type Paths<T> = T extends object ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K]>}`}` }[keyof T] : never
+type Tail<T extends any[]> = T extends [any, ...infer Rest] ? Rest : never
+
+type Paths<T, TLevels extends any[] = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]> = TLevels extends []
+  ? ''
+  : T extends object
+  ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K], Tail<TLevels>>}`}` }[keyof T]
+  : never
 
 export type ProjectionFor<TType> = Array<Paths<TType>>
 
