@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 30 May 2024 15:58:21 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Jun 2024 16:43:14 GMT and should not be manually modified.
+
+## 2.12.0
+Tue, 11 Jun 2024 16:43:14 GMT
+
+### Minor changes
+
+- Add global event handler
 
 ## 2.11.0
 Thu, 30 May 2024 15:58:21 GMT
