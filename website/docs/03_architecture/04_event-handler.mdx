@@ -107,7 +107,7 @@ export class HandleAvailability {
 By annotating a class with the @GlobalEventHandler decorator, the handle method within that class will be automatically called for any event that is generated
 
 ```typescript
-@GlobalEventHandler()
+@GlobalEventHandler
 export class GlobalHandler {
   public static async handle(event: EventInterface | NotificationInterface, register: Register): Promise<void> {
     if (event instanceof LogEventReceived) {

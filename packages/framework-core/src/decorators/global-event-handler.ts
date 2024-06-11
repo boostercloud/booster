@@ -1,24 +1,11 @@
-import { EventHandlerInterface, BoosterConfig } from '@boostercloud/framework-types'
-import { Booster } from '../booster'
+import { EventHandlerInterface } from '@boostercloud/framework-types'
+import { registerEventHandler } from './event-handler'
 
-export const GLOBAL_EVENT_HANDLER = 'GLOBAL_EVENT_HANDLER'
+export const BOOSTER_GLOBAL_EVENT_HANDLERS = 'BOOSTER_GLOBAL_EVENT_HANDLERS'
 
-export function GlobalEventHandler(): <TEventHandler extends EventHandlerInterface>(
-  eventHandlerClass: TEventHandler
-) => void {
-  return (eventHandlerClass) => registerGlobalEventHandler(eventHandlerClass)
-}
-
-function registerGlobalEventHandler<TEventHandler extends EventHandlerInterface>(
+export function GlobalEventHandler<TEventHandler extends EventHandlerInterface>(
   eventHandlerClass: TEventHandler
 ): void {
-  Booster.configureCurrentEnv((config: BoosterConfig): void => {
-    const registeredEventHandlers = config.eventHandlers[GLOBAL_EVENT_HANDLER] || []
-    if (registeredEventHandlers.length > 0) {
-      throw new Error(`A global event handler is already registered.
-        If you think that this is an error, try performing a clean build.`)
-    }
-    registeredEventHandlers.push(eventHandlerClass)
-    config.eventHandlers[GLOBAL_EVENT_HANDLER] = registeredEventHandlers // todo
-  })
+  // We would need to do the function `registerEventHandler` exported
+  registerEventHandler(BOOSTER_GLOBAL_EVENT_HANDLERS, eventHandlerClass)
 }

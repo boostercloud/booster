@@ -16,7 +16,7 @@ import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
 import { createInstance, getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { NotificationInterface } from 'framework-types/dist'
 import { Trace } from './instrumentation'
-import { GLOBAL_EVENT_HANDLER } from './decorators'
+import { BOOSTER_GLOBAL_EVENT_HANDLERS } from './decorators'
 
 export class BoosterEventProcessor {
   /**
@@ -91,8 +91,8 @@ export class BoosterEventProcessor {
     const logger = getLogger(config, 'BoosterEventDispatcher.dispatchEntityEventsToEventHandlers')
     for (const eventEnvelope of entityEventEnvelopes) {
       let eventHandlers = config.eventHandlers[eventEnvelope.typeName] || []
-      const globalEventHandler = config.eventHandlers[GLOBAL_EVENT_HANDLER]
-      if (globalEventHandler && Object.keys(globalEventHandler).length > 0) {
+      const globalEventHandler = config.eventHandlers[BOOSTER_GLOBAL_EVENT_HANDLERS]
+      if (globalEventHandler && globalEventHandler.length > 0) {
         eventHandlers = eventHandlers.concat(globalEventHandler)
       }
       if (!eventHandlers || eventHandlers.length == 0) {
