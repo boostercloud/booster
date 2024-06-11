@@ -121,7 +121,7 @@ describe('Query helper', () => {
           .query
       ).to.have.been.calledWith(
         match({
-          query: 'SELECT c.id, c.other, c.first.second.third AS "first.second.third" FROM c ',
+          query: 'SELECT c["id"], c["other"], c["first"]["second"]["third"] AS "first.second.third" FROM c ',
           parameters: [],
         })
       )
@@ -160,9 +160,9 @@ describe('Query helper', () => {
       ).to.have.been.calledWith(
         match({
           query:
-            'SELECT c.id, c.other, ARRAY(SELECT item.prop1, item.prop2 FROM item IN c.arrayProp) AS arrayProp, ' +
-            'c.a.b.c1 AS "a.b.c1", c.a.b.c2 AS "a.b.c2", ARRAY(SELECT item.x.y, item.x.z FROM item IN c.arr) AS arr, ' +
-            'ARRAY(SELECT item.bar FROM item IN c.foo.items) AS "foo.items" ' +
+            'SELECT c["id"], c["other"], ARRAY(SELECT item["prop1"], item["prop2"] FROM item IN c["arrayProp"]) AS arrayProp, ' +
+            'c["a"]["b"]["c1"] AS "a.b.c1", c["a"]["b"]["c2"] AS "a.b.c2", ARRAY(SELECT item["x"]["y"], item["x"]["z"] FROM item IN c["arr"]) AS arr, ' +
+            'ARRAY(SELECT item["bar"] FROM item IN c["foo"]["items"]) AS "foo.items" ' +
             'FROM c ',
           parameters: [],
         })

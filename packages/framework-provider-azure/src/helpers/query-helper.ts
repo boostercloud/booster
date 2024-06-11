@@ -224,6 +224,14 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
     return projections
   }
 
+  // Helper function to convert dot notation to square-bracket notation
+  const toSquareBracketsNotation = (path: string): string => {
+    return path
+      .split('.')
+      .map((part) => `["${part}"]`)
+      .join('')
+  }
+
   // Group fields by the root property
   const groupedFields: { [key: string]: string[] } = {}
   Object.values(projections).forEach((field: string) => {
@@ -239,11 +247,15 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
       const fields = groupedFields[root]
       if (root.endsWith('[]')) {
         const arrayRoot: string = root.slice(0, -2)
-        const subFields = fields.map((f: string) => f.replace(`${root}.`, 'item.')).join(', ')
-        return `ARRAY(SELECT ${subFields} FROM item IN c.${arrayRoot}) AS ${arrayRoot}`
+        const subFields = fields
+          .map((f: string) => f.replace(`${root}.`, ''))
+          .map(toSquareBracketsNotation)
+          .map((f: string) => `item${f}`)
+          .join(', ')
+        return `ARRAY(SELECT ${subFields} FROM item IN c["${arrayRoot}"]) AS ${arrayRoot}`
       } else if (fields.length === 1 && !fields[0].includes('.')) {
         // Simple field
-        return `c.${fields[0]}`
+        return `c${toSquareBracketsNotation(fields[0])}`
       } else {
         // Nested object fields
         const nestedFields: { [key: string]: string[] } = {}
@@ -260,13 +272,20 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
 
         return Object.keys(nestedFields)
           .map((nestedRoot: string) => {
-            const subFields = nestedFields[nestedRoot].map((f: string) => `c.${root}.${f} AS "${root}.${f}"`).join(', ')
+            const subFields = nestedFields[nestedRoot]
+              .map((f: string) => `c${toSquareBracketsNotation(`${root}.${f}`)} AS "${root}.${f}"`)
+              .join(', ')
             if (nestedRoot.endsWith('[]')) {
               const arrayNestedRoot = nestedRoot.slice(0, -2)
               const subArrayFields = nestedFields[nestedRoot]
-                .map((f: string) => `item.${f.split('.').slice(1).join('.')}`)
+                .map((f: string) => {
+                  const subFieldParts = f.split('.').slice(1).join('.')
+                  return `item${toSquareBracketsNotation(subFieldParts)}`
+                })
                 .join(', ')
-              return `ARRAY(SELECT ${subArrayFields} FROM item IN c.${root}.${arrayNestedRoot}) AS "${root}.${arrayNestedRoot}"`
+              return `ARRAY(SELECT ${subArrayFields} FROM item IN c${toSquareBracketsNotation(
+                `${root}.${arrayNestedRoot}`
+              )}) AS "${root}.${arrayNestedRoot}"`
             }
             return subFields
           })
