@@ -101,6 +101,42 @@ You can even select arrays of UUIDs as `joinKey`. Booster get each value on the 
   }
 ```
 
+#### ReadModel queries
+
+You can use a read model query as a join key to get all the ReadModels that matches the query. Example:
+
+```typescript
+  @Projects(CarModel, (carModel: CarModel): FilterFor<CarPurchasesReadModel> => {
+    return {
+      carModel: {
+        id: {
+          eq: carModel.id,
+        },
+      },
+    }
+  })
+  public static updateWithModel(
+    model: CarModel,
+    readModelId: UUID | undefined,
+    oldCarPurchaseReadModel?: CarPurchasesReadModel
+  ): ProjectionResult<CarPurchasesReadModel> {
+    if (!readModelId) {
+      return ReadModelAction.Nothing
+    }
+    return new CarPurchasesReadModel(
+      readModelId,
+      model,
+      oldCarPurchaseReadModel?.carOwner,
+      oldCarPurchaseReadModel?.offers
+    )
+  }
+```
+
+This projection uses a ReadModel query JoinKey to get all the CarOwnerModelReadModel instances for a given CarModel. In this case, the `updateWithModel` function
+will be called for each CarOwnerModelReadModel instance that matches the query. The `readModelId` argument will be the id of the CarOwnerModelReadModel instance.
+
+> [!NOTE] If no read model matches the query, the `updateWithModel` function will be called with `readModelId` set to `undefined`.
+
 ### Returning special values
 
 Projections usually return a new instance of the read model. However, there are some special cases where you may want to return a different value.
