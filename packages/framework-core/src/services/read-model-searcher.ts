@@ -13,7 +13,8 @@ export function readModelSearcher<TReadModel extends ReadModelInterface>(
   readModelClass: Class<TReadModel>
 ): Searcher<TReadModel> {
   const boosterReadModelsReader = new BoosterReadModelsReader(config)
-  const searcherFunction: SearcherFunction<TReadModel> =
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const searcherFunction: SearcherFunction<TReadModel, any> =
     boosterReadModelsReader.readModelSearch.bind(boosterReadModelsReader)
   const finderByIdFunction: FinderByKeyFunction<TReadModel> =
     boosterReadModelsReader.finderByIdFunction.bind(boosterReadModelsReader)
