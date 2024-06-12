@@ -3,7 +3,7 @@ import { SequenceKey, UUID } from './concepts'
 import { ReadModelListResult } from './envelope'
 import { AnyClass, Class, ReadOnlyNonEmptyArray } from './typelevel'
 
-export type SearcherFunction<TObject> = (
+export type SearcherFunction<TObject, TResult> = (
   objectClass: AnyClass,
   filters: FilterFor<TObject>,
   sortBy: SortFor<TObject>,
@@ -11,7 +11,7 @@ export type SearcherFunction<TObject> = (
   afterCursor?: any,
   paginatedVersion?: boolean,
   select?: ProjectionFor<TObject>
-) => Promise<Array<TObject> | ReadModelListResult<TObject>>
+) => Promise<TResult>
 
 export type FinderByKeyFunction<TObject> = (
   objectClass: AnyClass,
@@ -30,7 +30,11 @@ export type SequenceFinderByKeyFunction<TObject> = (
  * is by setting filters on the properties of the object you want to search and then run it.
  * Check the documentation on the individual methods to know more about how to do so.
  */
-export class Searcher<TObject> {
+export class Searcher<
+  TObject,
+  TSingleResult extends SingleResultType<TObject> = TObject,
+  TContainer extends ContainerType = Array<any>
+> {
   // private offset?: number
   private _limit?: number
   private _afterCursor?: any
@@ -46,7 +50,7 @@ export class Searcher<TObject> {
    */
   public constructor(
     private readonly objectClass: Class<TObject>,
-    private readonly searcherFunction: SearcherFunction<TObject>,
+    private readonly searcherFunction: SearcherFunction<TObject, ApplyContainerToType<TContainer, TSingleResult>>,
     private readonly finderByKeyFunction: FinderByKeyFunction<TObject>
   ) {}
 
@@ -71,7 +75,7 @@ export class Searcher<TObject> {
     return this
   }
 
-  public select(select?: ProjectionFor<TObject>): this {
+  public select(select?: ProjectionFor<TObject>): SearchAfterSelect<TObject, TContainer> {
     if (select) this._selectFor = select
     return this
   }
@@ -86,19 +90,21 @@ export class Searcher<TObject> {
     return this
   }
 
-  public paginatedVersion(paginatedVersion?: boolean): this {
+  public paginatedVersion<TPaginated extends boolean>(
+    paginatedVersion?: TPaginated
+  ): SearcherAfterPaginatedVersion<TObject, TSingleResult, TPaginated> {
     if (paginatedVersion) this._paginatedVersion = paginatedVersion
-    return this
+    return this as SearcherAfterPaginatedVersion<TObject, TSingleResult, TPaginated>
   }
 
   /**
-   * @deprecated [EOL v3] Use searchOnce instead
+   * @deprecated [EOL v3] Use searchOne instead
    */
   public async findById(id: UUID, sequenceKey?: SequenceKey): Promise<TObject | ReadOnlyNonEmptyArray<TObject>> {
     return this.finderByKeyFunction(this.objectClass, id, sequenceKey)
   }
 
-  public async searchOne(): Promise<TObject> {
+  public async searchOne(): Promise<TSingleResult | undefined> {
     // TODO: If there is only an ID filter with one value, this should call to `findById`
     const searchResult = await this.searcherFunction(
       this.objectClass,
@@ -109,13 +115,13 @@ export class Searcher<TObject> {
       false, // It doesn't make sense to paginate a single result, as pagination metadata would be discarded
       this._selectFor
     )
-    return (searchResult as TObject[])[0]
+    return (searchResult as Array<TSingleResult>)[0]
   }
 
   /**
    * Do the actual search by sending all the configured filters to the provided search function
    */
-  public async search(): Promise<Array<TObject> | ReadModelListResult<TObject>> {
+  public async search(): Promise<ApplyContainerToType<TContainer, TSingleResult>> {
     return this.searcherFunction(
       this.objectClass,
       this.filters,
@@ -128,7 +134,26 @@ export class Searcher<TObject> {
   }
 }
 
-type Paths<T> = T extends object ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K]>}`}` }[keyof T] : never
+type SingleResultType<TObject> = TObject | Partial<TObject>
+type ContainerType = Array<any> | ReadModelListResult<any>
+type ApplyContainerToType<Container extends ContainerType, Type> = Container extends Array<any>
+  ? Array<Type>
+  : ReadModelListResult<Type>
+
+type SearchAfterSelect<TObject, TContainer extends ContainerType> = Searcher<TObject, Partial<TObject>, TContainer>
+type SearcherAfterPaginatedVersion<
+  TObject,
+  TSingleResult extends SingleResultType<TObject>,
+  Paginated extends boolean
+> = Searcher<TObject, TSingleResult, Paginated extends true ? ReadModelListResult<any> : Array<any>>
+
+type Tail<T extends any[]> = T extends [any, ...infer Rest] ? Rest : never
+
+type Paths<T, TLevels extends any[] = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]> = TLevels extends []
+  ? ''
+  : T extends object
+  ? { [K in keyof T]: `${Exclude<K, symbol>}${'' | `.${Paths<T[K], Tail<TLevels>>}`}` }[keyof T]
+  : never
 
 export type ProjectionFor<TType> = Array<Paths<TType>>
 
