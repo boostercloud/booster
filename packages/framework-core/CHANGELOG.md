@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 11 Jun 2024 16:43:14 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Jun 2024 16:17:26 GMT and should not be manually modified.
+
+## 2.12.1
+Thu, 13 Jun 2024 16:17:26 GMT
+
+### Patches
+
+- Add support for GraphQL fragments
 
 ## 2.12.0
 Tue, 11 Jun 2024 16:43:14 GMT
