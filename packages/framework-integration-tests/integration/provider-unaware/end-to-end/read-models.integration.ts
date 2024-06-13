@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { ApolloClient, NormalizedCacheObject, gql } from '@apollo/client'
+import { ApolloClient, gql, NormalizedCacheObject } from '@apollo/client'
 import { commerce, finance, internet, lorem, random } from 'faker'
 import { expect } from '../../helper/expect'
 import { waitForIt } from '../../helper/sleep'
@@ -1702,6 +1702,201 @@ describe('Read models end-to-end tests', () => {
             },
           },
         ])
+      })
+    })
+
+    context('query with fragments', () => {
+      const mockCartId: string = random.uuid()
+      const mockProductId: string = random.uuid()
+      const mockQuantity: number = random.number({ min: 1 })
+
+      beforeEach(async () => {
+        // provisioning a cart
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+          },
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+      })
+
+      it('should retrieve expected cart', async () => {
+        const fragment = gql`
+          fragment cartItemDetails on CartItem {
+            productId
+            quantity
+          }
+        `
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    cartItems {
+                      ...cartItemDetails
+                    }
+                  }
+                }
+                ${fragment}
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
+
+        const cartData = queryResult.data.CartReadModel
+
+        expect(cartData.id).to.be.equal(mockCartId)
+        expect(cartData.cartItems).to.have.length(1)
+        expect(cartData.cartItems[0]).to.deep.equal({
+          __typename: 'CartItem',
+          productId: mockProductId,
+          quantity: mockQuantity,
+        })
+      })
+
+      it('should retrieve list of items', async () => {
+        const fragment = gql`
+          fragment cart on CartReadModel {
+            id
+            cartItems {
+              productId
+              quantity
+            }
+          }
+        `
+        const limit = 1
+        let cursor: Record<'id', string> | undefined = undefined
+
+        for (let i = 0; i < limit; i++) {
+          const queryResult = await waitForIt(
+            () => {
+              return client.query({
+                variables: {
+                  filterBy: { id: { eq: mockCartId } },
+                },
+                query: gql`
+                  query ListCartReadModels($filterBy: ListCartReadModelFilter) {
+                    ListCartReadModels(filter: $filterBy) {
+                      items {
+                        ...cart
+                      }
+                      cursor
+                    }
+                  }
+                  ${fragment}
+                `,
+              })
+            },
+            (result) => result?.data?.ListCartReadModels?.items.length === 1
+          )
+
+          const currentPageCartData = queryResult.data.ListCartReadModels.items
+
+          cursor = queryResult.data.ListCartReadModels.cursor
+
+          if (cursor) {
+            if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
+              expect(cursor.id).to.equal((i + 1).toString())
+            } else {
+              expect(cursor.id).to.equal(currentPageCartData[0].id)
+            }
+          }
+          expect(currentPageCartData).to.be.an('array')
+          expect(currentPageCartData.length).to.equal(1)
+          expect(cursor).to.not.be.undefined
+          expect(currentPageCartData[0].id).to.be.equal(mockCartId)
+          expect(currentPageCartData[0].cartItems).to.have.length(1)
+          expect(currentPageCartData[0].cartItems[0]).to.deep.equal({
+            __typename: 'CartItem',
+            productId: mockProductId,
+            quantity: mockQuantity * 2,
+          })
+        }
+      })
+
+      it('should apply modified filter by before hooks', async () => {
+        // We create a cart with id 'before-fn-test-modified', but we query for
+        // 'before-fn-test', which will then change the filter after two "before" functions
+        // to return the original cart (id 'before-fn-test-modified')
+        const variables = {
+          cartId: 'before-fn-test-modified',
+          productId: beforeHookProductId,
+          quantity: 1,
+        }
+        await client.mutate({
+          variables,
+          mutation: gql`
+            mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
+              ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
+            }
+          `,
+        })
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: 'before-fn-test',
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    cartItems {
+                      productId
+                      quantity
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModel != null
+        )
+
+        const cartData = queryResult.data.CartReadModel
+
+        expect(cartData.id).to.be.equal(variables.cartId)
+      })
+
+      it('should return exceptions thrown by before functions', async () => {
+        try {
+          await waitForIt(
+            () => {
+              return client.query({
+                variables: {
+                  cartId: throwExceptionId,
+                },
+                query: gql`
+                  query CartReadModel($cartId: ID!) {
+                    CartReadModel(id: $cartId) {
+                      id
+                      cartItems {
+                        productId
+                        quantity
+                      }
+                    }
+                  }
+                `,
+              })
+            },
+            (_) => true
+          )
+        } catch (e) {
+          expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
+          expect(e.graphQLErrors[0].path).to.deep.eq(['CartReadModel'])
+        }
       })
     })
   })
