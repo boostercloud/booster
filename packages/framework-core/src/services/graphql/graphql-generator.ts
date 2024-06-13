@@ -18,6 +18,7 @@ import {
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import {
   FieldNode,
+  FragmentDefinitionNode,
   getNamedType,
   GraphQLFieldResolver,
   GraphQLInputObjectType,
@@ -27,6 +28,7 @@ import {
   GraphQLResolveInfo,
   GraphQLSchema,
   isObjectType,
+  Kind,
 } from 'graphql'
 import { pluralize } from 'inflected'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
@@ -265,43 +267,71 @@ export class GraphQLGenerator {
      * @param {SelectionSetNode} selectionSet - The selection set.
      * @param {string[]} path - The current path.
      * @param {GraphQLObjectType | any} parentType - The parent type.
+     * @param {Map<string, FragmentDefinitionNode>} fragments - The fragment definitions.
      * @returns {string[]} - The extracted fields.
      */
     const extractFields = (
       selectionSet: SelectionSetNode,
       path: string[] = [],
-      parentType: GraphQLObjectType | any
+      parentType: GraphQLObjectType | any,
+      fragments: Map<string, FragmentDefinitionNode>
     ): string[] => {
       let subFields: string[] = []
       if (selectionSet && selectionSet.selections) {
         selectionSet.selections.forEach((selection: any) => {
-          const fieldName = selection.name.value
-          const field = parentType.getFields()[fieldName]
+          if (selection.kind === Kind.FIELD) {
+            const fieldName = selection.name.value
+            const field = parentType.getFields()[fieldName]
 
-          if (!field) {
-            return
-          }
-
-          const fieldType: GraphQLNamedInputType = getNamedType(field.type as GraphQLNamedInputType)
-          const currentPath = [...path, fieldName]
-
-          if (isList(field.type)) {
-            const elementType = getNamedType(field.type.ofType)
-            if (isObjectType(elementType)) {
-              currentPath[currentPath.length - 1] += '[]'
+            if (!field) {
+              return
             }
-          }
 
-          if (!selection.selectionSet) {
-            subFields.push(currentPath.join('.'))
-          } else {
-            const nextParentType = isObjectType(fieldType) ? fieldType : parentType
-            subFields = subFields.concat(extractFields(selection.selectionSet, currentPath, nextParentType))
+            const fieldType: GraphQLNamedInputType = getNamedType(field.type as GraphQLNamedInputType)
+            const currentPath = [...path, fieldName]
+
+            if (isList(field.type)) {
+              const elementType = getNamedType(field.type.ofType)
+              if (isObjectType(elementType)) {
+                currentPath[currentPath.length - 1] += '[]'
+              }
+            }
+
+            if (!selection.selectionSet) {
+              subFields.push(currentPath.join('.'))
+            } else {
+              const nextParentType = isObjectType(fieldType) ? fieldType : parentType
+              subFields = subFields.concat(
+                extractFields(selection.selectionSet, currentPath, nextParentType, fragments)
+              )
+            }
+          } else if (selection.kind === Kind.FRAGMENT_SPREAD) {
+            const fragmentName = selection.name.value
+            const fragment = fragments.get(fragmentName)
+
+            if (fragment) {
+              subFields = subFields.concat(extractFields(fragment.selectionSet, path, parentType, fragments))
+            }
+          } else if (selection.kind === Kind.INLINE_FRAGMENT) {
+            const inlineFragmentType = selection.typeCondition
+              ? info.schema.getType(selection.typeCondition.name.value)
+              : parentType
+
+            if (isObjectType(inlineFragmentType)) {
+              subFields = subFields.concat(extractFields(selection.selectionSet, path, inlineFragmentType, fragments))
+            }
           }
         })
       }
       return subFields
     }
+
+    // Collect all fragment definitions
+    const fragments = new Map<string, FragmentDefinitionNode>()
+    info.fragments &&
+      Object.keys(info.fragments).forEach((fragmentName) => {
+        fragments.set(fragmentName, info.fragments[fragmentName] as FragmentDefinitionNode)
+      })
 
     info.fieldNodes.forEach((fieldNode: FieldNode) => {
       const firstField: string = fieldNode.name.value
@@ -313,7 +343,7 @@ export class GraphQLGenerator {
       ) as unknown as GraphQLObjectType
 
       if (fieldNode.selectionSet) {
-        fields = fields.concat(extractFields(fieldNode.selectionSet, [], rootType))
+        fields = fields.concat(extractFields(fieldNode.selectionSet, [], rootType, fragments))
       }
     })
 
