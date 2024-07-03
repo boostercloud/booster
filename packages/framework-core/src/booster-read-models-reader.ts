@@ -16,13 +16,17 @@ import {
   SubscriptionEnvelope,
   TraceActionTypes,
 } from '@boostercloud/framework-types'
-import { createInstance, createInstances, getLogger } from '@boostercloud/framework-common-helpers'
+import {
+  createInstance,
+  createInstances,
+  createInstanceWithCalculatedProperties,
+  getLogger,
+} from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
 import { Trace } from './instrumentation'
 import { PropertyMetadata } from '@boostercloud/metadata-booster'
-import { isPromise } from 'graphql/jsutils/isPromise'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig) {}
@@ -121,7 +125,7 @@ export class BoosterReadModelsReader {
 
     const readModels = this.createReadModelInstances(searchResult, readModelClass)
     if (select) {
-      return this.createInstancesWithCalculatedProperties(searchResult, readModelClass, select ?? [])
+      return this.createReadModelInstancesWithCalculatedProperties(searchResult, readModelClass, select ?? [])
     }
     return this.migrateReadModels(readModels, readModelName)
   }
@@ -154,101 +158,19 @@ export class BoosterReadModelsReader {
   }
 
   /**
-   * Creates an instance of the read model class with the calculated properties included
-   * @param instanceClass The read model class
-   * @param raw The raw read model data
-   * @param propertiesToInclude The properties to include in the response
-   * @private
-   */
-  private async createInstanceWithCalculatedProperties<T extends ReadModelInterface>(
-    instanceClass: { new (...args: any[]): T },
-    raw: Partial<T>,
-    propertiesToInclude: string[]
-  ): Promise<{ [key: string]: any }> {
-    const instance = new instanceClass()
-    Object.assign(instance, raw)
-    const result: { [key: string]: any } = {}
-
-    const propertiesMap = this.buildPropertiesMap(propertiesToInclude)
-
-    await this.processProperties(instance, result, propertiesMap)
-
-    return result
-  }
-
-  /**
-   * Builds a map of properties to include in the response
-   * @param properties The properties to include in the response
-   * @private
-   */
-  private buildPropertiesMap(properties: string[]): any {
-    const map: any = {}
-    properties.forEach((property) => {
-      const parts = property.split('.')
-      let current = map
-      parts.forEach((part) => {
-        const isArray = part.endsWith('[]')
-        const key = isArray ? part.slice(0, -2) : part
-        if (!current[key]) {
-          current[key] = isArray ? { __isArray: true, __children: {} } : {}
-        }
-        current = isArray ? current[key].__children : current[key]
-      })
-    })
-    return map
-  }
-
-  /**
-   * Processes the properties of the source object and adds them to the result object
-   * @param source The source object
-   * @param result The result object
-   * @param propertiesMap The map of properties to include in the response
-   * @private
-   */
-  private async processProperties(source: any, result: any, propertiesMap: any): Promise<void> {
-    for (const key of Object.keys(propertiesMap)) {
-      if (key === '__isArray' || key === '__children') continue
-
-      if (source[key] !== undefined) {
-        if (propertiesMap[key].__isArray) {
-          result[key] = []
-          for (const item of source[key]) {
-            const newItem: any = {}
-            await this.processProperties(item, newItem, propertiesMap[key].__children)
-            if (Object.keys(newItem).length > 0) {
-              result[key].push(newItem)
-            }
-          }
-        } else if (typeof propertiesMap[key] === 'object' && Object.keys(propertiesMap[key]).length > 0) {
-          const value = source[key]
-          const resolvedValue = isPromise(value) ? await value : value
-          result[key] = {}
-          await this.processProperties(resolvedValue, result[key], propertiesMap[key])
-          if (Object.keys(result[key]).length === 0) {
-            delete result[key]
-          }
-        } else {
-          const value = source[key]
-          result[key] = isPromise(value) ? await value : value
-        }
-      }
-    }
-  }
-
-  /**
    * Creates instances of the read model class with the calculated properties included
    * @param searchResult The search result
    * @param readModelClass The read model class
    * @param propertiesToInclude The properties to include in the response
    * @private
    */
-  private async createInstancesWithCalculatedProperties<TReadModel extends ReadModelInterface>(
+  private async createReadModelInstancesWithCalculatedProperties<TReadModel extends ReadModelInterface>(
     searchResult: Array<TReadModel> | ReadModelListResult<TReadModel>,
     readModelClass: AnyClass,
     propertiesToInclude: string[]
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
     const processInstance = async (raw: Partial<TReadModel>): Promise<TReadModel> => {
-      const instance = await this.createInstanceWithCalculatedProperties(readModelClass, raw, propertiesToInclude)
+      const instance = await createInstanceWithCalculatedProperties(readModelClass, raw, propertiesToInclude)
       return instance as TReadModel
     }
 

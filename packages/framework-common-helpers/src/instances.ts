@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Class } from '@boostercloud/framework-types'
+import { Class, ReadModelInterface } from '@boostercloud/framework-types'
 
 /**
  * Creates an instance of the given class from the given raw object.
@@ -42,4 +42,90 @@ export function createInstance<T>(instanceClass: Class<T>, rawObject: Record<str
  */
 export function createInstances<T>(instanceClass: Class<T>, rawObjects: Array<Record<string, any>>): T[] {
   return rawObjects.map((rawObject) => createInstance(instanceClass, rawObject))
+}
+
+/**
+ * Creates an instance of the read model class with the calculated properties included
+ * @param instanceClass The read model class
+ * @param raw The raw read model data
+ * @param propertiesToInclude The properties to include in the response
+ * @private
+ */
+export async function createInstanceWithCalculatedProperties<T extends ReadModelInterface>(
+  instanceClass: { new (...args: any[]): T },
+  raw: Partial<T>,
+  propertiesToInclude: string[]
+): Promise<{ [key: string]: any }> {
+  const instance = new instanceClass()
+  Object.assign(instance, raw)
+  const result: { [key: string]: any } = {}
+
+  const propertiesMap = buildPropertiesMap(propertiesToInclude)
+
+  await processProperties(instance, result, propertiesMap)
+
+  return result
+}
+
+/**
+ * Builds a map of properties to include in the response
+ * @param properties The properties to include in the response
+ * @private
+ */
+function buildPropertiesMap(properties: string[]): any {
+  const map: any = {}
+  properties.forEach((property) => {
+    const parts = property.split('.')
+    let current = map
+    parts.forEach((part) => {
+      const isArray = part.endsWith('[]')
+      const key = isArray ? part.slice(0, -2) : part
+      if (!current[key]) {
+        current[key] = isArray ? { __isArray: true, __children: {} } : {}
+      }
+      current = isArray ? current[key].__children : current[key]
+    })
+  })
+  return map
+}
+
+/**
+ * Processes the properties of the source object and adds them to the result object
+ * @param source The source object
+ * @param result The result object
+ * @param propertiesMap The map of properties to include in the response
+ * @private
+ */
+async function processProperties(source: any, result: any, propertiesMap: any): Promise<void> {
+  for (const key of Object.keys(propertiesMap)) {
+    if (key === '__isArray' || key === '__children') continue
+
+    if (source[key] !== undefined) {
+      if (propertiesMap[key].__isArray) {
+        result[key] = []
+        for (const item of source[key]) {
+          const newItem: any = {}
+          await processProperties(item, newItem, propertiesMap[key].__children)
+          if (Object.keys(newItem).length > 0) {
+            result[key].push(newItem)
+          }
+        }
+      } else if (typeof propertiesMap[key] === 'object' && Object.keys(propertiesMap[key]).length > 0) {
+        const value = source[key]
+        const resolvedValue = isPromise(value) ? await value : value
+        result[key] = {}
+        await processProperties(resolvedValue, result[key], propertiesMap[key])
+        if (Object.keys(result[key]).length === 0) {
+          delete result[key]
+        }
+      } else {
+        const value = source[key]
+        result[key] = isPromise(value) ? await value : value
+      }
+    }
+  }
+}
+
+function isPromise(obj: any): obj is Promise<any> {
+  return !!obj && (typeof obj === 'object' || typeof obj === 'function') && typeof obj.then === 'function'
 }
