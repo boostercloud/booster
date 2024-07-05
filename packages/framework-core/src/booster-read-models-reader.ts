@@ -167,7 +167,7 @@ export class BoosterReadModelsReader {
   private async createReadModelInstancesWithCalculatedProperties<TReadModel extends ReadModelInterface>(
     searchResult: Array<TReadModel> | ReadModelListResult<TReadModel>,
     readModelClass: AnyClass,
-    propertiesToInclude: string[]
+    propertiesToInclude: ProjectionFor<TReadModel>
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
     const processInstance = async (raw: Partial<TReadModel>): Promise<TReadModel> => {
       const instance = await createInstanceWithCalculatedProperties(readModelClass, raw, propertiesToInclude)

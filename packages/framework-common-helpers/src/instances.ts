@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Class, ReadModelInterface } from '@boostercloud/framework-types'
+import { Class, ProjectionFor, ReadModelInterface } from '@boostercloud/framework-types'
 
 /**
  * Creates an instance of the given class from the given raw object.
@@ -52,13 +52,13 @@ export function createInstances<T>(instanceClass: Class<T>, rawObjects: Array<Re
  * @private
  */
 export async function createInstanceWithCalculatedProperties<T extends ReadModelInterface>(
-  instanceClass: { new (...args: any[]): T },
+  instanceClass: Class<T>,
   raw: Partial<T>,
-  propertiesToInclude: string[]
-): Promise<{ [key: string]: any }> {
+  propertiesToInclude: ProjectionFor<T>
+): Promise<T> {
   const instance = new instanceClass()
   Object.assign(instance, raw)
-  const result: { [key: string]: any } = {}
+  const result: T = {} as T
 
   const propertiesMap = buildPropertiesMap(propertiesToInclude)
 
@@ -72,7 +72,7 @@ export async function createInstanceWithCalculatedProperties<T extends ReadModel
  * @param properties The properties to include in the response
  * @private
  */
-function buildPropertiesMap(properties: string[]): any {
+function buildPropertiesMap<T>(properties: ProjectionFor<T>): any {
   const map: any = {}
   properties.forEach((property) => {
     const parts = property.split('.')
