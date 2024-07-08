@@ -151,7 +151,11 @@ Keeping the read model untouched higly recommended in favour of returning a new 
 
 ## Nested queries and calculated values using getters
 
-You can use TypeScript getters in your read models to allow nested queries and/or return calculated values. You can write arbitrary code in a getter, but you will tipically query for related read model objects or generate a value computed based on the current read model instance or context. This greatly improves the potential of customizing your read model responses.
+You can use TypeScript getters in your read models to allow nested queries and/or return calculated values. You can write arbitrary code in a getter, but you will typically query for related read model objects or generate a value computed based on the current read model instance or context. This greatly improves the potential of customizing your read model responses.
+
+:::info
+Starting version 2.13, getters for values which are calculated using other properties of the read model need to be annotated with the `@CalculatedField` decorator and a list of those properties as dependencies.
+:::
 
 Here's an example of a getter in the `UserReadModel` class that returns all `PostReadModel`s that belong to a specific `UserReadModel`:
 
@@ -160,6 +164,7 @@ Here's an example of a getter in the `UserReadModel` class that returns all `Pos
 export class UserReadModel {
   public constructor(readonly id: UUID, readonly name: string, private postIds: UUID[]) {}
 
+  @CalculatedField(['postIds'])
   public get posts(): Promise<PostReadModel[]> {
     return this.postIds.map((postId) => Booster.readModel(PostReadModel)
       .filter({
