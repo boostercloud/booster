@@ -80,7 +80,7 @@ function buildPropertiesMap<T>(properties: ProjectionFor<T>): any {
     parts.forEach((part) => {
       const isArray = part.endsWith('[]')
       const key = isArray ? part.slice(0, -2) : part
-      if (!current[key]) {
+      if (!Object.prototype.hasOwnProperty.call(current, key)) {
         current[key] = isArray ? { __isArray: true, __children: {} } : {}
       }
       current = isArray ? current[key].__children : current[key]
