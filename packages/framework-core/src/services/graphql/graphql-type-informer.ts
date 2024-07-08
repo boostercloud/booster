@@ -12,6 +12,7 @@ import {
   GraphQLOutputType,
   GraphQLString,
   GraphQLType,
+  GraphQLUnionType,
 } from 'graphql'
 import { GraphQLJSON } from 'graphql-scalars'
 import { ClassMetadata, ClassType, PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
@@ -86,7 +87,24 @@ export class GraphQLTypeInformer {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }
+    if (typeMetadata.typeGroup === 'Union') {
+      const graphQLUnionClasses: GraphQLObjectType[] = this.getUnionClasses(typeMetadata, typeGroup, inputType);
+      return new GraphQLUnionType({
+          name: typeMetadata.name,
+          types: graphQLUnionClasses, });
+  }
     return GraphQLJSON
+  }
+
+  private getUnionClasses(typeMetadata: TypeMetadata, typeGroup: string, inputType: boolean): GraphQLObjectType<any, any>[] {
+    return typeMetadata.parameters.map((param: TypeMetadata) => {
+      if (typeGroup === 'Class' && param.type && !isExternalType(typeMetadata) && !inputType) {
+        const metadata = getClassMetadata(param.type)
+        return this.createObjectTypeForUnion(metadata) as GraphQLObjectType
+      } else {
+        throw new Error(`Union type ${typeMetadata.name} can only contain classes`)
+      }
+    })
   }
 
   private createEnumType(typeMetadata: TypeMetadata): GraphQLEnumType {
@@ -134,6 +152,9 @@ export class GraphQLTypeInformer {
     }
     return new GraphQLObjectType({
       name: classMetadata.name,
+      isTypeOf: (value) => {
+        return value.constructor.name === classMetadata.type.name}
+        ,
       fields: finalFields?.reduce((obj, prop) => {
         this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
         return {
@@ -143,4 +164,24 @@ export class GraphQLTypeInformer {
       }, {}),
     })
   }
+
+  private createObjectTypeForUnion(
+      classMetadata: ClassMetadata,
+      excludeProps?: Array<string>
+    ): GraphQLObjectType {
+      const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
+      return new GraphQLObjectType({
+        name: classMetadata.name,
+        isTypeOf: (value) => {
+          return value.constructor.name === classMetadata.type.name
+        },
+        fields: finalFields?.reduce((obj, prop) => {
+          this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
+          return {
+            ...obj,
+            [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, false) },
+          }
+        }, {}),
+      })
+    }
 }
