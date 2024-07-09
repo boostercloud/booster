@@ -113,14 +113,23 @@ async function processProperties(source: any, result: any, propertiesMap: any): 
       } else if (typeof propertiesMap[key] === 'object' && Object.keys(propertiesMap[key]).length > 0) {
         const value = source[key]
         const resolvedValue = isPromise(value) ? await value : value
-        result[key] = {}
-        await processProperties(resolvedValue, result[key], propertiesMap[key])
-        if (Object.keys(result[key]).length === 0) {
-          delete result[key]
+        if (resolvedValue === undefined || resolvedValue === null) {
+          result[key] = null
+        } else {
+          result[key] = {}
+          await processProperties(resolvedValue, result[key], propertiesMap[key])
+          if (Object.keys(result[key]).length === 0) {
+            result[key] = null
+          }
         }
       } else {
         const value = source[key]
         result[key] = isPromise(value) ? await value : value
+      }
+    } else {
+      // Handle the case when the source property is undefined
+      if (typeof propertiesMap[key] === 'object' && Object.keys(propertiesMap[key]).length > 0) {
+        result[key] = null
       }
     }
   }
