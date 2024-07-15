@@ -87,7 +87,7 @@ export class GraphQLTypeInformer {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }
-    if (typeMetadata.typeGroup === 'Union') {
+    if (typeMetadata.typeGroup === 'Union'  && typeMetadata.type && !isExternalType(typeMetadata)) {
       const graphQLUnionClasses: GraphQLObjectType[] = this.getUnionClasses(typeMetadata, typeGroup, inputType);
       return new GraphQLUnionType({
           name: typeMetadata.name,
@@ -152,9 +152,6 @@ export class GraphQLTypeInformer {
     }
     return new GraphQLObjectType({
       name: classMetadata.name,
-      isTypeOf: (value) => {
-        return value.constructor.name === classMetadata.type.name}
-        ,
       fields: finalFields?.reduce((obj, prop) => {
         this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
         return {
