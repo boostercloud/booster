@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 13 Jun 2024 16:17:26 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Jul 2024 16:36:39 GMT and should not be manually modified.
+
+## 2.13.0
+Fri, 19 Jul 2024 16:36:39 GMT
+
+### Minor changes
+
+- Improve support for calculated fields and their dependencies on read models
 
 ## 2.12.1
 Thu, 13 Jun 2024 16:17:26 GMT

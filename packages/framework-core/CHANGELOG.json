@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.13.0",
+      "tag": "@boostercloud/framework-core_v2.13.0",
+      "date": "Fri, 19 Jul 2024 16:36:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Improve support for calculated fields and their dependencies on read models",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "177b0386069f6467a0fbe11857b403cc3cbc0f29"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.12.1` to `^2.13.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.12.1` to `^2.13.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.12.1` to `^2.13.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.12.1` to `^2.13.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.12.1",
       "tag": "@boostercloud/framework-core_v2.12.1",
       "date": "Thu, 13 Jun 2024 16:17:26 GMT",
