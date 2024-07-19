@@ -319,7 +319,7 @@ describe('the `CalculatedField` decorator', () => {
     class PersonReadModel {
       public constructor(readonly id: UUID, readonly firstName: string, readonly lastName: string) {}
 
-      @CalculatedField(['firstName', 'lastName'])
+      @CalculatedField({ dependsOn: ['firstName', 'lastName'] })
       public get fullName(): string {
         return `${this.firstName} ${this.lastName}`
       }

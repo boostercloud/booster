@@ -45,14 +45,18 @@ export function ReadModel(
   }
 }
 
+interface CalculatedFieldOptions {
+  dependsOn: string[]
+}
+
 /**
  * Decorator to mark a property as a calculated field with dependencies.
- * @param dependencies - An array of strings indicating the dependencies.
+ * @param options - A `CalculatedFieldOptions` object indicating the dependencies.
  */
-export function CalculatedField(dependencies: string[]): PropertyDecorator {
+export function CalculatedField(options: CalculatedFieldOptions): PropertyDecorator {
   return (target: object, propertyKey: string | symbol): void => {
     const existingDependencies = Reflect.getMetadata('dynamic:dependencies', target.constructor) || {}
-    existingDependencies[propertyKey] = dependencies
+    existingDependencies[propertyKey] = options.dependsOn
     Reflect.defineMetadata('dynamic:dependencies', existingDependencies, target.constructor)
   }
 }

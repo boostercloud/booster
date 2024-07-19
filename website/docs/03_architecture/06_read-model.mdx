@@ -164,7 +164,7 @@ Here's an example of a getter in the `UserReadModel` class that returns all `Pos
 export class UserReadModel {
   public constructor(readonly id: UUID, readonly name: string, private postIds: UUID[]) {}
 
-  @CalculatedField(['postIds'])
+  @CalculatedField({ dependsOn: ['postIds'] })
   public get posts(): Promise<PostReadModel[]> {
     return this.postIds.map((postId) => Booster.readModel(PostReadModel)
       .filter({
