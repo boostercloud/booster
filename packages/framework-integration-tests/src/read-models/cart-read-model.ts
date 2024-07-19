@@ -1,4 +1,4 @@
-import { Booster, NonExposed, Projects, ReadModel } from '@boostercloud/framework-core'
+import { Booster, CalculatedField, NonExposed, Projects, ReadModel } from '@boostercloud/framework-core'
 import {
   ProjectionResult,
   ReadModelInterface,
@@ -38,14 +38,17 @@ export class CartReadModel {
     return this.checks
   }
 
+  @CalculatedField({ dependsOn: ['cartItems'] })
   public get cartItemsSize(): number | undefined {
     return this.cartItems ? this.cartItems.length : 0
   }
 
+  @CalculatedField({ dependsOn: ['shippingAddress'] })
   public get myAddress(): Promise<Address> {
     return Promise.resolve(this.shippingAddress || new Address('', '', '', '', '', ''))
   }
 
+  @CalculatedField({ dependsOn: ['cartItems'] })
   public get lastProduct(): Promise<ProductReadModel | undefined> {
     if (this.cartItemsSize === 0) {
       return Promise.resolve(undefined)

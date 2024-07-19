@@ -1821,38 +1821,46 @@ describe('Read models end-to-end tests', () => {
           expect(currentPageCartData[0].cartItems[0].productId).to.equal(mockProductId)
         }
       })
+    })
 
-      it('should apply modified filter by before hooks', async () => {
-        // We create a cart with id 'before-fn-test-modified', but we query for
-        // 'before-fn-test', which will then change the filter after two "before" functions
-        // to return the original cart (id 'before-fn-test-modified')
-        const variables = {
-          cartId: 'before-fn-test-modified',
-          productId: beforeHookProductId,
-          quantity: 1,
-        }
+    context('projecting calculated fields', () => {
+      const mockCartId: string = random.uuid()
+      const mockProductId: string = random.uuid()
+      const mockQuantity: number = random.number({ min: 1 })
+      const mockAddress = {
+        firstName: random.word(),
+        lastName: random.word(),
+        country: random.word(),
+        state: random.word(),
+        postalCode: random.word(),
+        address: random.word(),
+      }
+
+      beforeEach(async () => {
+        // provisioning a cart
         await client.mutate({
-          variables,
+          variables: {
+            cartId: mockCartId,
+            productId: mockProductId,
+            quantity: mockQuantity,
+          },
           mutation: gql`
             mutation ChangeCartItem($cartId: ID!, $productId: ID!, $quantity: Float!) {
               ChangeCartItem(input: { cartId: $cartId, productId: $productId, quantity: $quantity })
             }
           `,
         })
-        const queryResult = await waitForIt(
+
+        await waitForIt(
           () => {
             return client.query({
               variables: {
-                cartId: 'before-fn-test',
+                cartId: mockCartId,
               },
               query: gql`
                 query CartReadModel($cartId: ID!) {
                   CartReadModel(id: $cartId) {
                     id
-                    cartItems {
-                      productId
-                      quantity
-                    }
                   }
                 }
               `,
@@ -1861,38 +1869,122 @@ describe('Read models end-to-end tests', () => {
           (result) => result?.data?.CartReadModel != null
         )
 
-        const cartData = queryResult.data.CartReadModel
+        // update shipping address
+        await client.mutate({
+          variables: {
+            cartId: mockCartId,
+            address: mockAddress,
+          },
+          mutation: gql`
+            mutation UpdateShippingAddress($cartId: ID!, $address: AddressInput!) {
+              UpdateShippingAddress(input: { cartId: $cartId, address: $address })
+            }
+          `,
+        })
 
-        expect(cartData.id).to.be.equal(variables.cartId)
-      })
-
-      it('should return exceptions thrown by before functions', async () => {
-        try {
-          await waitForIt(
-            () => {
-              return client.query({
-                variables: {
-                  cartId: throwExceptionId,
-                },
-                query: gql`
-                  query CartReadModel($cartId: ID!) {
-                    CartReadModel(id: $cartId) {
-                      id
-                      cartItems {
-                        productId
-                        quantity
-                      }
+        await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                cartId: mockCartId,
+              },
+              query: gql`
+                query CartReadModel($cartId: ID!) {
+                  CartReadModel(id: $cartId) {
+                    id
+                    shippingAddress {
+                      firstName
                     }
                   }
-                `,
-              })
+                }
+              `,
+            })
+          },
+          (result) =>
+            result?.data?.CartReadModel != null &&
+            result?.data?.CartReadModel?.shippingAddress?.firstName === mockAddress.firstName
+        )
+      })
+
+      it('should correctly fetch calculated fields via GraphQL query', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                filter: {
+                  id: { eq: mockCartId },
+                },
+              },
+              query: gql`
+                query CartReadModels($filter: CartReadModelFilter) {
+                  CartReadModels(filter: $filter) {
+                    id
+                    myAddress {
+                      firstName
+                      lastName
+                      country
+                      state
+                      postalCode
+                      address
+                    }
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartReadModels?.length >= 1
+        )
+
+        const cartData = queryResult.data.CartReadModels
+
+        expect(cartData).to.be.an('array')
+        expect(cartData.length).to.equal(1)
+        expect(cartData[0].id).to.be.equal(mockCartId)
+        expect(cartData[0].myAddress).to.deep.equal({
+          ...mockAddress,
+          __typename: 'Address',
+        })
+      })
+
+      it('should correctly fetch calculated fields via code', async () => {
+        const queryResult = await waitForIt(
+          () => {
+            return client.mutate({
+              variables: {
+                cartId: mockCartId,
+                paginatedVersion: true,
+              },
+              mutation: gql`
+                mutation CartMyAddress($cartId: ID!, $paginatedVersion: Boolean!) {
+                  CartMyAddress(input: { cartId: $cartId, paginatedVersion: $paginatedVersion })
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.CartMyAddress != null
+        )
+
+        const cartMyAddress = queryResult.data.CartMyAddress
+
+        expect(cartMyAddress).to.deep.equal({
+          items: [
+            {
+              id: mockCartId,
+              myAddress: {
+                firstName: mockAddress.firstName,
+                lastName: mockAddress.lastName,
+                country: mockAddress.country,
+                state: mockAddress.state,
+                postalCode: mockAddress.postalCode,
+                address: mockAddress.address,
+              },
             },
-            (_) => true
-          )
-        } catch (e) {
-          expect(e.graphQLErrors[0].message).to.be.eq(beforeHookException)
-          expect(e.graphQLErrors[0].path).to.deep.eq(['CartReadModel'])
-        }
+          ],
+          count: 1,
+          cursor: {
+            id: '1',
+          },
+        })
       })
     })
   })

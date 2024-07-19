@@ -457,6 +457,7 @@ describe('BoosterReadModelReader', () => {
             filters,
             currentUser,
             select: ['id'],
+            skipInstance: false,
           } as any
 
           const expectedReadModels = [new TestReadModel(), new TestReadModel()]
@@ -491,6 +492,7 @@ describe('BoosterReadModelReader', () => {
             filters,
             currentUser,
             select: ['id'],
+            skipInstance: false,
           } as any
 
           const expectedResult = [new TestReadModel(), new TestReadModel()]
