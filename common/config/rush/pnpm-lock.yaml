@@ -8,8 +8,8 @@ importers:
   ../../packages/application-tester:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@types/jsonwebtoken': 9.0.1
       '@types/node': ^18.18.2
@@ -70,10 +70,10 @@ importers:
 
   ../../packages/cli:
     specifiers:
-      '@boostercloud/application-tester': workspace:^2.12.1
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-core': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/application-tester': workspace:^2.13.0
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-core': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@oclif/core': 3.15.0
       '@oclif/plugin-help': ^5
@@ -183,8 +183,8 @@ importers:
 
   ../../packages/framework-common-helpers:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -258,10 +258,10 @@ importers:
 
   ../../packages/framework-core:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
-      '@boostercloud/metadata-booster': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
+      '@boostercloud/metadata-booster': workspace:^2.13.0
       '@effect/cli': 0.35.26
       '@effect/platform': 0.48.24
       '@effect/platform-node': 0.45.26
@@ -378,19 +378,19 @@ importers:
   ../../packages/framework-integration-tests:
     specifiers:
       '@apollo/client': 3.7.13
-      '@boostercloud/application-tester': workspace:^2.12.1
-      '@boostercloud/cli': workspace:^2.12.1
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-core': workspace:^2.12.1
-      '@boostercloud/framework-provider-aws': workspace:^2.12.1
-      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.12.1
-      '@boostercloud/framework-provider-azure': workspace:^2.12.1
-      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.12.1
-      '@boostercloud/framework-provider-local': workspace:^2.12.1
-      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
-      '@boostercloud/metadata-booster': workspace:^2.12.1
+      '@boostercloud/application-tester': workspace:^2.13.0
+      '@boostercloud/cli': workspace:^2.13.0
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-core': workspace:^2.13.0
+      '@boostercloud/framework-provider-aws': workspace:^2.13.0
+      '@boostercloud/framework-provider-aws-infrastructure': workspace:^2.13.0
+      '@boostercloud/framework-provider-azure': workspace:^2.13.0
+      '@boostercloud/framework-provider-azure-infrastructure': workspace:^2.13.0
+      '@boostercloud/framework-provider-local': workspace:^2.13.0
+      '@boostercloud/framework-provider-local-infrastructure': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
+      '@boostercloud/metadata-booster': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@effect/cli': 0.35.26
       '@effect/platform': 0.48.24
@@ -536,9 +536,9 @@ importers:
 
   ../../packages/framework-provider-aws:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@types/aws-lambda': 8.10.48
       '@types/chai': 4.2.18
@@ -632,10 +632,10 @@ importers:
       '@aws-cdk/core': ^1.170.0
       '@aws-cdk/custom-resources': ^1.170.0
       '@aws-cdk/cx-api': ^1.170.0
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-provider-aws': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-provider-aws': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@types/archiver': 5.1.0
       '@types/aws-lambda': 8.10.48
@@ -749,9 +749,9 @@ importers:
       '@azure/functions': ^1.2.2
       '@azure/identity': ~2.1.0
       '@azure/web-pubsub': ~1.1.0
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -823,11 +823,11 @@ importers:
       '@azure/arm-resources': ^5.0.1
       '@azure/cosmos': ^4.0.0
       '@azure/identity': ~2.1.0
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-core': workspace:^2.12.1
-      '@boostercloud/framework-provider-azure': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-core': workspace:^2.13.0
+      '@boostercloud/framework-provider-azure': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@cdktf/provider-azurerm': 11.2.0
       '@cdktf/provider-time': 9.0.2
       '@effect-ts/core': ^0.60.4
@@ -934,9 +934,9 @@ importers:
 
   ../../packages/framework-provider-local:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@seald-io/nedb': 4.0.2
       '@types/chai': 4.2.18
@@ -1013,10 +1013,10 @@ importers:
 
   ../../packages/framework-provider-local-infrastructure:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/framework-common-helpers': workspace:^2.12.1
-      '@boostercloud/framework-provider-local': workspace:^2.12.1
-      '@boostercloud/framework-types': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/framework-common-helpers': workspace:^2.13.0
+      '@boostercloud/framework-provider-local': workspace:^2.13.0
+      '@boostercloud/framework-types': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -1096,8 +1096,8 @@ importers:
 
   ../../packages/framework-types:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.12.1
-      '@boostercloud/metadata-booster': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
+      '@boostercloud/metadata-booster': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@effect-ts/node': ~0.39.0
       '@effect/cli': 0.35.26
@@ -1181,7 +1181,7 @@ importers:
 
   ../../packages/metadata-booster:
     specifiers:
-      '@boostercloud/eslint-config': workspace:^2.12.1
+      '@boostercloud/eslint-config': workspace:^2.13.0
       '@effect-ts/core': ^0.60.4
       '@types/node': ^18.18.2
       '@typescript-eslint/eslint-plugin': ^5.0.0
@@ -1668,10 +1668,11 @@ packages:
       '@aws-cdk/aws-logs': 1.204.0_l4ztnfmrjykhsbk6ow7yhidayu
       '@aws-cdk/aws-s3': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
       '@aws-cdk/aws-s3-assets': 1.204.0_l4ztnfmrjykhsbk6ow7yhidayu
-      '@aws-cdk/aws-secretsmanager': 1.204.0_2o53qceqenzlpxe4mjswmsqfiq
+      '@aws-cdk/aws-secretsmanager': 1.204.0_336juigttbrwz7tyvm6a6wfpy4
       '@aws-cdk/core': 1.204.0_hol6usdabdbzhugfw355k4ebam
       '@aws-cdk/region-info': 1.204.0
       constructs: 3.4.344
+      yaml: 1.10.2
     transitivePeerDependencies:
       - '@aws-cdk/aws-lambda'
       - '@aws-cdk/cx-api'
@@ -1787,6 +1788,7 @@ packages:
       '@aws-cdk/core': 1.204.0_hol6usdabdbzhugfw355k4ebam
       '@aws-cdk/custom-resources': 1.204.0_c23kgzmvfhgnr6qpzzlbsfzuc4
       constructs: 3.4.344
+      punycode: 2.3.1
     transitivePeerDependencies:
       - '@aws-cdk/aws-ec2'
       - '@aws-cdk/aws-logs'
@@ -1941,7 +1943,7 @@ packages:
       '@aws-cdk/aws-route53-targets': 1.204.0_2eviprr3zwoouaslbumtdekrhi
       '@aws-cdk/aws-s3': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
       '@aws-cdk/aws-s3-assets': 1.204.0_l4ztnfmrjykhsbk6ow7yhidayu
-      '@aws-cdk/aws-secretsmanager': 1.204.0_2o53qceqenzlpxe4mjswmsqfiq
+      '@aws-cdk/aws-secretsmanager': 1.204.0_336juigttbrwz7tyvm6a6wfpy4
       '@aws-cdk/aws-servicediscovery': 1.204.0_nu23nesxfni464wb5cy4ehgagi
       '@aws-cdk/aws-sns': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
       '@aws-cdk/aws-sqs': 1.204.0_cttdkzy7hngahjug7jmkfylr2y
@@ -2242,7 +2244,7 @@ packages:
       '@aws-cdk/aws-lambda': 1.204.0_afnjft5qr3fswieaeg3dwwhnvm
       '@aws-cdk/aws-s3': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
       '@aws-cdk/aws-s3-notifications': 1.204.0_xguspq3b5n56mo6dsez57f32qa
-      '@aws-cdk/aws-secretsmanager': 1.204.0_2o53qceqenzlpxe4mjswmsqfiq
+      '@aws-cdk/aws-secretsmanager': 1.204.0_336juigttbrwz7tyvm6a6wfpy4
       '@aws-cdk/aws-sns': 1.204.0_bi2u42js5xhxqcsg5gqefde4xi
       '@aws-cdk/aws-sns-subscriptions': 1.204.0_bpkznh2gsccwq6qpaogbkb4psu
       '@aws-cdk/aws-sqs': 1.204.0_cttdkzy7hngahjug7jmkfylr2y
@@ -2436,6 +2438,7 @@ packages:
       '@aws-cdk/aws-s3-assets': 1.204.0_l4ztnfmrjykhsbk6ow7yhidayu
       '@aws-cdk/core': 1.204.0_hol6usdabdbzhugfw355k4ebam
       '@aws-cdk/lambda-layer-awscli': 1.204.0_e7ybiu4yrrtvf3zlvzrvcjkvyy
+      case: 1.6.3
       constructs: 3.4.344
     transitivePeerDependencies:
       - '@aws-cdk/assets'
@@ -2511,7 +2514,7 @@ packages:
       constructs: 3.4.344
     dev: false
 
-  /@aws-cdk/aws-secretsmanager/1.204.0_2o53qceqenzlpxe4mjswmsqfiq:
+  /@aws-cdk/aws-secretsmanager/1.204.0_336juigttbrwz7tyvm6a6wfpy4:
     resolution: {integrity: sha512-ykpjYmP6qVOFbHtkaQBu3Xk7xp2UTR0ouzk7pb+zrEHKGmRvzGq+8J0IU+qXBJgQIVwFAPf2IgOSTzj6FJPdyA==}
     engines: {node: '>= 14.15.0'}
     deprecated: |-
@@ -2526,18 +2529,12 @@ packages:
       '@aws-cdk/cx-api': 1.204.0
       constructs: ^3.3.69
     dependencies:
-      '@aws-cdk/aws-ec2': 1.204.0_r4d2a6r7lnkv26zjzkdsvuam2a
       '@aws-cdk/aws-iam': 1.204.0_add7c2jq5lcc6idtuigbkwnzeu
-      '@aws-cdk/aws-kms': 1.204.0_cttdkzy7hngahjug7jmkfylr2y
       '@aws-cdk/aws-lambda': 1.204.0_afnjft5qr3fswieaeg3dwwhnvm
       '@aws-cdk/aws-sam': 1.204.0_add7c2jq5lcc6idtuigbkwnzeu
       '@aws-cdk/core': 1.204.0_hol6usdabdbzhugfw355k4ebam
       '@aws-cdk/cx-api': 1.203.0
       constructs: 3.4.344
-    transitivePeerDependencies:
-      - '@aws-cdk/assets'
-      - '@aws-cdk/aws-logs'
-      - '@aws-cdk/aws-s3'
     dev: false
 
   /@aws-cdk/aws-servicediscovery/1.204.0_nu23nesxfni464wb5cy4ehgagi:
@@ -2715,6 +2712,9 @@ packages:
   /@aws-cdk/cloud-assembly-schema/1.203.0:
     resolution: {integrity: sha512-r252InZ8Oh7q7ztriaA3n6F48QOFVfNcT/KO4XOlYyt1xDWRMENDYf+D+DVr6O5klcaa3ivvvDT7DRuW3xdVOQ==}
     engines: {node: '>= 14.15.0'}
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.6.2
     dev: false
     bundledDependencies:
       - jsonschema
@@ -2728,6 +2728,9 @@ packages:
       This package is no longer being updated, and users should migrate to AWS CDK v2.
 
       For more information on how to migrate, see https://docs.aws.amazon.com/cdk/v2/guide/migrating-v2.html
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.6.2
     dev: false
     bundledDependencies:
       - jsonschema
@@ -2736,6 +2739,9 @@ packages:
   /@aws-cdk/cloud-assembly-schema/2.39.1:
     resolution: {integrity: sha512-lSVaaedXWeK08uoq0IXDCspz9U/H4qIERemdsMQrMUDTiUe/JBby7vtmyMvOdEscE8GMAmiOzoPmAE0Uf+yw5A==}
     engines: {node: '>= 14.15.0'}
+    dependencies:
+      jsonschema: 1.4.1
+      semver: 7.6.2
     dev: false
     bundledDependencies:
       - jsonschema
@@ -2769,7 +2775,11 @@ packages:
       '@aws-cdk/cloud-assembly-schema': 1.204.0
       '@aws-cdk/cx-api': 1.203.0
       '@aws-cdk/region-info': 1.204.0
+      '@balena/dockerignore': 1.0.2
       constructs: 3.4.344
+      fs-extra: 9.1.0
+      ignore: 5.3.1
+      minimatch: 3.1.2
     dev: false
     bundledDependencies:
       - fs-extra
@@ -2812,6 +2822,7 @@ packages:
     engines: {node: '>= 14.15.0'}
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 1.203.0
+      semver: 7.6.2
     dev: false
     bundledDependencies:
       - semver
@@ -2826,6 +2837,7 @@ packages:
       For more information on how to migrate, see https://docs.aws.amazon.com/cdk/v2/guide/migrating-v2.html
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 1.204.0
+      semver: 7.6.2
     dev: false
     bundledDependencies:
       - semver
@@ -2835,6 +2847,7 @@ packages:
     engines: {node: '>= 14.15.0'}
     dependencies:
       '@aws-cdk/cloud-assembly-schema': 2.39.1
+      semver: 7.6.2
     dev: false
     bundledDependencies:
       - semver
@@ -3321,6 +3334,10 @@ packages:
       '@babel/helper-string-parser': 7.24.7
       '@babel/helper-validator-identifier': 7.24.7
       to-fast-properties: 2.0.0
+
+  /@balena/dockerignore/1.0.2:
+    resolution: {integrity: sha512-wMue2Sy4GAVTk6Ic4tJVcnfdau+gx2EnG7S+uAEe+TWJFqE4YoWN4/H8MSLj4eYJKxGg26lZwboEniNiNwZQ6Q==}
+    dev: false
 
   /@cdktf/cli-core/0.19.2_react@17.0.2:
     resolution: {integrity: sha512-kjgEUhrHx3kUPfL7KsTo6GrurVUPT77FmOUf7wWXt7ajNE5zCPvx/HKGmQruzt0n6eLZp1aKT+r/D6YRfXcIGA==}
@@ -5524,7 +5541,10 @@ packages:
     peerDependencies:
       constructs: ^10.0.25
     dependencies:
+      archiver: 5.3.2
       constructs: 10.3.0
+      json-stable-stringify: 1.1.1
+      semver: 7.6.2
     bundledDependencies:
       - archiver
       - json-stable-stringify
@@ -6417,7 +6437,7 @@ packages:
     dependencies:
       semver: 7.6.2
       shelljs: 0.8.5
-      typescript: 5.6.0-dev.20240705
+      typescript: 5.6.0-dev.20240722
 
   /duration/0.2.2:
     resolution: {integrity: sha512-06kgtea+bGreF5eKYgI/36A6pLXggY7oR4p1pq4SmdFBn1ReOL5D8RhG64VrqfTTKNucqqtBAwEj8aB88mcqrg==}
@@ -8600,6 +8620,15 @@ packages:
   /json-stable-stringify-without-jsonify/1.0.1:
     resolution: {integrity: sha512-Bdboy+l7tA3OGW6FjyFHWkP5LuByj1Tk33Ljyq0axyzdk9//JSi2u3fP1QSmd1KNwq6VOKYGlAu87CisVir6Pw==}
 
+  /json-stable-stringify/1.1.1:
+    resolution: {integrity: sha512-SU/971Kt5qVQfJpyDveVhQ/vya+5hvrjClFOcr8c0Fq5aODJjMwutrOfCU+eCnVD5gpx1Q3fEqkyom77zH1iIg==}
+    engines: {node: '>= 0.4'}
+    dependencies:
+      call-bind: 1.0.7
+      isarray: 2.0.5
+      jsonify: 0.0.1
+      object-keys: 1.1.1
+
   /json-stringify-safe/5.0.1:
     resolution: {integrity: sha512-ZClg6AaYvamvYEE82d3Iyd3vSSIjQ+odgjaTzRuO3s7toCdFKczob2i0zCh7JE8kWn17yvAWhUVxvqGwUalsRA==}
     dev: true
@@ -8627,6 +8656,13 @@ packages:
       universalify: 2.0.1
     optionalDependencies:
       graceful-fs: 4.2.11
+
+  /jsonify/0.0.1:
+    resolution: {integrity: sha512-2/Ki0GcmuqSrgFyelQq9M05y7PS0mEwuIzrf3f1fPqkVDVRvZrPZtVSMHxdgo8Aq0sxAOb/cr2aqqA3LeWHVPg==}
+
+  /jsonschema/1.4.1:
+    resolution: {integrity: sha512-S6cATIPVv1z0IlxdN+zUk5EPjkGCdnhN4wVSBlvoUO1tOLJootbo9CquNJmbIh4yikWHiUedhRYrNPn1arpEmQ==}
+    dev: false
 
   /jsonwebtoken/8.5.1:
     resolution: {integrity: sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==}
@@ -11561,8 +11597,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  /typescript/5.6.0-dev.20240705:
-    resolution: {integrity: sha512-Z1GBiSYZqdb2B4kkFvX6sDIFZzCGD7+RtHI2/ci9IIZA1CPS6qzbiB/D2RmPupSCXpQ8FRqax1RU0tlD/n70oA==}
+  /typescript/5.6.0-dev.20240722:
+    resolution: {integrity: sha512-dWJX1TWXFnumBDkhCUWUruEyaiD6GRBAHM7TzoQuwLC724Q30TOVqMQq9qUOrGFRhEfhXrsancNTwLou7tWP8A==}
     engines: {node: '>=14.17'}
     hasBin: true
 
