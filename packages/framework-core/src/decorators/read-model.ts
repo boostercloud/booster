@@ -24,12 +24,39 @@ export function ReadModel(
       }
 
       const authorizer = BoosterAuthorizer.build(attributes) as ReadModelAuthorizer
+      const classMetadata = getClassMetadata(readModelClass)
+      const dynamicDependencies = Reflect.getMetadata('dynamic:dependencies', readModelClass) || {}
+
+      // Combine properties with dynamic dependencies
+      const properties = classMetadata.fields.map((field: any) => {
+        return {
+          ...field,
+          dependencies: dynamicDependencies[field.name] || [],
+        }
+      })
+
       config.readModels[readModelClass.name] = {
         class: readModelClass,
-        properties: getClassMetadata(readModelClass).fields,
+        properties,
         authorizer,
         before: attributes.before ?? [],
       }
     })
+  }
+}
+
+interface CalculatedFieldOptions {
+  dependsOn: string[]
+}
+
+/**
+ * Decorator to mark a property as a calculated field with dependencies.
+ * @param options - A `CalculatedFieldOptions` object indicating the dependencies.
+ */
+export function CalculatedField(options: CalculatedFieldOptions): PropertyDecorator {
+  return (target: object, propertyKey: string | symbol): void => {
+    const existingDependencies = Reflect.getMetadata('dynamic:dependencies', target.constructor) || {}
+    existingDependencies[propertyKey] = options.dependsOn
+    Reflect.defineMetadata('dynamic:dependencies', existingDependencies, target.constructor)
   }
 }
