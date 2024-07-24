@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 24 Jul 2024 16:22:35 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2024 19:09:36 GMT and should not be manually modified.
+
+## 2.9.5
+Wed, 24 Jul 2024 19:09:36 GMT
+
+### Patches
+
+- Pin Booster version in dependencies
 
 ## 2.9.4
 Wed, 24 Jul 2024 16:22:35 GMT

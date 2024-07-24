@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.9.5",
+      "tag": "@boostercloud/framework-core_v2.9.5",
+      "date": "Wed, 24 Jul 2024 19:09:36 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Pin Booster version in dependencies",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "a241030075886274c1c9d9d95ca7f972e10c31ee"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `2.9.4` to `2.9.5`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `2.9.4` to `2.9.5`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `2.9.4` to `2.9.5`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `2.9.4` to `2.9.5`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.9.4",
       "tag": "@boostercloud/framework-core_v2.9.4",
       "date": "Wed, 24 Jul 2024 16:22:35 GMT",

@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-common-helpers",
-  "version": "2.9.4",
+  "version": "2.9.5",
   "description": "Contains Booster common helpers used by the core and provider packages",
   "keywords": [
     "framework-common-helpers"
@@ -36,14 +36,14 @@
     "node": ">=18.0.0 <19.0.0"
   },
   "dependencies": {
-    "@boostercloud/framework-types": "workspace:2.9.4",
+    "@boostercloud/framework-types": "workspace:2.9.5",
     "child-process-promise": "^2.2.1",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4",
     "class-transformer": "~0.5.1"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:2.9.4",
+    "@boostercloud/eslint-config": "workspace:2.9.5",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/child-process-promise": "^2.2.1",
