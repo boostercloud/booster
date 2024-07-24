@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 04 Apr 2024 11:10:00 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Jul 2024 14:42:56 GMT and should not be manually modified.
+
+## 2.9.3
+Wed, 24 Jul 2024 14:42:56 GMT
+
+### Patches
+
+- Bump version of ws dependency
 
 ## 2.9.2
 Thu, 04 Apr 2024 11:10:00 GMT

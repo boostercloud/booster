@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/eslint-config",
-  "version": "2.9.2",
+  "version": "2.9.3",
   "description": "Shared eslint rules",
   "main": "index.js",
   "publishConfig": {
