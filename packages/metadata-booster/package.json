@@ -38,7 +38,7 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "3.4.0",
-    "@boostercloud/eslint-config": "workspace:^2.9.4",
+    "@boostercloud/eslint-config": "workspace:2.9.4",
     "@types/node": "^18.18.2",
     "ts-node": "^10.9.1",
     "ts-patch": "3.1.2",

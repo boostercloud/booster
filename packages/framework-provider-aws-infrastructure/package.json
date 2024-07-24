@@ -41,9 +41,9 @@
     "@aws-cdk/aws-s3-deployment": "^1.170.0",
     "@aws-cdk/core": "^1.170.0",
     "@aws-cdk/cx-api": "^1.170.0",
-    "@boostercloud/framework-common-helpers": "workspace:^2.9.4",
-    "@boostercloud/framework-provider-aws": "workspace:^2.9.4",
-    "@boostercloud/framework-types": "workspace:^2.9.4",
+    "@boostercloud/framework-common-helpers": "workspace:2.9.4",
+    "@boostercloud/framework-provider-aws": "workspace:2.9.4",
+    "@boostercloud/framework-types": "workspace:2.9.4",
     "constructs": "^3.3.69",
     "aws-cdk": "^1.170.0",
     "aws-sdk": "2.853.0",
@@ -69,7 +69,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^2.9.4",
+    "@boostercloud/eslint-config": "workspace:2.9.4",
     "@types/aws-lambda": "8.10.48",
     "@types/aws-sdk": "2.7.0",
     "@types/chai": "4.2.18",
