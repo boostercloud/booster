@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 19 Jul 2024 16:36:39 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Jul 2024 09:36:18 GMT and should not be manually modified.
+
+## 2.13.1
+Fri, 26 Jul 2024 09:36:18 GMT
+
+### Patches
+
+- Bump ws version (fixes CVE-2024-37890)
 
 ## 2.13.0
 Fri, 19 Jul 2024 16:36:39 GMT
