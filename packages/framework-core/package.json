@@ -58,7 +58,7 @@
     "@effect/typeclass": "0.23.17",
     "@effect/printer-ansi": "0.32.26",
     "@effect/platform-node": "0.45.26",
-    "ws": "8.12.0"
+    "ws": "8.17.1"
   },
   "devDependencies": {
     "@boostercloud/metadata-booster": "workspace:^2.13.0",

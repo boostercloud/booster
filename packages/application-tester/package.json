@@ -42,7 +42,7 @@
     "jsonwebtoken": "9.0.1",
     "subscriptions-transport-ws": "0.11.0",
     "tslib": "^2.4.0",
-    "ws": "8.12.0",
+    "ws": "8.17.1",
     "@types/sinon": "10.0.0",
     "sinon": "9.2.3",
     "@effect-ts/core": "^0.60.4"

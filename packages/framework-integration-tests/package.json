@@ -30,7 +30,7 @@
     "@effect/printer-ansi": "0.32.26",
     "@effect/platform-node": "0.45.26",
     "fast-check": "^3.13.2",
-    "ws": "8.12.0"
+    "ws": "8.17.1"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^2.13.0",
