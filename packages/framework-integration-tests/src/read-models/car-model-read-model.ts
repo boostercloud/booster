@@ -9,7 +9,7 @@ export class CarModelReadModel {
   public constructor(readonly id: UUID, readonly name: string, readonly brand: string) {}
 
   @Projects(CarModel, 'id')
-  public static update(model: CarModel, old?: CarModelReadModel): ProjectionResult<CarModelReadModel> {
+  public static projectCarModel(model: CarModel, old?: CarModelReadModel): ProjectionResult<CarModelReadModel> {
     return new CarModelReadModel(model.id, model.name, model.brand)
   }
 }

@@ -11,7 +11,7 @@ export class CarOffers {
     return this.id
   }
   @Reduces(CarOfferAdded)
-  public static driverAdded(event: CarOfferAdded, currentCarDriver: CarOffers): CarOffers {
+  public static reduceCarOfferAdded(event: CarOfferAdded, currentCarDriver: CarOffers): CarOffers {
     return new CarOffers(event.id, event.name, event.purchasesIds)
   }
 }

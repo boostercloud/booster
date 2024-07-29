@@ -12,12 +12,12 @@ export class CarOwner {
     return this.id
   }
   @Reduces(CarOwnerAdded)
-  public static addOwner(event: CarOwnerAdded, currentCarOwner: CarOwner): CarOwner {
+  public static reduceCarOwnerAdded(event: CarOwnerAdded, currentCarOwner: CarOwner): CarOwner {
     return new CarOwner(event.id, event.name)
   }
 
   @Reduces(CarOwnerNameUpdated)
-  public static updateName(event: CarOwnerNameUpdated, currentCarOwner: CarOwner): CarOwner {
+  public static reduceCarOwnerNameUpdated(event: CarOwnerNameUpdated, currentCarOwner: CarOwner): CarOwner {
     if (!currentCarOwner) {
       throw new Error('CarOwner not found')
     }

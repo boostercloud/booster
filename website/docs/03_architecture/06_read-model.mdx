@@ -115,7 +115,7 @@ You can use a read model query as a join key to get all the ReadModels that matc
       },
     }
   })
-  public static updateWithModel(
+  public static projectWithModel(
     model: CarModel,
     readModelId: UUID | undefined,
     oldCarPurchaseReadModel?: CarPurchasesReadModel
@@ -132,10 +132,10 @@ You can use a read model query as a join key to get all the ReadModels that matc
   }
 ```
 
-This projection uses a ReadModel query JoinKey to get all the CarOwnerModelReadModel instances for a given CarModel. In this case, the `updateWithModel` function
+This projection uses a ReadModel query JoinKey to get all the CarOwnerModelReadModel instances for a given CarModel. In this case, the `projectWithModel` function
 will be called for each CarOwnerModelReadModel instance that matches the query. The `readModelId` argument will be the id of the CarOwnerModelReadModel instance.
 
-> [!NOTE] If no read model matches the query, the `updateWithModel` function will be called with `readModelId` set to `undefined`.
+> [!NOTE] If no read model matches the query, the `projectWithModel` function will be called with `readModelId` set to `undefined`.
 
 ### Returning special values
 

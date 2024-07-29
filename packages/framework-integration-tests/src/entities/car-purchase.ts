@@ -13,7 +13,7 @@ export class CarPurchase {
     return this.id
   }
   @Reduces(CarPurchased)
-  public static purchase(event: CarPurchased, currentCarPurchase: CarPurchase): CarPurchase {
+  public static reduceCarPurchase(event: CarPurchased, currentCarPurchase: CarPurchase): CarPurchase {
     return new CarPurchase(event.id, event.model, event.owner)
   }
 }

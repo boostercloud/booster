@@ -21,7 +21,7 @@ export class CarPurchasesReadModel {
   ) {}
 
   @Projects(CarPurchase, 'id')
-  public static updateWithPurchase(
+  public static projectWithPurchase(
     purchase: CarPurchase,
     oldCarPurchaseReadModel?: CarPurchasesReadModel
   ): ProjectionResult<CarPurchasesReadModel> {
@@ -41,7 +41,7 @@ export class CarPurchasesReadModel {
       },
     }
   })
-  public static updateWithOwner(
+  public static projectWithOwner(
     owner: CarOwner,
     readModelId: UUID | undefined,
     oldCarPurchaseReadModel?: CarPurchasesReadModel
@@ -67,7 +67,7 @@ export class CarPurchasesReadModel {
       },
     }
   })
-  public static updateWithModel(
+  public static projectWithModel(
     model: CarModel,
     readModelId: UUID | undefined,
     oldCarPurchaseReadModel?: CarPurchasesReadModel
@@ -84,7 +84,7 @@ export class CarPurchasesReadModel {
   }
 
   @Projects(CarOffers, 'purchasesIds')
-  public static updateWithOffer(
+  public static projectWithOffer(
     carOffers: CarOffers,
     readModelId: UUID,
     oldCarPurchaseReadModel?: CarPurchasesReadModel
