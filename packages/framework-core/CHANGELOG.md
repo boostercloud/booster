@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 26 Jul 2024 09:36:18 GMT and should not be manually modified.
+This log was last generated on Tue, 30 Jul 2024 18:43:55 GMT and should not be manually modified.
+
+## 2.14.0
+Tue, 30 Jul 2024 18:43:55 GMT
+
+### Minor changes
+
+- Read Models projections by ReadModel query
 
 ## 2.13.1
 Fri, 26 Jul 2024 09:36:18 GMT

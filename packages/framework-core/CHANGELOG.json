@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.14.0",
+      "tag": "@boostercloud/framework-core_v2.14.0",
+      "date": "Tue, 30 Jul 2024 18:43:55 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Read Models projections by ReadModel query",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "2abba631c47a71d6b886f752ade48c0efe57accf"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.13.1` to `^2.14.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.13.1` to `^2.14.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.13.1` to `^2.14.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.13.1` to `^2.14.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.13.1",
       "tag": "@boostercloud/framework-core_v2.13.1",
       "date": "Fri, 26 Jul 2024 09:36:18 GMT",
