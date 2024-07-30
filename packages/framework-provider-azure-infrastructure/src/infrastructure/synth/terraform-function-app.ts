@@ -3,6 +3,7 @@ import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 import { environmentVarNames } from '@boostercloud/framework-provider-azure'
+import { WindowsFunctionAppConfig } from '@cdktf/provider-azurerm/lib/windows-function-app'
 
 export class TerraformFunctionApp {
   static build(
@@ -13,17 +14,17 @@ export class TerraformFunctionApp {
       resourceGroup,
       resourceGroupName,
       cosmosdbDatabase,
-      apiManagementName,
+      domainNameLabel,
       eventHubNamespace,
       eventHub,
       webPubSub,
     }: ApplicationSynthStack,
     config: BoosterConfig,
-    zipFile: string,
     applicationServicePlan: servicePlan.ServicePlan,
     storageAccount: storageAccount.StorageAccount,
     suffixName: string,
-    functionAppName: string
+    functionAppName: string,
+    zipFile?: string
   ): windowsFunctionApp.WindowsFunctionApp {
     if (!cosmosdbDatabase) {
       throw new Error('Undefined cosmosdbDatabase resource')
@@ -36,7 +37,8 @@ export class TerraformFunctionApp {
       eventHubNamespace?.defaultPrimaryConnectionString && eventHub?.name
         ? `${eventHubNamespace.defaultPrimaryConnectionString};EntityPath=${eventHub.name}`
         : ''
-    return new windowsFunctionApp.WindowsFunctionApp(terraformStack, id, {
+    const region = (process.env['REGION'] ?? '').toLowerCase().replace(/ /g, '')
+    const functionConfig: Exclude<WindowsFunctionAppConfig, 'zipDeployFile'> = {
       name: functionAppName,
       location: resourceGroup.location,
       resourceGroupName: resourceGroupName,
@@ -47,7 +49,7 @@ export class TerraformFunctionApp {
         ...config.env,
         WebPubSubConnectionString: webPubSub?.primaryConnectionString || '',
         BOOSTER_ENV: config.environmentName,
-        BOOSTER_REST_API_URL: `https://${apiManagementName}.azure-api.net/${config.environmentName}`,
+        [environmentVarNames.restAPIURL]: `http://${domainNameLabel}.${region}.cloudapp.azure.com/${config.environmentName}`,
         [environmentVarNames.eventHubConnectionString]: eventHubConnectionString,
         [environmentVarNames.eventHubName]: config.resourceNames.streamTopic,
         [environmentVarNames.eventHubMaxRetries]:
@@ -55,6 +57,7 @@ export class TerraformFunctionApp {
         [environmentVarNames.eventHubMode]: config.eventStreamConfiguration.parameters?.mode || 'exponential',
         COSMOSDB_CONNECTION_STRING: `AccountEndpoint=https://${cosmosdbDatabase.name}.documents.azure.com:443/;AccountKey=${cosmosdbDatabase.primaryKey};`,
         WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageAccount.primaryConnectionString, // Terraform bug: https://github.com/hashicorp/terraform-provider-azurerm/issues/16650
+        BOOSTER_APP_NAME: process.env['BOOSTER_APP_NAME'] ?? '',
       },
       storageAccountName: storageAccount.name,
       storageAccountAccessKey: storageAccount.primaryAccessKey,
@@ -69,7 +72,13 @@ export class TerraformFunctionApp {
         },
       },
       functionsExtensionVersion: '~4',
-      zipDeployFile: zipFile,
-    })
+    }
+    if (zipFile) {
+      return new windowsFunctionApp.WindowsFunctionApp(terraformStack, id, {
+        ...functionConfig,
+        zipDeployFile: zipFile,
+      })
+    }
+    return new windowsFunctionApp.WindowsFunctionApp(terraformStack, id, functionConfig)
   }
 }

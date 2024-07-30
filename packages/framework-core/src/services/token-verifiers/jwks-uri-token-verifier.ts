@@ -5,7 +5,7 @@ import { RoleBasedTokenVerifier } from './role-based-token-verifier'
 /**
  * Environment variables that are used to configure a default JWKs URI Token Verifier
  *
- * @deprecated Explicitly initialize the JWKs URI Token Verifier in the project config.
+ * @deprecated [EOL v3] Explicitly initialize the JWKs URI Token Verifier in the project config.
  */
 export const JWT_ENV_VARS = {
   BOOSTER_JWT_ISSUER: 'BOOSTER_JWT_ISSUER',

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { BoosterEventDispatcher } from '../src/booster-event-dispatcher'
 import { fake, replace, restore, SinonSpy } from 'sinon'
-import { BoosterConfig, UUID, ProviderLibrary } from '@boostercloud/framework-types'
+import { BoosterConfig, ProviderLibrary, UUID } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { RawEventsParser } from '../src/services/raw-events-parser'
 import { BoosterEventProcessor } from '../src/booster-event-processor'

@@ -10,7 +10,7 @@ import { Class, Logger } from '@boostercloud/framework-types'
  * @returns The result of the first successful retry.
  */
 export async function retryIfError<TReturn>(
-  logicToRetry: () => Promise<TReturn>,
+  logicToRetry: (tryNumber?: number) => Promise<TReturn>,
   errorClassThatRetries: Class<Error>,
   logger?: Logger,
   maxRetries = 1000
@@ -20,7 +20,7 @@ export async function retryIfError<TReturn>(
   for (tryNumber = 1; tryNumber <= maxRetries; tryNumber++) {
     try {
       logger?.debug(`[retryIfError] Try number ${tryNumber}`)
-      const result = await logicToRetry()
+      const result = await logicToRetry(tryNumber)
       logger?.debug(`[retryIfError] Succeeded after ${tryNumber} retries`)
       return result
     } catch (e) {

@@ -167,6 +167,7 @@ describe('GraphQLQueryGenerator', () => {
                       isNullable: false,
                       isGetAccessor: false,
                     },
+                    dependencies: [],
                   },
                 ],
                 methods: [
@@ -181,6 +182,7 @@ describe('GraphQLQueryGenerator', () => {
                       isNullable: false,
                       isGetAccessor: false,
                     },
+                    dependencies: [],
                   },
                 ],
               } as ClassMetadata
@@ -282,6 +284,7 @@ describe('GraphQLQueryGenerator', () => {
                           isNullable: false,
                           isGetAccessor: false,
                         },
+                        dependencies: [],
                       },
                     ],
                     methods: [],
@@ -371,6 +374,7 @@ describe('GraphQLQueryGenerator', () => {
                           isNullable: false,
                           isGetAccessor: false,
                         },
+                        dependencies: [],
                       },
                     ],
                     methods: [],

@@ -1,22 +1,17 @@
-import * as DataStore from 'nedb'
 import { EventRegistry, ReadModelRegistry } from '../services'
 import { eventsDatabase, readModelsDatabase } from '../paths'
 import { boosterLocalPort, HealthEnvelope, UUID } from '@boostercloud/framework-types'
 import { existsSync } from 'fs'
 import * as express from 'express'
 import { request } from '@boostercloud/framework-common-helpers'
+import Nedb from '@seald-io/nedb'
 
 export async function databaseUrl(): Promise<Array<string>> {
   return [eventsDatabase, readModelsDatabase]
 }
 
-export async function countAll(database: DataStore): Promise<number> {
-  const count = await new Promise<number>((resolve, reject) => {
-    database.count({}, (err, docs) => {
-      if (err) reject(err)
-      else resolve(docs)
-    })
-  })
+export async function countAll(database: Nedb): Promise<number> {
+  const count = await database.countAsync({})
   return count ?? 0
 }
 

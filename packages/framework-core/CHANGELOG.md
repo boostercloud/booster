@@ -1,6 +1,144 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 17 Nov 2023 14:25:53 GMT and should not be manually modified.
+This log was last generated on Tue, 30 Jul 2024 18:43:55 GMT and should not be manually modified.
+
+## 2.14.0
+Tue, 30 Jul 2024 18:43:55 GMT
+
+### Minor changes
+
+- Read Models projections by ReadModel query
+
+## 2.13.1
+Fri, 26 Jul 2024 09:36:18 GMT
+
+### Patches
+
+- Bump ws version (fixes CVE-2024-37890)
+
+## 2.13.0
+Fri, 19 Jul 2024 16:36:39 GMT
+
+### Minor changes
+
+- Improve support for calculated fields and their dependencies on read models
+
+## 2.12.1
+Thu, 13 Jun 2024 16:17:26 GMT
+
+### Patches
+
+- Add support for GraphQL fragments
+
+## 2.12.0
+Tue, 11 Jun 2024 16:43:14 GMT
+
+### Minor changes
+
+- Add global event handler
+
+## 2.11.0
+Thu, 30 May 2024 15:58:21 GMT
+
+### Minor changes
+
+- Allow define projection fields in read model queries
+
+## 2.10.1
+Tue, 16 Apr 2024 12:37:20 GMT
+
+### Patches
+
+- Pin effect library version and related dependencies
+
+## 2.10.0
+Fri, 12 Apr 2024 15:06:00 GMT
+
+### Minor changes
+
+- Store Azure events in batch
+
+## 2.9.2
+Thu, 04 Apr 2024 11:10:00 GMT
+
+### Patches
+
+- Fix peer dependency issue with @effect/printer
+
+## 2.9.1
+Tue, 26 Mar 2024 12:46:41 GMT
+
+### Patches
+
+- Bump express dependency version
+
+## 2.9.0
+Fri, 22 Mar 2024 17:48:10 GMT
+
+### Minor changes
+
+- replace nedb with seald
+
+## 2.8.0
+Wed, 20 Mar 2024 16:53:38 GMT
+
+### Minor changes
+
+- Track processed events in Azure provider to avoid duplication
+
+## 2.7.1
+Thu, 14 Mar 2024 15:18:33 GMT
+
+### Patches
+
+- Fix peer dependencies issues
+
+## 2.7.0
+Tue, 05 Mar 2024 13:04:14 GMT
+
+### Minor changes
+
+- Add injectable feature
+
+## 2.6.0
+Thu, 15 Feb 2024 12:26:19 GMT
+
+### Minor changes
+
+- Add Azure sku gateway and rus environment variables
+
+### Updates
+
+- changed CosmosDB throughput to use process env
+- fixed documentation env example for cosmosdb throughput
+
+## 2.5.1
+Fri, 02 Feb 2024 13:14:34 GMT
+
+### Patches
+
+- Refactored the core exports and removed the `BoosterApp` to reduce code redund
+
+## 2.5.0
+Thu, 01 Feb 2024 12:48:38 GMT
+
+### Minor changes
+
+- refactor subnet creation for Azure Provider
+
+## 2.4.0
+Tue, 30 Jan 2024 10:48:42 GMT
+
+### Minor changes
+
+- Bump TypeScript to 5.1.6
+
+## 2.3.0
+Thu, 25 Jan 2024 18:03:39 GMT
+
+### Minor changes
+
+- Update Azure infrastructure to use Azure Gateway. Rockets now support multiple functions with specific host.json files
 
 ## 2.2.0
 Fri, 17 Nov 2023 14:25:53 GMT

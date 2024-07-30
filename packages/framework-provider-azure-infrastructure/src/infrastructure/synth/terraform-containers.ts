@@ -32,6 +32,14 @@ export class TerraformContainers {
       cosmosdbDatabase,
       cosmosdbSqlDatabase
     )
+    const dispatchedEventsContainer = this.createDispatchedEventsContainer(
+      azureProvider,
+      appPrefix,
+      terraformStack,
+      config,
+      cosmosdbDatabase,
+      cosmosdbSqlDatabase
+    )
     const readModels = Object.keys(config.readModels).map((readModel) =>
       this.createReadModel(azureProvider, terraformStack, config, readModel, cosmosdbDatabase, cosmosdbSqlDatabase)
     )
@@ -53,7 +61,12 @@ export class TerraformContainers {
         cosmosdbDatabase,
         cosmosdbSqlDatabase
       )
-      return [cosmosdbSqlEventContainer, subscriptionsContainer, connectionsContainer].concat(readModels)
+      return [
+        cosmosdbSqlEventContainer,
+        dispatchedEventsContainer,
+        subscriptionsContainer,
+        connectionsContainer,
+      ].concat(readModels)
     }
     return [cosmosdbSqlEventContainer].concat(readModels)
   }
@@ -77,6 +90,31 @@ export class TerraformContainers {
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
       },
+      provider: providerResource,
+    })
+  }
+
+  private static createDispatchedEventsContainer(
+    providerResource: AzurermProvider,
+    appPrefix: string,
+    terraformStackResource: TerraformStack,
+    config: BoosterConfig,
+    cosmosdbDatabaseResource: cosmosdbAccount.CosmosdbAccount,
+    cosmosdbSqlDatabaseResource: cosmosdbSqlDatabase.CosmosdbSqlDatabase
+  ): cosmosdbSqlContainer.CosmosdbSqlContainer {
+    const idEvent = toTerraformName(appPrefix, 'dispatched-events')
+    return new cosmosdbSqlContainer.CosmosdbSqlContainer(terraformStackResource, idEvent, {
+      name: config.resourceNames.dispatchedEventsStore,
+      resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
+      accountName: cosmosdbDatabaseResource.name,
+      databaseName: cosmosdbSqlDatabaseResource.name,
+      partitionKeyPath: '/eventId',
+      partitionKeyVersion: 2,
+      uniqueKey: [{ paths: ['/eventId'] }],
+      autoscaleSettings: {
+        maxThroughput: MAX_CONTAINER_THROUGHPUT,
+      },
+      defaultTtl: config.dispatchedEventsTtl,
       provider: providerResource,
     })
   }

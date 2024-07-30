@@ -1,5 +1,5 @@
 import { CosmosClient } from '@azure/cosmos'
-import { BoosterConfig, FilterFor, ReadModelListResult, SortFor } from '@boostercloud/framework-types'
+import { BoosterConfig, FilterFor, ProjectionFor, ReadModelListResult, SortFor } from '@boostercloud/framework-types'
 import * as queryHelper from '../helpers/query-helper'
 
 export async function searchReadModel(
@@ -10,7 +10,8 @@ export async function searchReadModel(
   sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: Record<string, string> | undefined,
-  paginatedVersion = false
+  paginatedVersion = false,
+  select?: ProjectionFor<unknown>
 ): Promise<Array<any> | ReadModelListResult<any>> {
   return await queryHelper.search(
     cosmosDb,
@@ -20,6 +21,7 @@ export async function searchReadModel(
     limit,
     afterCursor,
     paginatedVersion,
-    sortBy
+    sortBy,
+    select
   )
 }

@@ -65,17 +65,23 @@ export class AzureTestHelper {
   }
   public static async graphqlURL(resourceGroup: ResourceGroup): Promise<string> {
     const environment = process.env.BOOSTER_ENV ?? 'DEFAULT'
-    const url = `https://${resourceGroup.name}apis.azure-api.net/${environment}/graphql`
+    const region = this.getRegion()
+    const url = `http://${resourceGroup.name}apis.${region}.cloudapp.azure.com/${environment}/graphql`
     console.log(`service Url: ${url}`)
     return url
   }
 
   public static async healthURL(resourceGroup: ResourceGroup): Promise<string> {
     const environment = process.env.BOOSTER_ENV ?? 'azure'
-    return `https://${resourceGroup.name}apis.azure-api.net/${environment}/sensor/health/`
+    const region = this.getRegion()
+    return `http://${resourceGroup.name}apis.${region}.cloudapp.azure.com/${environment}/sensor/health/`
   }
 
   private static async websocketURL(resourceGroup: ResourceGroup, hubName: string): Promise<string> {
     return `wss://${resourceGroup.name}wps.webpubsub.azure.com:443/client/hubs/${hubName}`
+  }
+
+  private static getRegion() {
+    return (process.env['REGION'] ?? '').toLowerCase().replace(/ /g, '')
   }
 }

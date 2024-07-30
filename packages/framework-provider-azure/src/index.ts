@@ -6,7 +6,7 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
-  storeEvents,
+  storeDispatchedEvent,
   storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
@@ -38,14 +38,15 @@ import { EventHubProducerClient, RetryMode } from '@azure/event-hubs'
 import { dedupEventStream, rawEventsStreamToEnvelopes } from './library/events-stream-consumer-adapter'
 import {
   areDatabaseReadModelsUp,
-  databaseUrl,
   databaseEventsHealthDetails,
+  databaseReadModelsHealthDetails,
+  databaseUrl,
   graphqlFunctionUrl,
   isDatabaseEventUp,
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
-  databaseReadModelsHealthDetails,
 } from './library/health-adapter'
+import { storeEvents } from './library/events-store-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -104,6 +105,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
+    storeDispatched: storeDispatchedEvent.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
