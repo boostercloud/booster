@@ -22,17 +22,18 @@ import { ReadModelSchemaMigrator } from '../read-model-schema-migrator'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 
 export class ReadModelStore {
-  public constructor(readonly config: BoosterConfig) {}
+  public constructor(readonly config: BoosterConfig) {
+  }
 
   public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope): Promise<void> {
-    const logger = getLogger(this.config, 'ReadModelStore#projectEntities')
+    const logger = getLogger(this.config, 'ReadModelStore#project')
     const projections = this.config.projections[entitySnapshotEnvelope.entityTypeName]
     if (!projections) {
       logger.debug(`No projections found for entity ${entitySnapshotEnvelope.entityTypeName}. Skipping...`)
       return
     }
     logger.debug(
-      `Projections found for entity ${entitySnapshotEnvelope.entityTypeName}: ${JSON.stringify(projections)}`
+      `Projections found for entity ${entitySnapshotEnvelope.entityTypeName}: ${JSON.stringify(projections)}`,
     )
     const entityMetadata = this.config.entities[entitySnapshotEnvelope.entityTypeName]
     const entityInstance = createInstance(entityMetadata.class, entitySnapshotEnvelope.value)
@@ -40,8 +41,8 @@ export class ReadModelStore {
       (projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>) => {
         logger.debug(
           `Projecting entity snapshot ${entitySnapshotEnvelope} to build new state of read model with projectionMetadata ${JSON.stringify(
-            projectionMetadata
-          )}`
+            projectionMetadata,
+          )}`,
         )
         const readModelName = projectionMetadata.class.name
         const sequenceKey = this.sequenceKeyForProjection(entityInstance, projectionMetadata)
@@ -51,16 +52,90 @@ export class ReadModelStore {
           entityMetadata,
           entitySnapshotEnvelope,
           readModelName,
-          sequenceKey
+          sequenceKey,
         )
-      }
+      },
     )
     await Promises.allSettledAndFulfilled(projectReadModelPromises)
   }
 
+  /**
+   * Gets the read models for a given entity instance using the projection metadata
+   * @param {EntityInterface} entityInstance The entity instance to get the read models for
+   * @param {ProjectionMetadata<EntityInterface, ReadModelInterface>} projectionMetadata The projection metadata to use to get the read models
+   * @param {EntityMetadata} entityMetadata The entity metadata for the entity instance
+   * @returns {Promise<Array<ReadModelInterface>>} The read models for the entity instance
+   */
+  public async getReadModels(
+    entityInstance: EntityInterface,
+    projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
+    entityMetadata: EntityMetadata,
+  ): Promise<Array<ReadModelInterface>> {
+    const logger = getLogger(this.config, 'ReadModelStore#getReadModels')
+    logger.debug(
+      `Looking for ReadModels for entity ${JSON.stringify(entityInstance)} using Filter ${projectionMetadata.joinKey}`,
+    )
+    const readModelName = projectionMetadata.class.name
+    const readModelMetadata = this.config.readModels[readModelName]
+    const filter = this.filterForProjection(entityInstance, projectionMetadata, entityMetadata)
+    if (!filter) {
+      return []
+    }
+    logger.debug(
+      `Calling ReadModelSearcher searching for ReadModels for entity ${readModelMetadata.class.name} using Filter ${filter}`,
+    )
+    const rawReadModels = (await readModelSearcher<ReadModelInterface>(this.config, readModelMetadata.class)
+      .filter(filter)
+      .paginatedVersion(false)
+      .search()) as Array<ReadModelInterface>
+    return this.instanceReadModels(readModelName, rawReadModels)
+  }
+
+  /**
+   * Gets a specific read model instance referencing it by ID when it's a regular read model
+   * or by ID + sequenceKey when it's a sequenced read model
+   * @param {string} readModelName The name of the read model class
+   * @param {UUID | undefined} readModelID The ID of the read model instance
+   * @param {SequenceKey} sequenceKey The sequence key of the read model instance
+   * @returns {Promise<ReadModelInterface | undefined>} The read model instance or undefined if it doesn't exist
+   */
+  async fetchReadModel(
+    readModelName: string,
+    readModelID: UUID | undefined,
+    sequenceKey?: SequenceKey,
+  ): Promise<ReadModelInterface | undefined> {
+    if (!readModelID) {
+      return undefined
+    }
+    const rawReadModels = await this.config.provider.readModels.fetch(
+      this.config,
+      readModelName,
+      readModelID,
+      sequenceKey,
+    )
+    if (rawReadModels?.length) {
+      if (rawReadModels.length > 1) {
+        throw 'Got multiple objects for a request by Id. If this is a sequenced read model you should also specify the sequenceKey field.'
+      } else if (rawReadModels.length === 1 && rawReadModels[0]) {
+        const readModelMetadata = this.config.readModels[readModelName]
+        return createInstance(readModelMetadata.class, rawReadModels[0])
+      }
+    }
+    return undefined
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  getProjectionFunction(projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>): Function {
+    try {
+      return (projectionMetadata.class as any)[projectionMetadata.methodName]
+    } catch {
+      throw new Error(`Couldn't load the ReadModel class ${projectionMetadata.class.name}`)
+    }
+  }
+
   private sequenceKeyForProjection(
     entity: EntityInterface,
-    projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
+    projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
   ): SequenceKey | undefined {
     const sequenceKeyName = this.config.readModelSequenceKeys[projectionMetadata.class.name]
     const sequenceKeyValue = (entity as any)[sequenceKeyName]
@@ -76,12 +151,12 @@ export class ReadModelStore {
     entityMetadata: EntityMetadata,
     entitySnapshotEnvelope: EntitySnapshotEnvelope,
     readModelName: string,
-    sequenceKey?: SequenceKey
+    sequenceKey?: SequenceKey,
   ): Promise<Array<PromiseSettledResult<unknown>> | undefined> {
     const currentReadModels: Array<ReadModelInterface> = await this.getReadModels(
       entityInstance,
       projectionMetadata,
-      entityMetadata
+      entityMetadata,
     )
     if (currentReadModels && currentReadModels.length > 0) {
       const existingReadModelsProjections: Array<Promise<unknown>> = []
@@ -93,7 +168,7 @@ export class ReadModelStore {
           projectionMetadata,
           entityInstance,
           entityMetadata,
-          currentReadModel
+          currentReadModel,
         )
         existingReadModelsProjections.push(...newProjections)
       }
@@ -105,7 +180,7 @@ export class ReadModelStore {
       sequenceKey,
       projectionMetadata,
       entityInstance,
-      entityMetadata
+      entityMetadata,
     )
     return Promises.allSettledAndFulfilled(newProjections)
   }
@@ -117,7 +192,7 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityInstance: EntityInterface,
     entityMetadata: EntityMetadata,
-    currentReadModel?: ReadModelInterface
+    currentReadModel?: ReadModelInterface,
   ): Promise<Array<Promise<unknown>>> {
     const projections: Array<Promise<unknown>> = []
     const logger = getLogger(this.config, 'ReadModelStore#projectionsForReadModels')
@@ -125,7 +200,7 @@ export class ReadModelStore {
       const entityJoinKey = (entityInstance as any)[projectionMetadata.joinKey]
       if (!entityJoinKey) {
         logger.warn(
-          `Couldn't find the joinKey named ${projectionMetadata} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
+          `Couldn't find the joinKey named ${projectionMetadata} in entity snapshot of ${entityMetadata.class.name}. Skipping...`,
         )
         return []
       }
@@ -141,8 +216,8 @@ export class ReadModelStore {
             entityInstance,
             projectionMetadata,
             readModelId,
-            readModel
-          )
+            readModel,
+          ),
         )
       }
     } else {
@@ -155,8 +230,8 @@ export class ReadModelStore {
           entityInstance,
           projectionMetadata,
           currentReadModel?.id,
-          currentReadModel
-        )
+          currentReadModel,
+        ),
       )
     }
     return projections
@@ -169,14 +244,14 @@ export class ReadModelStore {
     entityInstance: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     readModelId?: UUID,
-    currentReadModel?: ReadModelInterface
+    currentReadModel?: ReadModelInterface,
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#projectAndStoreReadModelWithRetry')
     logger.debug(
       'Projecting entity snapshot ',
       entitySnapshotEnvelope,
       ` to build new state of read model ${readModelName} with ID ${currentReadModel?.id || readModelId}`,
-      sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : ''
+      sequenceKey ? ` sequencing by ${sequenceKey.name} with value ${sequenceKey.value}` : '',
     )
 
     return retryIfError(
@@ -188,41 +263,16 @@ export class ReadModelStore {
           entitySnapshotEnvelope,
           readModelId,
           sequenceKey,
-          tryNumber
+          tryNumber,
         ),
       OptimisticConcurrencyUnexpectedVersionError,
-      logger
+      logger,
     )
   }
 
-  public async getReadModels(
-    entityInstance: EntityInterface,
-    projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
-    entityMetadata: EntityMetadata
-  ): Promise<Array<ReadModelInterface>> {
-    const logger = getLogger(this.config, 'ReadModelStore#getReadModels')
-    logger.debug(
-      `Looking for ReadModels for entity ${JSON.stringify(entityInstance)} using Filter ${projectionMetadata.joinKey}`
-    )
-    const readModelName = projectionMetadata.class.name
-    const readModelMetadata = this.config.readModels[readModelName]
-    const filter = this.filterForProjection(entityInstance, projectionMetadata, entityMetadata)
-    if (!filter) {
-      return []
-    }
-    logger.debug(
-      `Calling ReadModelSearcher searching for ReadModels for entity ${readModelMetadata.class.name} using Filter ${filter}`
-    )
-    const rawReadModels = (await readModelSearcher<ReadModelInterface>(this.config, readModelMetadata.class)
-      .filter(filter)
-      .paginatedVersion(false)
-      .search()) as Array<ReadModelInterface>
-    return this.instanceReadModels(readModelName, rawReadModels)
-  }
-
-  instanceReadModels(
+  private instanceReadModels(
     readModelName: string,
-    rawReadModels: Array<ReadModelInterface> | undefined
+    rawReadModels: Array<ReadModelInterface> | undefined,
   ): Array<ReadModelInterface> {
     if (!rawReadModels?.length) {
       return []
@@ -238,7 +288,7 @@ export class ReadModelStore {
     lastProjectedEntity?: EntitySnapshotEnvelope,
     currentReadModelID?: UUID,
     sequenceKey?: SequenceKey,
-    tryNumber?: number
+    tryNumber?: number,
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#applyProjectionToReadModel')
     const readModelName = projectionMetadata.class.name
@@ -252,13 +302,13 @@ export class ReadModelStore {
         } and expectedDatabaseVersion=${
           currentReadModel?.boosterMetadata?.version ?? 0
         }). Looking for an updated version of read model ${readModelName} with ID = ${readModelID}` +
-          (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : '')
+        (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : ''),
       )
 
       currentReadModel = await this.fetchReadModel(readModelName, readModelID, sequenceKey)
       logger.debug(
         `Current read model ${readModelName} with ID ${readModelID} updated with version = ${currentReadModel?.boosterMetadata?.version}` +
-          (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : '')
+        (sequenceKey ? ` and sequence key ${sequenceKey.name} = ${sequenceKey.value}` : ''),
       )
     }
     let migratedReadModel: ReadModelInterface | undefined
@@ -269,7 +319,7 @@ export class ReadModelStore {
 
     let newReadModel: any
     try {
-      newReadModel = await this.callFunction(projectionMetadata, entity, migratedReadModel, readModelID)
+      newReadModel = await this.callProjectionFunction(projectionMetadata, entity, migratedReadModel, readModelID)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
       const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
@@ -292,7 +342,7 @@ export class ReadModelStore {
       migratedReadModel,
       newReadModel,
       currentDatabaseVersion,
-      lastProjectedEntity
+      lastProjectedEntity,
     )
   }
 
@@ -304,7 +354,7 @@ export class ReadModelStore {
     migratedReadModel: ReadModelInterface | undefined,
     newReadModel: any,
     expectedCurrentDatabaseVersion: number,
-    lastProjectedEntity?: EntitySnapshotEnvelope
+    lastProjectedEntity?: EntitySnapshotEnvelope,
   ): Promise<unknown> {
     const logger = getLogger(this.config, 'ReadModelStore#store')
     const schemaVersion: number =
@@ -325,50 +375,21 @@ export class ReadModelStore {
     } as BoosterMetadata
     logger.debug(
       `Storing new version of read model ${readModelName} with ID ${readModelID}, version ${newReadModel.boosterMetadata.version} and expected database version ${expectedCurrentDatabaseVersion}:`,
-      newReadModel
+      newReadModel,
     )
     return this.config.provider.readModels.store(
       this.config,
       readModelName,
       newReadModel,
-      expectedCurrentDatabaseVersion
+      expectedCurrentDatabaseVersion,
     )
   }
 
-  /**
-   * Gets a specific read model instance referencing it by ID when it's a regular read model
-   * or by ID + sequenceKey when it's a sequenced read model
-   */
-  async fetchReadModel(
-    readModelName: string,
-    readModelID: UUID | undefined,
-    sequenceKey?: SequenceKey
-  ): Promise<ReadModelInterface | undefined> {
-    if (!readModelID) {
-      return undefined
-    }
-    const rawReadModels = await this.config.provider.readModels.fetch(
-      this.config,
-      readModelName,
-      readModelID,
-      sequenceKey
-    )
-    if (rawReadModels?.length) {
-      if (rawReadModels.length > 1) {
-        throw 'Got multiple objects for a request by Id. If this is a sequenced read model you should also specify the sequenceKey field.'
-      } else if (rawReadModels.length === 1 && rawReadModels[0]) {
-        const readModelMetadata = this.config.readModels[readModelName]
-        return createInstance(readModelMetadata.class, rawReadModels[0])
-      }
-    }
-    return undefined
-  }
-
-  public async callFunction<TReadModel extends ReadModelInterface>(
+  private async callProjectionFunction<TReadModel extends ReadModelInterface>(
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entity: EntityInterface,
     migratedReadModel: ReadModelInterface | undefined,
-    readModelID: UUID | undefined
+    readModelID: UUID | undefined,
   ): Promise<ProjectionResult<TReadModel> | undefined> {
     try {
       const projectionMetadataJoinKey = projectionMetadata.joinKey
@@ -387,19 +408,10 @@ export class ReadModelStore {
     return undefined
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  getProjectionFunction(projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>): Function {
-    try {
-      return (projectionMetadata.class as any)[projectionMetadata.methodName]
-    } catch {
-      throw new Error(`Couldn't load the ReadModel class ${projectionMetadata.class.name}`)
-    }
-  }
-
   private filterForProjection(
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
-    entityMetadata: EntityMetadata
+    entityMetadata: EntityMetadata,
   ): FilterFor<ReadModelInterface> | undefined {
     const logger = getLogger(this.config, 'ReadModelStore#filterForProjection')
     const projectionMetadataJoinKey = projectionMetadata.joinKey
@@ -414,14 +426,14 @@ export class ReadModelStore {
   private filterForEntityProjection<TEntity extends EntityInterface>(
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
-    entityMetadata: EntityMetadata
+    entityMetadata: EntityMetadata,
   ): FilterFor<ReadModelInterface> | undefined {
     const logger = getLogger(this.config, 'ReadModelStore#filterForEntityProjection')
     const projectionMetadataJoinKey = projectionMetadata.joinKey as keyof TEntity
     const entityJoinKey = (entity as any)[projectionMetadataJoinKey]
     if (!entityJoinKey) {
       logger.warn(
-        `Couldn't find the joinKey ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
+        `Couldn't find the joinKey ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`,
       )
       return
     }
@@ -441,7 +453,7 @@ export class ReadModelStore {
   private filterForReadModelProjection(
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
-    entityMetadata: EntityMetadata
+    entityMetadata: EntityMetadata,
   ): FilterFor<ReadModelInterface> | undefined {
     const logger = getLogger(this.config, 'ReadModelStore#filterForReadModelProjection')
     const joinKeyForProjection = projectionMetadata.joinKey as ReadModelJoinKeyFunction<
@@ -450,7 +462,7 @@ export class ReadModelStore {
     >
     if (!joinKeyForProjection) {
       logger.warn(
-        `Couldn't find the joinKey ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`
+        `Couldn't find the joinKey ${projectionMetadata.joinKey} in entity snapshot of ${entityMetadata.class.name}. Skipping...`,
       )
       return
     }
@@ -458,7 +470,7 @@ export class ReadModelStore {
   }
 
   private isJoinKeyByEntity<TEntity extends EntityInterface, TReadModel extends ReadModelInterface>(
-    projectionMetadataJoinKey: keyof TEntity | ReadModelJoinKeyFunction<TEntity, TReadModel>
+    projectionMetadataJoinKey: keyof TEntity | ReadModelJoinKeyFunction<TEntity, TReadModel>,
   ): projectionMetadataJoinKey is keyof TEntity {
     return typeof projectionMetadataJoinKey === 'string'
   }
