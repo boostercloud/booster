@@ -7,7 +7,7 @@ on:
   workflow_call:
     inputs:
       azure-region:
-        default: 'East US'
+        default: 'East US 2'
         required: false
         type: string
       azure-publisher-email:

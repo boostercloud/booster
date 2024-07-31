@@ -9,6 +9,7 @@ import {
   ProjectionGlobalError,
   SnapshotPersistHandlerGlobalError,
   QueryHandlerGlobalError,
+  EventGlobalError,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
@@ -45,14 +46,17 @@ export class BoosterGlobalErrorDispatcher {
         case ProjectionGlobalError:
           newError = await this.handleProjectionError(error)
           break
+        case SnapshotPersistHandlerGlobalError:
+          newError = await this.handleSnapshotPersistError(error)
+          break
+        case EventGlobalError:
+          newError = await this.handleEventError(error)
+          break
       }
 
       newError = await this.handleGenericError(newError)
     } catch (e) {
-      logger.error(
-        `Unhandled error inside the global error handler. When handling error ${error.originalError}, another error occurred`,
-        e
-      )
+      logger.error(`Unhandled error inside the global error handler. When handling error ${error.originalError}`, e)
       return e
     }
     if (newError) return newError
@@ -124,6 +128,12 @@ export class BoosterGlobalErrorDispatcher {
     if (!this.errorHandler || !this.errorHandler.onSnapshotPersistError) throw error.originalError
     const currentError = error as SnapshotPersistHandlerGlobalError
     return this.errorHandler.onSnapshotPersistError(currentError.originalError, currentError.snapshot)
+  }
+
+  private async handleEventError(error: GlobalErrorContainer): Promise<Error | undefined> {
+    if (!this.errorHandler || !this.errorHandler.onEventError) throw error.originalError
+    const currentError = error as EventGlobalError
+    return await this.errorHandler.onEventError(currentError.originalError, currentError.eventEnvelope)
   }
 
   private async handleGenericError(error: Error | undefined): Promise<Error | undefined> {

@@ -1,5 +1,13 @@
 import { AnyClass } from '../typelevel'
-import { CommandEnvelope, NonPersistedEntitySnapshotEnvelope, EntitySnapshotEnvelope, EventEnvelope, ScheduledCommandEnvelope, QueryEnvelope } from '../envelope'
+import {
+  CommandEnvelope,
+  EntitySnapshotEnvelope,
+  EventEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+  QueryEnvelope,
+  ScheduledCommandEnvelope,
+} from '../envelope'
+import { EventInterface } from './event'
 import { ReadModelInterface } from './read-model'
 import { EntityInterface } from './entity'
 import { ReducerMetadata } from './reducer-metadata'
@@ -7,7 +15,6 @@ import { ScheduledCommandMetadata } from './scheduled-command'
 import { CommandMetadata } from './command'
 import { ProjectionMetadata } from './projection-metadata'
 import { NotificationInterface } from './notification'
-import { EventInterface } from './event'
 
 export interface GlobalErrorHandlerInterface extends AnyClass {
   onCommandHandlerError?(
@@ -42,6 +49,7 @@ export interface GlobalErrorHandlerInterface extends AnyClass {
     readModel: ReadModelInterface | undefined
   ): Promise<Error | undefined>
   onSnapshotPersistError?(error: Error, snapshot: NonPersistedEntitySnapshotEnvelope): Promise<Error | undefined>
+  onEventError?(error: Error, eventEnvelope: EventEnvelope): Promise<Error | undefined>
   onError?(error: Error | undefined): Promise<Error | undefined>
 }
 

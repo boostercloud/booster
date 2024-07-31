@@ -19,6 +19,7 @@ describe('stub', async () => {
       {
         name: 'fake-command.stub',
         path: '/someDir',
+        parentPath: '/someDir',
         isFile: () => true,
         isDirectory: () => false,
         isBlockDevice: () => false,
@@ -30,6 +31,7 @@ describe('stub', async () => {
       {
         name: 'fake-event.stub',
         path: '/someDir',
+        parentPath: '/someDir',
         isFile: () => true,
         isDirectory: () => false,
         isBlockDevice: () => false,
@@ -41,6 +43,7 @@ describe('stub', async () => {
       {
         name: 'fake-directory',
         path: '/someDir',
+        parentPath: '/someDir',
         isFile: () => false,
         isDirectory: () => true,
         isBlockDevice: () => false,

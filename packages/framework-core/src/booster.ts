@@ -1,19 +1,14 @@
 import { createInstance } from '@boostercloud/framework-common-helpers'
 import {
-  AnyClass,
   BoosterConfig,
   BoosterConfigTag,
   Class,
   EntityInterface,
   EventSearchParameters,
   EventSearchResponse,
-  FinderByKeyFunction,
   PaginatedEntitiesIdsResult,
   ReadModelInterface,
-  ReadOnlyNonEmptyArray,
   Searcher,
-  SearcherFunction,
-  SequenceKey,
   UUID,
 } from '@boostercloud/framework-types'
 import { Importer } from './importer'
@@ -24,8 +19,8 @@ import { BoosterDataMigrationStarted } from './core-concepts/data-migration/even
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
 import { BoosterAuthorizer } from './booster-authorizer'
-import { BoosterReadModelsReader } from './booster-read-models-reader'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
+import { readModelSearcher } from './services/read-model-searcher'
 import { eventSearch } from './booster-event-search'
 import { Effect, pipe } from 'effect'
 import { Command } from '@effect/cli'
@@ -107,21 +102,7 @@ export class Booster {
   public static readModel<TReadModel extends ReadModelInterface>(
     readModelClass: Class<TReadModel>
   ): Searcher<TReadModel> {
-    const finderByIdFunction: FinderByKeyFunction<TReadModel> = async (
-      readModelClass: AnyClass,
-      id: UUID,
-      sequenceKey?: SequenceKey
-    ) => {
-      const readModels = await this.config.provider.readModels.fetch(this.config, readModelClass.name, id, sequenceKey)
-      if (sequenceKey) {
-        return readModels as ReadOnlyNonEmptyArray<TReadModel>
-      }
-      return readModels[0] as TReadModel
-    }
-    const boosterReadModelsReader = new BoosterReadModelsReader(this.config)
-    const searcherFunction: SearcherFunction<TReadModel> =
-      boosterReadModelsReader.readModelSearch.bind(boosterReadModelsReader)
-    return new Searcher(readModelClass, searcherFunction, finderByIdFunction)
+    return readModelSearcher(this.config, readModelClass)
   }
 
   public static async events(request: EventSearchParameters): Promise<Array<EventSearchResponse>> {

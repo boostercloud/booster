@@ -2,6 +2,202 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.15.0",
+      "tag": "@boostercloud/framework-core_v2.15.0",
+      "date": "Wed, 31 Jul 2024 14:54:27 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Handle non-found events with global error handler",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "c474f64af3439b15339cd2a6cef31969f568d52c"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.14.0` to `^2.15.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.14.0` to `^2.15.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.14.0` to `^2.15.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.14.0` to `^2.15.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@boostercloud/framework-core_v2.14.0",
+      "date": "Tue, 30 Jul 2024 18:43:55 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Read Models projections by ReadModel query",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "2abba631c47a71d6b886f752ade48c0efe57accf"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.13.1` to `^2.14.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.13.1` to `^2.14.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.13.1` to `^2.14.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.13.1` to `^2.14.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.1",
+      "tag": "@boostercloud/framework-core_v2.13.1",
+      "date": "Fri, 26 Jul 2024 09:36:18 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Bump ws version (fixes CVE-2024-37890)",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "229be3f7a4326f3abe8bd95841dc771008c169e9"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.13.0` to `^2.13.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.13.0` to `^2.13.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.13.0` to `^2.13.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.13.0` to `^2.13.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@boostercloud/framework-core_v2.13.0",
+      "date": "Fri, 19 Jul 2024 16:36:39 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Improve support for calculated fields and their dependencies on read models",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "177b0386069f6467a0fbe11857b403cc3cbc0f29"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.12.1` to `^2.13.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.12.1` to `^2.13.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.12.1` to `^2.13.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.12.1` to `^2.13.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@boostercloud/framework-core_v2.12.1",
+      "date": "Thu, 13 Jun 2024 16:17:26 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add support for GraphQL fragments",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "dcd0714fca803b915b53af1299683a145a7e6df5"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.12.0` to `^2.12.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.12.0` to `^2.12.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.12.0` to `^2.12.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.12.0` to `^2.12.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@boostercloud/framework-core_v2.12.0",
+      "date": "Tue, 11 Jun 2024 16:43:14 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Add global event handler",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "879ef44a1fe6f67556f7ea7fb0ef61a1fbff0823"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.11.0` to `^2.12.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.11.0` to `^2.12.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.11.0` to `^2.12.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.11.0` to `^2.12.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@boostercloud/framework-core_v2.11.0",
+      "date": "Thu, 30 May 2024 15:58:21 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Allow define projection fields in read model queries",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "f747847ae1830f7ee373d6128d316e522172ca05"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.10.1` to `^2.11.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.10.1` to `^2.11.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.10.1` to `^2.11.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.10.1` to `^2.11.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.1",
       "tag": "@boostercloud/framework-core_v2.10.1",
       "date": "Tue, 16 Apr 2024 12:37:20 GMT",

@@ -1,6 +1,55 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 16 Apr 2024 12:37:20 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Jul 2024 14:54:27 GMT and should not be manually modified.
+
+## 2.15.0
+Wed, 31 Jul 2024 14:54:27 GMT
+
+### Minor changes
+
+- Handle non-found events with global error handler
+
+## 2.14.0
+Tue, 30 Jul 2024 18:43:55 GMT
+
+### Minor changes
+
+- Read Models projections by ReadModel query
+
+## 2.13.1
+Fri, 26 Jul 2024 09:36:18 GMT
+
+### Patches
+
+- Bump ws version (fixes CVE-2024-37890)
+
+## 2.13.0
+Fri, 19 Jul 2024 16:36:39 GMT
+
+### Minor changes
+
+- Improve support for calculated fields and their dependencies on read models
+
+## 2.12.1
+Thu, 13 Jun 2024 16:17:26 GMT
+
+### Patches
+
+- Add support for GraphQL fragments
+
+## 2.12.0
+Tue, 11 Jun 2024 16:43:14 GMT
+
+### Minor changes
+
+- Add global event handler
+
+## 2.11.0
+Thu, 30 May 2024 15:58:21 GMT
+
+### Minor changes
+
+- Allow define projection fields in read model queries
 
 ## 2.10.1
 Tue, 16 Apr 2024 12:37:20 GMT

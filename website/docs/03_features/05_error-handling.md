@@ -27,6 +27,8 @@ export class MyErrorHandler {
 }
 ```
 
+This method receives the error that was thrown and the command that was being handled when the error occurred. 
+
 ### Scheduled command handle errors
 
 These are the errors that are thrown in the `handle` method of the `@ScheduledCommand`. You can catch and return new errors in this function annotating a class with `@GlobalErrorHandler` and implementing the following method:
@@ -84,6 +86,21 @@ export class MyErrorHandler {
 ```
 
 Note you can not ignore a Reducer error as the new entity could not be created
+
+### Event errors
+
+These are the errors that are thrown if the event doesn't exist. You can catch and return new errors in this function annotating a class with `@GlobalErrorHandler` and implementing the following method:
+
+```typescript
+@GlobalErrorHandler()
+export class MyErrorHandler {
+  public static async onEventError(error: Error, eventEnvelope: EventEnvelope): Promise<Error | undefined> {
+    // Do something with the error
+  }
+}
+```
+
+This method receives the error that was thrown and the event received.
 
 ### Projection errors
 
@@ -168,6 +185,10 @@ export class AppErrorHandler {
     entity: EntityInterface,
     readModel: ReadModelInterface | undefined
   ): Promise<Error | undefined> {
+    return error
+  }
+
+  public static async onEventError(error: Error, eventEnvelope: EventEnvelope): Promise<Error | undefined> {
     return error
   }
 

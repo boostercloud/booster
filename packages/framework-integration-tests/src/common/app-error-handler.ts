@@ -20,6 +20,8 @@ import {
   commandHandlerErrorCartId,
   commandHandlerErrorIgnoredCartId,
   dispatchEventErrorCartId,
+  eventErrorCartId,
+  ignoreEventErrorCartId,
   projectionErrorCartId,
   queryHandlerErrorCartId,
   reducerErrorCartId,
@@ -112,6 +114,16 @@ export class AppErrorHandler {
     console.log(readModel)
     if (entity?.id === projectionErrorCartId) {
       return new Error(`${error.message}-onProjectionError with metadata: ${JSON.stringify(projectionMetadata)}`)
+    }
+    return error
+  }
+
+  public static async onEventError(error: Error, eventEnvelope: EventEnvelope): Promise<Error | undefined> {
+    if (eventEnvelope.entityID === eventErrorCartId) {
+      return new Error(error.message + '-onEventError')
+    }
+    if (eventEnvelope.entityID === ignoreEventErrorCartId) {
+      return undefined
     }
     return error
   }
