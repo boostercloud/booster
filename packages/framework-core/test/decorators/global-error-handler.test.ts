@@ -68,7 +68,7 @@ describe('the `GlobalErrorHandler` decorator', () => {
       public static async onProjectionError(
         error: Error,
         entityEnvelope: EntitySnapshotEnvelope,
-        projectionMetadata: ProjectionMetadata<EntityInterface>,
+        projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
         entity: EntityInterface,
         readModel: ReadModelInterface | undefined
       ): Promise<Error> {

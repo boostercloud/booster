@@ -44,7 +44,7 @@ export interface GlobalErrorHandlerInterface extends AnyClass {
   onProjectionError?(
     error: Error,
     entityEnvelope: EntitySnapshotEnvelope,
-    projectionMetadata: ProjectionMetadata<EntityInterface>,
+    projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entity: EntityInterface,
     readModel: ReadModelInterface | undefined
   ): Promise<Error | undefined>

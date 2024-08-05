@@ -22,6 +22,7 @@ import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterEntityTouched } from '../core-concepts/touch-entity/events/booster-entity-touched'
 import { Trace } from '../instrumentation'
+import { ReducerMetadata } from '../../../framework-types'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
 
@@ -66,8 +67,9 @@ export class EventStore {
               continue
             } else if (e instanceof InvalidReducerError) {
               const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
+              const reducerMetadata = this.config.reducers[pendingEvent.typeName]
               const error = await globalErrorDispatcher.dispatch(
-                new ReducerGlobalError(e.eventInstance, e.snapshotInstance, e)
+                new ReducerGlobalError(pendingEvent, e.eventInstance, e.snapshotInstance, reducerMetadata, e)
               )
               if (error) throw error
               continue
@@ -166,8 +168,15 @@ export class EventStore {
     const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
     const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
     const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
+    const reducerMetadata = this.config.reducers[eventEnvelope.typeName]
     const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
-    return this.createNewSnapshot(migratedEventEnvelope, eventInstance, snapshotInstance, eventEnvelope)
+    return this.createNewSnapshot(
+      migratedEventEnvelope,
+      eventInstance,
+      snapshotInstance,
+      eventEnvelope,
+      reducerMetadata
+    )
   }
 
   private shouldReduceBoosterSuperKind(eventEnvelope: EventEnvelope) {
@@ -189,7 +198,8 @@ export class EventStore {
     migratedEventEnvelope: EventEnvelope,
     eventInstance: EventInterface,
     snapshotInstance: EntityInterface | null,
-    eventEnvelope: EventEnvelope
+    eventEnvelope: EventEnvelope,
+    reducerMetadata: ReducerMetadata
   ): Promise<NonPersistedEntitySnapshotEnvelope> {
     const logger = getLogger(this.config, 'createNewSnapshot')
     try {
@@ -276,11 +286,11 @@ export class EventStore {
     return boosterMigratedSnapshot
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
   private reducerForEvent(
     eventName: string,
     eventInstance: EventInterface,
     snapshotInstance: EntityInterface | null
+    // eslint-disable-next-line @typescript-eslint/ban-types
   ): Function {
     const logger = getLogger(this.config, 'EventStore#reducerForEvent')
     const reducerMetadata = this.config.reducers[eventName]

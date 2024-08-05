@@ -198,7 +198,7 @@ describe('BoosterGlobalErrorDispatcher', () => {
       public static async onProjectionError(
         error: Error,
         entityEnvelope: EntitySnapshotEnvelope,
-        projectionMetadata: ProjectionMetadata<EntityInterface>,
+        projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
         entity: EntityInterface,
         readModel: ReadModelInterface | undefined
       ): Promise<Error | undefined> {
@@ -208,7 +208,10 @@ describe('BoosterGlobalErrorDispatcher', () => {
     const mockEntityEnvelope: EntitySnapshotEnvelope = {} as EntitySnapshotEnvelope
     const mockEntity = {} as EntityInterface
     const mockReadModel = {} as ReadModelInterface
-    const mockProjectionMetadata: ProjectionMetadata<unknown> = {} as ProjectionMetadata<unknown>
+    const mockProjectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface> = {} as ProjectionMetadata<
+      EntityInterface,
+      ReadModelInterface
+    >
     const projectionGlobalError = new ProjectionGlobalError(
       mockEntityEnvelope,
       mockEntity,
@@ -228,7 +231,7 @@ describe('BoosterGlobalErrorDispatcher', () => {
       public static async onProjectionError(
         error: Error,
         entityEnvelope: EntitySnapshotEnvelope,
-        projectionMetadata: ProjectionMetadata<EntityInterface>,
+        projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
         entity: EntityInterface,
         readModel: ReadModelInterface | undefined
       ): Promise<Error | undefined> {
@@ -238,7 +241,10 @@ describe('BoosterGlobalErrorDispatcher', () => {
     const mockEntityEnvelope: EntitySnapshotEnvelope = {} as EntitySnapshotEnvelope
     const mockEntity = {} as EntityInterface
     const mockReadModel = {} as ReadModelInterface
-    const mockProjectionMetadata: ProjectionMetadata<unknown> = {} as ProjectionMetadata<unknown>
+    const mockProjectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface> = {} as ProjectionMetadata<
+      EntityInterface,
+      ReadModelInterface
+    >
     const projectionGlobalError = new ProjectionGlobalError(
       mockEntityEnvelope,
       mockEntity,

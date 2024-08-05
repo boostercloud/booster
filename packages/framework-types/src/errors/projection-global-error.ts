@@ -7,7 +7,7 @@ export class ProjectionGlobalError extends GlobalErrorContainer {
     readonly entityEnvelope: EntitySnapshotEnvelope,
     readonly entity: EntityInterface,
     readonly readModel: ReadModelInterface | undefined,
-    readonly projectionMetadata: ProjectionMetadata<EntityInterface>,
+    readonly projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     originalError: Error
   ) {
     super(originalError)
