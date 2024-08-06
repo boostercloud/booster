@@ -4,6 +4,7 @@ import * as GitIgnore from './gitignore'
 import * as IndexTs from './index-ts'
 import * as PackageJson from './package-json'
 import * as TsconfigJson from './tsconfig-json'
+import * as LaunchJson from './launch-json'
 
 export const templates = {
   configTs: ConfigTs.template,
@@ -12,4 +13,5 @@ export const templates = {
   indexTs: IndexTs.template,
   packageJson: PackageJson.template,
   tsconfigJson: TsconfigJson.template,
+  launchJson: LaunchJson.template,
 }
