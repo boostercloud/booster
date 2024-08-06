@@ -1,13 +1,22 @@
+
 {
   "version": "0.2.0",
   "configurations": [
-    // Runs npx boost -e local
     {
-      "command": "npm run build && npx boost start -e local",
-      "name": "Start Debug Server",
-      "request": "launch",
+      "name": "Launch Booster App",
       "type": "node-terminal",
-      "cwd": "${workspaceFolder}"
-    },
+      "request": "launch",
+      "program": "${workspaceFolder}/src/index.ts",
+      "preLaunchTask": "tsc: build",
+      "cwd": "${workspaceFolder}",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "sourceMaps": true,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"]
+    }
   ]
 }
