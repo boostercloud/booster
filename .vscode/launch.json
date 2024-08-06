@@ -18,5 +18,5 @@
       "internalConsoleOptions": "neverOpen",
       "skipFiles": ["<node_internals>/**"]
     }
-  ]
+  ]   
 }
