@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.16.0",
+      "tag": "@boostercloud/framework-core_v2.16.0",
+      "date": "Tue, 06 Aug 2024 20:59:53 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Improve GlobalErrorHandler",
+            "author": "gonzalojaubert <111118818+gonzalojaubert@users.noreply.github.com>",
+            "commit": "84b93bc513693f326b766678e423c2d669d18b94"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.15.0` to `^2.16.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.15.0` to `^2.16.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.15.0` to `^2.16.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.15.0` to `^2.16.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.15.0",
       "tag": "@boostercloud/framework-core_v2.15.0",
       "date": "Wed, 31 Jul 2024 14:54:27 GMT",
