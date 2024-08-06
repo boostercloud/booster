@@ -256,6 +256,7 @@ export class ReadModelStore {
     return retryIfError(
       (tryNumber?: number) =>
         this.applyProjectionToReadModel(
+          entitySnapshotEnvelope,
           entityInstance,
           projectionMetadata,
           currentReadModel,
@@ -281,6 +282,7 @@ export class ReadModelStore {
   }
 
   private async applyProjectionToReadModel(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope,
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     currentReadModel?: ReadModelInterface,
@@ -318,10 +320,18 @@ export class ReadModelStore {
 
     let newReadModel: any
     try {
-      newReadModel = await this.callProjectionFunction(projectionMetadata, entity, migratedReadModel, readModelID)
+      newReadModel = await this.callProjectionFunction(
+        entitySnapshotEnvelope,
+        projectionMetadata,
+        entity,
+        migratedReadModel,
+        readModelID
+      )
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-      const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
+      const error = await globalErrorDispatcher.dispatch(
+        new ProjectionGlobalError(entitySnapshotEnvelope, entity, migratedReadModel, projectionMetadata, e)
+      )
       if (error) throw error
     }
 
@@ -385,6 +395,7 @@ export class ReadModelStore {
   }
 
   private async callProjectionFunction<TReadModel extends ReadModelInterface>(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entity: EntityInterface,
     migratedReadModel: ReadModelInterface | undefined,
@@ -401,7 +412,9 @@ export class ReadModelStore {
       return projectionFunction(entity, readModelID, migratedReadModel || null)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-      const error = await globalErrorDispatcher.dispatch(new ProjectionGlobalError(entity, migratedReadModel, e))
+      const error = await globalErrorDispatcher.dispatch(
+        new ProjectionGlobalError(entitySnapshotEnvelope, entity, migratedReadModel, projectionMetadata, e)
+      )
       if (error) throw error
     }
     return undefined

@@ -63,7 +63,9 @@ export class BoosterCommandDispatcher {
       result = await commandClass.handle(commandInstance, register)
     } catch (err) {
       const e = err as Error
-      const error = await this.globalErrorDispatcher.dispatch(new CommandHandlerGlobalError(migratedCommandEnvelope, e))
+      const error = await this.globalErrorDispatcher.dispatch(
+        new CommandHandlerGlobalError(migratedCommandEnvelope, commandMetadata, e)
+      )
       if (error) throw error
     }
     logger.debug('Command dispatched with register: ', register)
