@@ -57,6 +57,7 @@ describe('project initializer', (): void => {
     expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/common`)
     expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/event-handlers`)
     expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/scheduled-commands`)
+    expert(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/.vscode`)
   })
 
   it('install dependencies', async () => {
@@ -78,5 +79,6 @@ describe('project initializer', (): void => {
     expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
     expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
     expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.mocharc.yml`)
+    expert(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.vscode/launch.json`)
   })
 })
