@@ -33,6 +33,7 @@ import { TerraformPublicIpData } from './gateway/terraform-public-ip-data'
 import { TerraformSubnet } from './gateway/terraform-subnet'
 import { TerraformSubnetSecurity } from './gateway/terraform-subnet-security'
 import { BASIC_SERVICE_PLAN } from '../constants'
+import { TerraformFunctionAppSettings } from './terraform-function-app-settings'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -121,7 +122,6 @@ export class ApplicationSynth {
   ): windowsFunctionApp.WindowsFunctionApp {
     return TerraformFunctionApp.build(
       stack,
-      this.config,
       stack.applicationServicePlan!,
       stack.storageAccount!,
       'func',
@@ -139,11 +139,12 @@ export class ApplicationSynth {
       stack.eventConsumerStorageAccount = TerraformStorageAccount.build(stack, 'sc')
       stack.eventConsumerFunctionApp = TerraformFunctionApp.build(
         stack,
-        this.config,
         stack.eventConsumerServicePlan,
         stack.eventConsumerStorageAccount,
         'fhub',
-        stack.streamFunctionAppName
+        stack.streamFunctionAppName,
+        undefined,
+        this.buildDefaultAppSettings(stack, 'fhub')
       )
       if (!stack.containers) {
         stack.containers = []
@@ -163,5 +164,9 @@ export class ApplicationSynth {
       stack.dataFunctionAppHostKeys = TerraformWebPubSubExtensionKey.build(stack)
       stack.webPubSubHub = TerraformWebPubsubHub.build(stack)
     }
+  }
+
+  public buildDefaultAppSettings(stack: ApplicationSynthStack, suffixName: string) {
+    return TerraformFunctionAppSettings.build(stack, this.config, stack.storageAccount!, suffixName)
   }
 }

@@ -32,6 +32,7 @@ export const environmentVarNames = {
   eventHubName: 'EVENTHUB_NAME',
   eventHubMaxRetries: 'EVENTHUB_MAX_RETRIES',
   eventHubMode: 'EVENTHUB_MODE',
+  rocketFunctionAppNames: 'ROCKET_FUNCTION_APP_NAMES',
 } as const
 
 // Azure special error codes
