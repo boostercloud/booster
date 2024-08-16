@@ -38,6 +38,7 @@ import { EventHubProducerClient, RetryMode } from '@azure/event-hubs'
 import { dedupEventStream, rawEventsStreamToEnvelopes } from './library/events-stream-consumer-adapter'
 import {
   areDatabaseReadModelsUp,
+  areRocketFunctionsUp,
   databaseEventsHealthDetails,
   databaseReadModelsHealthDetails,
   databaseUrl,
@@ -151,6 +152,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     graphQLFunctionUrl: graphqlFunctionUrl,
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
+    areRocketFunctionsUp: areRocketFunctionsUp,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
