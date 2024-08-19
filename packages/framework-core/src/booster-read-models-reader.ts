@@ -12,9 +12,11 @@ import {
   ReadModelMetadata,
   ReadModelRequestEnvelope,
   ReadOnlyNonEmptyArray,
+  SequenceKey,
   SortFor,
   SubscriptionEnvelope,
   TraceActionTypes,
+  UUID,
 } from '@boostercloud/framework-types'
 import {
   createInstance,
@@ -128,6 +130,18 @@ export class BoosterReadModelsReader {
       return this.createReadModelInstancesWithCalculatedProperties(searchResult, readModelClass, select ?? [])
     }
     return this.migrateReadModels(readModels, readModelName)
+  }
+
+  public async finderByIdFunction<TReadModel extends ReadModelInterface>(
+    readModelClass: AnyClass,
+    id: UUID,
+    sequenceKey?: SequenceKey
+  ): Promise<ReadOnlyNonEmptyArray<TReadModel> | TReadModel> {
+    const readModels = await this.config.provider.readModels.fetch(this.config, readModelClass.name, id, sequenceKey)
+    if (sequenceKey) {
+      return readModels as ReadOnlyNonEmptyArray<TReadModel>
+    }
+    return readModels[0] as TReadModel
   }
 
   private async migrateReadModels<TReadModel extends ReadModelInterface>(

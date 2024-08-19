@@ -1,3 +1,5 @@
+import { EntityInterface, EventInterface } from './concepts'
+
 export class BoosterError extends Error {
   readonly code: string
   constructor(message: string, code?: string, readonly data?: Record<string, unknown>) {
@@ -14,6 +16,18 @@ export class BoosterTokenNotBeforeError extends BoosterError {}
 export class NotFoundError extends BoosterError {}
 export class InvalidVersionError extends BoosterError {}
 export class OptimisticConcurrencyUnexpectedVersionError extends BoosterError {}
+
+export class InvalidEventError extends BoosterError {}
+export class InvalidReducerError extends BoosterError {
+  readonly eventInstance: EventInterface
+  readonly snapshotInstance: EntityInterface | null
+
+  constructor(message: string, eventInstance: EventInterface, snapshotInstance: EntityInterface | null) {
+    super(message)
+    this.eventInstance = eventInstance
+    this.snapshotInstance = snapshotInstance
+  }
+}
 
 export function httpStatusCodeFor(error: Error): number {
   const errorToHTTPCode: Record<string, number> = {

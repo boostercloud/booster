@@ -1,15 +1,19 @@
 import {
-  TraceActionTypes,
   BOOSTER_SUPER_KIND,
   BoosterConfig,
   EntityInterface,
   EntitySnapshotEnvelope,
   EventEnvelope,
+  EventGlobalError,
+  EventInterface,
+  EventMetadata,
   Instance,
+  InvalidEventError,
   InvalidParameterError,
+  InvalidReducerError,
   NonPersistedEntitySnapshotEnvelope,
   ReducerGlobalError,
-  SnapshotPersistHandlerGlobalError,
+  TraceActionTypes,
   UUID,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
@@ -18,8 +22,11 @@ import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterEntityTouched } from '../core-concepts/touch-entity/events/booster-entity-touched'
 import { Trace } from '../instrumentation'
+import { ReducerMetadata } from '../../../framework-types'
 
 const originOfTime = new Date(0).toISOString() // Unix epoch
+
+const boosterReducibleEventsTypesNames: Array<string> = [BoosterEntityMigrated.name, BoosterEntityTouched.name]
 
 export class EventStore {
   public constructor(readonly config: BoosterConfig) {}
@@ -48,9 +55,27 @@ export class EventStore {
       // In this assignment we discard the `createdAt` field because it's not needed in the reduction process
       let newEntitySnapshot: NonPersistedEntitySnapshotEnvelope | undefined = latestSnapshotEnvelope
       for (const pendingEvent of pendingEvents) {
-        // We double check that what we are reducing is an event
+        // We double-check that what we are reducing is an event
         if (pendingEvent.kind === 'event') {
-          newEntitySnapshot = await this.entityReducer(pendingEvent, newEntitySnapshot)
+          try {
+            newEntitySnapshot = await this.entityReducer(pendingEvent, newEntitySnapshot)
+          } catch (e) {
+            if (e instanceof InvalidEventError) {
+              const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
+              const error = await globalErrorDispatcher.dispatch(new EventGlobalError(pendingEvent, e))
+              if (error) throw error
+              continue
+            } else if (e instanceof InvalidReducerError) {
+              const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
+              const reducerMetadata = this.config.reducers[pendingEvent.typeName]
+              const error = await globalErrorDispatcher.dispatch(
+                new ReducerGlobalError(pendingEvent, e.eventInstance, e.snapshotInstance, reducerMetadata, e)
+              )
+              if (error) throw error
+              continue
+            }
+            throw e
+          }
         }
       }
 
@@ -80,7 +105,7 @@ export class EventStore {
       logger.debug('Storing event in the dispatched event store:', eventEnvelope)
       return await this.config.provider.events.storeDispatched(eventEnvelope, this.config)
     } catch (e) {
-      logger.debug('Could not store dispatched event. Continue its processing.', {error: e, eventEnvelope })
+      logger.debug('Could not store dispatched event. Continue its processing.', { error: e, eventEnvelope })
       return true
     }
   }
@@ -94,15 +119,13 @@ export class EventStore {
       logger.debug('Storing snapshot in the event store:', snapshot)
       return await this.config.provider.events.storeSnapshot(snapshot, this.config)
     } catch (e) {
-      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-      const error = await globalErrorDispatcher.dispatch(new SnapshotPersistHandlerGlobalError(snapshot, e))
       logger.error(
         `The snapshot for entity ${snapshot.typeName} with ID ${
           snapshot.entityID
         } couldn't be stored (Tried on ${new Date()})`,
         snapshot,
         '\nError:',
-        error
+        e
       )
       return
     }
@@ -135,52 +158,89 @@ export class EventStore {
     eventEnvelope: EventEnvelope,
     latestSnapshot?: NonPersistedEntitySnapshotEnvelope
   ): Promise<NonPersistedEntitySnapshotEnvelope | undefined> {
-    const logger = getLogger(this.config, 'EventStore#entityReducer')
-    try {
-      if (eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND) {
-        if (eventEnvelope.typeName === BoosterEntityTouched.name) {
-          return this.reduceEntityTouched(eventEnvelope, latestSnapshot)
-        }
-        if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
-          return this.reduceEntityMigrated(eventEnvelope)
-        }
-      }
-
-      logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
-      const eventMetadata = this.config.events[eventEnvelope.typeName]
-      if (!eventMetadata) {
-        logger.error(`No event registered for event ${eventEnvelope.typeName}`)
-        throw new InvalidParameterError(`No event registered for event ${eventEnvelope.typeName}`)
-      }
-      const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
-      const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
-      const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
-      const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
-      try {
-        const newEntity = this.reducerForEvent(migratedEventEnvelope.typeName)(eventInstance, snapshotInstance)
-
-        const newSnapshot: NonPersistedEntitySnapshotEnvelope = {
-          version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
-          kind: 'snapshot',
-          superKind: migratedEventEnvelope.superKind,
-          requestID: migratedEventEnvelope.requestID,
-          entityID: migratedEventEnvelope.entityID,
-          entityTypeName: migratedEventEnvelope.entityTypeName,
-          typeName: migratedEventEnvelope.entityTypeName,
-          value: newEntity,
-          snapshottedEventCreatedAt: migratedEventEnvelope.createdAt,
-        }
-        logger.debug('Reducer result: ', newSnapshot)
-        return newSnapshot
-      } catch (e) {
-        const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
-        const error = await globalErrorDispatcher.dispatch(new ReducerGlobalError(eventInstance, snapshotInstance, e))
-        throw error
-      }
-    } catch (e) {
-      logger.error('Error when calling reducer', e)
-      throw e
+    const logger = getLogger(this.config, 'entityReducer')
+    logger.debug('Calling reducer with event: ', eventEnvelope, ' and entity snapshot ', latestSnapshot)
+    if (this.shouldReduceBoosterSuperKind(eventEnvelope)) {
+      return this.reduceSuperKind(eventEnvelope, latestSnapshot)
     }
+
+    const eventMetadata = this.eventMetadataFor(eventEnvelope)
+    const migratedEventEnvelope = await new SchemaMigrator(this.config).migrate(eventEnvelope)
+    const eventInstance = createInstance(eventMetadata.class, migratedEventEnvelope.value)
+    const entityMetadata = this.config.entities[migratedEventEnvelope.entityTypeName]
+    const reducerMetadata = this.config.reducers[eventEnvelope.typeName]
+    const snapshotInstance = latestSnapshot ? createInstance(entityMetadata.class, latestSnapshot.value) : null
+    return this.createNewSnapshot(
+      migratedEventEnvelope,
+      eventInstance,
+      snapshotInstance,
+      eventEnvelope,
+      reducerMetadata
+    )
+  }
+
+  private shouldReduceBoosterSuperKind(eventEnvelope: EventEnvelope) {
+    const reducible = boosterReducibleEventsTypesNames.includes(eventEnvelope.typeName)
+    return eventEnvelope.superKind && eventEnvelope.superKind === BOOSTER_SUPER_KIND && reducible
+  }
+
+  private eventMetadataFor(eventEnvelope: EventEnvelope): EventMetadata {
+    const logger = getLogger(this.config, 'eventMetadataFor')
+    const eventMetadata = this.config.events[eventEnvelope.typeName]
+    if (!eventMetadata) {
+      logger.error(`No event registered for event ${eventEnvelope.typeName}`)
+      throw new InvalidEventError(`No event registered for event ${eventEnvelope.typeName}`)
+    }
+    return eventMetadata
+  }
+
+  private async createNewSnapshot(
+    migratedEventEnvelope: EventEnvelope,
+    eventInstance: EventInterface,
+    snapshotInstance: EntityInterface | null,
+    eventEnvelope: EventEnvelope,
+    reducerMetadata: ReducerMetadata
+  ): Promise<NonPersistedEntitySnapshotEnvelope> {
+    const logger = getLogger(this.config, 'createNewSnapshot')
+    try {
+      const newEntity = this.reducerForEvent(
+        migratedEventEnvelope.typeName,
+        eventInstance,
+        snapshotInstance
+      )(eventInstance, snapshotInstance)
+
+      const newSnapshot: NonPersistedEntitySnapshotEnvelope = {
+        version: this.config.currentVersionFor(eventEnvelope.entityTypeName),
+        kind: 'snapshot',
+        superKind: migratedEventEnvelope.superKind,
+        requestID: migratedEventEnvelope.requestID,
+        entityID: migratedEventEnvelope.entityID,
+        entityTypeName: migratedEventEnvelope.entityTypeName,
+        typeName: migratedEventEnvelope.entityTypeName,
+        value: newEntity,
+        snapshottedEventCreatedAt: migratedEventEnvelope.createdAt,
+      }
+      logger.debug('Reducer result: ', newSnapshot)
+      return newSnapshot
+    } catch (e) {
+      const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
+      throw await globalErrorDispatcher.dispatch(
+        new ReducerGlobalError(migratedEventEnvelope, eventInstance, snapshotInstance, reducerMetadata, e)
+      )
+    }
+  }
+
+  private async reduceSuperKind(
+    eventEnvelope: EventEnvelope,
+    latestSnapshot?: NonPersistedEntitySnapshotEnvelope
+  ): Promise<NonPersistedEntitySnapshotEnvelope | undefined> {
+    if (eventEnvelope.typeName === BoosterEntityTouched.name) {
+      return this.reduceEntityTouched(eventEnvelope, latestSnapshot)
+    }
+    if (eventEnvelope.typeName === BoosterEntityMigrated.name) {
+      return this.reduceEntityMigrated(eventEnvelope)
+    }
+    throw new InvalidParameterError(`Unexpected super kind ${eventEnvelope.superKind} to be reduced`)
   }
 
   private reduceEntityMigrated(eventEnvelope: EventEnvelope): NonPersistedEntitySnapshotEnvelope {
@@ -226,19 +286,22 @@ export class EventStore {
     return boosterMigratedSnapshot
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  private reducerForEvent(eventName: string): Function {
+  private reducerForEvent(
+    eventName: string,
+    eventInstance: EventInterface,
+    snapshotInstance: EntityInterface | null
+    // eslint-disable-next-line @typescript-eslint/ban-types
+  ): Function {
     const logger = getLogger(this.config, 'EventStore#reducerForEvent')
     const reducerMetadata = this.config.reducers[eventName]
     if (!reducerMetadata) {
-      throw new InvalidParameterError(`No reducer registered for event ${eventName}`)
+      throw new InvalidReducerError(`No reducer registered for event ${eventName}`, eventInstance, snapshotInstance)
     } else {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const reducer = (reducerMetadata.class as any)[reducerMetadata.methodName]
-        logger.debug(
-          `Found reducer for event ${eventName}: "${reducerMetadata.class.name}.${reducerMetadata.methodName}"`
-        )
+        const methodName = reducerMetadata.methodName
+        const reducer = (reducerMetadata.class as any)[methodName]
+        logger.debug(`Found reducer for event ${eventName}: "${reducerMetadata.class.name}.${methodName}"`)
         return reducer
       } catch {
         throw new Error(`Couldn't load the Entity class ${reducerMetadata.class.name}`)

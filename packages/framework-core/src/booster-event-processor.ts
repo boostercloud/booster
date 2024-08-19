@@ -130,7 +130,9 @@ export class BoosterEventProcessor {
       await eventHandler.handle(eventInstance, register)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
-      const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
+      const error = await globalErrorDispatcher.dispatch(
+        new EventHandlerGlobalError(eventEnvelope, eventInstance, e.eventHandlerMetadata, e)
+      )
       if (error) throw error
     }
     await RegisterHandler.handle(config, register)
