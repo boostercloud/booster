@@ -25,7 +25,7 @@ import { TerraformWebPubsubHub } from './terraform-web-pubsub-hub'
 import { TerraformWebPubSubExtensionKey } from './terraform-web-pub-sub-extension-key'
 import { TerraformEventHubNamespace } from './terraform-event-hub-namespace'
 import { TerraformEventHub } from './terraform-event-hub'
-import { windowsFunctionApp } from '@cdktf/provider-azurerm'
+import { storageAccount, windowsFunctionApp } from '@cdktf/provider-azurerm'
 import { TerraformNetworkSecurityGroup } from './gateway/terraform-network-security-group'
 import { TerraformVirtualNetwork } from './gateway/terraform-virtual-network'
 import { TerraformPublicIp } from './gateway/terraform-public-ip'
@@ -144,7 +144,7 @@ export class ApplicationSynth {
         'fhub',
         stack.streamFunctionAppName,
         undefined,
-        this.buildDefaultAppSettings(stack, 'fhub')
+        this.buildDefaultAppSettings(stack, stack.eventConsumerStorageAccount, 'fhub')
       )
       if (!stack.containers) {
         stack.containers = []
@@ -166,7 +166,11 @@ export class ApplicationSynth {
     }
   }
 
-  public buildDefaultAppSettings(stack: ApplicationSynthStack, suffixName: string) {
-    return TerraformFunctionAppSettings.build(stack, this.config, stack.storageAccount!, suffixName)
+  public buildDefaultAppSettings(
+    stack: ApplicationSynthStack,
+    storageAccount: storageAccount.StorageAccount,
+    suffixName: string
+  ) {
+    return TerraformFunctionAppSettings.build(stack, this.config, storageAccount!, suffixName)
   }
 }

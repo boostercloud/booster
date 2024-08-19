@@ -14,7 +14,11 @@ export class AzureStack extends TerraformStack {
 
     const applicationSynth = new ApplicationSynth(this)
     this.applicationStack = applicationSynth.synth(zipFile)
-    this.defaultApplicationSettings = applicationSynth.buildDefaultAppSettings(this.applicationStack, 'func')
+    this.defaultApplicationSettings = applicationSynth.buildDefaultAppSettings(
+      this.applicationStack,
+      this.applicationStack.storageAccount!,
+      'func'
+    )
   }
 
   public addAppSettingsToFunctionApp(rockets?: InfrastructureRocket[]): void {
