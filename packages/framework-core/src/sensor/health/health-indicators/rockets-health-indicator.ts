@@ -12,6 +12,16 @@ export class RocketsHealthIndicator {
     healthIndicatorMetadata: HealthIndicatorMetadata
   ): Promise<HealthIndicatorsResult> {
     const results = await config.provider.sensor.areRocketFunctionsUp(config)
+    if (Object.keys(results).length === 0) {
+      return {
+        name: 'Rockets',
+        id: BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS,
+        status: HealthStatus.UNKNOWN,
+        details: {
+          reason: 'No Rockets found',
+        },
+      }
+    }
     return {
       name: 'Rockets',
       id: BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS,

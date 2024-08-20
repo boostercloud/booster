@@ -86,7 +86,8 @@ export async function isRocketFunctionUp(rocketFunctionAppName: string): Promise
 }
 
 export async function areRocketFunctionsUp(): Promise<{ [key: string]: boolean }> {
-  const functionAppNames = process.env[environmentVarNames.rocketFunctionAppNames]?.split(',') || []
+  const functionAppNames =
+    process.env[environmentVarNames.rocketFunctionAppNames]?.split(',').filter((str) => str.trim() !== '') || []
   const results = await Promise.all(
     functionAppNames.map(async (functionAppName: string) => {
       const isUp = await isRocketFunctionUp(functionAppName)
