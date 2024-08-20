@@ -7,7 +7,7 @@ import {
   HealthIndicatorsResult,
   UserEnvelope,
 } from '@boostercloud/framework-types'
-import { childrenHealthProviders, isEnabled, metadataFromId, rootHealthProviders } from './health-utils'
+import { childHealthProviders, isEnabled, metadataFromId, rootHealthProviders } from './health-utils'
 import { createInstance } from '@boostercloud/framework-common-helpers'
 import { defaultBoosterHealthIndicators } from './health-indicators'
 import { BoosterTokenVerifier } from '../../booster-token-verifier'
@@ -51,14 +51,14 @@ export class BoosterHealthService {
       if (!indicatorResult) {
         continue
       }
-      const childrens = childrenHealthProviders(current, healthProviders)
+      const children = childHealthProviders(current, healthProviders)
       const newResult: HealthIndicatorsResult = {
         ...indicatorResult,
         name: current.healthIndicatorConfiguration.name,
         id: current.healthIndicatorConfiguration.id,
       }
-      if (childrens && childrens?.length > 0) {
-        newResult.components = await this.boosterHealthProviderResolver(childrens, healthProviders)
+      if (children && children?.length > 0) {
+        newResult.components = await this.boosterHealthProviderResolver(children, healthProviders)
       }
       result.push(newResult)
     }

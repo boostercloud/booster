@@ -47,6 +47,7 @@ export interface ProviderSensorLibrary {
   isGraphQLFunctionUp(config: BoosterConfig): Promise<boolean>
   graphQLFunctionUrl(config: BoosterConfig): Promise<string>
   rawRequestToHealthEnvelope(rawRequest: unknown): HealthEnvelope
+  areRocketFunctionsUp(config: BoosterConfig): Promise<{ [key: string]: boolean }>
 }
 
 export interface ProviderEventsLibrary {

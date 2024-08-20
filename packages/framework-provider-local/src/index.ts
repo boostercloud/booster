@@ -127,6 +127,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     graphQLFunctionUrl: graphqlFunctionUrl,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
+    areRocketFunctionsUp: notImplemented as any,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

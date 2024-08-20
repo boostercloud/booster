@@ -124,6 +124,8 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       rawRequestToHealthEnvelope: (rawRequest: unknown): HealthEnvelope => {
         throw new Error('Not implemented')
       },
+      areRocketFunctionsUp: async (config: BoosterConfig): Promise<{ [key: string]: boolean }> =>
+        notImplementedResult(),
     },
     // ProviderInfrastructureGetter
     infrastructure: () => {
