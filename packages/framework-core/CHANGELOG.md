@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 06 Aug 2024 20:59:53 GMT and should not be manually modified.
+This log was last generated on Wed, 21 Aug 2024 00:15:44 GMT and should not be manually modified.
+
+## 2.17.0
+Wed, 21 Aug 2024 00:15:44 GMT
+
+### Minor changes
+
+- Health sensors for Rockets
 
 ## 2.16.0
 Tue, 06 Aug 2024 20:59:53 GMT

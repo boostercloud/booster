@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@boostercloud/framework-core_v2.17.0",
+      "date": "Wed, 21 Aug 2024 00:15:44 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Health sensors for Rockets",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "cb500c908e459897f7ab5f5d8acc46a71b310be6"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.16.0` to `^2.17.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.16.0` to `^2.17.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.16.0` to `^2.17.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.16.0` to `^2.17.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.16.0",
       "tag": "@boostercloud/framework-core_v2.16.0",
       "date": "Tue, 06 Aug 2024 20:59:53 GMT",
