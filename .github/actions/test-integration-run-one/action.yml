@@ -86,7 +86,7 @@ runs:
     # from the `Prepare Integration Tests` workflow into the `packages/framework-integration-tests/.booster`
     # folder.
     - name: Download integration test dependencies
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: integration-test-dependencies-${{ env.ACTUAL_SHA }}
         path: packages/framework-integration-tests/.booster

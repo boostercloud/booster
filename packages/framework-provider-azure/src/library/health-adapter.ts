@@ -47,6 +47,10 @@ export async function graphqlFunctionUrl(): Promise<string> {
   }
 }
 
+export async function rocketFunctionAppUrl(functionAppName: string): Promise<string> {
+  return `https://${functionAppName}.azurewebsites.net`
+}
+
 export async function isDatabaseEventUp(cosmosDb: CosmosClient, config: BoosterConfig): Promise<boolean> {
   return await isContainerUp(cosmosDb, config, config.resourceNames.eventsStore)
 }
@@ -69,6 +73,29 @@ export async function isGraphQLFunctionUp(): Promise<boolean> {
   } catch (e) {
     return false
   }
+}
+
+export async function isRocketFunctionUp(rocketFunctionAppName: string): Promise<boolean> {
+  try {
+    const functionAppUrl = await rocketFunctionAppUrl(rocketFunctionAppName)
+    const response = await request(functionAppUrl, 'GET')
+    return response.status === 200
+  } catch (e) {
+    return false
+  }
+}
+
+export async function areRocketFunctionsUp(): Promise<{ [key: string]: boolean }> {
+  const functionAppNames =
+    process.env[environmentVarNames.rocketFunctionAppNames]?.split(',').filter((str) => str.trim() !== '') || []
+  const results = await Promise.all(
+    functionAppNames.map(async (functionAppName: string) => {
+      const isUp = await isRocketFunctionUp(functionAppName)
+      return { [functionAppName]: isUp }
+    })
+  )
+
+  return results.reduce((acc, result) => ({ ...acc, ...result }), {})
 }
 
 export function rawRequestToSensorHealthComponentPath(rawRequest: Context): string {

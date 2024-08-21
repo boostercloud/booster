@@ -1,10 +1,13 @@
 name: Azure Integration Tests
 
+env:
+  BOOSTER_AZURE_SERVICE_PLAN_BASIC: 'true'
+
 on:
   workflow_call:
     inputs:
       azure-region:
-        default: 'East US'
+        default: 'East US 2'
         required: false
         type: string
       azure-publisher-email:

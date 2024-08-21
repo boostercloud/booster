@@ -1,15 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { fake, replace, restore, createStubInstance } from 'sinon'
+import { createStubInstance, fake, match, replace, restore } from 'sinon'
 import {
   BoosterConfig,
-  EntitySnapshotEnvelope,
-  UUID,
   EntityInterface,
-  ProviderLibrary,
-  Register,
+  EntitySnapshotEnvelope,
   EventInterface,
   NonPersistedEventEnvelope,
+  ProviderLibrary,
+  Register,
+  UUID,
 } from '@boostercloud/framework-types'
 import { expect } from './expect'
 import { ReadModelStore } from '../src/services/read-model-store'
@@ -24,6 +24,7 @@ class SomeEvent {
   public entityID(): UUID {
     return this.id
   }
+
   public getPrefixedId(prefix: string): string {
     return `${prefix}-${this.id}`
   }
@@ -129,6 +130,9 @@ describe('BoosterEventProcessor', () => {
         const stubReadModelStore = createStubInstance(ReadModelStore)
 
         const boosterEventProcessor = BoosterEventProcessor as any
+        const fakeFilterDispatched = fake.returns([someEvent])
+
+        replace(boosterEventProcessor, 'filterDispatched', fakeFilterDispatched)
         replace(boosterEventProcessor, 'snapshotAndUpdateReadModels', fake())
         replace(boosterEventProcessor, 'dispatchEntityEventsToEventHandlers', fake())
 
@@ -232,7 +236,7 @@ describe('BoosterEventProcessor', () => {
         config.eventHandlers[SomeEvent.name] = []
       })
 
-      it('does nothing and does not throw if there are no event handlers', async () => {
+      it('does nothing and does not throw if there are no event handlers and no global handler', async () => {
         replace(RegisterHandler, 'handle', fake())
         const boosterEventProcessor = BoosterEventProcessor as any
         // We try first with null array of event handlers
@@ -244,10 +248,31 @@ describe('BoosterEventProcessor', () => {
         // It should not throw any errors
       })
 
+      it('calls global handler for the current event if defined', async () => {
+        const fakeGlobalHandler = fake()
+        config.eventHandlers[SomeEvent.name] = [{ handle: fakeGlobalHandler }]
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventProcessor = BoosterEventProcessor as any
+        await boosterEventProcessor.dispatchEntityEventsToEventHandlers([someEvent], config)
+
+        const eventValue: any = someEvent.value
+        const anEventInstance = new SomeEvent(eventValue.id)
+        anEventInstance.entityID = eventValue.entityID
+
+        expect(fakeGlobalHandler).to.have.been.calledOnceWith(anEventInstance)
+      })
+
       it('calls all the handlers for the current event', async () => {
         const fakeHandler1 = fake()
         const fakeHandler2 = fake()
-        config.eventHandlers[SomeEvent.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+        const fakeGlobalHandler = fake()
+        config.eventHandlers[SomeEvent.name] = [
+          { handle: fakeHandler1 },
+          { handle: fakeHandler2 },
+          { handle: fakeGlobalHandler },
+        ]
 
         replace(RegisterHandler, 'handle', fake())
 
@@ -260,12 +285,18 @@ describe('BoosterEventProcessor', () => {
 
         expect(fakeHandler1).to.have.been.calledOnceWith(anEventInstance)
         expect(fakeHandler2).to.have.been.calledOnceWith(anEventInstance)
+        expect(fakeGlobalHandler).to.have.been.calledOnceWith(anEventInstance)
       })
 
       it('calls all the handlers, even if the event is stored in the notifications field instead of the events one', async () => {
         const fakeHandler1 = fake()
         const fakeHandler2 = fake()
-        config.eventHandlers[SomeNotification.name] = [{ handle: fakeHandler1 }, { handle: fakeHandler2 }]
+        const fakeGlobalHandler = fake()
+        config.eventHandlers[SomeNotification.name] = [
+          { handle: fakeHandler1 },
+          { handle: fakeHandler2 },
+          { handle: fakeGlobalHandler },
+        ]
 
         replace(RegisterHandler, 'handle', fake())
 
@@ -276,6 +307,7 @@ describe('BoosterEventProcessor', () => {
 
         expect(fakeHandler1).to.have.been.calledOnceWith(aNotificationInstance)
         expect(fakeHandler2).to.have.been.calledOnceWith(aNotificationInstance)
+        expect(fakeGlobalHandler).to.have.been.calledOnceWith(aNotificationInstance)
       })
 
       it('calls the register handler for all the published events', async () => {
@@ -315,6 +347,30 @@ describe('BoosterEventProcessor', () => {
 
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister)
         expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
+      })
+    })
+
+    describe('the `filterDispatched` method', () => {
+      it("removes events if they've been already dispatched", async () => {
+        const boosterEventProcessor = BoosterEventProcessor as any
+        const eventStore = createStubInstance(EventStore)
+        const someEventEnvelope = { ...someEvent, id: 'event-id' }
+        eventStore.storeDispatchedEvent = fake.returns(false) as any
+
+        const eventsNotDispatched = await boosterEventProcessor.filterDispatched(
+          config,
+          [someEventEnvelope],
+          eventStore
+        )
+
+        expect(eventStore.storeDispatchedEvent).to.have.been.called
+        expect(eventStore.storeDispatchedEvent).to.have.been.calledOnceWith(someEventEnvelope)
+        expect(eventsNotDispatched).to.deep.equal([])
+        expect(config.logger?.warn).to.have.been.calledWith(
+          '[Booster]|BoosterEventDispatcher#filterDispatched: ',
+          'Event has already been dispatched. Skipping.',
+          match.any
+        )
       })
     })
 

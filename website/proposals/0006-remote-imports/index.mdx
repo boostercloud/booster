@@ -1,0 +1,52 @@
+---
+title: BEEP 6 - Remote Imports
+authors: [NickSeagull]
+date: 2024-01-26T00:00
+---
+
+:::tip STATUS - DRAFT
+:::
+
+## Introduction
+
+This document proposes a novel solution to address the challenges encountered by the team following the restructuring of Booster Framework codebase into [distinct agents](/blog/0005-agent-codebase) and separate repositories. The primary challenge involves enabling easy importation of types and classes from other agents without relying on traditional package managers. The proposed solution introduces a new endpoint, `/inspect`, in Booster services, coupled with an extension to the TypeScript compiler through a specialized plugin (transformer). This approach aims to streamline development, ensure access to up-to-date type definitions, and facilitate seamless agent interaction.
+
+## Context and Challenges
+
+After splitting the project codebase into individual agents and repositories, the team faces the challenge of efficiently importing types and classes across these divided entities. Traditional methods, such as package managers, are not optimal in this scenario due to their complexity and the additional maintenance they require. There is a need for a more agile and integrated solution that aligns with the dynamic nature of Booster Framework.
+
+## Proposed Solution
+
+### Introduction of `/inspect` Endpoint
+
+- **Functionality**: The `/inspect` endpoint in Booster services will provide direct access to `.d.ts` files of all project components, organized by agents. This will include types for commands, events, read-models, and other relevant components.
+- **Benefits**: This endpoint simplifies development by offering an organized and up-to-date source of type definitions, ensuring consistency across different agents.
+
+### Extension of TypeScript Compiler
+
+- **Plugin Development**: A custom plugin for the TypeScript compiler will be developed to recognize a special import syntax, such as `import FooEvent from 'booster://agent-name/events/FooEvent'`.
+- **Dynamic Importing**: This plugin will dynamically fetch the corresponding `.d.ts` file from the `/inspect` endpoint, streamlining the import process.
+- **Advantages**: This system allows seamless interaction between agents, enhancing the developer experience and negating the need for traditional package management complexities.
+
+## Addressing Potential Concerns
+
+### Security and Access Control for `/inspect`
+
+- **Implementation of Security Measures**: Appropriate security measures and access controls will be implemented to protect sensitive information within the `.d.ts` files accessible via the `/inspect` endpoint.
+- **Restricted Access**: Access to the endpoint may be restricted based on user roles or project settings, ensuring that only authorized personnel can retrieve type definitions.
+
+As the first version of this feature, these security concerns will be mitigated through making this feature opt-in. **It would be only available for environments where the flag has been enabled.** For example, it should be enabled in the local development, testing, and staging environments, but disabled in production.
+
+### Integration with Existing Workflow
+
+- **Seamless Integration**: The proposed solution is designed to integrate smoothly with the existing development workflow of the Booster Framework.
+- **Addressing Challenges and Dependencies**: Potential challenges, such as network latency or downtime, will be addressed through robust error handling and fallback mechanisms.
+
+### Naming Convention and Format
+
+- **Import Syntax Convention**: The `booster://agent-name` import syntax will follow a clear and consistent naming convention, aligning with the overall structure and nomenclature of the Booster Framework.
+- **Agent Naming Guidelines**: Specific guidelines and constraints for naming agents will be established to ensure clarity and avoid conflicts in the import process.
+
+## Conclusion
+
+The introduction of the `/inspect` endpoint and the extension of the TypeScript compiler with a custom plugin represent a significant step forward in addressing the challenges of remote imports in Booster Framework. This solution not only simplifies the development process but also enhances the modularity and flexibility of the framework, ensuring a smooth and efficient experience for developers working across different agents and repositories.

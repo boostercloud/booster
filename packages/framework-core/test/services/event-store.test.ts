@@ -801,7 +801,7 @@ describe('EventStore', () => {
             eventInstance.entityID = someEvent.entityID
             const entityInstance = new AnEntity(someEntity.id, someEntity.count)
 
-            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith(AnEvent.name)
+            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith(AnEvent.name, eventInstance)
             expect(fakeReducer).to.have.been.calledOnceWith(eventInstance, entityInstance)
 
             expect(newSnapshot).to.be.deep.equal({
@@ -837,7 +837,7 @@ describe('EventStore', () => {
             const eventInstance = new AnEvent(someEvent.id, someEvent.entityId, someEvent.delta)
             eventInstance.entityID = someEvent.entityID
 
-            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith(AnEvent.name)
+            expect(eventStore.reducerForEvent).to.have.been.calledOnceWith(AnEvent.name, eventInstance)
             expect(fakeReducer).to.have.been.calledOnceWith(eventInstance, null)
 
             expect(newSnapshot).to.be.deep.equal({
@@ -926,18 +926,13 @@ describe('EventStore', () => {
     describe('reducerForEvent', () => {
       context('for an event with a registered reducer', () => {
         it('returns the proper reducer method for the event', () => {
-          const reducer = eventStore.reducerForEvent(AnEvent.name)
+          const reducer = eventStore.reducerForEvent(AnEvent.name, {
+            class: AnEntity,
+            methodName: 'reducerThatCallsEntityMethod',
+          })
 
           expect(reducer).to.be.instanceOf(Function)
           expect(reducer).to.be.equal(eval('AnEntity')['reducerThatCallsEntityMethod'])
-        })
-      })
-
-      context('for events without registered reducers', () => {
-        it('fails miserably', () => {
-          expect(() => eventStore.reducerForEvent('InventedEvent')).to.throw(
-            /No reducer registered for event InventedEvent/
-          )
         })
       })
     })

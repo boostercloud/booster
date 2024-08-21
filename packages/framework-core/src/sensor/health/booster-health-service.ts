@@ -7,16 +7,20 @@ import {
   HealthIndicatorsResult,
   UserEnvelope,
 } from '@boostercloud/framework-types'
-import { childrenHealthProviders, isEnabled, metadataFromId, rootHealthProviders } from './health-utils'
+import { childHealthProviders, isEnabled, metadataFromId, rootHealthProviders } from './health-utils'
 import { createInstance } from '@boostercloud/framework-common-helpers'
 import { defaultBoosterHealthIndicators } from './health-indicators'
 import { BoosterTokenVerifier } from '../../booster-token-verifier'
 import { BoosterAuthorizer } from '../../booster-authorizer'
 
+/**
+ * This class is in charge of handling the health check requests
+ * and dispatching the health checks to the corresponding health indicators
+ */
 export class BoosterHealthService {
   constructor(readonly config: BoosterConfig) {}
 
-  public async boosterHealth(request: any): Promise<unknown> {
+  public async boosterHealth(request: unknown): Promise<unknown> {
     try {
       const healthEnvelope: HealthEnvelope = this.config.provider.sensor.rawRequestToHealthEnvelope(request)
       await this.validate(healthEnvelope)
@@ -47,14 +51,14 @@ export class BoosterHealthService {
       if (!indicatorResult) {
         continue
       }
-      const childrens = childrenHealthProviders(current, healthProviders)
+      const children = childHealthProviders(current, healthProviders)
       const newResult: HealthIndicatorsResult = {
         ...indicatorResult,
         name: current.healthIndicatorConfiguration.name,
         id: current.healthIndicatorConfiguration.id,
       }
-      if (childrens && childrens?.length > 0) {
-        newResult.components = await this.boosterHealthProviderResolver(childrens, healthProviders)
+      if (children && children?.length > 0) {
+        newResult.components = await this.boosterHealthProviderResolver(children, healthProviders)
       }
       result.push(newResult)
     }

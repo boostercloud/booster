@@ -5,11 +5,11 @@ import { BoosterReadModelsReader } from '../../../src/booster-read-models-reader
 import { GraphQLGenerator } from '../../../src/services/graphql/graphql-generator'
 import {
   BoosterConfig,
-  ReadModelInterface,
-  Level,
   EventParametersFilterByEntity,
   EventSearchRequest,
   EventSearchResponse,
+  Level,
+  ReadModelInterface,
   ReadModelRequestArgs,
   ReadModelRequestProperties,
 } from '@boostercloud/framework-types'
@@ -17,7 +17,7 @@ import { expect } from '../../expect'
 import { GraphQLQueryGenerator } from '../../../src/services/graphql/graphql-query-generator'
 import { GraphQLMutationGenerator } from '../../../src/services/graphql/graphql-mutation-generator'
 import { GraphQLSubscriptionGenerator } from '../../../src/services/graphql/graphql-subcriptions-generator'
-import { random, internet, lorem } from 'faker'
+import { internet, lorem, random } from 'faker'
 import { BoosterEventsReader } from '../../../src/booster-events-reader'
 
 import { GraphQLResolverContext } from '../../../src/services/graphql/common'
@@ -154,7 +154,9 @@ describe('GraphQL generator', () => {
           rawContext: {},
         },
       }
-      mockResolverInfo = {}
+      mockResolverInfo = {
+        fieldNodes: [],
+      }
     })
 
     describe('readModelResolverBuilder', () => {
@@ -185,9 +187,10 @@ describe('GraphQL generator', () => {
           afterCursor: undefined,
           paginatedVersion: false,
           version: 1,
+          select: undefined,
         }
 
-        await returnedFunction('', {}, mockResolverContext, {} as any)
+        await returnedFunction('', {}, mockResolverContext, { fieldNodes: [] } as any)
 
         expect(fakeSearch).to.have.been.calledOnceWithExactly(expectedFetchPayload)
       })
@@ -444,6 +447,7 @@ describe('GraphQL generator', () => {
           afterCursor: undefined,
           paginatedVersion: false,
           version: 1,
+          select: undefined,
         })
       })
 

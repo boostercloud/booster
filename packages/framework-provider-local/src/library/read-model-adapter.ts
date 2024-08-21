@@ -2,6 +2,7 @@ import {
   BoosterConfig,
   FilterFor,
   OptimisticConcurrencyUnexpectedVersionError,
+  ProjectionFor,
   ReadModelEnvelope,
   ReadModelInterface,
   ReadModelListResult,
@@ -82,7 +83,8 @@ export async function searchReadModel(
   sortBy?: SortFor<unknown>,
   limit?: number,
   afterCursor?: Record<string, string> | undefined,
-  paginatedVersion = false
+  paginatedVersion = false,
+  select?: ProjectionFor<unknown>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Promise<Array<any> | ReadModelListResult<any>> {
   const logger = getLogger(config, 'read-model-adapter#searchReadModel')
@@ -91,7 +93,7 @@ export async function searchReadModel(
   const query = { ...queryFor, typeName: readModelName }
   logger.debug('Got query ', query)
   const skipId = afterCursor?.id ? parseInt(afterCursor?.id) : 0
-  const result = await db.query(query, sortBy, skipId, limit)
+  const result = await db.query(query, sortBy, skipId, limit, select)
   logger.debug('Search result: ', result)
   const items = result?.map((envelope) => envelope.value) ?? []
   if (paginatedVersion) {

@@ -13,7 +13,7 @@ export function EventHandler<TEvent extends EventInterface | NotificationInterfa
   return (eventHandlerClass) => registerEventHandler(event.name, eventHandlerClass)
 }
 
-function registerEventHandler<TEventHandler extends EventHandlerInterface>(
+export function registerEventHandler<TEventHandler extends EventHandlerInterface>(
   eventName: string,
   eventHandlerClass: TEventHandler
 ): void {

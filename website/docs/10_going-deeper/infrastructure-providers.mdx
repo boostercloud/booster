@@ -4,10 +4,11 @@ import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
 
 The providers are different implementations of the Booster runtime to allow Booster applications run on different cloud providers or services. They all implement the same interface, and the main idea behind the providers is that no matter what the developer chooses as backend, they won't need to know anything about the underlying infrastructure.
 
-Currently, the Booster framework provides two fully working provider packages:
+Currently, the Booster framework provides three provider packages:
 
-- **framework-provider-aws-\***
 - **framework-provider-azure-\***
+- **framework-provider-aws-\*** (deprecated - See [PR #1477](https://github.com/boostercloud/booster/pull/1477))
+- **framework-provider-local-\*** (for local testing)
 
 Booster uses sensible defaults, convention over configuration, and code inference to reduce dramatically the amount of configuration needed. However, there are some aspects that can't be inferred (like the application name) or the provider library used for each [environment](environment-configuration).
 
@@ -192,12 +193,16 @@ After the service principal is created, create a bash script with the following 
 
 SP_DISPLAY_NAME="<service-principal-name>" #replace <service-principal-name> with the name of your own SP
 REGION="East US" #replace with a region of your choice, see full list here: https://azure.microsoft.com/en-us/global-infrastructure/locations/
+AZURE_MAX_CONTAINER_THROUGHPUT=1000 #replace with a desired value for CosmosDB container throughput
+AZURE_MAX_DATABASE_THROUGHPUT=1000 #replace with a desired value for CosmosDB database throughput
 
 export AZURE_APP_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appId')
 export AZURE_TENANT_ID=$(az ad sp list --display-name ${SP_DISPLAY_NAME} | jq -r '.[].appOwnerOrganizationId')
 export AZURE_SECRET=$(az ad sp credential reset --id ${AZURE_APP_ID} | jq -r '.password')
 export AZURE_SUBSCRIPTION_ID=$(az account show | jq -r '.id')
 export REGION=$REGION
+export AZURE_MAX_CONTAINER_THROUGHPUT=$AZURE_MAX_CONTAINER_THROUGHPUT
+export AZURE_MAX_DATABASE_THROUGHPUT=$AZURE_MAX_DATABASE_THROUGHPUT
 ```
 
 :::note

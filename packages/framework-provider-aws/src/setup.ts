@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BoosterConfig,
+  EntitySnapshotEnvelopeFromDatabase,
+  EventEnvelopeFromDatabase,
   HasInfrastructure,
   HealthEnvelope,
   ProviderLibrary,
   RocketDescriptor,
-  EventEnvelopeFromDatabase,
-  EntitySnapshotEnvelopeFromDatabase,
 } from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
@@ -20,6 +20,7 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeDispatchedEvent,
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
@@ -77,6 +78,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
       storeSnapshot: storeSnapshot.bind(null, dynamoDB),
+      storeDispatched: storeDispatchedEvent,
       findDeletableEvent: (async (): Promise<Array<EventEnvelopeFromDatabase>> => {
         throw new Error('Not implemented yet')
       }).bind(null, dynamoDB),
@@ -136,6 +138,8 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       rawRequestToHealthEnvelope: (rawRequest: unknown): HealthEnvelope => {
         throw new Error('Not implemented')
       },
+      areRocketFunctionsUp: async (config: BoosterConfig): Promise<{ [key: string]: boolean }> =>
+        notImplementedResult(),
     },
     // ProviderInfrastructureGetter
     infrastructure: () => {

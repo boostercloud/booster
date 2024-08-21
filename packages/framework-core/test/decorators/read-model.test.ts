@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { expect } from '../expect'
 import { describe } from 'mocha'
-import { ReadModel, Booster, Entity, Projects, sequencedBy, Role } from '../../src'
+import { ReadModel, Booster, Entity, Projects, sequencedBy, Role, CalculatedField } from '../../src'
 import { UUID, ProjectionResult, UserEnvelope } from '@boostercloud/framework-types'
 import { BoosterAuthorizer } from '../../src/booster-authorizer'
 import { fake, restore } from 'sinon'
@@ -40,6 +40,7 @@ describe('the `ReadModel` decorator', () => {
               typeGroup: 'Class',
               typeName: 'UUID',
             },
+            dependencies: [],
           },
           {
             name: 'title',
@@ -52,6 +53,7 @@ describe('the `ReadModel` decorator', () => {
               typeGroup: 'String',
               typeName: 'String',
             },
+            dependencies: [],
           },
         ],
       })
@@ -108,6 +110,7 @@ describe('the `ReadModel` decorator', () => {
               typeGroup: 'Class',
               typeName: 'UUID',
             },
+            dependencies: [],
           },
           {
             name: 'aStringProp',
@@ -120,6 +123,7 @@ describe('the `ReadModel` decorator', () => {
               typeGroup: 'String',
               typeName: 'String',
             },
+            dependencies: [],
           },
           {
             name: 'aNumberProp',
@@ -132,6 +136,7 @@ describe('the `ReadModel` decorator', () => {
               typeGroup: 'Number',
               typeName: 'Number',
             },
+            dependencies: [],
           },
           {
             name: 'aReadonlyArray',
@@ -154,6 +159,7 @@ describe('the `ReadModel` decorator', () => {
               typeGroup: 'ReadonlyArray',
               typeName: 'ReadonlyArray',
             },
+            dependencies: [],
           },
         ],
       })
@@ -292,6 +298,92 @@ describe('the `Projects` decorator', () => {
       expect(Booster.config.readModelSequenceKeys).not.to.be.null
       expect(Booster.config.readModelSequenceKeys[SequencedReadModel.name]).to.be.a('String')
       expect(Booster.config.readModelSequenceKeys[SequencedReadModel.name]).to.be.equal('timestamp')
+    })
+  })
+})
+
+describe('the `CalculatedField` decorator', () => {
+  afterEach(() => {
+    restore()
+    Booster.configure('test', (config) => {
+      for (const propName in config.readModels) {
+        delete config.readModels[propName]
+      }
+    })
+  })
+
+  it('adds calculated field metadata to the read model class', () => {
+    @ReadModel({
+      authorize: 'all',
+    })
+    class PersonReadModel {
+      public constructor(readonly id: UUID, readonly firstName: string, readonly lastName: string) {}
+
+      @CalculatedField({ dependsOn: ['firstName', 'lastName'] })
+      public get fullName(): string {
+        return `${this.firstName} ${this.lastName}`
+      }
+    }
+
+    expect(Booster.config.readModels['PersonReadModel']).to.be.deep.equal({
+      class: PersonReadModel,
+      authorizer: BoosterAuthorizer.allowAccess,
+      before: [],
+      properties: [
+        {
+          name: 'id',
+          typeInfo: {
+            importPath: '@boostercloud/framework-types',
+            isNullable: false,
+            isGetAccessor: false,
+            name: 'UUID',
+            parameters: [],
+            type: UUID,
+            typeGroup: 'Class',
+            typeName: 'UUID',
+          },
+          dependencies: [],
+        },
+        {
+          name: 'firstName',
+          typeInfo: {
+            isNullable: false,
+            isGetAccessor: false,
+            name: 'string',
+            parameters: [],
+            type: String,
+            typeGroup: 'String',
+            typeName: 'String',
+          },
+          dependencies: [],
+        },
+        {
+          name: 'lastName',
+          typeInfo: {
+            isNullable: false,
+            isGetAccessor: false,
+            name: 'string',
+            parameters: [],
+            type: String,
+            typeGroup: 'String',
+            typeName: 'String',
+          },
+          dependencies: [],
+        },
+        {
+          name: 'fullName',
+          typeInfo: {
+            isNullable: false,
+            isGetAccessor: true,
+            name: 'string',
+            parameters: [],
+            type: String,
+            typeGroup: 'String',
+            typeName: 'String',
+          },
+          dependencies: ['firstName', 'lastName'],
+        },
+      ],
     })
   })
 })

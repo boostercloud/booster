@@ -8,7 +8,7 @@ import {
   UUID,
 } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor, SortFor } from './searcher'
+import { FilterFor, ProjectionFor, SortFor } from './searcher'
 import { Class } from './typelevel'
 
 /**
@@ -56,6 +56,7 @@ export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
 }
 
 export interface EventEnvelope extends NonPersistedEventEnvelope {
+  id?: string
   createdAt: string
   deletedAt?: string
 }
@@ -71,6 +72,7 @@ export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelo
   /** Time when this snapshot was actually persisted in the database. */
   persistedAt: string
 }
+
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
 }
@@ -140,6 +142,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
+  select?: ProjectionFor<TReadModel>
 }
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
@@ -151,6 +154,7 @@ export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
 
 export interface ReadModelByIdRequestArgs {
   id: string
+
   [sequenceKey: string]: string | undefined
 }
 
@@ -166,6 +170,7 @@ export interface GraphQLRequestEnvelope extends Envelope {
   value?: GraphQLOperation | GraphQLClientMessage
   token?: string
 }
+
 export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventType' | 'connectionID' | 'requestID'> & {
   error: Error
 }

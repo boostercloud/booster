@@ -1,0 +1,179 @@
+---
+title: BEEP 7 - Progressive component Integration Enhancement
+authors: [NickSeagull]
+date: 2024-01-31T00:00
+---
+
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
+:::tip STATUS - DRAFT
+:::
+
+## Introduction
+
+This document proposes an enhancement to Booster Framework, introducing a new component integration mechanism. This enhancement aims not to overhaul the existing architecture but to provide an incremental upgrade, allowing the Framework to retain its current functionality while adding new, more efficient capabilities. This proposal details the transition to a system where components, written with clear interfaces using [Effect](https://www.effect.website/), can be directly injected into the Booster project, offering improved efficiency and customization.
+
+
+:::warning
+
+This component system is **not meant to be used by all Booster users**, but rather by it's **power users** who want to extend their apps in ways that are not possible with the current system, as well as **Booster contributors** who want to add new features to the framework.
+
+:::
+
+## Current Mechanism and Its Limitations
+
+The Booster Framework currently relies on users specifying packages to be loaded (like Azure provider or filesystem components) in a JSON configuration, which are then **dynamically imported** by the framework. While functional, this approach has limitations in efficiency and customization.
+
+## Enhancement Overview
+
+### Interface Definition and Inversion of Control
+
+- **Interface Definition**: We propose to define explicit interfaces for CLI commands, runtime operations, and post-compile activities.
+- **Inversion of Control**: Shift from dynamic imports to a system where users inject components directly into their Booster projects.
+- **[Effect](https://www.effect.website/) Integration**: Utilize [Effect](https://www.effect.website/) for writing components, ensuring robustness and type safety.
+  - This part is crucial, because it enhances the component system with:
+    - **Dependency injection**: Components can be automatically injected into other components, allowing for a more modular design.
+    - **Implicit structured logging and monitoring**: Components can log and monitor their own operations, and the framework can log and monitor the operations of the components.
+    - **Better concurrency management**: Components can be run concurrently, and the framework can manage the concurrency of the components.
+
+### Maintaining Existing Functionality
+
+- **Gradual Transition**: The new system is designed to coexist with the current architecture, allowing users to transition at their own pace.
+- **Backward Compatibility**: Ensures existing Booster applications continue to function without mandatory modifications.
+
+## Benefits
+
+- **Efficiency**: Reduces the overhead associated with dynamic imports.
+- **Customization**: Offers users greater control over their applications.
+- **Type Safety**: Enhances the robustness of applications through type-safe component development.
+
+## Design and Implementation
+
+:::warning
+
+This is a draft of the design and implementation of the new component system. It is not final and is subject to change.
+It hasn't been tested against a compiler, tried in any way, let alone implemented. It is an "off the top of my head" design.
+
+:::
+
+The key idea of the component system is to allow defining transient run-times, which allow specifying the behavior of a component during a specific run-time. We're writing run-time and not runtime, because a component can run during different moments that is not the runtime of an application.
+
+You can think on this as the `npm` scripts that define the behavior of a package during different moments of the life of a package, like `preinstall`, `postinstall`, `prepublish`, etc. but for components.
+
+The initial defined run-times are:
+
+- **CLI**: The component is executed during the execution of a CLI command.
+- **Runtime**: The component is executed during the execution of the application.
+- **Verification**: The component is executed after the compilation of the application. It is called verification, because at this point it allows us to perform additional validation and verification of the application.
+
+Of course, this list is not set in stone, and we can add more run-times in the future.
+
+Because the component system is composable, it allows us to define components that are composed of other components. Here is when the run-times
+become crucial. If a component uses another one, when a run-time of the parent component is triggered, the same run-time of the child component
+gets triggered too. This is a bit of a tongue-twister, so let's take a look at a more concrete example.
+
+### Example: Event File Generation Component
+
+Imagine we're defining a component called `EventGenerator` that allows us to generate files for events. Yes, this is an already existing feature of the framework, but
+it will serve us an example.
+
+Let's assume that there's an already existing component called `FileGenerator` that allows writing an arbitrary string to a file that will be placed inside of the project `src` folder. This component would be defined like this (pseudocode):
+
+```ts
+// This interface allows the users to provide different implementations for the components
+interface FileGenerator {
+  generate(
+    folder: string,
+    filename: string,
+    content: string
+  ): Effect<...>
+}
+
+// Concrete implementation for FileGenerator, could do whatever
+// as long as it fulfills the contract of `FileGenerator`.
+// Could be a mock one, a remote one, etc...
+const FileGenerator = defineComponent<FileGenerator>({
+  // The actual method
+  generate(folder, fileName, content) {
+    // Here we specify that the block inside should only be executed during CLI-time
+    during(RunTimes.CLI, () => {
+      // ... actual code to generate the file
+    })
+  }
+})
+```
+
+Now, if we were to define the `EventGenerator` component, if we used `FileGenerator`. We wouldn't need to specify the CLI time, because that's
+already done at the `FileGenerator` component:
+
+```ts
+interface EventGenerator {
+  generate(
+    name: string,
+    fields: Array<[string, string]>
+  ): Effect<...>
+}
+
+const EventGenerator = defineComponent<EventGenerator>({
+  // Effect.gen allows us to define custom async/await syntax that is extensible
+  // instead of an async function we use a JS generator function,
+  // and instead of await, we use the `_` helper and the `yield*` JS keyword.
+  generate: (name, fields) => Effect.gen(function*(_){
+    const content = ...// generate the content of the file
+
+    // We ask the dependency injection mechanism for the FileGenerator component
+    const fileGen = yield* _(FileGenerator)
+
+    // We run the generate method in the file generator component
+    yield* _(fileGen.generate("events", `${name}.ts`, content))
+  })
+})
+```
+
+:::info
+
+The generator function might impress at first, but it is **regular JS syntax**, and it is a **1:1 mapping to async/await**. Even though it introduces
+a bit of friction, we believe that **the advantages outweight the friction by far**. You can check the
+[**async/await comparison example on the Effect site**](https://www.effect.website/docs/essentials/using-generators#comparing-effectgen-with-asyncawait).
+
+:::
+
+In the example above, we just used the `FileGenerator` component, and because that one already defined the CLI-time behavior, we didn't need to do
+it ourselves.
+
+This is an extremely powerful idea, because with a little subset of primitive components, we allow extending and customizing Booster apps in
+inimaginable ways. Power users could define their own database component that allows them to configure, deploy and use a database in their app
+**with a single function call.**
+
+### How to execute the different run-times?
+
+These components would get injected into the `Booster.config` block for now, as it gets loaded when
+the application starts.
+
+If a Booster application is configured with some components, it's main executable will get extended with an additional CLI flag `--exec` that
+allows specifying the run-time to execute.
+
+To maintain backwards compatibility, **if `--exec` is not specified, it will run the run-time by default**, as it is what happens when one runs a
+Booster app nowadays.
+
+This way of working allows taking responsibility out of the Booster CLI tool and allow users to create a regular `boost` (or any more descriptive name)
+script in their `package.json` file, allowing to execute the CLI components right with `pnpm` (or their preferred Node package manager):
+
+<TerminalWindow>
+
+```bash
+$ pnpm boost event:generate --name AccountCreated --fields 'amount:number'
+```
+
+</TerminalWindow>
+
+## Considerations
+
+- **Compatibility Measures**: Ensure the new component system aligns with the existing Booster Framework.
+- **Learning Curve**: Address the potential learning curve associated with [Effect](https://www.effect.website/) through detailed documentation and community support.
+- **Error Handling**: Leverage TypeScript's compiler for improved error handling and runtime safety.
+
+## Conclusion
+
+This proposal lays the groundwork for a progressive enhancement in Booster Framework's component integration mechanism. This proposal balances the need for advanced functionality and efficiency with the necessity of maintaining existing systems, while giving power users a great extensibility tool, and
+most importantly, increasing the robustness of the framework overall.

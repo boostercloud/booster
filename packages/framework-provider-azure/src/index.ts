@@ -6,7 +6,7 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
-  storeEvents,
+  storeDispatchedEvent,
   storeSnapshot,
 } from './library/events-adapter'
 import { CosmosClient } from '@azure/cosmos'
@@ -38,15 +38,17 @@ import { EventHubProducerClient, RetryMode } from '@azure/event-hubs'
 import { dedupEventStream, rawEventsStreamToEnvelopes } from './library/events-stream-consumer-adapter'
 import {
   areDatabaseReadModelsUp,
-  databaseUrl,
+  areRocketFunctionsUp,
   databaseEventsHealthDetails,
+  databaseReadModelsHealthDetails,
+  databaseUrl,
   graphqlFunctionUrl,
   isDatabaseEventUp,
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
-  databaseReadModelsHealthDetails,
 } from './library/health-adapter'
 import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
+import { storeEvents } from './library/events-store-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -105,6 +107,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     latestEntitySnapshot: readEntityLatestSnapshot.bind(null, cosmosClient),
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
+    storeDispatched: storeDispatchedEvent.bind(null, cosmosClient),
     findDeletableEvent: findDeletableEvent.bind(null, cosmosClient),
     findDeletableSnapshot: findDeletableSnapshot.bind(null, cosmosClient),
     deleteEvent: deleteEvent.bind(null, cosmosClient),
@@ -154,6 +157,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     graphQLFunctionUrl: graphqlFunctionUrl,
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
+    areRocketFunctionsUp: areRocketFunctionsUp,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

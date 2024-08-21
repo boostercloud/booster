@@ -1,20 +1,24 @@
 import {
-  apiManagement,
   apiManagementApi,
-  apiManagementApiOperation,
-  apiManagementApiOperationPolicy,
+  applicationGateway,
   cosmosdbAccount,
   cosmosdbSqlContainer,
   cosmosdbSqlDatabase,
   dataAzurermFunctionAppHostKeys,
+  dataAzurermPublicIp,
   eventhub,
   eventhubNamespace,
+  networkSecurityGroup,
+  publicIp,
   resourceGroup,
   servicePlan,
   storageAccount,
+  virtualNetwork,
   webPubsub,
+  subnet,
+  subnetNetworkSecurityGroupAssociation,
   webPubsubHub,
-  windowsFunctionApp
+  windowsFunctionApp,
 } from '@cdktf/provider-azurerm'
 import { TerraformResource, TerraformStack } from 'cdktf'
 import { FunctionDefinition } from './functionDefinition'
@@ -27,7 +31,7 @@ export interface StackNames {
   resourceGroupName: string
   functionAppName: string
   streamFunctionAppName: string
-  apiManagementName: string
+  domainNameLabel: string
   eventHubName: string
   webPubSubHubName: string
 }
@@ -41,12 +45,14 @@ export interface ApplicationSynthStack extends StackNames {
   eventConsumerStorageAccount?: storageAccount.StorageAccount
   eventConsumerFunctionApp?: windowsFunctionApp.WindowsFunctionApp
   dataFunctionAppHostKeys?: dataAzurermFunctionAppHostKeys.DataAzurermFunctionAppHostKeys
-  apiManagement?: apiManagement.ApiManagement
+  appGateway?: applicationGateway.ApplicationGateway
+  networkSecurityGroup?: networkSecurityGroup.NetworkSecurityGroup
+  subnet?: subnet.Subnet
+  subnetNetworkSecurityGroupAssociation?: subnetNetworkSecurityGroupAssociation.SubnetNetworkSecurityGroupAssociation
+  virtualNetwork?: virtualNetwork.VirtualNetwork
+  publicIP?: publicIp.PublicIp
+  publicIPData?: dataAzurermPublicIp.DataAzurermPublicIp
   apiManagementApi?: apiManagementApi.ApiManagementApi
-  graphQLApiManagementApiOperation?: apiManagementApiOperation.ApiManagementApiOperation
-  graphQLApiManagementApiOperationPolicy?: apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy
-  sensorHealthApiManagementApiOperation?: apiManagementApiOperation.ApiManagementApiOperation
-  sensorHealthApiManagementApiOperationPolicy?: apiManagementApiOperationPolicy.ApiManagementApiOperationPolicy
   cosmosdbDatabase?: cosmosdbAccount.CosmosdbAccount
   cosmosdbSqlDatabase?: cosmosdbSqlDatabase.CosmosdbSqlDatabase
   containers?: Array<cosmosdbSqlContainer.CosmosdbSqlContainer>

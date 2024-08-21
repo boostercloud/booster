@@ -3,25 +3,25 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EntitySnapshotEnvelope,
-  NonPersistedEntitySnapshotEnvelope,
+  EntitySnapshotEnvelopeFromDatabase,
+  EventDeleteParameters,
   EventEnvelope,
-  NonPersistedEventEnvelope,
+  EventEnvelopeFromDatabase,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
   GraphQLRequestEnvelopeError,
+  HealthEnvelope,
+  NonPersistedEntitySnapshotEnvelope,
+  NonPersistedEventEnvelope,
   PaginatedEntitiesIdsResult,
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
-  SubscriptionEnvelope,
-  HealthEnvelope,
   SnapshotDeleteParameters,
-  EventDeleteParameters,
-  EventEnvelopeFromDatabase,
-  EntitySnapshotEnvelopeFromDatabase,
+  SubscriptionEnvelope,
 } from './envelope'
-import { FilterFor, SortFor } from './searcher'
+import { FilterFor, ProjectionFor, SortFor } from './searcher'
 import { ReadOnlyNonEmptyArray } from './typelevel'
 import { RocketDescriptor, RocketEnvelope } from './rockets'
 import { EventStream } from './stream-types'
@@ -51,6 +51,7 @@ export interface ProviderSensorLibrary {
   isGraphQLFunctionUp(config: BoosterConfig): Promise<boolean>
   graphQLFunctionUrl(config: BoosterConfig): Promise<string>
   rawRequestToHealthEnvelope(rawRequest: unknown): HealthEnvelope
+  areRocketFunctionsUp(config: BoosterConfig): Promise<{ [key: string]: boolean }>
 }
 
 export interface ProviderEventsLibrary {
@@ -150,6 +151,16 @@ export interface ProviderEventsLibrary {
   ): Promise<EntitySnapshotEnvelope>
 
   /**
+   * Stores an event envelope that has been dispatched in the dispatched events table.
+   *
+   * @param eventEnvelope - The `EventEnvelope` to store.
+   * @param config - The Booster configuration object.
+   * @returns `true` if the dispatched event was stored, `false` if the event already exists in the dispatched events
+   * table, throws an error on any other type of error.
+   */
+  storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
+
+  /**
    * Find all events to be removed based on the parameters
    *
    * @param config
@@ -225,6 +236,7 @@ export interface ProviderReadModelsLibrary {
    * @param limit - The maximum number of results to return (optional).
    * @param afterCursor - A cursor that specifies the position after which results should be returned (optional).
    * @param paginatedVersion - A boolean value that indicates whether the results should be paginated (optional).
+   * @param select - An object that specifies fields to be returned (optional).
    * @returns A promise that resolves to an array of `TReadModel` objects or a `ReadModelListResult` object.
    */
   search<TReadModel extends ReadModelInterface>(
@@ -234,7 +246,8 @@ export interface ProviderReadModelsLibrary {
     sortBy?: SortFor<unknown>,
     limit?: number,
     afterCursor?: unknown,
-    paginatedVersion?: boolean
+    paginatedVersion?: boolean,
+    select?: ProjectionFor<TReadModel>
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>>
 
   /**
