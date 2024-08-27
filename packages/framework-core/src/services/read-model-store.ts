@@ -8,6 +8,8 @@ import {
   FilterFor,
   OptimisticConcurrencyUnexpectedVersionError,
   ProjectionGlobalError,
+  ProjectionInfo,
+  ProjectionInfoReason,
   ProjectionMetadata,
   ProjectionResult,
   ReadModelAction,
@@ -51,6 +53,7 @@ export class ReadModelStore {
           entityMetadata,
           entitySnapshotEnvelope,
           readModelName,
+          deleteEvent,
           sequenceKey
         )
       }
@@ -187,17 +190,6 @@ export class ReadModelStore {
     return sources.some(contains)
   }
 
-  private joinKeyForProjection(
-    entity: EntityInterface,
-    projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
-  ): Array<UUID> | undefined {
-    const joinKey = (entity as any)[projectionMetadata.joinKey]
-    if (!joinKey) {
-      return undefined
-    }
-    return Array.isArray(joinKey) ? joinKey : [joinKey]
-  }
-
   private sequenceKeyForProjection(
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
@@ -216,6 +208,7 @@ export class ReadModelStore {
     entityMetadata: EntityMetadata,
     entitySnapshotEnvelope: EntitySnapshotEnvelope,
     readModelName: string,
+    deleteEvent: boolean,
     sequenceKey?: SequenceKey
   ): Promise<Array<PromiseSettledResult<unknown>> | undefined> {
     const currentReadModels: Array<ReadModelInterface> = await this.getReadModels(
@@ -233,6 +226,7 @@ export class ReadModelStore {
           projectionMetadata,
           entityInstance,
           entityMetadata,
+          deleteEvent,
           currentReadModel
         )
         existingReadModelsProjections.push(...newProjections)
@@ -245,7 +239,8 @@ export class ReadModelStore {
       sequenceKey,
       projectionMetadata,
       entityInstance,
-      entityMetadata
+      entityMetadata,
+      deleteEvent
     )
     return Promises.allSettledAndFulfilled(newProjections)
   }
@@ -257,6 +252,7 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityInstance: EntityInterface,
     entityMetadata: EntityMetadata,
+    deleteEvent: boolean,
     currentReadModel?: ReadModelInterface
   ): Promise<Array<Promise<unknown>>> {
     const projections: Array<Promise<unknown>> = []
@@ -280,6 +276,7 @@ export class ReadModelStore {
             sequenceKey,
             entityInstance,
             projectionMetadata,
+            deleteEvent,
             readModelId,
             readModel
           )
@@ -294,6 +291,7 @@ export class ReadModelStore {
           sequenceKey,
           entityInstance,
           projectionMetadata,
+          deleteEvent,
           currentReadModel?.id,
           currentReadModel
         )
@@ -308,6 +306,7 @@ export class ReadModelStore {
     sequenceKey: SequenceKey | undefined,
     entityInstance: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
+    deleteEvent: boolean,
     readModelId?: UUID,
     currentReadModel?: ReadModelInterface
   ): Promise<unknown> {
@@ -325,7 +324,7 @@ export class ReadModelStore {
           entitySnapshotEnvelope,
           entityInstance,
           projectionMetadata,
-          false,
+          deleteEvent,
           currentReadModel,
           entitySnapshotEnvelope,
           readModelId,
@@ -387,16 +386,17 @@ export class ReadModelStore {
     const currentDatabaseVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
 
     let newReadModel: any
-    // const projectionInfo: ProjectionInfo = {
-    //   reason: deleteEvent ? ProjectionInfoReason.ENTITY_DELETED : ProjectionInfoReason.ENTITY_PROJECTED,
-    // }
+    const projectionInfo: ProjectionInfo = {
+      reason: deleteEvent ? ProjectionInfoReason.ENTITY_DELETED : ProjectionInfoReason.ENTITY_PROJECTED,
+    }
     try {
       newReadModel = await this.callProjectionFunction(
         entitySnapshotEnvelope,
         projectionMetadata,
         entity,
         migratedReadModel,
-        readModelID
+        readModelID,
+        projectionInfo
       )
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
@@ -470,15 +470,16 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entity: EntityInterface,
     migratedReadModel: ReadModelInterface | undefined,
-    readModelID: UUID | undefined
+    readModelID: UUID | undefined,
+    projectionInfo: ProjectionInfo
   ): Promise<ProjectionResult<TReadModel> | undefined> {
     try {
       const projectionMetadataJoinKey = projectionMetadata.joinKey
       const projectionFunction = this.getProjectionFunction(projectionMetadata)
       if (this.isJoinKeyByEntity(projectionMetadataJoinKey)) {
         return Array.isArray(entity[projectionMetadataJoinKey])
-          ? projectionFunction(entity, readModelID, migratedReadModel || null)
-          : projectionFunction(entity, migratedReadModel || null)
+          ? projectionFunction(entity, readModelID, migratedReadModel || null, projectionInfo)
+          : projectionFunction(entity, migratedReadModel || null, projectionInfo)
       }
       return projectionFunction(entity, readModelID, migratedReadModel || null)
     } catch (e) {

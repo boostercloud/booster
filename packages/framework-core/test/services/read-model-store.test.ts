@@ -843,11 +843,12 @@ describe('ReadModelStore', () => {
             anEntitySnapshot,
             anEntityInstance,
             projectionMetadata,
+            false,
             undefined,
             anEntitySnapshot,
             'joinColumnID',
-            false,
-            readModelClassName === 'AnotherReadModel' ? { name: 'count', value: 123 } : undefined
+            readModelClassName === 'AnotherReadModel' ? { name: 'count', value: 123 } : undefined,
+            1
           )
         }
       })

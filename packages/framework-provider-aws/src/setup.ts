@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   BoosterConfig,
-  EntitySnapshotEnvelopeFromDatabase,
-  EventEnvelopeFromDatabase,
   HasInfrastructure,
   HealthEnvelope,
   ProviderLibrary,
@@ -79,18 +77,10 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       store: storeEvents.bind(null, dynamoDB),
       storeSnapshot: storeSnapshot.bind(null, dynamoDB),
       storeDispatched: storeDispatchedEvent,
-      findDeletableEvent: (async (): Promise<Array<EventEnvelopeFromDatabase>> => {
-        throw new Error('Not implemented yet')
-      }).bind(null, dynamoDB),
-      findDeletableSnapshot: (async (): Promise<Array<EntitySnapshotEnvelopeFromDatabase>> => {
-        throw new Error('Not implemented yet')
-      }).bind(null, dynamoDB),
-      deleteEvent: (async (): Promise<void> => {
-        throw new Error('Not implemented yet')
-      }).bind(null, dynamoDB),
-      deleteSnapshot: (async (): Promise<void> => {
-        throw new Error('Not implemented yet')
-      }).bind(null, dynamoDB),
+      findDeletableEvent: notImplementedResult as any,
+      findDeletableSnapshot: notImplementedResult as any,
+      deleteEvent: notImplementedResult as any,
+      deleteSnapshot: notImplementedResult as any,
     },
     // ProviderReadModelsLibrary
     readModels: {
