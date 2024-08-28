@@ -60,7 +60,7 @@ function registerProjection(
   projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
 ): void {
   Booster.configureCurrentEnv((config): void => {
-    configure(config, originName, projectionMetadata, config.projections)
+    configure(config, originName, projectionMetadata)
   })
 }
 
@@ -69,21 +69,20 @@ function registerUnProjection(
   projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
 ): void {
   Booster.configureCurrentEnv((config): void => {
-    configure(config, originName, projectionMetadata, config.unProjections)
+    configure(config, originName, projectionMetadata)
   })
 }
 
 function configure(
   config: BoosterConfig,
   originName: string,
-  projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
-  configuration: Record<string, Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>>
+  projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
 ): void {
-  const entityProjections = configuration[originName] || []
+  const entityProjections = config.projections[originName] || []
   if (entityProjections.indexOf(projectionMetadata) < 0) {
     // Skip duplicate registrations
     entityProjections.push(projectionMetadata)
-    configuration[originName] = entityProjections
+    config.projections[originName] = entityProjections
   }
 }
 
