@@ -1,6 +1,5 @@
 import { Booster } from '../booster'
 import {
-  BoosterConfig,
   Class,
   EntityInterface,
   ProjectionInfo,
@@ -60,7 +59,7 @@ function registerProjection(
   projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
 ): void {
   Booster.configureCurrentEnv((config): void => {
-    configure(config, originName, projectionMetadata, config.projections)
+    configure(originName, projectionMetadata, config.projections)
   })
 }
 
@@ -69,12 +68,11 @@ function registerUnProjection(
   projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
 ): void {
   Booster.configureCurrentEnv((config): void => {
-    configure(config, originName, projectionMetadata, config.unProjections)
+    configure(originName, projectionMetadata, config.unProjections)
   })
 }
 
 function configure(
-  config: BoosterConfig,
   originName: string,
   projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
   configuration: Record<string, Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>>
