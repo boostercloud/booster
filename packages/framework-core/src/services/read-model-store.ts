@@ -28,7 +28,9 @@ export class ReadModelStore {
 
   public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope, deleteEvent = false): Promise<void> {
     const logger = getLogger(this.config, 'ReadModelStore#project')
-    const projections = this.getProjections(deleteEvent, entitySnapshotEnvelope)
+    const projections = deleteEvent
+      ? this.getUnProjections(entitySnapshotEnvelope)
+      : this.entityProjections(entitySnapshotEnvelope)
     if (!projections) {
       logger.debug(`No projections found for entity ${entitySnapshotEnvelope.entityTypeName}. Skipping...`)
       return
@@ -135,29 +137,25 @@ export class ReadModelStore {
     }
   }
 
-  private getProjections(
-    deletedProjection: boolean,
+  private getUnProjections(
     entitySnapshotEnvelope: EntitySnapshotEnvelope
   ): Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> {
-    if (deletedProjection) {
-      const unProjections: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> =
-        this.entityUnProjections(entitySnapshotEnvelope)
-      const projections: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> =
-        this.entityProjections(entitySnapshotEnvelope)
-      if (projections?.length > 0) {
-        if (!unProjections) {
-          throw new Error(`Missing UnProjections for entity ${entitySnapshotEnvelope.entityTypeName}`)
-        }
-        const missingProjection = this.findFirstMissingProjection(projections, unProjections)
-        if (missingProjection) {
-          throw new Error(
-            `Missing UnProjection for ReadModel ${missingProjection.class.name} with joinKey ${missingProjection.joinKey} for entity ${entitySnapshotEnvelope.entityTypeName}`
-          )
-        }
+    const unProjections: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> =
+      this.entityUnProjections(entitySnapshotEnvelope)
+    const projections: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> =
+      this.entityProjections(entitySnapshotEnvelope)
+    if (projections?.length > 0) {
+      if (!unProjections) {
+        throw new Error(`Missing UnProjections for entity ${entitySnapshotEnvelope.entityTypeName}`)
       }
-      return unProjections
+      const missingProjection = this.findFirstMissingProjection(projections, unProjections)
+      if (missingProjection) {
+        throw new Error(
+          `Missing UnProjection for ReadModel ${missingProjection.class.name} with joinKey ${missingProjection.joinKey} for entity ${entitySnapshotEnvelope.entityTypeName}`
+        )
+      }
     }
-    return this.entityProjections(entitySnapshotEnvelope)
+    return unProjections
   }
 
   private entityProjections(
