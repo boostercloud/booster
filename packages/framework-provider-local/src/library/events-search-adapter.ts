@@ -46,7 +46,11 @@ export async function searchEntitiesIds(
       afterCursor
     )}, entityTypeName: ${entityTypeName}`
   )
-  const filterQuery = { ...DEFAULT_KIND_FILTER, entityTypeName: entityTypeName }
+  const filterQuery = {
+    ...DEFAULT_KIND_FILTER,
+    entityTypeName: entityTypeName,
+    deletedAt: { $exists: false },
+  }
 
   const result = (await eventRegistry.query(filterQuery, DEFAULT_CREATED_AT_SORT_ORDER, undefined, {
     entityID: 1,

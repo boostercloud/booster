@@ -1,4 +1,4 @@
-import { CosmosClient, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
+import { CosmosClient, ItemDefinition, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
 import {
   BoosterConfig,
   FilterFor,
@@ -9,6 +9,25 @@ import {
   SortFor,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+
+export async function replaceOrDeleteItem(
+  cosmosDb: CosmosClient,
+  container: string,
+  config: BoosterConfig,
+  id: string,
+  partitionKey: string,
+  newValue?: ItemDefinition
+): Promise<void> {
+  if (newValue) {
+    await cosmosDb
+      .database(config.resourceNames.applicationStack)
+      .container(container)
+      .item(id, partitionKey)
+      .replace(newValue)
+  } else {
+    await cosmosDb.database(config.resourceNames.applicationStack).container(container).item(id, partitionKey).delete()
+  }
+}
 
 export async function search<TResult>(
   cosmosDb: CosmosClient,

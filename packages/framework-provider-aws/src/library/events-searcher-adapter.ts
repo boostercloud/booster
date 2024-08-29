@@ -240,6 +240,7 @@ function convertToSearchResult(eventEnvelopes: Array<EventEnvelope>): Array<Even
         user: eventEnvelope.currentUser,
         createdAt: eventEnvelope.createdAt,
         value: eventEnvelope.value as EventInterface,
+        deletedAt: eventEnvelope.deletedAt,
       }
     })
     .sort((a, b) => {

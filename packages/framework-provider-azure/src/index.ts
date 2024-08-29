@@ -47,6 +47,7 @@ import {
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
 } from './library/health-adapter'
+import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 import { storeEvents } from './library/events-store-adapter'
 
 let cosmosClient: CosmosClient
@@ -107,6 +108,10 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
     storeDispatched: storeDispatchedEvent.bind(null, cosmosClient),
+    findDeletableEvent: findDeletableEvent.bind(null, cosmosClient),
+    findDeletableSnapshot: findDeletableSnapshot.bind(null, cosmosClient),
+    deleteEvent: deleteEvent.bind(null, cosmosClient),
+    deleteSnapshot: deleteSnapshot.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {

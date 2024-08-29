@@ -3,7 +3,10 @@ import { BoosterConfig } from './config'
 import {
   ConnectionDataEnvelope,
   EntitySnapshotEnvelope,
+  EntitySnapshotEnvelopeFromDatabase,
+  EventDeleteParameters,
   EventEnvelope,
+  EventEnvelopeFromDatabase,
   EventSearchParameters,
   EventSearchResponse,
   GraphQLRequestEnvelope,
@@ -15,6 +18,7 @@ import {
   ReadModelEnvelope,
   ReadModelListResult,
   ScheduledCommandEnvelope,
+  SnapshotDeleteParameters,
   SubscriptionEnvelope,
 } from './envelope'
 import { FilterFor, ProjectionFor, SortFor } from './searcher'
@@ -155,6 +159,44 @@ export interface ProviderEventsLibrary {
    * table, throws an error on any other type of error.
    */
   storeDispatched(eventEnvelope: EventEnvelope, config: BoosterConfig): Promise<boolean>
+
+  /**
+   * Find all events to be removed based on the parameters
+   *
+   * @param config
+   * @param parameters
+   */
+  findDeletableEvent(
+    config: BoosterConfig,
+    parameters: EventDeleteParameters
+  ): Promise<Array<EventEnvelopeFromDatabase>>
+
+  /**
+   * Find all snapshots to be removed based on the parameters
+   *
+   * @param config
+   * @param parameters
+   */
+  findDeletableSnapshot(
+    config: BoosterConfig,
+    parameters: SnapshotDeleteParameters
+  ): Promise<Array<EntitySnapshotEnvelopeFromDatabase>>
+
+  /**
+   * Delete events
+   *
+   * @param config
+   * @param events
+   */
+  deleteEvent(config: BoosterConfig, events: Array<EventEnvelopeFromDatabase>): Promise<void>
+
+  /**
+   * Delete snapshots
+   *
+   * @param config
+   * @param snapshots
+   */
+  deleteSnapshot(config: BoosterConfig, snapshots: Array<EntitySnapshotEnvelopeFromDatabase>): Promise<void>
 }
 
 export interface ProviderReadModelsLibrary {
