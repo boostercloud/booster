@@ -14,6 +14,7 @@ type PropertyType<TObj, TProp extends keyof TObj> = TObj[TProp]
 type JoinKeyType<TEntity extends EntityInterface, TReadModel extends ReadModelInterface> =
   | keyof TEntity
   | ReadModelJoinKeyFunction<TEntity, TReadModel>
+type UUIDLike = string | UUID
 
 /**
  * Decorator to register a read model method as a projection
@@ -105,7 +106,7 @@ type ProjectionMethod<
 > = TJoinKeyType extends ReadModelJoinKeyFunction<TEntity, TReadModel>
   ? ProjectionMethodWithEntityConditionalReadModelIdAndReadModel<TEntity, TReadModel>
   : TJoinKeyType extends keyof TEntity
-  ? PropertyType<TEntity, TJoinKeyType> extends Array<UUID>
+  ? NonNullable<PropertyType<TEntity, TJoinKeyType>> extends Array<UUIDLike>
     ? ProjectionMethodWithEntityReadModelIdAndReadModel<TEntity, TReadModel>
     : ProjectionMethodWithEntityAndReadModel<TEntity, TReadModel>
   : never
