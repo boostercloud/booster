@@ -105,7 +105,7 @@ type ProjectionMethod<
 > = TJoinKeyType extends ReadModelJoinKeyFunction<TEntity, TReadModel>
   ? ProjectionMethodWithEntityConditionalReadModelIdAndReadModel<TEntity, TReadModel>
   : TJoinKeyType extends keyof TEntity
-  ? PropertyType<TEntity, TJoinKeyType> extends Array<UUID>
+  ? NonNullable<PropertyType<TEntity, TJoinKeyType>> extends Array<any>
     ? ProjectionMethodWithEntityReadModelIdAndReadModel<TEntity, TReadModel>
     : ProjectionMethodWithEntityAndReadModel<TEntity, TReadModel>
   : never
