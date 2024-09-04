@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 29 Aug 2024 21:39:42 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Sep 2024 18:51:46 GMT and should not be manually modified.
+
+## 2.18.1
+Wed, 04 Sep 2024 18:51:46 GMT
+
+### Patches
+
+- Fix types for Projects decorator
 
 ## 2.18.0
 Thu, 29 Aug 2024 21:39:42 GMT

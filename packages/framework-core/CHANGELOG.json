@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.18.1",
+      "tag": "@boostercloud/framework-core_v2.18.1",
+      "date": "Wed, 04 Sep 2024 18:51:46 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix types for Projects decorator",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "adf2902a7c508aab6782e29fa8e24c4e5cb105a4"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.0` to `^2.18.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.0` to `^2.18.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.0` to `^2.18.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.0` to `^2.18.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.0",
       "tag": "@boostercloud/framework-core_v2.18.0",
       "date": "Thu, 29 Aug 2024 21:39:42 GMT",
