@@ -51,7 +51,7 @@
       "name": "pack-integration-deps",
       "summary": "Packs the dependencies of the integration tests",
       "safeForSimultaneousRushProcesses": true,
-      "shellCommand": "mkdir -p packages/framework-integration-tests/.booster && node common/scripts/install-run-rush.js publish --pack --include-all --release-folder packages/framework-integration-tests/.booster --publish"
+      "shellCommand": "mkdir -p packages/framework-integration-tests/.booster && node common/scripts/install-run-rush.js publish --pack --include-all --release-folder packages/framework-integration-tests/.booster --publish && ls -lF packages/framework-integration-tests/.booster"
     }
   ],
 
