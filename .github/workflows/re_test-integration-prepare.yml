@@ -56,7 +56,7 @@ jobs:
         with:
           # suffix the name with the git commit
           name: integration-test-dependencies-${{ inputs.command_sha }}
-          path: ./packages/framework-integration-tests/.booster
+          path: packages/framework-integration-tests/.booster
           retention-days: 1
 
       - name: Upload integration test dependencies
@@ -65,5 +65,5 @@ jobs:
         with:
           # suffix the name with the git commit
           name: integration-test-dependencies-${{ github.sha }}
-          path: ./packages/framework-integration-tests/.booster
+          path: packages/framework-integration-tests/.booster
           retention-days: 1
