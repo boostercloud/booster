@@ -119,7 +119,7 @@ export class CarPurchasesReadModel {
 }
 ```
 
-If a car's model changed its name and there are many purchases associated to that model, then it would be necessary to update all read model instances associated to that specific model so that name change is reflected. The better alternative is to instead project a `CarModel` entity:
+If a car model changed its name (or any other property of such an entity that's projected in `CarPurchasesReadModel` changed its value) and there are many purchases associated to that model, then it would be necessary to update all read model instances associated to that specific model so that name change is reflected. The better alternative is to instead project a `CarModel` entity:
 
 ```typescript
 @ReadModel
