@@ -55,7 +55,9 @@ Contributing to an open source project is never just a matter of code, you can h
 
 Before creating a bug report, please search for similar issues to make sure that they're not already reported. If you don't find any, go ahead and create an issue including as many details as possible. Fill out the required template, the information requested helps us to resolve issues faster.
 
-> **Note**: If you find a Closed issue that seems related to the issues that you're experiencing, make sure to reference it in the body of your new one by writing its number like this => #42 (Github will autolink it for you).
+:::note
+If you find a Closed issue that seems related to the issues that you're experiencing, make sure to reference it in the body of your new one by writing its number like this => #42 (Github will autolink it for you).
+:::
 
 Bugs are tracked as GitHub issues. Explain the problem and include additional details to help maintainers reproduce the problem:
 

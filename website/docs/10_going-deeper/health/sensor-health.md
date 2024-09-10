@@ -316,13 +316,17 @@ export class ApplicationHealthIndicator {
     * file: Read Models database file
     * count: number of total rows
 
-> **Note**: details will be included only if `details` is enabled
+:::note
+Details will be included only if `details` is enabled
+:::
 
 #### rockets
 
 * status: UP if and only if all rockets are UP, PARTIALLY_UP if not all rockets are UP
 
-> **Note**: sensors for rockets is only available for the Azure provider
+:::note
+Sensors for rockets is only available for the Azure provider
+:::
 
 ### Health status
 
