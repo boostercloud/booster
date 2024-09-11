@@ -157,7 +157,7 @@ export class TerraformApplicationGateway {
         ...gatewayConfiguration,
         wafConfiguration: {
           enabled: true,
-          firewallMode: 'Detection',
+          firewallMode: 'Prevention',
           ruleSetVersion: '3.0',
         },
       })
