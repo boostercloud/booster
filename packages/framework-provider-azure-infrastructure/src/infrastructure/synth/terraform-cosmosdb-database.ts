@@ -17,9 +17,9 @@ export class TerraformCosmosdbDatabase {
       resourceGroupName: resourceGroupName,
       offerType: 'Standard',
       kind: 'GlobalDocumentDB',
-      enableMultipleWriteLocations: false,
+      multipleWriteLocationsEnabled: false,
       isVirtualNetworkFilterEnabled: false,
-      enableAutomaticFailover: true,
+      automaticFailoverEnabled: true,
       geoLocation: [
         {
           location: resourceGroup.location,

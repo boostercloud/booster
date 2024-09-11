@@ -52,7 +52,7 @@ export class ApplicationSynth {
   public constructor(terraformStack: TerraformStack) {
     this.config = readProjectConfig(process.cwd())
     const azurermProvider = new AzurermProvider(terraformStack, 'azureFeature', {
-      features: {},
+      features: undefined,
     })
     const appPrefix = buildAppPrefix(this.config)
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)

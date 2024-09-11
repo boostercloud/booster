@@ -85,7 +85,7 @@ export class TerraformContainers {
       resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
       accountName: cosmosdbDatabaseResource.name,
       databaseName: cosmosdbSqlDatabaseResource.name,
-      partitionKeyPath: `/${eventsStoreAttributes.partitionKey}`,
+      partitionKeyPaths: [`/${eventsStoreAttributes.partitionKey}`],
       partitionKeyVersion: 2,
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
@@ -108,7 +108,7 @@ export class TerraformContainers {
       resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
       accountName: cosmosdbDatabaseResource.name,
       databaseName: cosmosdbSqlDatabaseResource.name,
-      partitionKeyPath: '/eventId',
+      partitionKeyPaths: ['/eventId'],
       partitionKeyVersion: 2,
       uniqueKey: [{ paths: ['/eventId'] }],
       autoscaleSettings: {
@@ -134,7 +134,7 @@ export class TerraformContainers {
       resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
       accountName: cosmosdbDatabaseResource.name,
       databaseName: cosmosdbSqlDatabaseResource.name,
-      partitionKeyPath: '/id',
+      partitionKeyPaths: ['/id'],
       partitionKeyVersion: 2,
       autoscaleSettings: {
         maxThroughput: MAX_CONTAINER_THROUGHPUT,
@@ -157,7 +157,7 @@ export class TerraformContainers {
       resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
       accountName: cosmosdbDatabaseResource.name,
       databaseName: cosmosdbSqlDatabaseResource.name,
-      partitionKeyPath: `/${subscriptionsStoreAttributes.partitionKey}`,
+      partitionKeyPaths: [`/${subscriptionsStoreAttributes.partitionKey}`],
       partitionKeyVersion: 2,
       defaultTtl: -1,
       autoscaleSettings: {
@@ -181,7 +181,7 @@ export class TerraformContainers {
       resourceGroupName: cosmosdbDatabaseResource.resourceGroupName,
       accountName: cosmosdbDatabaseResource.name,
       databaseName: cosmosdbSqlDatabaseResource.name,
-      partitionKeyPath: `/${connectionsStoreAttributes.partitionKey}`,
+      partitionKeyPaths: [`/${connectionsStoreAttributes.partitionKey}`],
       partitionKeyVersion: 2,
       defaultTtl: -1,
       autoscaleSettings: {
@@ -207,7 +207,7 @@ export class TerraformContainers {
       resourceGroupName: cosmosdbDatabase.resourceGroupName,
       accountName: cosmosdbDatabase.name,
       databaseName: cosmosdbSqlDatabase.name,
-      partitionKeyPath: `/${dedupAttributes.partitionKey}`,
+      partitionKeyPaths: [`/${dedupAttributes.partitionKey}`],
       uniqueKey: [{ paths: [`/${dedupAttributes.partitionKey}`] }],
       partitionKeyVersion: 2,
       defaultTtl: -1,
