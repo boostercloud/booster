@@ -124,7 +124,7 @@ const config = {
             },
             {
               label: 'Twitter',
-              to: 'https://twitter.com/boostthecloud',
+              to: 'https://twitter.com/theboosterway',
             },
             {
               label: 'Linkedin',
