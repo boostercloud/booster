@@ -20,7 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "engines": {
-    "node": ">=18.0.0 <19.0.0"
+    "node": ">=20.0.0 <21.0.0"
   },
   "dependencies": {
     "@azure/arm-appservice": "^13.0.0",
@@ -29,7 +29,7 @@
     "@boostercloud/framework-core": "workspace:^2.18.1",
     "@boostercloud/framework-provider-azure": "workspace:^2.18.1",
     "@boostercloud/framework-types": "workspace:^2.18.1",
-    "@cdktf/provider-azurerm": "11.2.0",
+    "@cdktf/provider-azurerm": "13.1.0",
     "@cdktf/provider-time": "9.0.2",
     "@types/archiver": "5.1.0",
     "@types/needle": "^2.0.4",

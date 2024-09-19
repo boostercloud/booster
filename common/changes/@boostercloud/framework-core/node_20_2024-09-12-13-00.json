@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Node 20 upgrade ",
+      "type": "major"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

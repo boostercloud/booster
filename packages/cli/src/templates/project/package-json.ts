@@ -36,7 +36,7 @@ export const template = `{
     "graphql": "^16.6.0"
   },
   "engines": {
-    "node": ">=18.0.0 <19.0.0"
+    "node": ">=20.0.0 <21.0.0"
   },
   "homepage": "{{{homepage}}}",
   "license": "{{{license}}}",
