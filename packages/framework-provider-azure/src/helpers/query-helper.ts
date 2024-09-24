@@ -243,6 +243,9 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
     return projections
   }
 
+  // Preprocess the projections
+  const preprocessedProjections = preprocessProjections(projections)
+
   // Helper function to convert dot notation to square-bracket notation
   const toSquareBracketsNotation = (path: string): string => {
     return path
@@ -253,7 +256,7 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
 
   // Group fields by the root property
   const groupedFields: { [key: string]: string[] } = {}
-  Object.values(projections).forEach((field: string) => {
+  Object.values(preprocessedProjections).forEach((field: string) => {
     const root: string = field.split('.')[0]
     if (!groupedFields[root]) {
       groupedFields[root] = []
@@ -312,6 +315,35 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
       }
     })
     .join(', ')
+}
+
+function preprocessProjections(projections: ProjectionFor<unknown>): ProjectionFor<unknown> {
+  const processed = new Set<string>()
+
+  Object.values(projections).forEach((field: string) => {
+    const parts = field.split('.')
+    const arrayIndex = parts.findIndex((part) => part.endsWith('[]'))
+
+    if (arrayIndex !== -1 && arrayIndex >= 2) {
+      // This is an array nested at least two levels deep
+      // Remove the '[]' from the array part and join up to that point
+      const processedField = parts.slice(0, arrayIndex).join('.') + '.' + parts[arrayIndex].slice(0, -2)
+      processed.add(processedField)
+    } else {
+      // Keep the original field
+      processed.add(field)
+    }
+  })
+
+  // Convert the Set back to the original type of projections
+  if (Array.isArray(projections)) {
+    return Array.from(processed) as ProjectionFor<unknown>
+  } else {
+    return Array.from(processed).reduce((acc, field) => {
+      ;(acc as any)[field] = field
+      return acc
+    }, {} as ProjectionFor<unknown>)
+  }
 }
 
 /**
