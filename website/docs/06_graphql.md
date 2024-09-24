@@ -891,7 +891,7 @@ Using `select` will skip any Read Models migrations that need to be applied to t
 :::
 
 :::warning
-Support for selecting fields from objects inside arrays is limited to arrays that are at most nested inside another property, e.g., `['category.relatedCategories[].name']`. Selecting fields from arrays that are nested deeper than that (e.g., `['foo.bar.items[].id']`) is not expected to yield the expected results.
+Support for selecting fields from objects inside arrays is limited to arrays that are at most nested inside another property, e.g., `['category.relatedCategories[].name']`. Selecting fields from arrays that are nested deeper than that (e.g., `['foo.bar.items[].id']`) will return the entire object.
 :::
 
 :::warning
