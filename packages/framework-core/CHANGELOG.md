@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 04 Sep 2024 18:51:46 GMT and should not be manually modified.
+This log was last generated on Wed, 25 Sep 2024 18:23:11 GMT and should not be manually modified.
+
+## 2.18.2
+Wed, 25 Sep 2024 18:23:11 GMT
+
+### Patches
+
+- Correct handling of deeply-nested arrays and sub-array properties in Read Model queries
 
 ## 2.18.1
 Wed, 04 Sep 2024 18:51:46 GMT
