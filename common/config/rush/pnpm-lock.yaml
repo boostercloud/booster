@@ -752,6 +752,7 @@ importers:
       '@boostercloud/eslint-config': workspace:^2.18.1
       '@boostercloud/framework-common-helpers': workspace:^2.18.1
       '@boostercloud/framework-types': workspace:^2.18.1
+      '@cdktf/provider-azurerm': 13.3.0
       '@effect-ts/core': ^0.60.4
       '@types/chai': 4.2.18
       '@types/chai-as-promised': 7.1.4
@@ -787,6 +788,7 @@ importers:
       '@azure/web-pubsub': 1.1.3
       '@boostercloud/framework-common-helpers': link:../framework-common-helpers
       '@boostercloud/framework-types': link:../framework-types
+      '@cdktf/provider-azurerm': 13.3.0
       '@effect-ts/core': 0.60.5
       tslib: 2.7.0
     devDependencies:
@@ -828,7 +830,7 @@ importers:
       '@boostercloud/framework-core': workspace:^2.18.1
       '@boostercloud/framework-provider-azure': workspace:^2.18.1
       '@boostercloud/framework-types': workspace:^2.18.1
-      '@cdktf/provider-azurerm': 11.2.0
+      '@cdktf/provider-azurerm': 13.3.0
       '@cdktf/provider-time': 9.0.2
       '@effect-ts/core': ^0.60.4
       '@types/archiver': 5.1.0
@@ -883,7 +885,7 @@ importers:
       '@boostercloud/framework-core': link:../framework-core
       '@boostercloud/framework-provider-azure': link:../framework-provider-azure
       '@boostercloud/framework-types': link:../framework-types
-      '@cdktf/provider-azurerm': 11.2.0_5k7lg6pu6lyti4sdnvep4rdzly
+      '@cdktf/provider-azurerm': 13.3.0_5k7lg6pu6lyti4sdnvep4rdzly
       '@cdktf/provider-time': 9.0.2_5k7lg6pu6lyti4sdnvep4rdzly
       '@effect-ts/core': 0.60.5
       '@types/archiver': 5.1.0
@@ -3416,11 +3418,19 @@ packages:
       nan: 2.20.0
       prebuild-install: 7.1.2
 
-  /@cdktf/provider-azurerm/11.2.0_5k7lg6pu6lyti4sdnvep4rdzly:
-    resolution: {integrity: sha512-1YpDrScd4YckEVKBPnXUI9yGeRmv7SiQdAj6Mq9eBXWgP1bemRk4mkQlqGm2pe9h5BECLEMZyAg5Cv/JGJX0Uw==}
+  /@cdktf/provider-azurerm/13.3.0:
+    resolution: {integrity: sha512-gXxAJYTpEMwxSteqJvZEQ8WpCot+E58sW5u/za0drc5zgkrYO3vTEsOByj8Vcxn7MWXrZFacnktgtU1UkPZs4w==}
     engines: {node: '>= 18.12.0'}
     peerDependencies:
-      cdktf: ^0.19.0
+      cdktf: ^0.20.0
+      constructs: ^10.3.0
+    dev: false
+
+  /@cdktf/provider-azurerm/13.3.0_5k7lg6pu6lyti4sdnvep4rdzly:
+    resolution: {integrity: sha512-gXxAJYTpEMwxSteqJvZEQ8WpCot+E58sW5u/za0drc5zgkrYO3vTEsOByj8Vcxn7MWXrZFacnktgtU1UkPZs4w==}
+    engines: {node: '>= 18.12.0'}
+    peerDependencies:
+      cdktf: ^0.20.0
       constructs: ^10.3.0
     dependencies:
       cdktf: 0.19.2_constructs@10.3.0
@@ -6409,7 +6419,7 @@ packages:
     dependencies:
       semver: 7.6.3
       shelljs: 0.8.5
-      typescript: 5.7.0-dev.20240924
+      typescript: 5.7.0-dev.20240925
 
   /duration/0.2.2:
     resolution: {integrity: sha512-06kgtea+bGreF5eKYgI/36A6pLXggY7oR4p1pq4SmdFBn1ReOL5D8RhG64VrqfTTKNucqqtBAwEj8aB88mcqrg==}
@@ -11556,8 +11566,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  /typescript/5.7.0-dev.20240924:
-    resolution: {integrity: sha512-Ij5R6dGDoRwlwMv0YAF0DSKOp2gGIv0SZNybFpAm05zZ/tktjetR7IrwuurvRlDEz7v91AC3ehs2lF7lJ8F/QA==}
+  /typescript/5.7.0-dev.20240925:
+    resolution: {integrity: sha512-k43Yzt0H2VwIvVJzSKaMUKSnAOWkAitSB+Zioc340LCsh4kSwCbyHCJSAJmAdFH0QuNIL3AuSybTfwOys8tqZw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
