@@ -31,7 +31,8 @@
     "@boostercloud/framework-types": "workspace:^2.18.1",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4",
-    "@azure/web-pubsub": "~1.1.0"
+    "@azure/web-pubsub": "~1.1.0",
+    "@cdktf/provider-azurerm": "13.3.0"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^2.18.1",
