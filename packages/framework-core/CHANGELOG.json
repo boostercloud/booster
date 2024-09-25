@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.18.2",
+      "tag": "@boostercloud/framework-core_v2.18.2",
+      "date": "Wed, 25 Sep 2024 18:23:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Correct handling of deeply-nested arrays and sub-array properties in Read Model queries",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "d5ed5375fe31d8a9ee055700f09d293b03af6809"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.1` to `^2.18.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.1` to `^2.18.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.1` to `^2.18.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.1` to `^2.18.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@boostercloud/framework-core_v2.18.1",
       "date": "Wed, 04 Sep 2024 18:51:46 GMT",
