@@ -317,6 +317,12 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
     .join(', ')
 }
 
+/**
+ * Preprocesses the projections to handle nested arrays and objects.
+ *
+ * @param {ProjectionFor<unknown>} projections - The projections to preprocess.
+ * @returns {ProjectionFor<unknown>} - The preprocessed projections.
+ */
 function preprocessProjections(projections: ProjectionFor<unknown>): ProjectionFor<unknown> {
   const processed = new Set<string>()
 
@@ -327,33 +333,21 @@ function preprocessProjections(projections: ProjectionFor<unknown>): ProjectionF
       return acc
     }, [] as number[])
 
-    if (arrayIndices.length === 0) {
-      // Case 1: No arrays in the projection
+    if (
+      arrayIndices.length === 0 ||
+      (arrayIndices[0] === 0 && arrayIndices.length === 1) ||
+      (arrayIndices[0] === 1 && arrayIndices.length === 1)
+    ) {
+      // This block is accessed when one of the following occurs:
+      // - No arrays in the projection
+      // - Top-level array not followed by another array
+      // - Array nested within a top-level property, no arrays follow
       processed.add(field)
-    } else if (arrayIndices[0] === 0) {
-      // Case 2.1 and 2.2: Array at the top level
-      if (arrayIndices.length === 1) {
-        // Case 2.1: Top-level array not followed by another array
-        processed.add(field)
-      } else {
-        // Case 2.2: Top-level array followed by a subarray
-        const processedField = parts.slice(0, arrayIndices[1] + 1).join('.')
-        processed.add(processedField.slice(0, -2)) // Remove '[]' from the last part
-      }
-    } else if (arrayIndices[0] === 1) {
-      // Case 2.3: Array nested within a top-level property
-      if (arrayIndices.length === 1) {
-        // Case 2.3.1: No arrays follow in the nesting
-        processed.add(field)
-      } else {
-        // Case 2.3.2: Nested arrays after it
-        const processedField = parts.slice(0, arrayIndices[1] + 1).join('.')
-        processed.add(processedField.slice(0, -2)) // Remove '[]' from the last part
-      }
     } else {
-      // Case 2.4: Array nested deeper than a top-level property
-      const processedField = parts.slice(0, arrayIndices[0] + 1).join('.')
-      processed.add(processedField.slice(0, -2)) // Remove '[]' from the last part
+      // Cases with nested arrays or arrays deeper in the structure
+      const processToIndex = arrayIndices[0] === 0 || arrayIndices[0] === 1 ? arrayIndices[1] : arrayIndices[0]
+      const processedField = parts.slice(0, processToIndex + 1).join('.')
+      processed.add(processedField.slice(0, -2)) // Remove the '[]' from the last part
     }
   })
 
