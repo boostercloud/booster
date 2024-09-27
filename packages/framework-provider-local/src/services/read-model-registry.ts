@@ -105,7 +105,7 @@ export class ReadModelRegistry {
   toLocalSortFor(
     sortBy?: SortFor<unknown>,
     parentKey = '',
-    sortedList: LocalSortedFor = {}
+    sortedList: LocalSortedFor = Object.create(null)
   ): undefined | LocalSortedFor {
     if (!sortBy || Object.keys(sortBy).length === 0) return
     const elements = sortBy!
@@ -120,7 +120,7 @@ export class ReadModelRegistry {
   }
 
   filterFields(obj: any, select: string[]): any {
-    const result: any = {}
+    const result: any = Object.create(null)
 
     select.forEach((field) => {
       const parts = field.split('.')
@@ -151,7 +151,7 @@ export class ReadModelRegistry {
         } else {
           currentSource[arrayField].forEach((item: any, index: number) => {
             if (!currentResult[arrayField][index]) {
-              currentResult[arrayField][index] = {}
+              currentResult[arrayField][index] = Object.create(null)
             }
             this.setNestedValue(currentResult[arrayField][index], item, parts.slice(i + 1))
           })
@@ -166,7 +166,7 @@ export class ReadModelRegistry {
             return
           }
           if (!currentResult[part]) {
-            currentResult[part] = Array.isArray(currentSource[part]) ? [] : {}
+            currentResult[part] = Array.isArray(currentSource[part]) ? [] : Object.create(null)
           }
           currentResult = currentResult[part]
           currentSource = currentSource[part]
