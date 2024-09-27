@@ -124,54 +124,54 @@ export class ReadModelRegistry {
 
     select.forEach((field) => {
       const parts = field.split('.')
-      let current = obj
-      let currentResult = result
-
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i]
-        const isLast = i === parts.length - 1
-        const nextPart = parts[i + 1]
-
-        if (part.endsWith('[]')) {
-          const arrayField = part.slice(0, -2)
-          if (!current[arrayField]) {
-            break
-          }
-          if (!currentResult[arrayField]) {
-            currentResult[arrayField] = []
-          }
-          if (isLast) {
-            currentResult[arrayField] = current[arrayField]
-          } else {
-            current[arrayField].forEach((item: any, index: number) => {
-              if (!currentResult[arrayField][index]) {
-                currentResult[arrayField][index] = {}
-              }
-              if (item[nextPart] !== undefined) {
-                currentResult[arrayField][index][nextPart] = item[nextPart]
-              }
-            })
-            break
-          }
-        } else {
-          if (isLast) {
-            if (current[part] !== undefined) {
-              currentResult[part] = current[part]
-            }
-          } else {
-            if (!current[part]) {
-              break
-            }
-            if (!currentResult[part]) {
-              currentResult[part] = Array.isArray(current[part]) ? [] : {}
-            }
-            current = current[part]
-            currentResult = currentResult[part]
-          }
-        }
-      }
+      this.setNestedValue(result, obj, parts)
     })
 
     return result
+  }
+
+  setNestedValue(result: any, source: any, parts: string[]): void {
+    let currentResult = result
+    let currentSource = source
+
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i]
+      const isLast = i === parts.length - 1
+
+      if (part.endsWith('[]')) {
+        const arrayField = part.slice(0, -2)
+        if (!Array.isArray(currentSource[arrayField])) {
+          return
+        }
+        if (!currentResult[arrayField]) {
+          currentResult[arrayField] = []
+        }
+        if (isLast) {
+          currentResult[arrayField] = currentSource[arrayField]
+        } else {
+          currentSource[arrayField].forEach((item: any, index: number) => {
+            if (!currentResult[arrayField][index]) {
+              currentResult[arrayField][index] = {}
+            }
+            this.setNestedValue(currentResult[arrayField][index], item, parts.slice(i + 1))
+          })
+        }
+      } else {
+        if (isLast) {
+          if (currentSource[part] !== undefined) {
+            currentResult[part] = currentSource[part]
+          }
+        } else {
+          if (!currentSource[part]) {
+            return
+          }
+          if (!currentResult[part]) {
+            currentResult[part] = Array.isArray(currentSource[part]) ? [] : {}
+          }
+          currentResult = currentResult[part]
+          currentSource = currentSource[part]
+        }
+      }
+    }
   }
 }

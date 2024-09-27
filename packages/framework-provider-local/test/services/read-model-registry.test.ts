@@ -226,7 +226,7 @@ describe('the read model registry', () => {
       expect(result[0]).to.deep.include(expectedReadModel)
     })
 
-    it('should return all projected fields for complex read models', async () => {
+    it('should return only projected fields for complex read models', async () => {
       const complexReadModel: ReadModelEnvelope = {
         typeName: random.word(),
         value: {
