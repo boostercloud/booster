@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@boostercloud/framework-core",
-      "comment": "Correct handling of deeply-nested arrays and sub-array properties in Read Model queries",
+      "comment": "Fix handling of deeply-nested arrays an sub-array properties in Read Model queries in local provider",
       "type": "patch"
     }
   ],
