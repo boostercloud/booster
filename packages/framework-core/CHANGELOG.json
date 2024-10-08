@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.18.4",
+      "tag": "@boostercloud/framework-core_v2.18.4",
+      "date": "Tue, 08 Oct 2024 15:06:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Remove unnecessary @cdktf/provider-azurerm dependency from Azure provider package",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "1c97d6dcef1799207e21a8368827f02f2a0e0b77"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.3` to `^2.18.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.3` to `^2.18.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.3` to `^2.18.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.3` to `^2.18.4`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.3",
       "tag": "@boostercloud/framework-core_v2.18.3",
       "date": "Mon, 30 Sep 2024 19:09:52 GMT",

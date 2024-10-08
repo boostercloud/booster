@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 30 Sep 2024 19:09:52 GMT and should not be manually modified.
+This log was last generated on Tue, 08 Oct 2024 15:06:52 GMT and should not be manually modified.
+
+## 2.18.4
+Tue, 08 Oct 2024 15:06:52 GMT
+
+### Patches
+
+- Remove unnecessary @cdktf/provider-azurerm dependency from Azure provider package
 
 ## 2.18.3
 Mon, 30 Sep 2024 19:09:52 GMT
