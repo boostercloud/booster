@@ -143,6 +143,50 @@ describe('Queries end-to-end tests', () => {
       expect(response).not.to.be.null
       expect(response?.data?.CartTotalQuantity).to.be.eq(beforeHookQueryMultiply * quantity)
     })
+
+    it('accepts a union type', async () => {
+      const bookId = random.uuid()
+      const movieId = random.uuid()
+      await client.mutate({
+        variables: {
+          bookId: bookId,
+          title: 'The Life Of J Robert Oppenheimer',
+        },
+        mutation: gql`
+          mutation AddBook($bookId: ID!, $title: String!) {
+            AddBook(input: { bookId: $bookId, title: $title })
+          }
+        `,
+      })
+      await client.mutate({
+        variables: {
+          movieId: movieId,
+          title: 'Oppenheimer (2023)',
+        },
+        mutation: gql`
+          mutation AddMovie($movieId: ID!, $title: String!) {
+            AddMovie(input: { movieId: $bookId, title: $title })
+          }
+        `,
+      })
+
+      const response = await waitForIt(
+        () =>
+          client.query({
+            variables: {
+              search: 'Oppenheimer',
+            },
+            query: gql`
+              query SearchMedia($title: string!) {
+                SearchMedia(input: { title: $title })
+              }
+            `,
+          }),
+        (result) => result?.data?.SearchMedia != undefined
+      )
+
+      expect(response).not.to.be.null
+    })
   })
 
   context('when the query requires a specific role', () => {
