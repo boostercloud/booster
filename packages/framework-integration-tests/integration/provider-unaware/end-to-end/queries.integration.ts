@@ -154,7 +154,7 @@ describe('Queries end-to-end tests', () => {
         },
         mutation: gql`
           mutation AddBook($bookId: ID!, $title: String!) {
-            AddBook(input: { bookId: $bookId, title: $title })
+            AddBook(input: { id: $bookId, title: $title })
           }
         `,
       })
@@ -165,7 +165,7 @@ describe('Queries end-to-end tests', () => {
         },
         mutation: gql`
           mutation AddMovie($movieId: ID!, $title: String!) {
-            AddMovie(input: { movieId: $bookId, title: $title })
+            AddMovie(input: { id: $bookId, title: $title })
           }
         `,
       })
