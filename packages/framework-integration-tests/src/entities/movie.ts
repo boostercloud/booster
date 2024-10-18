@@ -14,6 +14,6 @@ export class Movie {
 
   @Reduces(MovieAdded)
   public static movieAdded(event: MovieAdded, currentMovie: Movie): Movie {
-    return currentMovie
+    return new Movie(event.id, event.title)
   }
 }

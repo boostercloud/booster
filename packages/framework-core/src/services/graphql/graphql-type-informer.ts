@@ -87,16 +87,21 @@ export class GraphQLTypeInformer {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }
-    if (typeMetadata.typeGroup === 'Union'  && typeMetadata.type && !isExternalType(typeMetadata)) {
-      const graphQLUnionClasses: GraphQLObjectType[] = this.getUnionClasses(typeMetadata, typeGroup, inputType);
+    if (typeMetadata.typeGroup === 'Union' && typeMetadata.type && !isExternalType(typeMetadata)) {
+      const graphQLUnionClasses: GraphQLObjectType[] = this.getUnionClasses(typeMetadata, typeGroup, inputType)
       return new GraphQLUnionType({
-          name: typeMetadata.name,
-          types: graphQLUnionClasses, });
-  }
+        name: typeMetadata.name,
+        types: graphQLUnionClasses,
+      })
+    }
     return GraphQLJSON
   }
 
-  private getUnionClasses(typeMetadata: TypeMetadata, typeGroup: string, inputType: boolean): GraphQLObjectType<any, any>[] {
+  private getUnionClasses(
+    typeMetadata: TypeMetadata,
+    typeGroup: string,
+    inputType: boolean
+  ): GraphQLObjectType<any, any>[] {
     return typeMetadata.parameters.map((param: TypeMetadata) => {
       if (typeGroup === 'Class' && param.type && !isExternalType(typeMetadata) && !inputType) {
         const metadata = getClassMetadata(param.type)
@@ -162,23 +167,20 @@ export class GraphQLTypeInformer {
     })
   }
 
-  private createObjectTypeForUnion(
-      classMetadata: ClassMetadata,
-      excludeProps?: Array<string>
-    ): GraphQLObjectType {
-      const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
-      return new GraphQLObjectType({
-        name: classMetadata.name,
-        isTypeOf: (value) => {
-          return value.constructor.name === classMetadata.type.name
-        },
-        fields: finalFields?.reduce((obj, prop) => {
-          this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
-          return {
-            ...obj,
-            [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, false) },
-          }
-        }, {}),
-      })
-    }
+  private createObjectTypeForUnion(classMetadata: ClassMetadata, excludeProps?: Array<string>): GraphQLObjectType {
+    const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
+    return new GraphQLObjectType({
+      name: classMetadata.name,
+      isTypeOf: (value) => {
+        return value.constructor.name === classMetadata.type.name
+      },
+      fields: finalFields?.reduce((obj, prop) => {
+        this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
+        return {
+          ...obj,
+          [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, false) },
+        }
+      }, {}),
+    })
+  }
 }

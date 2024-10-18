@@ -3,9 +3,9 @@ import { UUID } from '@boostercloud/framework-types'
 
 @Event
 export class BookAdded {
-  public constructor(readonly bookId: UUID, readonly title: string) {}
+  public constructor(readonly id: UUID, readonly title: string, readonly pages: number) {}
 
   public entityID(): UUID {
-    return this.bookId
+    return this.id
   }
 }

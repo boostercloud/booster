@@ -6,13 +6,13 @@ import { Book } from '../entities/book'
   authorize: 'all',
 })
 export class BookReadModel {
-  public constructor(readonly id: UUID, readonly title: string) {}
+  public constructor(readonly id: UUID, readonly title: string, readonly pages: number) {}
 
   @Projects(Book, 'id')
   public static updateBook(book: Book, oldBook?: BookReadModel): ProjectionResult<BookReadModel> {
     // This method calls are here to ensure they work. More info: https://github.com/boostercloud/booster/issues/797
     book.getId()
 
-    return new BookReadModel(book.id, book.title)
+    return new BookReadModel(book.id, book.title, book.pages)
   }
 }

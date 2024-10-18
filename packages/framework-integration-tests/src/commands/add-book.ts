@@ -6,9 +6,9 @@ import { BookAdded } from '../events/book-added'
   authorize: 'all',
 })
 export class AddBook {
-  public constructor(readonly id: UUID, readonly title: string) {}
+  public constructor(readonly id: UUID, readonly title: string, readonly pages: number) {}
 
   public static async handle(command: AddBook, register: Register): Promise<void> {
-    register.events(new BookAdded(command.id, command.title))
+    register.events(new BookAdded(command.id, command.title, command.pages))
   }
 }

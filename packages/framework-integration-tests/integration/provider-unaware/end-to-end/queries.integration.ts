@@ -151,10 +151,11 @@ describe('Queries end-to-end tests', () => {
         variables: {
           bookId: bookId,
           title: 'The Life Of J Robert Oppenheimer',
+          pages: 42,
         },
         mutation: gql`
-          mutation AddBook($bookId: ID!, $title: String!) {
-            AddBook(input: { id: $bookId, title: $title })
+          mutation AddBook($bookId: ID!, $title: String!, $pages: Float!) {
+            AddBook(input: { id: $bookId, title: $title, pages: $pages })
           }
         `,
       })
@@ -165,7 +166,7 @@ describe('Queries end-to-end tests', () => {
         },
         mutation: gql`
           mutation AddMovie($movieId: ID!, $title: String!) {
-            AddMovie(input: { id: $bookId, title: $title })
+            AddMovie(input: { id: $movieId, title: $title })
           }
         `,
       })
@@ -174,17 +175,29 @@ describe('Queries end-to-end tests', () => {
         () =>
           client.query({
             variables: {
-              search: 'Oppenheimer',
+              searchword: 'Oppenheimer',
             },
             query: gql`
-              query SearchMedia($title: string!) {
-                SearchMedia(input: { title: $title })
+              query SearchMedia($searchword: String!) {
+                SearchMedia(input: { searchword: $searchword }) {
+                  results
+                  # {
+                  #   __typename
+                  #   ... on BookReadModel {
+                  #     title
+                  #     pages
+                  #   }
+                  #   ... on MovieReadModel {
+                  #     title
+                  #   }
+                  # }
+                }
               }
             `,
           }),
         (result) => result?.data?.SearchMedia != undefined
       )
-
+      console.log(response)
       expect(response).not.to.be.null
     })
   })

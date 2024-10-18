@@ -6,7 +6,7 @@ import { BookAdded } from '../events/book-added'
   authorizeReadEvents: 'all',
 })
 export class Book {
-  public constructor(readonly id: UUID, readonly title: string) {}
+  public constructor(readonly id: UUID, readonly title: string, readonly pages: number) {}
 
   public getId(): UUID {
     return this.id
@@ -14,6 +14,6 @@ export class Book {
 
   @Reduces(BookAdded)
   public static bookAdded(event: BookAdded, currentBook: Book): Book {
-    return currentBook
+    return new Book(event.id, event.title, event.pages)
   }
 }
