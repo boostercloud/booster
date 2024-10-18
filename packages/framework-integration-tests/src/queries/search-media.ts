@@ -3,16 +3,38 @@ import { QueryInfo } from '@boostercloud/framework-types'
 import { BookReadModel } from '../read-models/book-read-model'
 import { MovieReadModel } from '../read-models/movie-read-model'
 
-abstract class BaseConstruct<M extends BaseConstruct<M>> {
+export abstract class BaseQuery<M extends BaseQuery<M>> {
   constructor(obj: M) {
     Object.assign(this, obj)
   }
 }
 
-type Media = BookReadModel | MovieReadModel
+export class BookMedia extends BaseQuery<BookMedia> {
+  title!: string
+  pages!: number
+}
 
-class SearchResult extends BaseConstruct<SearchResult> {
+export class MovieMedia extends BaseQuery<MovieMedia> {
+  title!: string
+}
+
+export class Media extends BaseQuery<Media> {
+  mediaType!: MediaType
+  media!: MediaValue
+}
+
+export type MediaValue = BookMedia | MovieMedia
+
+export enum MediaType {
+  BookMedia = 'BookMedia',
+  MovieMedia = 'MovieMedia',
+}
+
+class SearchResult {
   readonly results!: Media[]
+  constructor(results: Media[]) {
+    this.results = results
+  }
 }
 @Query({
   authorize: 'all',
@@ -37,12 +59,23 @@ export class SearchMedia {
         })
         .search(),
     ])
-    console.log(books, movies)
     const response = [...books, ...movies]
-    const toReturn = new SearchResult({
-      results: response,
-    })
-    toReturn.results.map((media) => console.log(typeof media))
+    const toReturn: SearchResult = {
+      results: response.map((media) => {
+        if (media instanceof BookReadModel) {
+          return new Media({
+            mediaType: MediaType.BookMedia,
+            media: new BookMedia({ title: media.title, pages: media.pages }),
+          })
+        } else {
+          return new Media({
+            mediaType: MediaType.MovieMedia,
+            media: new MovieMedia({ title: media.title }),
+          })
+        }
+      }),
+    }
+
     return toReturn
   }
 }
