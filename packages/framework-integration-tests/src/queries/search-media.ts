@@ -20,7 +20,6 @@ export class MovieMedia extends BaseQuery<MovieMedia> {
 
 export class Media extends BaseQuery<Media> {
   mediaType!: MediaType
-  media!: MediaValue
 }
 
 export type MediaValue = BookMedia | MovieMedia
@@ -31,8 +30,8 @@ export enum MediaType {
 }
 
 class SearchResult {
-  readonly results!: Media[]
-  constructor(results: Media[]) {
+  readonly results!: MediaValue[]
+  constructor(results: MediaValue[]) {
     this.results = results
   }
 }
@@ -63,15 +62,9 @@ export class SearchMedia {
     const toReturn: SearchResult = {
       results: response.map((media) => {
         if (media instanceof BookReadModel) {
-          return new Media({
-            mediaType: MediaType.BookMedia,
-            media: new BookMedia({ title: media.title, pages: media.pages }),
-          })
+          return new BookMedia({ title: media.title, pages: media.pages })
         } else {
-          return new Media({
-            mediaType: MediaType.MovieMedia,
-            media: new MovieMedia({ title: media.title }),
-          })
+          return new MovieMedia({ title: media.title })
         }
       }),
     }
