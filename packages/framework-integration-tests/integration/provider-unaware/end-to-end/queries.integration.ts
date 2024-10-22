@@ -180,17 +180,16 @@ describe('Queries end-to-end tests', () => {
             query: gql`
               query SearchMedia($searchword: String!) {
                 SearchMedia(input: { searchword: $searchword }) {
-                  results
-                  # {
-                  #   __typename
-                  #   ... on BookReadModel {
-                  #     title
-                  #     pages
-                  #   }
-                  #   ... on MovieReadModel {
-                  #     title
-                  #   }
-                  # }
+                  results {
+                    __typename
+                    ... on BookMedia {
+                      title
+                      pages
+                    }
+                    ... on MovieMedia {
+                      title
+                    }
+                  }
                 }
               }
             `,
