@@ -88,23 +88,30 @@ export class GraphQLTypeInformer {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }
-    if (typeMetadata.typeGroup === 'Union' && !isExternalType(typeMetadata)) {
-      try {
-        const graphQLUnionClasses: GraphQLObjectType[] = this.getUnionClasses(typeMetadata, inputType)
-        return new GraphQLUnionType({
-          name: typeMetadata.name,
-          types: graphQLUnionClasses,
-        })
-      } catch (e) {
-        console.error(e) //Todo dit is raar
-      }
+    if (
+      typeMetadata.typeGroup === 'Union' &&
+      !isExternalType(typeMetadata) &&
+      !inputType &&
+      this.validateUnionClasses(typeMetadata.parameters)
+    ) {
+      const graphQLUnionClasses: GraphQLObjectType[] = this.getUnionClasses(typeMetadata)
+      return new GraphQLUnionType({
+        name: typeMetadata.name,
+        types: graphQLUnionClasses,
+      })
     }
     return GraphQLJSON
   }
 
-  private getUnionClasses(typeMetadata: TypeMetadata, inputType: boolean): GraphQLObjectType<any, any>[] {
+  private validateUnionClasses(params: TypeMetadata[]): boolean {
+    return params.every(
+      (typeMetadata) => typeMetadata.typeGroup === 'Class' && typeMetadata.type && !isExternalType(typeMetadata)
+    )
+  }
+
+  private getUnionClasses(typeMetadata: TypeMetadata): GraphQLObjectType<any, any>[] {
     return typeMetadata.parameters.map((param: TypeMetadata) => {
-      if (param.typeGroup === 'Class' && param.type && !isExternalType(typeMetadata) && !inputType) {
+      if (param.typeGroup === 'Class' && param.type && !isExternalType(typeMetadata)) {
         const metadata = getClassMetadata(param.type)
         return this.createObjectTypeForUnion(metadata) as GraphQLObjectType
       } else {
