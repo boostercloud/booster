@@ -3,22 +3,7 @@ import { QueryInfo } from '@boostercloud/framework-types'
 import { BookReadModel } from '../read-models/book-read-model'
 import { MovieReadModel } from '../read-models/movie-read-model'
 
-export class BookMedia {
-  title!: string
-  pages!: number
-  constructor(book: BookMedia) {
-    ;(this.title = book.title), (this.pages = book.pages)
-  }
-}
-
-export class MovieMedia {
-  title!: string
-  constructor(movie: MovieMedia) {
-    this.title = movie.title
-  }
-}
-
-export type MediaValue = BookMedia | MovieMedia
+export type MediaValue = BookReadModel | MovieReadModel
 class SearchResult {
   readonly results!: MediaValue[]
   constructor(results: MediaValue[]) {
@@ -51,13 +36,7 @@ export class SearchMedia {
     const response = [...books, ...movies]
 
     return {
-      results: response.map((media) => {
-        if (media instanceof BookReadModel) {
-          return new BookMedia({ title: media.title, pages: media.pages })
-        } else {
-          return new MovieMedia({ title: media.title })
-        }
-      }),
+      results: response,
     }
   }
 }

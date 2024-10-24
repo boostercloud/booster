@@ -113,7 +113,7 @@ export class GraphQLTypeInformer {
     return typeMetadata.parameters.map((param: TypeMetadata) => {
       if (param.typeGroup === 'Class' && param.type && !isExternalType(typeMetadata)) {
         const metadata = getClassMetadata(param.type)
-        return this.createObjectTypeForUnion(metadata) as GraphQLObjectType
+        return this.getOrCreateObjectTypeForUnion(metadata) as GraphQLObjectType
       } else {
         throw new Error(`Union type ${typeMetadata.name} can only contain classes`)
       }
@@ -173,6 +173,14 @@ export class GraphQLTypeInformer {
         }
       }, {}),
     })
+  }
+
+  private getOrCreateObjectTypeForUnion(classMetadata: ClassMetadata, excludeProps?: Array<string>): GraphQLType {
+    const typeName = classMetadata.name
+    if (typeName && this.graphQLTypes[typeName]) return this.graphQLTypes[typeName]
+    const createdGraphQLType = this.createObjectTypeForUnion(classMetadata, excludeProps)
+    if (typeName) this.graphQLTypes[typeName] = createdGraphQLType
+    return createdGraphQLType
   }
 
   private createObjectTypeForUnion(classMetadata: ClassMetadata, excludeProps?: Array<string>): GraphQLObjectType {
