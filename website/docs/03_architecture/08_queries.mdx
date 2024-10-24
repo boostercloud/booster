@@ -123,3 +123,98 @@ query CartTotalQuantityQuery($cartId: ID!): Float!
 ```
 
 > [!NOTE] Query subscriptions are not supported yet
+
+###  Returning union types
+Booster supports returning graphql union types. For example, this `SearchMedia` query returning books and movies.
+
+:::info
+The classes used in the union type must be uniquely named
+:::
+
+```typescript
+export class BookMedia {
+  title!: string
+  pages!: number
+  constructor(book: BookMedia) {
+    ;(this.title = book.title), (this.pages = book.pages)
+  }
+}
+
+export class MovieMedia {
+  title!: string
+  constructor(movie: MovieMedia) {
+    this.title = movie.title
+  }
+}
+
+export type MediaValue = BookMedia | MovieMedia
+class SearchResult {
+  readonly results!: MediaValue[]
+  constructor(results: MediaValue[]) {
+    this.results = results
+  }
+}
+@Query({
+  authorize: 'all',
+})
+export class SearchMedia {
+  public constructor(readonly searchword: string) {}
+
+  public static async handle(query: SearchMedia, queryInfo: QueryInfo): Promise<SearchResult> {
+    const [books, movies] = await Promise.all([
+      Booster.readModel(BookReadModel)
+        .filter({
+          title: {
+            contains: query.searchword,
+          },
+        })
+        .search(),
+      Booster.readModel(MovieReadModel)
+        .filter({
+          title: {
+            contains: query.searchword,
+          },
+        })
+        .search(),
+    ])
+    const response = [...books, ...movies]
+
+    return {
+      results: response.map((media) => {
+        if (media instanceof BookReadModel) {
+          return new BookMedia({ title: media.title, pages: media.pages })
+        } else {
+          return new MovieMedia({ title: media.title })
+        }
+      }),
+    }
+  }
+}
+```
+
+This generates the following query 
+
+```graphql
+SearchMedia ( input SearchMediaInput! ) SearchResult!
+```
+
+The GraphQL union querying functionality can then be used. An example for the query above could be the following.
+
+```graphql
+{
+  SearchMedia(input: { searchword: "Oppenheimer" }) {
+    results {
+      __typename
+
+      ... on BookMedia {
+        title
+        pages
+      }
+      ... on MovieMedia {
+        title
+      }
+    }
+  }
+}
+
+```

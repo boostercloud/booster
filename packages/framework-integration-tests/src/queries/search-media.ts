@@ -49,7 +49,8 @@ export class SearchMedia {
         .search(),
     ])
     const response = [...books, ...movies]
-    const toReturn: SearchResult = {
+
+    return {
       results: response.map((media) => {
         if (media instanceof BookReadModel) {
           return new BookMedia({ title: media.title, pages: media.pages })
@@ -58,7 +59,5 @@ export class SearchMedia {
         }
       }),
     }
-
-    return toReturn
   }
 }
