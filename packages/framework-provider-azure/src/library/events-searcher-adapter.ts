@@ -42,7 +42,11 @@ export async function searchEntitiesIds(
       afterCursor
     )}, entityTypeName: ${entityTypeName}`
   )
-  const filterQuery = { kind: { eq: 'event' }, entityTypeName: { eq: entityTypeName } }
+  const filterQuery = {
+    kind: { eq: 'event' },
+    entityTypeName: { eq: entityTypeName },
+    deletedAt: { isDefined: false },
+  }
   const eventStore = config.resourceNames.eventsStore
 
   const result = (await search(

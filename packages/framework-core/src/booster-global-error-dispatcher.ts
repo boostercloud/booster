@@ -9,6 +9,7 @@ import {
   ProjectionGlobalError,
   SnapshotPersistHandlerGlobalError,
   QueryHandlerGlobalError,
+  EventGlobalError,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 
@@ -48,14 +49,14 @@ export class BoosterGlobalErrorDispatcher {
         case SnapshotPersistHandlerGlobalError:
           newError = await this.handleSnapshotPersistError(error)
           break
+        case EventGlobalError:
+          newError = await this.handleEventError(error)
+          break
       }
 
       newError = await this.handleGenericError(newError)
     } catch (e) {
-      logger.error(
-        `Unhandled error inside the global error handler. When handling error ${error.originalError}, another error occurred`,
-        e
-      )
+      logger.error(`Unhandled error inside the global error handler. When handling error ${error.originalError}`, e)
       return e
     }
     if (newError) return newError
@@ -65,7 +66,11 @@ export class BoosterGlobalErrorDispatcher {
   private async handleCommandError(error: GlobalErrorContainer): Promise<Error | undefined> {
     if (!this.errorHandler || !this.errorHandler.onCommandHandlerError) throw error.originalError
     const currentError = error as CommandHandlerGlobalError
-    return await this.errorHandler.onCommandHandlerError(currentError.originalError, currentError.command)
+    return await this.errorHandler.onCommandHandlerError(
+      currentError.originalError,
+      currentError.commandEnvelope,
+      currentError.commandMetadata
+    )
   }
 
   private async handleQueryError(error: GlobalErrorContainer): Promise<Error | undefined> {
@@ -77,20 +82,31 @@ export class BoosterGlobalErrorDispatcher {
   private async handleScheduleError(error: GlobalErrorContainer): Promise<Error | undefined> {
     if (!this.errorHandler || !this.errorHandler.onScheduledCommandHandlerError) throw error.originalError
     const currentError = error as ScheduleCommandGlobalError
-    return await this.errorHandler.onScheduledCommandHandlerError(currentError.originalError)
+    return await this.errorHandler.onScheduledCommandHandlerError(
+      currentError.originalError,
+      currentError.scheduleCommandEnvelope,
+      currentError.scheduleCommandMetadata
+    )
   }
 
   private async handleEventHandlerError(error: GlobalErrorContainer): Promise<Error | undefined> {
     if (!this.errorHandler || !this.errorHandler.onDispatchEventHandlerError) throw error.originalError
     const currentError = error as EventHandlerGlobalError
-    return await this.errorHandler.onDispatchEventHandlerError(currentError.originalError, currentError.eventInstance)
+    return await this.errorHandler.onDispatchEventHandlerError(
+      currentError.originalError,
+      currentError.eventEnvelope,
+      currentError.eventHandlerMetadata,
+      currentError.eventInstance
+    )
   }
 
-  private async handleReducerError(error: GlobalErrorContainer): Promise<Error | undefined> {
+  private async handleReducerError(error: GlobalErrorContainer): Promise<Error> {
     if (!this.errorHandler || !this.errorHandler.onReducerError) throw error.originalError
     const currentError = error as ReducerGlobalError
     return await this.errorHandler.onReducerError(
       currentError.originalError,
+      currentError.eventEnvelope,
+      currentError.reducerMetadata,
       currentError.eventInstance,
       currentError.snapshotInstance
     )
@@ -101,6 +117,8 @@ export class BoosterGlobalErrorDispatcher {
     const currentError = error as ProjectionGlobalError
     return await this.errorHandler.onProjectionError(
       currentError.originalError,
+      currentError.entityEnvelope,
+      currentError.projectionMetadata,
       currentError.entity,
       currentError.readModel
     )
@@ -110,6 +128,12 @@ export class BoosterGlobalErrorDispatcher {
     if (!this.errorHandler || !this.errorHandler.onSnapshotPersistError) throw error.originalError
     const currentError = error as SnapshotPersistHandlerGlobalError
     return this.errorHandler.onSnapshotPersistError(currentError.originalError, currentError.snapshot)
+  }
+
+  private async handleEventError(error: GlobalErrorContainer): Promise<Error | undefined> {
+    if (!this.errorHandler || !this.errorHandler.onEventError) throw error.originalError
+    const currentError = error as EventGlobalError
+    return await this.errorHandler.onEventError(currentError.originalError, currentError.eventEnvelope)
   }
 
   private async handleGenericError(error: Error | undefined): Promise<Error | undefined> {

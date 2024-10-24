@@ -30,6 +30,8 @@ export class ApplicationBuilder {
     const azureStack = await this.synthApplication(app, webPubSubBaseFile)
     const rocketBuilder = new RocketBuilder(this.config, azureStack.applicationStack, this.rockets)
     await rocketBuilder.synthRocket()
+    // add rocket-related env vars to main function app settings
+    azureStack.addAppSettingsToFunctionApp(this.rockets)
     app.synth()
 
     azureStack.applicationStack.functionDefinitions = FunctionZip.buildAzureFunctions(this.config)

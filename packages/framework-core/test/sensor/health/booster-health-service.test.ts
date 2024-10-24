@@ -223,6 +223,7 @@ function defaultSensor(token?: string, url?: string) {
     rawRequestToHealthEnvelope: fake(() => {
       return { token: token, componentPath: url }
     }),
+    areRocketFunctionsUp: fake(() => ''),
   }
 }
 
@@ -289,24 +290,12 @@ function expectDatabaseEventsWithDetails(databaseEvents: any, status: string, de
 }
 
 function expectDatabaseReadModels(databaseReadModels: any, status: string): void {
-  expectDefaultResult(
-    databaseReadModels,
-    status,
-    'booster/database/readmodels',
-    'Booster Database ReadModels',
-    0
-  )
+  expectDefaultResult(databaseReadModels, status, 'booster/database/readmodels', 'Booster Database ReadModels', 0)
   expect(databaseReadModels.details).to.be.undefined
 }
 
 function expectDatabaseReadModelsWithDetails(databaseReadModels: any, status: string, details: any): void {
-  expectDefaultResult(
-    databaseReadModels,
-    status,
-    'booster/database/readmodels',
-    'Booster Database ReadModels',
-    0
-  )
+  expectDefaultResult(databaseReadModels, status, 'booster/database/readmodels', 'Booster Database ReadModels', 0)
   expect(databaseReadModels.details).to.be.deep.eq(details)
 }
 

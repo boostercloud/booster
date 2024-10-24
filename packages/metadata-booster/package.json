@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/metadata-booster",
-  "version": "2.12.1",
+  "version": "2.18.4",
   "description": "Emits detailed metadata of your types. You can then get it in runtime to deal with schema-aware operation, like defining GraphQL schemas, ORM operations, etc.",
   "repository": "https://github.com/boostercloud/booster.git",
   "keywords": [
@@ -38,7 +38,7 @@
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "3.4.0",
-    "@boostercloud/eslint-config": "workspace:^2.12.1",
+    "@boostercloud/eslint-config": "workspace:^2.18.4",
     "@types/node": "^18.18.2",
     "ts-node": "^10.9.1",
     "ts-patch": "3.1.2",

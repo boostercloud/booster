@@ -1,8 +1,8 @@
 import { BoosterConfig, TraceActionTypes } from '@boostercloud/framework-types'
 import { EventStore } from './services/event-store'
 import { RawEventsParser } from './services/raw-events-parser'
-import { ReadModelStore } from './services/read-model-store'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+import { ReadModelStore } from './services/read-model-store'
 import { Trace } from './instrumentation'
 import { BoosterEventProcessor } from './booster-event-processor'
 

@@ -1,4 +1,4 @@
-import { CosmosClient, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
+import { CosmosClient, ItemDefinition, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
 import {
   BoosterConfig,
   FilterFor,
@@ -9,6 +9,25 @@ import {
   SortFor,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+
+export async function replaceOrDeleteItem(
+  cosmosDb: CosmosClient,
+  container: string,
+  config: BoosterConfig,
+  id: string,
+  partitionKey: string,
+  newValue?: ItemDefinition
+): Promise<void> {
+  if (newValue) {
+    await cosmosDb
+      .database(config.resourceNames.applicationStack)
+      .container(container)
+      .item(id, partitionKey)
+      .replace(newValue)
+  } else {
+    await cosmosDb.database(config.resourceNames.applicationStack).container(container).item(id, partitionKey).delete()
+  }
+}
 
 export async function search<TResult>(
   cosmosDb: CosmosClient,
@@ -41,7 +60,7 @@ export async function search<TResult>(
     parameters: buildExpressionAttributeValues(filters),
   }
 
-  logger.debug('Running search with the following params: \n', querySpec)
+  logger.debug('Running search with the following params: \n', JSON.stringify(querySpec))
   let { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
     .container(containerName)
@@ -224,6 +243,9 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
     return projections
   }
 
+  // Preprocess the projections
+  const preprocessedProjections = preprocessProjections(projections)
+
   // Helper function to convert dot notation to square-bracket notation
   const toSquareBracketsNotation = (path: string): string => {
     return path
@@ -234,7 +256,7 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
 
   // Group fields by the root property
   const groupedFields: { [key: string]: string[] } = {}
-  Object.values(projections).forEach((field: string) => {
+  Object.values(preprocessedProjections).forEach((field: string) => {
     const root: string = field.split('.')[0]
     if (!groupedFields[root]) {
       groupedFields[root] = []
@@ -293,6 +315,51 @@ function buildProjections(projections: ProjectionFor<unknown> | string = '*'): s
       }
     })
     .join(', ')
+}
+
+/**
+ * Preprocesses the projections to handle nested arrays and objects.
+ *
+ * @param {ProjectionFor<unknown>} projections - The projections to preprocess.
+ * @returns {ProjectionFor<unknown>} - The preprocessed projections.
+ */
+function preprocessProjections(projections: ProjectionFor<unknown>): ProjectionFor<unknown> {
+  const processed = new Set<string>()
+
+  Object.values(projections).forEach((field: string) => {
+    const parts = field.split('.')
+    const arrayIndices = parts.reduce((acc, part, index) => {
+      if (part.endsWith('[]')) acc.push(index)
+      return acc
+    }, [] as number[])
+
+    if (
+      arrayIndices.length === 0 ||
+      (arrayIndices[0] === 0 && arrayIndices.length === 1) ||
+      (arrayIndices[0] === 1 && arrayIndices.length === 1)
+    ) {
+      // This block is accessed when one of the following occurs:
+      // - No arrays in the projection
+      // - Top-level array not followed by another array
+      // - Array nested within a top-level property, no arrays follow
+      processed.add(field)
+    } else {
+      // Cases with nested arrays or arrays deeper in the structure
+      const processToIndex = arrayIndices[0] === 0 || arrayIndices[0] === 1 ? arrayIndices[1] : arrayIndices[0]
+      const processedField = parts.slice(0, processToIndex + 1).join('.')
+      processed.add(processedField.slice(0, -2)) // Remove the '[]' from the last part
+    }
+  })
+
+  // Convert the Set back to the original type of projections
+  if (Array.isArray(projections)) {
+    return Array.from(processed) as ProjectionFor<unknown>
+  } else {
+    return Array.from(processed).reduce((acc, field) => {
+      ;(acc as any)[field] = field
+      return acc
+    }, {} as ProjectionFor<unknown>)
+  }
 }
 
 /**

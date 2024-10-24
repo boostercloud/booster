@@ -48,6 +48,7 @@ import {
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
 } from './library/health-adapter'
+import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 import * as process from 'process'
 
 export * from './paths'
@@ -82,6 +83,10 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
     storeDispatched: storeDispatchedEvent,
+    findDeletableEvent: findDeletableEvent.bind(null, eventRegistry),
+    findDeletableSnapshot: findDeletableSnapshot.bind(null, eventRegistry),
+    deleteEvent: deleteEvent.bind(null, eventRegistry),
+    deleteSnapshot: deleteSnapshot.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -127,6 +132,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     graphQLFunctionUrl: graphqlFunctionUrl,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
+    areRocketFunctionsUp: notImplemented as any,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

@@ -1,25 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  TraceActionTypes,
   AnyClass,
   BoosterConfig,
   FilterFor,
   GraphQLOperation,
   InvalidParameterError,
   NotFoundError,
+  ProjectionFor,
   ReadModelInterface,
   ReadModelListResult,
+  ReadModelMetadata,
   ReadModelRequestEnvelope,
   ReadOnlyNonEmptyArray,
+  SequenceKey,
   SortFor,
   SubscriptionEnvelope,
-  ProjectionFor,
+  TraceActionTypes,
+  UUID,
 } from '@boostercloud/framework-types'
-import { createInstance, createInstances, getLogger } from '@boostercloud/framework-common-helpers'
+import {
+  createInstance,
+  createInstances,
+  createInstanceWithCalculatedProperties,
+  getLogger,
+} from '@boostercloud/framework-common-helpers'
 import { Booster } from './booster'
 import { applyReadModelRequestBeforeFunctions } from './services/filter-helpers'
 import { ReadModelSchemaMigrator } from './read-model-schema-migrator'
 import { Trace } from './instrumentation'
+import { PropertyMetadata } from '@boostercloud/metadata-booster'
 
 export class BoosterReadModelsReader {
   public constructor(readonly config: BoosterConfig) {}
@@ -88,6 +97,23 @@ export class BoosterReadModelsReader {
     select?: ProjectionFor<TReadModel>
   ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
     const readModelName = readModelClass.name
+
+    let selectWithDependencies: ProjectionFor<TReadModel> | undefined = undefined
+    const calculatedFieldsDependencies = this.getCalculatedFieldsDependencies(readModelClass)
+
+    if (select && Object.keys(calculatedFieldsDependencies).length > 0) {
+      const extendedSelect = new Set<string>(select)
+
+      select.forEach((field: any) => {
+        const topLevelField = field.split('.')[0].replace('[]', '')
+        if (calculatedFieldsDependencies[topLevelField]) {
+          calculatedFieldsDependencies[topLevelField].map((dependency) => extendedSelect.add(dependency))
+        }
+      })
+
+      selectWithDependencies = Array.from(extendedSelect) as ProjectionFor<TReadModel>
+    }
+
     const searchResult = await this.config.provider.readModels.search<TReadModel>(
       this.config,
       readModelName,
@@ -96,14 +122,26 @@ export class BoosterReadModelsReader {
       limit,
       afterCursor,
       paginatedVersion ?? false,
-      select
+      selectWithDependencies ?? select
     )
 
-    if (select) {
-      return searchResult
-    }
     const readModels = this.createReadModelInstances(searchResult, readModelClass)
+    if (select) {
+      return this.createReadModelInstancesWithCalculatedProperties(searchResult, readModelClass, select ?? [])
+    }
     return this.migrateReadModels(readModels, readModelName)
+  }
+
+  public async finderByIdFunction<TReadModel extends ReadModelInterface>(
+    readModelClass: AnyClass,
+    id: UUID,
+    sequenceKey?: SequenceKey
+  ): Promise<ReadOnlyNonEmptyArray<TReadModel> | TReadModel> {
+    const readModels = await this.config.provider.readModels.fetch(this.config, readModelClass.name, id, sequenceKey)
+    if (sequenceKey) {
+      return readModels as ReadOnlyNonEmptyArray<TReadModel>
+    }
+    return readModels[0] as TReadModel
   }
 
   private async migrateReadModels<TReadModel extends ReadModelInterface>(
@@ -130,6 +168,34 @@ export class BoosterReadModelsReader {
     return {
       ...searchResult,
       items: createInstances(readModelClass, searchResult.items),
+    }
+  }
+
+  /**
+   * Creates instances of the read model class with the calculated properties included
+   * @param searchResult The search result
+   * @param readModelClass The read model class
+   * @param propertiesToInclude The properties to include in the response
+   * @private
+   */
+  private async createReadModelInstancesWithCalculatedProperties<TReadModel extends ReadModelInterface>(
+    searchResult: Array<TReadModel> | ReadModelListResult<TReadModel>,
+    readModelClass: AnyClass,
+    propertiesToInclude: ProjectionFor<TReadModel>
+  ): Promise<Array<TReadModel> | ReadModelListResult<TReadModel>> {
+    const processInstance = async (raw: Partial<TReadModel>): Promise<TReadModel> => {
+      const instance = await createInstanceWithCalculatedProperties(readModelClass, raw, propertiesToInclude)
+      return instance as TReadModel
+    }
+
+    if (Array.isArray(searchResult)) {
+      return await Promise.all(searchResult.map(processInstance))
+    } else {
+      const processedItems = await Promise.all(searchResult.items.map(processInstance))
+      return {
+        ...searchResult,
+        items: processedItems,
+      }
     }
   }
 
@@ -215,5 +281,21 @@ export class BoosterReadModelsReader {
       operation,
     }
     return this.config.provider.readModels.subscribe(this.config, subscription)
+  }
+
+  /**
+   * Returns the dependencies of the calculated fields of a read model
+   * @param readModelClass The read model class
+   * @private
+   */
+  private getCalculatedFieldsDependencies(readModelClass: AnyClass): Record<string, Array<string>> {
+    const readModelMetadata: ReadModelMetadata = this.config.readModels[readModelClass.name]
+
+    const dependenciesMap: Record<string, Array<string>> = {}
+    readModelMetadata?.properties.map((property: PropertyMetadata): void => {
+      dependenciesMap[property.name] = property.dependencies
+    })
+
+    return dependenciesMap
   }
 }

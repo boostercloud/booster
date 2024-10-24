@@ -127,10 +127,14 @@ export class BoosterEventProcessor {
   ): Promise<void> {
     const register = new Register(eventEnvelope.requestID, {}, RegisterHandler.flush, eventEnvelope.currentUser)
     try {
+      const logger = getLogger(config, 'BoosterEventProcessor#handleEvent')
+      logger.debug('Calling "handle" method on event handler: ', eventHandler)
       await eventHandler.handle(eventInstance, register)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
-      const error = await globalErrorDispatcher.dispatch(new EventHandlerGlobalError(eventInstance, e))
+      const error = await globalErrorDispatcher.dispatch(
+        new EventHandlerGlobalError(eventEnvelope, eventInstance, e.eventHandlerMetadata, e)
+      )
       if (error) throw error
     }
     await RegisterHandler.handle(config, register)

@@ -9,6 +9,9 @@ import { UUID, Register, BoosterConfig } from '@boostercloud/framework-types'
 describe('the `EventHandler` decorator', () => {
   afterEach(() => {
     Booster.configureCurrentEnv((config: BoosterConfig) => {
+      for (const propName in config.events) {
+        delete config.events[propName]
+      }
       for (const propName in config.eventHandlers) {
         delete config.eventHandlers[propName]
       }

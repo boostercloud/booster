@@ -77,6 +77,10 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       store: storeEvents.bind(null, dynamoDB),
       storeSnapshot: storeSnapshot.bind(null, dynamoDB),
       storeDispatched: storeDispatchedEvent,
+      findDeletableEvent: notImplementedResult as any,
+      findDeletableSnapshot: notImplementedResult as any,
+      deleteEvent: notImplementedResult as any,
+      deleteSnapshot: notImplementedResult as any,
     },
     // ProviderReadModelsLibrary
     readModels: {
@@ -124,6 +128,8 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       rawRequestToHealthEnvelope: (rawRequest: unknown): HealthEnvelope => {
         throw new Error('Not implemented')
       },
+      areRocketFunctionsUp: async (config: BoosterConfig): Promise<{ [key: string]: boolean }> =>
+        notImplementedResult(),
     },
     // ProviderInfrastructureGetter
     infrastructure: () => {

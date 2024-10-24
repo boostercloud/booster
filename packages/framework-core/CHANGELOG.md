@@ -1,6 +1,83 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 13 Jun 2024 16:17:26 GMT and should not be manually modified.
+This log was last generated on Tue, 08 Oct 2024 15:06:52 GMT and should not be manually modified.
+
+## 2.18.4
+Tue, 08 Oct 2024 15:06:52 GMT
+
+### Patches
+
+- Remove unnecessary @cdktf/provider-azurerm dependency from Azure provider package
+
+## 2.18.3
+Mon, 30 Sep 2024 19:09:52 GMT
+
+### Patches
+
+- Fix handling of deeply-nested arrays an sub-array properties in Read Model queries in local provider
+
+## 2.18.2
+Wed, 25 Sep 2024 18:23:11 GMT
+
+### Patches
+
+- Correct handling of deeply-nested arrays and sub-array properties in Read Model queries
+
+## 2.18.1
+Wed, 04 Sep 2024 18:51:46 GMT
+
+### Patches
+
+- Fix types for Projects decorator
+
+## 2.18.0
+Thu, 29 Aug 2024 21:39:42 GMT
+
+### Minor changes
+
+- Add remove events
+
+## 2.17.0
+Wed, 21 Aug 2024 00:15:44 GMT
+
+### Minor changes
+
+- Health sensors for Rockets
+
+## 2.16.0
+Tue, 06 Aug 2024 20:59:53 GMT
+
+### Minor changes
+
+- Improve GlobalErrorHandler
+
+## 2.15.0
+Wed, 31 Jul 2024 14:54:27 GMT
+
+### Minor changes
+
+- Handle non-found events with global error handler
+
+## 2.14.0
+Tue, 30 Jul 2024 18:43:55 GMT
+
+### Minor changes
+
+- Read Models projections by ReadModel query
+
+## 2.13.1
+Fri, 26 Jul 2024 09:36:18 GMT
+
+### Patches
+
+- Bump ws version (fixes CVE-2024-37890)
+
+## 2.13.0
+Fri, 19 Jul 2024 16:36:39 GMT
+
+### Minor changes
+
+- Improve support for calculated fields and their dependencies on read models
 
 ## 2.12.1
 Thu, 13 Jun 2024 16:17:26 GMT

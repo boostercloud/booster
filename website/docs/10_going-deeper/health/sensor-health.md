@@ -87,10 +87,11 @@ Booster provides the following endpoints to retrieve the enabled components:
 * https://your-application-url/sensor/health/booster/database/events: Events status
 * https://your-application-url/sensor/health/booster/database/readmodels: ReadModels status
 * https://your-application-url/sensor/health/booster/function: Functions status
+* https://your-application-url/sensor/health/rockets: Rockets status
 * https://your-application-url/sensor/health/your-component-id: User defined status
 * https://your-application-url/sensor/health/your-component-id/your-component-child-id: User child component status 
 
-Depending on the `showChildren` configuration, children components will be included or not.
+Depending on the `showChildren` configuration, child components will be included or not.
 
 ### Health Status Response
 
@@ -100,7 +101,7 @@ Each component response will contain the following information:
 * name: component description
 * id: string. unique component identifier. You can request a component status using the id in the url
 * details: optional object. If `details` is true, specific details about this component.
-* components: optional object. If `showChildren` is true, children components health status.  
+* components: optional object. If `showChildren` is true, child components health status.  
 
 Example: 
 
@@ -150,6 +151,7 @@ Use the `id` field to get specific component health information. Booster provide
 * booster/database
 * booster/database/events
 * booster/database/readmodels
+* rockets
 
 You can provide new components:
 ```typescript
@@ -189,8 +191,8 @@ Health components are fully configurable, allowing you to display the informatio
 Configuration options:
 * enabled: If false, this indicator and the components of this indicator will be skipped
 * details: If false, the indicator will not include the details
-* showChildren: If false, this indicator will not include children components in the tree.
-  * Children components will be shown through children urls
+* showChildren: If false, this indicator will not include child components in the tree.
+  * Child components will be shown through child urls
 * authorize: Authorize configuration. [See security documentation](https://docs.boosterframework.com/security/security) 
 
 #### Booster components default configuration
@@ -314,14 +316,24 @@ export class ApplicationHealthIndicator {
     * file: Read Models database file
     * count: number of total rows
 
-> **Note**: details will be included only if `details` is enabled
+:::note
+Details will be included only if `details` is enabled
+:::
 
+#### rockets
+
+* status: UP if and only if all rockets are UP, PARTIALLY_UP if not all rockets are UP
+
+:::note
+Sensors for rockets is only available for the Azure provider
+:::
 
 ### Health status
 
 Available status are
 
 * UP: The component or subsystem is working as expected
+* PARTIALLY_UP: The component is partially working or has reduced functionality
 * DOWN: The component is not working
 * OUT_OF_SERVICE: The component is out of service temporarily
 * UNKNOWN: The component state is unknown
@@ -370,7 +382,7 @@ If the request url is https://your-application-url/sensor/health/database, the c
 [Empty]
 ```
 
-And the children components will be disabled too using direct url https://your-application-url/sensor/health/database/events
+And the child components will be disabled too using direct url https://your-application-url/sensor/health/database/events
 
 ```text
 [Empty]

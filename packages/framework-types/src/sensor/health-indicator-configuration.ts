@@ -4,6 +4,7 @@ import { Class } from '../typelevel'
 
 export enum HealthStatus {
   UP = 'UP', // The component or subsystem is working as expected
+  PARTIALLY_UP = 'PARTIALLY_UP', // The component is partially working or has reduced functionality
   DOWN = 'DOWN', // The component is not working
   OUT_OF_SERVICE = 'OUT_OF_SERVICE', // The component is out of service temporarily
   UNKNOWN = 'UNKNOWN', // The component state is unknown
@@ -28,6 +29,7 @@ export enum BOOSTER_HEALTH_INDICATORS_IDS {
   DATABASE = 'booster/database',
   DATABASE_EVENTS = 'booster/database/events',
   DATABASE_READ_MODELS = 'booster/database/readmodels',
+  ROCKETS = 'rockets',
 }
 
 export const DEFAULT_HEALTH_CONFIGURATION_BOOSTER: SensorBoosterHealthConfigurationDetails = {
@@ -45,6 +47,7 @@ export const DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS: Record<
   [BOOSTER_HEALTH_INDICATORS_IDS.DATABASE]: { ...DEFAULT_HEALTH_CONFIGURATION_BOOSTER },
   [BOOSTER_HEALTH_INDICATORS_IDS.DATABASE_EVENTS]: { ...DEFAULT_HEALTH_CONFIGURATION_BOOSTER },
   [BOOSTER_HEALTH_INDICATORS_IDS.DATABASE_READ_MODELS]: { ...DEFAULT_HEALTH_CONFIGURATION_BOOSTER },
+  [BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS]: { ...DEFAULT_HEALTH_CONFIGURATION_BOOSTER },
 }
 
 export type SensorBoosterHealthConfigurationDetails = HealthIndicatorConfigurationBase
@@ -57,6 +60,7 @@ export interface SensorBoosterHealthConfiguration {
     [BOOSTER_HEALTH_INDICATORS_IDS.DATABASE]: SensorBoosterHealthConfigurationDetails
     [BOOSTER_HEALTH_INDICATORS_IDS.DATABASE_EVENTS]: SensorBoosterHealthConfigurationDetails
     [BOOSTER_HEALTH_INDICATORS_IDS.DATABASE_READ_MODELS]: SensorBoosterHealthConfigurationDetails
+    [BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS]: SensorBoosterHealthConfigurationDetails
   }
 }
 

@@ -10,6 +10,7 @@ import {
   NotificationMetadata,
   ProjectionMetadata,
   QueryMetadata,
+  ReadModelInterface,
   ReadModelMetadata,
   ReducerMetadata,
   RoleMetadata,
@@ -83,7 +84,8 @@ export class BoosterConfig {
   public readonly queryHandlers: Record<QueryName, QueryMetadata> = {}
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
-  public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface>>> = {}
+  public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>> = {}
+  public readonly unProjections: Record<EntityName, Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>> = {}
   public readonly readModelSequenceKeys: Record<EntityName, string> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}

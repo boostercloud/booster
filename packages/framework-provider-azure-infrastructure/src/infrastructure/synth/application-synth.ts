@@ -25,7 +25,7 @@ import { TerraformWebPubsubHub } from './terraform-web-pubsub-hub'
 import { TerraformWebPubSubExtensionKey } from './terraform-web-pub-sub-extension-key'
 import { TerraformEventHubNamespace } from './terraform-event-hub-namespace'
 import { TerraformEventHub } from './terraform-event-hub'
-import { windowsFunctionApp } from '@cdktf/provider-azurerm'
+import { storageAccount, windowsFunctionApp } from '@cdktf/provider-azurerm'
 import { TerraformNetworkSecurityGroup } from './gateway/terraform-network-security-group'
 import { TerraformVirtualNetwork } from './gateway/terraform-virtual-network'
 import { TerraformPublicIp } from './gateway/terraform-public-ip'
@@ -33,6 +33,7 @@ import { TerraformPublicIpData } from './gateway/terraform-public-ip-data'
 import { TerraformSubnet } from './gateway/terraform-subnet'
 import { TerraformSubnetSecurity } from './gateway/terraform-subnet-security'
 import { BASIC_SERVICE_PLAN } from '../constants'
+import { TerraformFunctionAppSettings } from './terraform-function-app-settings'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -51,7 +52,7 @@ export class ApplicationSynth {
   public constructor(terraformStack: TerraformStack) {
     this.config = readProjectConfig(process.cwd())
     const azurermProvider = new AzurermProvider(terraformStack, 'azureFeature', {
-      features: {},
+      features: [{}],
     })
     const appPrefix = buildAppPrefix(this.config)
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
@@ -121,7 +122,6 @@ export class ApplicationSynth {
   ): windowsFunctionApp.WindowsFunctionApp {
     return TerraformFunctionApp.build(
       stack,
-      this.config,
       stack.applicationServicePlan!,
       stack.storageAccount!,
       'func',
@@ -139,11 +139,12 @@ export class ApplicationSynth {
       stack.eventConsumerStorageAccount = TerraformStorageAccount.build(stack, 'sc')
       stack.eventConsumerFunctionApp = TerraformFunctionApp.build(
         stack,
-        this.config,
         stack.eventConsumerServicePlan,
         stack.eventConsumerStorageAccount,
         'fhub',
-        stack.streamFunctionAppName
+        stack.streamFunctionAppName,
+        undefined,
+        this.buildDefaultAppSettings(stack, stack.eventConsumerStorageAccount, 'fhub')
       )
       if (!stack.containers) {
         stack.containers = []
@@ -163,5 +164,13 @@ export class ApplicationSynth {
       stack.dataFunctionAppHostKeys = TerraformWebPubSubExtensionKey.build(stack)
       stack.webPubSubHub = TerraformWebPubsubHub.build(stack)
     }
+  }
+
+  public buildDefaultAppSettings(
+    stack: ApplicationSynthStack,
+    storageAccount: storageAccount.StorageAccount,
+    suffixName: string
+  ) {
+    return TerraformFunctionAppSettings.build(stack, this.config, storageAccount!, suffixName)
   }
 }

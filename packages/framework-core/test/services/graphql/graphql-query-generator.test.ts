@@ -167,6 +167,7 @@ describe('GraphQLQueryGenerator', () => {
                       isNullable: false,
                       isGetAccessor: false,
                     },
+                    dependencies: [],
                   },
                 ],
                 methods: [
@@ -181,6 +182,7 @@ describe('GraphQLQueryGenerator', () => {
                       isNullable: false,
                       isGetAccessor: false,
                     },
+                    dependencies: [],
                   },
                 ],
               } as ClassMetadata
@@ -282,6 +284,7 @@ describe('GraphQLQueryGenerator', () => {
                           isNullable: false,
                           isGetAccessor: false,
                         },
+                        dependencies: [],
                       },
                     ],
                     methods: [],
@@ -371,6 +374,7 @@ describe('GraphQLQueryGenerator', () => {
                           isNullable: false,
                           isGetAccessor: false,
                         },
+                        dependencies: [],
                       },
                     ],
                     methods: [],
@@ -523,7 +527,7 @@ describe('GraphQLQueryGenerator', () => {
           const returnElementType = (queryReturnType as GraphQLList<GraphQLObjectType>).ofType
           expect(returnElementType.name).to.be.equal('EventQueryResponse')
           expect(new Set(Object.keys(returnElementType.getFields()))).to.be.deep.equal(
-            new Set(['type', 'entity', 'requestID', 'entityID', 'user', 'createdAt', 'value'])
+            new Set(['type', 'entity', 'requestID', 'entityID', 'user', 'createdAt', 'value', 'deletedAt'])
           )
           const userType = returnElementType.getFields()['user'].type as GraphQLObjectType
           expect(new Set(Object.keys(userType.getFields()))).to.be.deep.equal(new Set(['id', 'username', 'roles']))

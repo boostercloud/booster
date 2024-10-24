@@ -225,6 +225,74 @@ describe('the read model registry', () => {
       }
       expect(result[0]).to.deep.include(expectedReadModel)
     })
+
+    it('should return only projected fields for complex read models', async () => {
+      const complexReadModel: ReadModelEnvelope = {
+        typeName: random.word(),
+        value: {
+          id: random.uuid(),
+          x: {
+            arr: [{ y: random.word(), z: random.number() }],
+          },
+          foo: {
+            bar: {
+              items: [{ id: random.uuid(), name: random.word() }],
+              baz: { items: [{ id: random.uuid(), name: random.word() }] },
+            },
+          },
+          arr: [
+            {
+              id: random.uuid(),
+              subArr: [{ id: random.uuid(), name: random.word() }],
+            },
+          ],
+          boosterMetadata: {
+            version: 1,
+            schemaVersion: 1,
+          },
+        },
+      }
+
+      await readModelRegistry.store(complexReadModel, 1)
+
+      const result = await readModelRegistry.query(
+        {
+          value: complexReadModel.value,
+          typeName: complexReadModel.typeName,
+        },
+        undefined,
+        undefined,
+        undefined,
+        [
+          'id',
+          'x.arr[].z',
+          'foo.bar.items[].id',
+          'foo.bar.baz.items[].id',
+          'arr[].subArr[].id',
+          'arr[].id',
+        ] as ProjectionFor<unknown>
+      )
+
+      expect(result.length).to.be.equal(1)
+      const expectedReadModel = {
+        value: {
+          id: complexReadModel.value.id,
+          x: {
+            arr: complexReadModel.value.x.arr.map((item: any) => ({ z: item.z })),
+          },
+          foo: {
+            bar: {
+              items: complexReadModel.value.foo.bar.items.map((item: any) => ({ id: item.id })),
+              baz: { items: complexReadModel.value.foo.bar.baz.items.map((item: any) => ({ id: item.id })) },
+            },
+          },
+          arr: complexReadModel.value.arr.map((item: any) => {
+            return { id: item.id, subArr: item.subArr.map((subItem: any) => ({ id: subItem.id })) }
+          }),
+        },
+      }
+      expect(result[0]).to.deep.include(expectedReadModel)
+    })
   })
 
   describe('delete by id', () => {

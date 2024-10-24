@@ -58,6 +58,7 @@ jobs:
           name: integration-test-dependencies-${{ inputs.command_sha }}
           path: packages/framework-integration-tests/.booster
           retention-days: 1
+          include-hidden-files: true
 
       - name: Upload integration test dependencies
         uses: actions/upload-artifact@v4
@@ -67,3 +68,4 @@ jobs:
           name: integration-test-dependencies-${{ github.sha }}
           path: packages/framework-integration-tests/.booster
           retention-days: 1
+          include-hidden-files: true

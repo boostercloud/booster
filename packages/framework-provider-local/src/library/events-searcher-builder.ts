@@ -56,6 +56,7 @@ export function resultToEventSearchResponse(result: Array<EventEnvelope> | null)
       user: item.currentUser,
       createdAt: item.createdAt,
       value: item.value,
+      deletedAt: item.deletedAt,
     } as EventSearchResponse
   })
   return eventSearchResult ?? []

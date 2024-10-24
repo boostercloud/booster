@@ -101,6 +101,77 @@ You can even select arrays of UUIDs as `joinKey`. Booster get each value on the 
   }
 ```
 
+#### ReadModel queries
+
+You can use a read model query as a join key to get all the read models that match the query. For example, consider the following read model for car purchases:
+
+```typescript
+@ReadModel
+export class CarPurchasesReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly carModel?: string,
+    readonly carOwner?: string,
+    readonly offers?: Array<CarOffers>
+  ) {}
+
+  // rest of the code
+}
+```
+
+If a car model changed its name (or any other property of such an entity that's projected in `CarPurchasesReadModel` changed its value) and there are many purchases associated to that model, then it would be necessary to update all read model instances associated to that specific model so that name change is reflected. The better alternative is to instead project a `CarModel` entity:
+
+```typescript
+@ReadModel
+export class CarPurchasesReadModel {
+  public constructor(
+    readonly id: UUID,
+    readonly carModel?: CarModel,
+    readonly carOwner?: CarOwner,
+    readonly offers?: Array<CarOffers>
+  ) {}
+
+  @Projects(CarModel, (carModel: CarModel): FilterFor<CarPurchasesReadModel> => {
+    return {
+      carModel: {
+        id: {
+          eq: carModel.id,
+        },
+      },
+    }
+  })
+  public static projectWithModel(
+    model: CarModel,
+    readModelId: UUID | undefined,
+    oldCarPurchaseReadModel?: CarPurchasesReadModel
+  ): ProjectionResult<CarPurchasesReadModel> {
+    if (!readModelId) {
+      return ReadModelAction.Nothing
+    }
+    return new CarPurchasesReadModel(
+      readModelId,
+      model,
+      oldCarPurchaseReadModel?.carOwner,
+      oldCarPurchaseReadModel?.offers
+    )
+  }
+}
+```
+
+Since the `CarModel` entity doesn't have a field that matches the `id` field of `CarPurchasesReadModel`, this projection can use a read model query join key to get all the `CarPurchasesReadModel` instances for a given `CarModel`.
+
+In this case, the `projectWithModel` function will be called for each `CarPurchasesReadModel` instance that matches the query. The `readModelId` argument will be the `id` of the `CarPurchasesReadModel` instance.
+
+With this approach, every time there's a change in the `CarModel` entity it will be reflected in the read model without the need to manually update all read model instances.
+
+:::note
+If no read model matches the query, the `projectWithModel` function will be called with `readModelId` set to `undefined`.
+:::
+
+:::note
+Take a look at the [Getting, filtering and projecting read models data at code level](/graphql#getting-filtering-and-projecting-read-models-data-at-code-level) section for more information on how to filter read models.
+:::
+
 ### Returning special values
 
 Projections usually return a new instance of the read model. However, there are some special cases where you may want to return a different value.
@@ -151,7 +222,11 @@ Keeping the read model untouched higly recommended in favour of returning a new 
 
 ## Nested queries and calculated values using getters
 
-You can use TypeScript getters in your read models to allow nested queries and/or return calculated values. You can write arbitrary code in a getter, but you will tipically query for related read model objects or generate a value computed based on the current read model instance or context. This greatly improves the potential of customizing your read model responses.
+You can use TypeScript getters in your read models to allow nested queries and/or return calculated values. You can write arbitrary code in a getter, but you will typically query for related read model objects or generate a value computed based on the current read model instance or context. This greatly improves the potential of customizing your read model responses.
+
+:::info
+Starting version 2.13, getters for values which are calculated using other properties of the read model need to be annotated with the `@CalculatedField` decorator and a list of those properties as dependencies.
+:::
 
 Here's an example of a getter in the `UserReadModel` class that returns all `PostReadModel`s that belong to a specific `UserReadModel`:
 
@@ -160,6 +235,7 @@ Here's an example of a getter in the `UserReadModel` class that returns all `Pos
 export class UserReadModel {
   public constructor(readonly id: UUID, readonly name: string, private postIds: UUID[]) {}
 
+  @CalculatedField({ dependsOn: ['postIds'] })
   public get posts(): Promise<PostReadModel[]> {
     return this.postIds.map((postId) => Booster.readModel(PostReadModel)
       .filter({
