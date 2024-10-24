@@ -182,11 +182,11 @@ describe('Queries end-to-end tests', () => {
                 SearchMedia(input: { searchword: $searchword }) {
                   results {
                     __typename
-                    ... on BookMedia {
+                    ... on BookReadModel {
                       title
                       pages
                     }
-                    ... on MovieMedia {
+                    ... on MovieReadModel {
                       title
                     }
                   }
@@ -196,7 +196,6 @@ describe('Queries end-to-end tests', () => {
           }),
         (result) => result?.data?.SearchMedia != undefined
       )
-      console.log(response)
       expect(response).not.to.be.null
     })
   })
