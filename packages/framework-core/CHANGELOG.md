@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 08 Oct 2024 15:06:52 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Oct 2024 18:40:31 GMT and should not be manually modified.
+
+## 2.18.5
+Tue, 29 Oct 2024 18:40:31 GMT
+
+### Patches
+
+- Add mandatory subscriptionId property
 
 ## 2.18.4
 Tue, 08 Oct 2024 15:06:52 GMT
