@@ -12,6 +12,7 @@ import * as configTs from '../templates/project/config-ts'
 import * as indexTs from '../templates/project/index-ts'
 import * as prettierRc from '../templates/project/prettierrc-yaml'
 import * as mochaRc from '../templates/project/mocharc-yml'
+import * as launchJson from '../templates/project/launch-json'
 import { guardError, wrapExecError } from '../common/errors'
 import { PackageManagerService } from './package-manager'
 import { gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
@@ -107,4 +108,5 @@ const filesToGenerate: Array<[Array<string>, string]> = [
   [['src', 'config', 'config.ts'], configTs.template],
   [['src', 'index.ts'], indexTs.template],
   [['.mocharc.yml'], mochaRc.template],
+  [['.vscode','launch.json'],launchJson.template], 
 ]
