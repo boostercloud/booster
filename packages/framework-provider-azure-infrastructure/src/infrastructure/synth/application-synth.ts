@@ -34,6 +34,7 @@ import { TerraformSubnet } from './gateway/terraform-subnet'
 import { TerraformSubnetSecurity } from './gateway/terraform-subnet-security'
 import { BASIC_SERVICE_PLAN } from '../constants'
 import { TerraformFunctionAppSettings } from './terraform-function-app-settings'
+import { configuration } from '../helper/params'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -53,6 +54,7 @@ export class ApplicationSynth {
     this.config = readProjectConfig(process.cwd())
     const azurermProvider = new AzurermProvider(terraformStack, 'azureFeature', {
       features: [{}],
+      subscriptionId: configuration.subscriptionId,
     })
     const appPrefix = buildAppPrefix(this.config)
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
