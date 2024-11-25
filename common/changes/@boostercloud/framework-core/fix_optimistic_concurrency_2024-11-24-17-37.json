@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Fixes optimistic concurrency issue found when projecting read models",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}

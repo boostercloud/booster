@@ -68,6 +68,13 @@ export async function search<TResult>(
     .fetchAll()
 
   resources = nestProperties(resources)
+  resources = resources.map((resource) => ({
+    ...resource,
+    boosterMetadata: {
+      ...resource.boosterMetadata,
+      optimisticConcurrencyValue: resource._etag,
+    },
+  }))
 
   if (paginatedVersion) {
     return {
