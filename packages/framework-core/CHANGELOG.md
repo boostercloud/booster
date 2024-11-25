@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 29 Oct 2024 18:40:31 GMT and should not be manually modified.
+This log was last generated on Mon, 25 Nov 2024 15:49:50 GMT and should not be manually modified.
+
+## 2.18.6
+Mon, 25 Nov 2024 15:49:50 GMT
+
+### Patches
+
+- Fixes optimistic concurrency issue found when projecting read models
 
 ## 2.18.5
 Tue, 29 Oct 2024 18:40:31 GMT

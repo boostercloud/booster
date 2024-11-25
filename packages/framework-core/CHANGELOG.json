@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.18.6",
+      "tag": "@boostercloud/framework-core_v2.18.6",
+      "date": "Mon, 25 Nov 2024 15:49:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixes optimistic concurrency issue found when projecting read models",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "55cc944003d23a62fec52ee945fc2bcd693f52aa"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.5` to `^2.18.6`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.5` to `^2.18.6`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.5` to `^2.18.6`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.5` to `^2.18.6`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.5",
       "tag": "@boostercloud/framework-core_v2.18.5",
       "date": "Tue, 29 Oct 2024 18:40:31 GMT",
