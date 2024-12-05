@@ -1,5 +1,5 @@
 import * as fs from 'fs-extra'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 import * as Mustache from 'mustache'
 import * as path from 'path'
 import * as tsConfig from '../templates/project/tsconfig-json'
@@ -59,7 +59,7 @@ export async function generateRootDirectory(config: ProjectInitializerConfig): P
 
 export async function initializeGit(config: ProjectInitializerConfig): Promise<void> {
   try {
-    await exec('git init && git add -A && git commit -m "Initial commit"', { cwd: projectDir(config) })
+    await command('git init && git add -A && git commit -m "Initial commit"', { cwd: projectDir(config) })
   } catch (e) {
     throw wrapExecError(e, 'Could not initialize git repository')
   }

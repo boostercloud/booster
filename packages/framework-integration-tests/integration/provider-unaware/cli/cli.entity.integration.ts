@@ -1,7 +1,7 @@
 import { expect } from 'chai'
-import { readFileContent, writeFileContent, loadFixture, removeFolders, sandboxPathFor } from '../../helper/file-helper'
+import { loadFixture, readFileContent, removeFolders, sandboxPathFor, writeFileContent } from '../../helper/file-helper'
 import * as path from 'path'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -29,7 +29,7 @@ describe('Entity', () => {
           ['boost new:entity', 'Verifying project', 'Creating new entity', 'Entity generated'].join('(.|\n)*'),
           'm'
         )
-        const { stdout } = await exec(`${cliPath} new:entity Post`, { cwd: entitySandboxDir })
+        const { stdout } = await command(`${cliPath} new:entity Post`, { cwd: entitySandboxDir })
         expect(stdout).to.match(expectedOutputRegex)
 
         const expectedEntityContent = readFileContent('integration/fixtures/entities/post.ts')
@@ -44,7 +44,7 @@ describe('Entity', () => {
           ['boost new:entity', 'Verifying project', 'Creating new entity', 'Entity generated'].join('(.|\n)*'),
           'm'
         )
-        const { stdout } = await exec(`${cliPath} new:entity PostWithFields --fields title:string body:string`, {
+        const { stdout } = await command(`${cliPath} new:entity PostWithFields --fields title:string body:string`, {
           cwd: entitySandboxDir,
         })
         expect(stdout).to.match(expectedOutputRegex)
@@ -61,7 +61,7 @@ describe('Entity', () => {
         const FILE_POST_CREATED_EVENT = `${entitySandboxDir}/src/events/post-created.ts`
 
         // Create event
-        await exec(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`, {
+        await command(`${cliPath} new:event PostCreated --fields postId:UUID title:string body:string`, {
           cwd: entitySandboxDir,
         })
 
@@ -75,7 +75,7 @@ describe('Entity', () => {
         writeFileContent(FILE_POST_CREATED_EVENT, updatedEventContent)
 
         // Create entity
-        await exec(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`, {
+        await command(`${cliPath} new:entity PostWithReducer --fields title:string body:string --reduces PostCreated`, {
           cwd: entitySandboxDir,
         })
         const expectedEntityContent = loadFixture('entities/post-with-reducer.ts')
@@ -96,7 +96,7 @@ describe('Entity', () => {
   context('invalid entity', () => {
     describe('missing entity name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:entity`, { cwd: entitySandboxDir })
+        const { stderr } = await command(`${cliPath} new:entity`, { cwd: entitySandboxDir })
 
         expect(stderr).to.match(/You haven't provided an entity name, but it is required, run with --help for usage/m)
       })

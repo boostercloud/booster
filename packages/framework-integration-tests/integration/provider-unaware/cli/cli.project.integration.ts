@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 import {
   createFolder,
   dirContents,
@@ -29,8 +29,8 @@ describe('Project', () => {
 
   before(async () => {
     // Required by Github actions CI/CD, because it doesn't have git configured
-    await exec('git config --global user.name || git config --global user.name "Booster Test"')
-    await exec('git config --global user.email || git config --global user.email "test@booster.cloud"')
+    await command('git config --global user.name || git config --global user.name "Booster Test"')
+    await command('git config --global user.email || git config --global user.email "test@booster.cloud"')
 
     createFolder(SANDBOX_INTEGRATION_DIR)
   })
@@ -112,12 +112,12 @@ describe('Project', () => {
     flags: Array<string> = [],
     promptAnswers?: PromptAnswers
   ): Promise<{ stdout: string; stderr: string }> => {
-    const cliProcess = exec(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, {
+    const cliProcess = command(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, {
       cwd: SANDBOX_INTEGRATION_DIR,
     })
 
     if (promptAnswers) {
-      await handlePrompt(cliProcess.childProcess, promptAnswers)
+      await handlePrompt(cliProcess, promptAnswers)
     }
 
     const { stdout, stderr } = await cliProcess
@@ -297,8 +297,11 @@ describe('Project', () => {
         })
 
         it('passes linter', async () => {
-          await expect(exec('npm run lint:check', { cwd: projectPath(projectName), capture: ['stderr', 'stdout'] })).to
-            .be.eventually.fulfilled
+          await expect(
+            command('npm run lint:check', {
+              cwd: projectPath(projectName),
+            })
+          ).to.be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
         // TODO: Remove the skip when there is at leas one version published of framework-common-helpers
@@ -307,9 +310,9 @@ describe('Project', () => {
           // Rewrite dependencies to use local versions
           await overrideWithBoosterLocalDependencies(fullProjectPath)
           // Install those dependencies
-          await exec('npm install --omit=dev --omit=optional --no-bin-links', { cwd: fullProjectPath })
+          await command('npm install --omit=dev --omit=optional --no-bin-links', { cwd: fullProjectPath })
 
-          await expect(exec('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
+          await expect(command('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
       })
 
@@ -385,7 +388,7 @@ describe('Project', () => {
   context('Invalid project', () => {
     describe('missing project name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:project`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await command(`${cliPath} new:project`, { cwd: SANDBOX_INTEGRATION_DIR })
 
         expect(stderr).to.match(/You haven't provided a project name, but it is required, run with --help for usage/)
       })

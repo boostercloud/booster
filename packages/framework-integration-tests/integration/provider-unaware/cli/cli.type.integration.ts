@@ -1,7 +1,7 @@
 import * as path from 'path'
 import { expect } from 'chai'
 import { loadFixture, readFileContent, removeFolders, sandboxPathFor } from '../../helper/file-helper'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -25,7 +25,7 @@ describe('Type', () => {
         ['boost new:type', 'Verifying project', 'Creating new type', 'Type generated'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} new:type Item`, { cwd: typeSandboxDir })
+      const { stdout } = await command(`${cliPath} new:type Item`, { cwd: typeSandboxDir })
       expect(stdout).to.match(expectedOutputRegex)
 
       const expectedTypeContent = loadFixture('common/item.ts')
@@ -35,7 +35,7 @@ describe('Type', () => {
 
     describe('with fields', () => {
       it('should create a new type with fields', async () => {
-        await exec(`${cliPath} new:type ItemWithFields --fields sku:string quantity:number`, {
+        await command(`${cliPath} new:type ItemWithFields --fields sku:string quantity:number`, {
           cwd: typeSandboxDir,
         })
 
@@ -49,7 +49,7 @@ describe('Type', () => {
   context('Invalid type', () => {
     describe('missing type name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:type`, { cwd: typeSandboxDir })
+        const { stderr } = await command(`${cliPath} new:type`, { cwd: typeSandboxDir })
 
         expect(stderr).to.match(/You haven't provided a type name, but it is required, run with --help for usage/)
       })
