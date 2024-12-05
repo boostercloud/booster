@@ -29,8 +29,10 @@ describe('Project', () => {
 
   before(async () => {
     // Required by Github actions CI/CD, because it doesn't have git configured
-    await command('git config --global user.name || git config --global user.name "Booster Test"')
-    await command('git config --global user.email || git config --global user.email "test@booster.cloud"')
+    await command('git config --global user.name || git config --global user.name "Booster Test"', { shell: true })
+    await command('git config --global user.email || git config --global user.email "test@booster.cloud"', {
+      shell: true,
+    })
 
     createFolder(SANDBOX_INTEGRATION_DIR)
   })
@@ -114,6 +116,7 @@ describe('Project', () => {
   ): Promise<{ stdout: string; stderr: string }> => {
     const cliProcess = command(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, {
       cwd: SANDBOX_INTEGRATION_DIR,
+      shell: true,
     })
 
     if (promptAnswers) {

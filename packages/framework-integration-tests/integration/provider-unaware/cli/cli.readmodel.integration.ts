@@ -58,7 +58,7 @@ describe('Read model', () => {
 
         const { stdout } = await command(
           cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<Item>'",
-          { cwd: readModelSandboxDir }
+          { cwd: readModelSandboxDir, shell: true }
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
@@ -82,7 +82,7 @@ describe('Read model', () => {
 
         const { stdout } = await command(
           cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<Item>' --projects Cart:id",
-          { cwd: readModelSandboxDir }
+          { cwd: readModelSandboxDir, shell: true }
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
