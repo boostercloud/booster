@@ -1,4 +1,4 @@
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 import * as path from 'path'
 import * as fs from 'fs'
 
@@ -35,5 +35,5 @@ function overrideWithLocalDeps(dependencies: Record<string, string>): void {
 }
 
 export async function forceRepoRebuild(): Promise<void> {
-  await exec('rush update && rush rebuild')
+  await command('rush update && rush rebuild')
 }

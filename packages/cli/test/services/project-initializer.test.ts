@@ -1,13 +1,13 @@
 import * as fs from 'fs-extra'
-import * as childProcessPromise from 'child-process-promise'
+import * as execa from 'execa'
 import {
   generateConfigFiles,
-  installDependencies,
   generateRootDirectory,
   initializeGit,
+  installDependencies,
   ProjectInitializerConfig,
 } from '../../src/services/project-initializer'
-import { restore, replace, fake } from 'sinon'
+import { fake, replace, restore } from 'sinon'
 import { expect } from '../expect'
 import { makeTestPackageManager } from './package-manager/test.impl'
 import * as PackageManager from '../../src/services/package-manager/live.impl'
@@ -16,7 +16,7 @@ describe('project initializer', (): void => {
   beforeEach(() => {
     replace(fs, 'mkdirs', fake.resolves({}))
     replace(fs, 'outputFile', fake.resolves({}))
-    replace(childProcessPromise, 'exec', fake.resolves({}))
+    replace(execa, 'command', fake.resolves({ stdout: '', stderr: '' }))
   })
 
   afterEach(() => {
@@ -42,9 +42,7 @@ describe('project initializer', (): void => {
 
   it('initialize Git', async () => {
     await initializeGit(defaultProjectInitializerConfig)
-    expect(childProcessPromise.exec).to.have.been.calledWithMatch(
-      'git init && git add -A && git commit -m "Initial commit"'
-    )
+    expect(execa.command).to.have.been.calledWithMatch('git init && git add -A && git commit -m "Initial commit"')
   })
 
   it('Generate root directory', async () => {

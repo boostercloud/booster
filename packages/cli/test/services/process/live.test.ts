@@ -1,5 +1,5 @@
 import * as process from 'process'
-import * as childProcessPromise from 'child-process-promise'
+import * as execa from 'execa'
 import { fake, replace, restore } from 'sinon'
 import { Effect, gen, mapError, pipe, unsafeRunEffect } from '@boostercloud/framework-types/dist/effect'
 import { LiveProcess } from '../../../src/services/process/live.impl'
@@ -10,7 +10,7 @@ import { ProcessService } from '../../../src/services/process'
 describe('Process - Live Implementation', () => {
   beforeEach(() => {
     replace(process, 'cwd', fake.returns(''))
-    replace(childProcessPromise, 'exec', fake.resolves({}))
+    replace(execa, 'command', fake.resolves({ stdout: '', stderr: '' }))
   })
 
   afterEach(() => {
@@ -35,7 +35,7 @@ describe('Process - Live Implementation', () => {
     expect(process.cwd).to.have.been.called
   })
 
-  it('uses child-process-promise.exec', async () => {
+  it('uses execa.command', async () => {
     const command = 'command'
     const cwd = 'cwd'
 
@@ -48,6 +48,6 @@ describe('Process - Live Implementation', () => {
       layer: LiveProcess,
       onError: guardError('An error ocurred'),
     })
-    expect(childProcessPromise.exec).to.have.been.calledWith(command, { cwd })
+    expect(execa.command).to.have.been.calledWith(command, { cwd })
   })
 })
