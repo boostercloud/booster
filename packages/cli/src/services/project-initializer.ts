@@ -59,7 +59,7 @@ export async function generateRootDirectory(config: ProjectInitializerConfig): P
 
 export async function initializeGit(config: ProjectInitializerConfig): Promise<void> {
   try {
-    await command('git init && git add -A && git commit -m "Initial commit"', { cwd: projectDir(config) })
+    await command('git init && git add -A && git commit -m "Initial commit"', { cwd: projectDir(config), shell: true })
   } catch (e) {
     throw wrapExecError(e, 'Could not initialize git repository')
   }
