@@ -143,6 +143,61 @@ describe('Queries end-to-end tests', () => {
       expect(response).not.to.be.null
       expect(response?.data?.CartTotalQuantity).to.be.eq(beforeHookQueryMultiply * quantity)
     })
+
+    it('accepts a union type', async () => {
+      const bookId = random.uuid()
+      const movieId = random.uuid()
+      await client.mutate({
+        variables: {
+          bookId: bookId,
+          title: 'The Life Of J Robert Oppenheimer',
+          pages: 42,
+        },
+        mutation: gql`
+          mutation AddBook($bookId: ID!, $title: String!, $pages: Float!) {
+            AddBook(input: { id: $bookId, title: $title, pages: $pages })
+          }
+        `,
+      })
+      await client.mutate({
+        variables: {
+          movieId: movieId,
+          title: 'Oppenheimer (2023)',
+        },
+        mutation: gql`
+          mutation AddMovie($movieId: ID!, $title: String!) {
+            AddMovie(input: { id: $movieId, title: $title })
+          }
+        `,
+      })
+
+      const response = await waitForIt(
+        () =>
+          client.query({
+            variables: {
+              searchword: 'Oppenheimer',
+            },
+            query: gql`
+              query SearchMedia($searchword: String!) {
+                SearchMedia(input: { searchword: $searchword }) {
+                  results {
+                    __typename
+                    ... on BookReadModel {
+                      title
+                      pages
+                    }
+                    ... on MovieReadModel {
+                      title
+                    }
+                  }
+                }
+              }
+            `,
+          }),
+        (result) => result?.data?.SearchMedia != undefined
+      )
+      expect(response).not.to.be.null
+    })
   })
 
   context('when the query requires a specific role', () => {
