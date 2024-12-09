@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.18.7",
+      "tag": "@boostercloud/framework-core_v2.18.7",
+      "date": "Mon, 09 Dec 2024 14:07:07 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Replace child-process-promise with execa",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "ab31b4957016f46b01d61e2399c044a6b7bd63e5"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.6` to `^2.18.7`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.6` to `^2.18.7`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.6` to `^2.18.7`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.6` to `^2.18.7`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.6",
       "tag": "@boostercloud/framework-core_v2.18.6",
       "date": "Mon, 25 Nov 2024 15:49:50 GMT",

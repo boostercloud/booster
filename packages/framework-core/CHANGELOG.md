@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 25 Nov 2024 15:49:50 GMT and should not be manually modified.
+This log was last generated on Mon, 09 Dec 2024 14:07:07 GMT and should not be manually modified.
+
+## 2.18.7
+Mon, 09 Dec 2024 14:07:07 GMT
+
+### Patches
+
+- Replace child-process-promise with execa
 
 ## 2.18.6
 Mon, 25 Nov 2024 15:49:50 GMT
