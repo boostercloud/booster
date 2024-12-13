@@ -1,7 +1,7 @@
 import * as path from 'path'
 import { expect } from 'chai'
 import { loadFixture, readFileContent, removeFolders, sandboxPathFor } from '../../helper/file-helper'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -27,7 +27,7 @@ describe('Event handler', () => {
         )
       )
 
-      const { stdout } = await exec(`${cliPath} new:event-handler HandleCartChange -e CartItemChanged`, {
+      const { stdout } = await command(`${cliPath} new:event-handler HandleCartChange -e CartItemChanged`, {
         cwd: eventHandlerSandboxDir,
       })
       expect(stdout).to.match(expectedOutputRegex)
@@ -42,7 +42,7 @@ describe('Event handler', () => {
   describe('Invalid event handler', () => {
     context('without name and event', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event-handler`, { cwd: eventHandlerSandboxDir })
+        const { stderr } = await command(`${cliPath} new:event-handler`, { cwd: eventHandlerSandboxDir })
 
         expect(stderr).to.match(
           /You haven't provided an event handler name, but it is required, run with --help for usage/
@@ -52,7 +52,7 @@ describe('Event handler', () => {
 
     context('Without name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event-handler -e CartPaid`, { cwd: eventHandlerSandboxDir })
+        const { stderr } = await command(`${cliPath} new:event-handler -e CartPaid`, { cwd: eventHandlerSandboxDir })
 
         expect(stderr).to.match(
           /You haven't provided an event handler name, but it is required, run with --help for usage/
@@ -62,7 +62,7 @@ describe('Event handler', () => {
 
     context('Without event', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event-handler CartPaid`, { cwd: eventHandlerSandboxDir })
+        const { stderr } = await command(`${cliPath} new:event-handler CartPaid`, { cwd: eventHandlerSandboxDir })
 
         expect(stderr).to.match(/You haven't provided an event, but it is required, run with --help for usage/)
       })

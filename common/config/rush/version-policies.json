@@ -103,6 +103,6 @@
     "definitionName": "lockStepVersion",
     "policyName": "booster",
     "mainProject": "@boostercloud/framework-core",
-    "version": "2.18.6"
+    "version": "2.18.7"
   }
 ]
