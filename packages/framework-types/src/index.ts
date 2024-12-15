@@ -1,4 +1,5 @@
 export * from './provider'
+export * from './event-store'
 export * from './envelope'
 export * from './config'
 export * from './concepts'

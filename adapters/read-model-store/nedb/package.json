@@ -1,0 +1,71 @@
+{
+  "name": "@booster/nedb-read-model-store-adapter",
+  "version": "2.6.0",
+  "description": "Adapter to use NeDB as a read model store for the Booster framework",
+  "keywords": [
+    "nedb-adapter"
+  ],
+  "author": "Boosterin Labs SLU",
+  "homepage": "https://boosterframework.com",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/boostercloud/booster.git"
+  },
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
+  "dependencies": {
+    "@types/nedb": "^1.8.12",
+    "nedb": "^1.8.0",
+    "tslib": "^2.4.0"
+  },
+  "scripts": {
+    "format": "prettier --write --ext '.js,.ts' **/*.ts **/*/*.ts",
+    "lint:check": "eslint --ext '.js,.ts' **/*.ts",
+    "lint:fix": "eslint --quiet --fix --ext '.js,.ts' **/*.ts",
+    "build": "tsc -b tsconfig.json",
+    "clean": "rimraf ./dist tsconfig.tsbuildinfo",
+    "prepack": "tsc -b tsconfig.json",
+    "test:adapter:event-store:nedb": "npm run test",
+    "test": "BOOSTER_ENV=test nyc --extension .ts mocha --forbid-only \"test/**/*.test.ts\""
+  },
+  "bugs": {
+    "url": "https://github.com/boostercloud/booster/issues"
+  },
+  "devDependencies": {
+    "@boostercloud/eslint-config": "workspace:^2.6.0",
+    "@types/faker": "5.1.5",
+    "@types/mocha": "10.0.1",
+    "@types/node": "^18.15.3",
+    "@types/sinon": "10.0.0",
+    "@types/sinon-chai": "3.2.5",
+    "@types/sinon-express-mock": "^1.3.9",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "chai": "4.2.0",
+    "chai-as-promised": "7.1.1",
+    "eslint": "^8.23.1",
+    "eslint-config-prettier": "8.3.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "3.4.0",
+    "faker": "5.1.0",
+    "mocha": "10.2.0",
+    "nyc": "^15.1.0",
+    "prettier": "2.3.0",
+    "rimraf": "^5.0.0",
+    "sinon": "9.2.3",
+    "sinon-chai": "3.5.0",
+    "sinon-express-mock": "^2.2.1",
+    "ts-node": "^10.9.1",
+    "typescript": "5.1.6",
+    "eslint-plugin-unicorn": "~44.0.2"
+  }
+}

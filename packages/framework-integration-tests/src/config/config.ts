@@ -76,6 +76,41 @@ Booster.configure('local', (config: BoosterConfig): void => {
   configureSubscriptions(config)
 })
 
+Booster.configure('standalone', (config: BoosterConfig): void => {
+  config.appName = 'my-store'
+  config.providerPackage = '@booster/provider-standalone'
+
+  config.adapters = {
+    eventStoreAdapter: new NeDBEventStoreAdapter(),
+    readModelAdapter: new NeDBReadModelAdapter(),
+  }
+
+  config.tokenVerifiers = [
+    new PublicKeyTokenVerifier(
+      'booster',
+      // Read the content of the public RS256 cert, used to sign the JWT tokens
+      Promise.resolve(fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8')),
+      'booster:role'
+    ),
+    new CustomPublicKeyTokenVerifier(
+      'booster',
+      // Read the content of the public RS256 cert, used to sign the JWT tokens
+      Promise.resolve(fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'certs', 'public.key'), 'utf8')),
+      'booster:role'
+    ),
+  ]
+  config.enableSubscriptions = false
+  config.eventStreamConfiguration = {
+    enabled: false,
+  }
+
+  configureInvocationsHandler(config)
+  configureLogger(config)
+  configureBoosterSensorHealth(config)
+  configureEventHub(config)
+  configureSubscriptions(config)
+})
+
 Booster.configure('development', (config: BoosterConfig): void => {
   config.appName = 'my-store'
   config.providerPackage = '@boostercloud/framework-provider-aws'

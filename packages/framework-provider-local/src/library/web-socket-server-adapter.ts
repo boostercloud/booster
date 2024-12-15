@@ -1,7 +1,7 @@
 import { Server, WebSocket } from 'ws'
 import { Server as HttpServer } from 'http'
 import { Duplex } from 'stream'
-import { BoosterConfig, EventType, UUID } from '@boostercloud/framework-types'
+import { boosterWSPort, BoosterConfig, EventType, UUID } from '@boostercloud/framework-types'
 import { IncomingMessage } from 'node:http'
 import { GraphQLService } from '../services'
 import * as express from 'express'
@@ -18,13 +18,11 @@ export interface ExpressWebSocketMessage {
   data?: unknown
 }
 
-const LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT = 'LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT'
-
 export class WebSocketServerAdapter {
   private readonly httpServer: HttpServer
   private readonly webSocketServer: Server
   private readonly clients: Record<string, WebSocket> = {}
-  private readonly WS_PORT = process.env[LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT] ?? '65529'
+  private readonly WS_PORT = boosterWSPort()
 
   constructor(readonly graphQLService: GraphQLService, config: BoosterConfig) {
     const expressServer = express()

@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/ban-types */
-import { EntitySnapshotEnvelope, EventEnvelope, EventStoreEntryEnvelope } from '@boostercloud/framework-types'
-import { eventsDatabase } from '../paths'
+import { EntitySnapshotEnvelope, EventEnvelope, EventStoreEntryEnvelope, EventStore } from '@boostercloud/framework-types'
+import { eventsDatabase } from './paths'
 
 const DataStore = require('@seald-io/nedb')
 
-export class EventRegistry {
-  public readonly events
+export class NedbEventStore implements EventStore {
+  public readonly events: DataStore<EventStoreEntryEnvelope> = new DataStore(eventsDatabase)
   public isLoaded = false
 
   constructor() {

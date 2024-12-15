@@ -1,0 +1,1 @@
+export './nedb-event-store'

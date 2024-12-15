@@ -1,6 +1,6 @@
 import { EventRegistry, ReadModelRegistry } from '../services'
 import { eventsDatabase, readModelsDatabase } from '../paths'
-import { boosterLocalPort, HealthEnvelope, UUID } from '@boostercloud/framework-types'
+import { boosterHTTPPort, HealthEnvelope, UUID } from '@boostercloud/framework-types'
 import { existsSync } from 'fs'
 import * as express from 'express'
 import { request } from '@boostercloud/framework-common-helpers'
@@ -25,7 +25,7 @@ export async function databaseEventsHealthDetails(eventRegistry: EventRegistry):
 
 export async function graphqlFunctionUrl(): Promise<string> {
   try {
-    const port = boosterLocalPort()
+    const port = boosterHTTPPort()
     return `http://localhost:${port}/graphql`
   } catch (e) {
     return ''
