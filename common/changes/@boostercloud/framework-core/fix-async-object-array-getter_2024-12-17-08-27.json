@@ -1,10 +1,10 @@
 {
   "changes": [
     {
-      "packageName": "@boostercloud/framework-common-helpers",
+      "packageName": "@boostercloud/framework-core",
       "comment": "Update processProperties function to fix readModel getters where return type is an array of objects",
       "type": "patch"
     }
   ],
-  "packageName": "@boostercloud/framework-common-helpers"
+  "packageName": "@boostercloud/framework-core"
 }
