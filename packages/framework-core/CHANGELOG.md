@@ -1,6 +1,14 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 09 Dec 2024 14:07:07 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Dec 2024 14:48:18 GMT and should not be manually modified.
+
+## 2.18.8
+Tue, 17 Dec 2024 14:48:18 GMT
+
+### Patches
+
+- Update processProperties function to fix readModel getters where return type is an array of objects
+- Added graphql union types to query return type generation
 
 ## 2.18.7
 Mon, 09 Dec 2024 14:07:07 GMT

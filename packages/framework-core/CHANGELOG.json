@@ -2,6 +2,39 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.18.8",
+      "tag": "@boostercloud/framework-core_v2.18.8",
+      "date": "Tue, 17 Dec 2024 14:48:18 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update processProperties function to fix readModel getters where return type is an array of objects",
+            "author": "Hendrik Depauw <128361530+hendrik-depauw-lemon@users.noreply.github.com>",
+            "commit": "389dbf7c60282eaf216c93e46a6c23d09f40512a"
+          },
+          {
+            "comment": "Added graphql union types to query return type generation",
+            "author": "Nicolas Scheers <166396855+nicolas-scheers-lemon@users.noreply.github.com>",
+            "commit": "7c82d3a246233a363e46fee4e0c2cea0ef0de44d"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.7` to `^2.18.8`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.7` to `^2.18.8`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.7` to `^2.18.8`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.7` to `^2.18.8`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.7",
       "tag": "@boostercloud/framework-core_v2.18.7",
       "date": "Mon, 09 Dec 2024 14:07:07 GMT",
