@@ -8,6 +8,41 @@ type NonPersistedEventEnvelopePerPartitionKey = Record<string, Array<NonPersiste
 
 const DEFAULT_CHUNK_SIZE = 100
 
+export async function storeEvents(
+  cosmosDb: CosmosClient,
+  eventEnvelopes: Array<NonPersistedEventEnvelope>,
+  config: BoosterConfig
+): Promise<Array<EventEnvelope>> {
+  if (config.azureConfiguration?.enableBatching) {
+    return storeEventsInBatch(cosmosDb, eventEnvelopes, config)
+  }
+
+  const logger = getLogger(config, 'store-events-adapter#storeEvents')
+  logger.debug('Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
+
+  const persistableEvents = []
+  for (const eventEnvelope of eventEnvelopes) {
+    const persistableEvent: EventEnvelope = {
+      ...eventEnvelope,
+      createdAt: new Date().toISOString(),
+    }
+    await cosmosDb
+      .database(config.resourceNames.applicationStack)
+      .container(config.resourceNames.eventsStore)
+      .items.create({
+        ...persistableEvent,
+        [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
+          eventEnvelope.entityTypeName,
+          eventEnvelope.entityID
+        ),
+        [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
+      })
+    persistableEvents.push(persistableEvent)
+  }
+  logger.debug('EventEnvelopes stored:')
+  return persistableEvents
+}
+
 /**
  * Limits: The Azure Cosmos DB request size limit constrains the size of the TransactionalBatch payload to not exceed 2 MB,
  * and the maximum execution time is 5 seconds. There's a current limit of 100 operations per TransactionalBatch to ensure
@@ -20,12 +55,12 @@ const DEFAULT_CHUNK_SIZE = 100
  * @param eventEnvelopes
  * @param config
  */
-export async function storeEvents(
+async function storeEventsInBatch(
   cosmosDb: CosmosClient,
   eventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
 ): Promise<Array<EventEnvelope>> {
-  const logger = getLogger(config, 'store-events-adapter#storeEvents')
+  const logger = getLogger(config, 'store-events-adapter#storeEventsInBatch')
   logger.debug('Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
   const envelopesWithCreatedAt: Array<EventEnvelope> = []
 

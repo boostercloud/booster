@@ -100,6 +100,11 @@ export class BoosterConfig {
       booster: DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS,
     },
   }
+  public readonly azureConfiguration: {
+    enableBatching: boolean // @TODO: create type for AzureConfiguration
+  } = {
+    enableBatching: true, // default to true
+  }
 
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined
   public enableSubscriptions = true
