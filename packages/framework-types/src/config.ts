@@ -25,6 +25,7 @@ import { RocketDescriptor, RocketFunction } from './rockets'
 import { DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS, HealthIndicatorMetadata, Logger, SensorConfiguration } from '.'
 import { TraceConfiguration } from './instrumentation/trace-types'
 import { Context } from 'effect'
+import { AzureConfiguration, DEFAULT_CHUNK_SIZE } from './provider/azure-configuration'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -100,10 +101,11 @@ export class BoosterConfig {
       booster: DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS,
     },
   }
-  public readonly azureConfiguration: {
-    enableBatching: boolean // @TODO: create type for AzureConfiguration
-  } = {
-    enableBatching: true, // default to true
+  public readonly azureConfiguration: AzureConfiguration = {
+    enableEventBatching: true, // enable batching by default
+    cosmos: {
+      batchSize: DEFAULT_CHUNK_SIZE,
+    },
   }
 
   public globalErrorsHandler: GlobalErrorHandlerMetadata | undefined

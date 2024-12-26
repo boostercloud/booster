@@ -58,7 +58,8 @@ describe('Events store adapter', () => {
             },
           },
         ],
-        partitionKeyForEvent(mockEvents[0].entityTypeName, mockEvents[0].entityID)
+        partitionKeyForEvent(mockEvents[0].entityTypeName, mockEvents[0].entityID),
+        {}
       )
     })
   })

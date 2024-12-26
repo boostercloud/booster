@@ -6,14 +6,12 @@ import { eventsStoreAttributes } from '../constants'
 
 type NonPersistedEventEnvelopePerPartitionKey = Record<string, Array<NonPersistedEventEnvelope>>
 
-const DEFAULT_CHUNK_SIZE = 100
-
 export async function storeEvents(
   cosmosDb: CosmosClient,
   eventEnvelopes: Array<NonPersistedEventEnvelope>,
   config: BoosterConfig
 ): Promise<Array<EventEnvelope>> {
-  if (config.azureConfiguration?.enableBatching) {
+  if (config.azureConfiguration?.enableEventBatching) {
     return storeEventsInBatch(cosmosDb, eventEnvelopes, config)
   }
 
@@ -66,7 +64,8 @@ async function storeEventsInBatch(
 
   const eventsPerPartitionKey = eventEnvelopes.reduce(groupByPartitionKey, {})
   for (const [partitionKey, eventsInPartitionKey] of Object.entries(eventsPerPartitionKey)) {
-    const chunksOfEventsInPartitionKey = chunkEvents(eventsInPartitionKey, DEFAULT_CHUNK_SIZE)
+    const chunkSize = config.azureConfiguration?.cosmos.batchSize ?? 100
+    const chunksOfEventsInPartitionKey = chunkEvents(eventsInPartitionKey, chunkSize)
     for (const eventListInChunk of chunksOfEventsInPartitionKey) {
       const eventEnvelopesChunkWithCreatedAt = toEventEnvelopes(eventListInChunk)
       envelopesWithCreatedAt.push(...eventEnvelopesChunkWithCreatedAt)
@@ -118,7 +117,7 @@ async function batchEvents(
     return await cosmosDb
       .database(config.resourceNames.applicationStack)
       .container(config.resourceNames.eventsStore)
-      .items.batch(inputOperations, partitionKey)
+      .items.batch(inputOperations, partitionKey, { ...config.azureConfiguration?.cosmos?.requestOptions })
   } catch (e) {
     logger.error('Unexpected error storing events', e)
     throw e
@@ -161,7 +160,7 @@ function storableResource(config: BoosterConfig, eventEnvelope: EventEnvelope): 
 }
 
 /**
- * Split events in chunks of size DEFAULT_CHUNK_SIZE
+ * Split events in chunks of size 'size'
  *
  * @param arr
  * @param size
