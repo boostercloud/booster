@@ -20,6 +20,7 @@ describe('Events store adapter', () => {
         container: stub().returns({
           items: {
             batch: fake.resolves({ code: 200 }) as any,
+            create: stub().returns(fake.resolves({})),
           },
         }),
       }) as any,
@@ -33,7 +34,7 @@ describe('Events store adapter', () => {
   })
 
   describe('The "storeEvents" method', () => {
-    it('Publishes the eventEnvelopes passed via parameter', async () => {
+    it('Publishes the eventEnvelopes passed via parameter in batches', async () => {
       await EventsStoreAdapter.storeEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
@@ -58,7 +59,33 @@ describe('Events store adapter', () => {
             },
           },
         ],
-        partitionKeyForEvent(mockEvents[0].entityTypeName, mockEvents[0].entityID)
+        partitionKeyForEvent(mockEvents[0].entityTypeName, mockEvents[0].entityID),
+        {}
+      )
+    })
+
+    it('Publishes the eventEnvelopes one by one if batching is disabled', async () => {
+      mockConfig.azureConfiguration.enableEventBatching = false
+
+      await EventsStoreAdapter.storeEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
+
+      expect(
+        mockCosmosDbClient
+          .database(mockConfig.resourceNames.applicationStack)
+          .container(mockConfig.resourceNames.eventsStore).items.create
+      ).to.have.been.calledWithExactly(
+        match({
+          ...mockEvents[0],
+          [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
+            mockEvents[0].entityTypeName,
+            mockEvents[0].entityID
+          ),
+          [eventsStoreAttributes.sortKey]: match.defined,
+        })
       )
     })
   })
