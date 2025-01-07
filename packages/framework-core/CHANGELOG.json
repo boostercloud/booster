@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@boostercloud/framework-core_v2.19.0",
+      "date": "Tue, 07 Jan 2025 15:05:43 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Enhance storing events in batches in Azure provider",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "7fd8fdfc6069bab89a88143bb0a051e3b7aefcad"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.8` to `^2.19.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.8` to `^2.19.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.8` to `^2.19.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.8` to `^2.19.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.8",
       "tag": "@boostercloud/framework-core_v2.18.8",
       "date": "Tue, 17 Dec 2024 14:48:18 GMT",

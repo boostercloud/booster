@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 17 Dec 2024 14:48:18 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2025 15:05:43 GMT and should not be manually modified.
+
+## 2.19.0
+Tue, 07 Jan 2025 15:05:43 GMT
+
+### Minor changes
+
+- Enhance storing events in batches in Azure provider
 
 ## 2.18.8
 Tue, 17 Dec 2024 14:48:18 GMT
