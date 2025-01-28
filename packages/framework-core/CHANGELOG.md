@@ -1,6 +1,63 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 04 Sep 2024 18:51:46 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jan 2025 15:05:43 GMT and should not be manually modified.
+
+## 2.19.0
+Tue, 07 Jan 2025 15:05:43 GMT
+
+### Minor changes
+
+- Enhance storing events in batches in Azure provider
+
+## 2.18.8
+Tue, 17 Dec 2024 14:48:18 GMT
+
+### Patches
+
+- Update processProperties function to fix readModel getters where return type is an array of objects
+- Added graphql union types to query return type generation
+
+## 2.18.7
+Mon, 09 Dec 2024 14:07:07 GMT
+
+### Patches
+
+- Replace child-process-promise with execa
+
+## 2.18.6
+Mon, 25 Nov 2024 15:49:50 GMT
+
+### Patches
+
+- Fixes optimistic concurrency issue found when projecting read models
+
+## 2.18.5
+Tue, 29 Oct 2024 18:40:31 GMT
+
+### Patches
+
+- Add mandatory subscriptionId property
+
+## 2.18.4
+Tue, 08 Oct 2024 15:06:52 GMT
+
+### Patches
+
+- Remove unnecessary @cdktf/provider-azurerm dependency from Azure provider package
+
+## 2.18.3
+Mon, 30 Sep 2024 19:09:52 GMT
+
+### Patches
+
+- Fix handling of deeply-nested arrays an sub-array properties in Read Model queries in local provider
+
+## 2.18.2
+Wed, 25 Sep 2024 18:23:11 GMT
+
+### Patches
+
+- Correct handling of deeply-nested arrays and sub-array properties in Read Model queries
 
 ## 2.18.1
 Wed, 04 Sep 2024 18:51:46 GMT

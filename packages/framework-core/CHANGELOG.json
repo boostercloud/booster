@@ -2,6 +2,235 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@boostercloud/framework-core_v2.19.0",
+      "date": "Tue, 07 Jan 2025 15:05:43 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Enhance storing events in batches in Azure provider",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "7fd8fdfc6069bab89a88143bb0a051e3b7aefcad"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.8` to `^2.19.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.8` to `^2.19.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.8` to `^2.19.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.8` to `^2.19.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.8",
+      "tag": "@boostercloud/framework-core_v2.18.8",
+      "date": "Tue, 17 Dec 2024 14:48:18 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update processProperties function to fix readModel getters where return type is an array of objects",
+            "author": "Hendrik Depauw <128361530+hendrik-depauw-lemon@users.noreply.github.com>",
+            "commit": "389dbf7c60282eaf216c93e46a6c23d09f40512a"
+          },
+          {
+            "comment": "Added graphql union types to query return type generation",
+            "author": "Nicolas Scheers <166396855+nicolas-scheers-lemon@users.noreply.github.com>",
+            "commit": "7c82d3a246233a363e46fee4e0c2cea0ef0de44d"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.7` to `^2.18.8`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.7` to `^2.18.8`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.7` to `^2.18.8`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.7` to `^2.18.8`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.7",
+      "tag": "@boostercloud/framework-core_v2.18.7",
+      "date": "Mon, 09 Dec 2024 14:07:07 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Replace child-process-promise with execa",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "ab31b4957016f46b01d61e2399c044a6b7bd63e5"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.6` to `^2.18.7`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.6` to `^2.18.7`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.6` to `^2.18.7`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.6` to `^2.18.7`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.6",
+      "tag": "@boostercloud/framework-core_v2.18.6",
+      "date": "Mon, 25 Nov 2024 15:49:50 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixes optimistic concurrency issue found when projecting read models",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "55cc944003d23a62fec52ee945fc2bcd693f52aa"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.5` to `^2.18.6`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.5` to `^2.18.6`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.5` to `^2.18.6`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.5` to `^2.18.6`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.5",
+      "tag": "@boostercloud/framework-core_v2.18.5",
+      "date": "Tue, 29 Oct 2024 18:40:31 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add mandatory subscriptionId property",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "cedee762449c2443fcc29901cd6e5d7a35d48d61"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.4` to `^2.18.5`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.4` to `^2.18.5`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.4` to `^2.18.5`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.4` to `^2.18.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@boostercloud/framework-core_v2.18.4",
+      "date": "Tue, 08 Oct 2024 15:06:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Remove unnecessary @cdktf/provider-azurerm dependency from Azure provider package",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "1c97d6dcef1799207e21a8368827f02f2a0e0b77"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.3` to `^2.18.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.3` to `^2.18.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.3` to `^2.18.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.3` to `^2.18.4`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@boostercloud/framework-core_v2.18.3",
+      "date": "Mon, 30 Sep 2024 19:09:52 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix handling of deeply-nested arrays an sub-array properties in Read Model queries in local provider",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "985272012a7183fb690ecdd7bcfafd42e3103539"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.2` to `^2.18.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.2` to `^2.18.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.2` to `^2.18.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.2` to `^2.18.3`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@boostercloud/framework-core_v2.18.2",
+      "date": "Wed, 25 Sep 2024 18:23:11 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Correct handling of deeply-nested arrays and sub-array properties in Read Model queries",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "d5ed5375fe31d8a9ee055700f09d293b03af6809"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.18.1` to `^2.18.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.18.1` to `^2.18.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.18.1` to `^2.18.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.18.1` to `^2.18.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@boostercloud/framework-core_v2.18.1",
       "date": "Wed, 04 Sep 2024 18:51:46 GMT",

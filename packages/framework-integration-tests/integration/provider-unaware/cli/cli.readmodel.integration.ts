@@ -8,7 +8,7 @@ import {
   sandboxPathFor,
   writeFileContent,
 } from '../../helper/file-helper'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -38,7 +38,7 @@ describe('Read model', () => {
         const FILE_CART_READ_MODEL = `${readModelSandboxDir}/src/read-models/cart-read-model.ts`
         removeFiles([FILE_CART_READ_MODEL])
 
-        const { stdout } = await exec(`${cliPath} new:read-model CartReadModel`, { cwd: readModelSandboxDir })
+        const { stdout } = await command(`${cliPath} new:read-model CartReadModel`, { cwd: readModelSandboxDir })
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
         const expectedEntityContent = loadFixture('read-models/cart-read-model.ts')
@@ -56,9 +56,9 @@ describe('Read model', () => {
       it('should create new read model', async () => {
         const FILE_CART_WITH_FIELDS_READ_MODEL = `${readModelSandboxDir}/src/read-models/cart-with-fields-read-model.ts`
 
-        const { stdout } = await exec(
+        const { stdout } = await command(
           cliPath + " new:read-model CartWithFieldsReadModel --fields 'items:Array<Item>'",
-          { cwd: readModelSandboxDir }
+          { cwd: readModelSandboxDir, shell: true }
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
@@ -80,9 +80,9 @@ describe('Read model', () => {
       it('should create new read model', async () => {
         const FILE_CART_WITH_PROJECTION_READ_MODEL = `${readModelSandboxDir}/src/read-models/cart-with-projection-read-model.ts`
 
-        const { stdout } = await exec(
+        const { stdout } = await command(
           cliPath + " new:read-model CartWithProjectionReadModel --fields 'items:Array<Item>' --projects Cart:id",
-          { cwd: readModelSandboxDir }
+          { cwd: readModelSandboxDir, shell: true }
         )
         expect(stdout).to.match(EXPECTED_OUTPUT_REGEX)
 
@@ -110,7 +110,7 @@ describe('Read model', () => {
   context('invalid read model', () => {
     describe('missing read model name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:read-model`, { cwd: readModelSandboxDir })
+        const { stderr } = await command(`${cliPath} new:read-model`, { cwd: readModelSandboxDir })
 
         expect(stderr).to.match(/You haven't provided a read model name, but it is required, run with --help for usage/)
       })

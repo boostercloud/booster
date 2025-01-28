@@ -12,6 +12,7 @@ import {
   GraphQLOutputType,
   GraphQLString,
   GraphQLType,
+  GraphQLUnionType,
 } from 'graphql'
 import { GraphQLJSON } from 'graphql-scalars'
 import { ClassMetadata, ClassType, PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
@@ -68,6 +69,7 @@ export class GraphQLTypeInformer {
     if (typeMetadata.typeName && typeMetadata.typeGroup === 'Class') {
       return typeMetadata.typeName + (inputType ? 'Input' : '')
     }
+    if (typeMetadata.typeGroup === 'Union') return typeMetadata.name
     return typeMetadata.typeName || null
   }
 
@@ -86,7 +88,39 @@ export class GraphQLTypeInformer {
       const metadata = getClassMetadata(typeMetadata.type)
       return this.createObjectType(metadata, inputType)
     }
+    if (
+      typeMetadata.typeGroup === 'Union' &&
+      !isExternalType(typeMetadata) &&
+      !inputType &&
+      this.validateUnionClasses(typeMetadata.parameters)
+    ) {
+      const graphQLUnionClasses: GraphQLObjectType[] = this.getUnionClasses(typeMetadata)
+      return new GraphQLUnionType({
+        name: typeMetadata.name,
+        types: graphQLUnionClasses,
+        resolveType(obj) {
+          return obj.constructor.name
+        },
+      })
+    }
     return GraphQLJSON
+  }
+
+  private validateUnionClasses(params: TypeMetadata[]): boolean {
+    return params.every(
+      (typeMetadata) => typeMetadata.typeGroup === 'Class' && typeMetadata.type && !isExternalType(typeMetadata)
+    )
+  }
+
+  private getUnionClasses(typeMetadata: TypeMetadata): GraphQLObjectType<any, any>[] {
+    return typeMetadata.parameters.map((param: TypeMetadata) => {
+      if (param.typeGroup === 'Class' && param.type && !isExternalType(typeMetadata)) {
+        const metadata = getClassMetadata(param.type)
+        return this.getOrCreateObjectTypeForUnion(metadata) as GraphQLObjectType
+      } else {
+        throw new Error(`Union type ${typeMetadata.name} can only contain classes`)
+      }
+    })
   }
 
   private createEnumType(typeMetadata: TypeMetadata): GraphQLEnumType {
@@ -132,13 +166,26 @@ export class GraphQLTypeInformer {
         }, {}),
       })
     }
+    return this.createOutputObjectType(classMetadata, excludeProps)
+  }
+
+  private getOrCreateObjectTypeForUnion(classMetadata: ClassMetadata, excludeProps?: Array<string>): GraphQLType {
+    const typeName = classMetadata.name
+    if (typeName && this.graphQLTypes[typeName]) return this.graphQLTypes[typeName]
+    const createdGraphQLType = this.createOutputObjectType(classMetadata, excludeProps)
+    if (typeName) this.graphQLTypes[typeName] = createdGraphQLType
+    return createdGraphQLType
+  }
+
+  private createOutputObjectType(classMetadata: ClassMetadata, excludeProps?: Array<string>): GraphQLObjectType {
+    const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
     return new GraphQLObjectType({
       name: classMetadata.name,
       fields: finalFields?.reduce((obj, prop) => {
         this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
         return {
           ...obj,
-          [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, inputType) },
+          [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, false) },
         }
       }, {}),
     })

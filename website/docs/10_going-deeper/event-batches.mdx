@@ -1,0 +1,33 @@
+# Storing events in batches
+
+:::warning
+This feature is only available for the Azure provider.
+:::
+
+Booster will store events in batches by default, but this behavior can be disabled with some configuration. The
+`azureConfiguration` property of the `BoosterConfig` object contains properties for enabling/disabling batch storage of
+events, setting the size of chunks of each batch, as well as some other options that are applied when events are stored
+in batches.
+
+```typescript
+Booster.configure('azure', (config: BoosterConfig): void => {
+  // enable/disable event batching (default true)
+  config.azureConfiguration.enableEventBatching = false
+  config.azureConfiguration.cosmos = {
+    // Maximum number of operations in a single batch (default 100, max 100)
+    batchSize: 50,
+      requestOptions: {
+      // Override consistency level for specific operations
+      consistencyLevel: 'Strong',
+      // Enable/disable RU/minute usage when RU/second is exhausted
+      disableRUPerMinuteUsage: false,
+      // Specify indexing directives
+      indexingDirective: 'Include',
+    },
+  }
+
+  // Rest of the configuration
+})
+```
+
+For more details on the `requestOptions`, we recommend reading [the official documentation from Microsoft](https://learn.microsoft.com/en-us/javascript/api/%40azure/cosmos/requestoptions?view=azure-node-latest).

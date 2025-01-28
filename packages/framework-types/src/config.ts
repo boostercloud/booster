@@ -25,6 +25,7 @@ import { RocketDescriptor, RocketFunction } from './rockets'
 import { DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS, HealthIndicatorMetadata, Logger, SensorConfiguration } from '.'
 import { TraceConfiguration } from './instrumentation/trace-types'
 import { Context } from 'effect'
+import { AzureConfiguration, DEFAULT_CHUNK_SIZE } from './provider/azure-configuration'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -98,6 +99,12 @@ export class BoosterConfig {
         authorize: 'all',
       },
       booster: DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS,
+    },
+  }
+  public readonly azureConfiguration: AzureConfiguration = {
+    enableEventBatching: true, // enable batching by default
+    cosmos: {
+      batchSize: DEFAULT_CHUNK_SIZE,
     },
   }
 

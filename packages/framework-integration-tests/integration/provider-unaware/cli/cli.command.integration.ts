@@ -1,7 +1,7 @@
 import * as path from 'path'
 import { expect } from 'chai'
 import { loadFixture, readFileContent, removeFolders, sandboxPathFor, writeFileContent } from '../../helper/file-helper'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -29,7 +29,7 @@ describe('Command', () => {
         ['boost new:command', 'Verifying project', 'Creating new command', 'Command generated'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} new:command ChangeCart`, { cwd: commandSandboxDir })
+      const { stdout } = await command(`${cliPath} new:command ChangeCart`, { cwd: commandSandboxDir })
       expect(stdout).to.match(expectedOutputRegex)
 
       const expectedCommandContent = loadFixture('commands/change-cart.ts')
@@ -46,7 +46,7 @@ describe('Command', () => {
       it('should create a new command with fields', async () => {
         const changeCartWithFieldsCommandPath = `${commandSandboxDir}/src/commands/change-cart-with-fields.ts`
 
-        await exec(`${cliPath} new:command ChangeCartWithFields --fields cartId:UUID sku:string quantity:number`, {
+        await command(`${cliPath} new:command ChangeCartWithFields --fields cartId:UUID sku:string quantity:number`, {
           cwd: commandSandboxDir,
         })
 
@@ -65,7 +65,7 @@ describe('Command', () => {
   context('Invalid command', () => {
     describe('missing command name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:command`, { cwd: commandSandboxDir })
+        const { stderr } = await command(`${cliPath} new:command`, { cwd: commandSandboxDir })
 
         expect(stderr).to.match(/You haven't provided a command name, but it is required, run with --help for usage/)
       })

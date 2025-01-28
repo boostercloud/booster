@@ -103,7 +103,9 @@ async function processProperties(source: any, result: any, propertiesMap: any): 
     if (source[key] !== undefined) {
       if (propertiesMap[key].__isArray) {
         result[key] = []
-        for (const item of source[key]) {
+        const value = source[key]
+        const resolvedValue = isPromise(value) ? await value : value
+        for (const item of resolvedValue) {
           const newItem: any = {}
           await processProperties(item, newItem, propertiesMap[key].__children)
           if (Object.keys(newItem).length > 0) {
