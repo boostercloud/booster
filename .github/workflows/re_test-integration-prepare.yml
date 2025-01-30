@@ -69,3 +69,8 @@ jobs:
           path: packages/framework-integration-tests/.booster
           retention-days: 1
           include-hidden-files: true
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
