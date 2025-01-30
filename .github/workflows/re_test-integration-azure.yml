@@ -36,6 +36,11 @@ jobs:
     name: Azure Deploy
     runs-on: ubuntu-latest
     steps:
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
       - name: Checkout
         uses: actions/checkout@v4
 
