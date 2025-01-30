@@ -34,13 +34,8 @@ on:
 jobs:
   azure-deploy:
     name: Azure Deploy
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - name: Install Terraform
-        uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: latest
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -65,7 +60,7 @@ jobs:
       max-parallel: 1
       matrix:
         integration-test: [azure-func, azure-end-to-end]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,7 +85,7 @@ jobs:
     needs: [azure-deploy, azure-integration-tests]
     if: always() && needs.azure-deploy.result == 'success'
     continue-on-error: true
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
