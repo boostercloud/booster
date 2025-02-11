@@ -19,7 +19,7 @@ import { TerraformCosmosdbDatabase } from './terraform-cosmosdb-database'
 import { TerraformApplicationGateway } from './gateway/terraform-application-gateway'
 import { TerraformWebPubsub } from './terraform-web-pubsub'
 import { ApplicationSynthStack, StackNames } from '../types/application-synth-stack'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { AzurermProvider, AzurermProviderFeatures } from '@cdktf/provider-azurerm/lib/provider'
 import { TerraformOutputs } from './terraform-outputs'
 import { TerraformWebPubsubHub } from './terraform-web-pubsub-hub'
 import { TerraformWebPubSubExtensionKey } from './terraform-web-pub-sub-extension-key'
@@ -53,7 +53,7 @@ export class ApplicationSynth {
   public constructor(terraformStack: TerraformStack) {
     this.config = readProjectConfig(process.cwd())
     const azurermProvider = new AzurermProvider(terraformStack, 'azureFeature', {
-      features: [{}],
+      features: [{} as AzurermProviderFeatures],
       subscriptionId: configuration.subscriptionId,
     })
     const appPrefix = buildAppPrefix(this.config)
