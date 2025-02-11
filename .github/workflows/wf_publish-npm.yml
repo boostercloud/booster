@@ -9,24 +9,18 @@ on:
       - '.github/**'
       - '.vscode/**'
       - 'packages/**/.vscode/**'
-  workflow_dispatch:
-    inputs:
-      skip_tests:
-        description: 'Skip integration tests'
-        type: boolean
-        default: false
 
 jobs:
   integration-tests:
-    if: "(!contains(github.event.head_commit.author.name, 'GITHUBACTION') && github.event_name == 'push') || (github.event_name == 'workflow_dispatch' && !inputs.skip_tests)"
+    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')"
     name: Ensuring integration tests pass before publishing
     uses: ./.github/workflows/wf_test-integration.yml
     secrets: inherit
 
   publish-npm:
-    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION') || github.event_name == 'workflow_dispatch'"
+    if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION')"
     name: Publish to npm
-    # needs: [integration-tests]
+    needs: integration-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
