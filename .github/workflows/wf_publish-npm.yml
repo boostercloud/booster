@@ -9,6 +9,7 @@ on:
       - '.github/**'
       - '.vscode/**'
       - 'packages/**/.vscode/**'
+  workflow_dispatch:
 
 jobs:
   integration-tests:
