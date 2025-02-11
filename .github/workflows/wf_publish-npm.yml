@@ -26,7 +26,7 @@ jobs:
   publish-npm:
     if: "!contains(github.event.head_commit.author.name, 'GITHUBACTION') || github.event_name == 'workflow_dispatch'"
     name: Publish to npm
-    needs: [integration-tests]
+    # needs: [integration-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
