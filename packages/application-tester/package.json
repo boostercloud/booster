@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/application-tester",
-  "version": "2.19.0",
+  "version": "3.0.0",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "application-tester"
@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@apollo/client": "3.7.13",
-    "@boostercloud/framework-types": "workspace:^2.19.0",
+    "@boostercloud/framework-types": "workspace:^3.0.0",
     "cross-fetch": "3.1.5",
     "graphql": "^16.6.0",
     "jsonwebtoken": "9.0.1",
@@ -48,7 +48,7 @@
     "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^2.19.0",
+    "@boostercloud/eslint-config": "workspace:^3.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.23.1",

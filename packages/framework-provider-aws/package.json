@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/framework-provider-aws",
   "deprecated": "Due to significant changes in recent versions of the AWS CDK, specifically the transition from CDKToolkit to a cli tool as noted [here](https://github.com/aws/aws-cdk-rfcs/issues/300), upgrading our current implementation would require a substantial rewrite. Given the open-source nature of our project without direct revenue streams, the ensuing maintenance costs are unfeasible. However, we are open to upgrading the AWS provider or creating an alternative implementation using other technologies like Terraform's CDKTF, with community contributions or sponsorships. If you're interested in supporting us, we welcome you to reach out via the official channels listed on the [Booster's website](https://boosterframework.com).",
-  "version": "2.19.0",
+  "version": "3.0.0",
   "description": "Handle Booster's integration with AWS",
   "keywords": [
     "framework-provider-aws"
@@ -24,8 +24,8 @@
     "node": ">=20.0.0 <21.0.0"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "workspace:^2.19.0",
-    "@boostercloud/framework-types": "workspace:^2.19.0",
+    "@boostercloud/framework-common-helpers": "workspace:^3.0.0",
+    "@boostercloud/framework-types": "workspace:^3.0.0",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4"
   },
@@ -43,7 +43,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^2.19.0",
+    "@boostercloud/eslint-config": "workspace:^3.0.0",
     "@types/aws-lambda": "8.10.48",
     "@types/chai": "4.2.18",
     "@types/chai-arrays": "2.0.0",

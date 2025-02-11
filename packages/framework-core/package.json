@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-core",
-  "version": "2.19.0",
+  "version": "3.0.0",
   "description": "Library for your Booster apps",
   "author": "Boosterin Labs SLU",
   "homepage": "https://boosterframework.com",
@@ -37,8 +37,8 @@
     "graphql": "^16.6.0"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "workspace:^2.19.0",
-    "@boostercloud/framework-types": "workspace:^2.19.0",
+    "@boostercloud/framework-common-helpers": "workspace:^3.0.0",
+    "@boostercloud/framework-types": "workspace:^3.0.0",
     "fp-ts": "^2.11.0",
     "graphql-scalars": "^1.17.0",
     "graphql-subscriptions": "2.0.0",
@@ -61,8 +61,8 @@
     "ws": "8.17.1"
   },
   "devDependencies": {
-    "@boostercloud/metadata-booster": "workspace:^2.19.0",
-    "@boostercloud/eslint-config": "workspace:^2.19.0",
+    "@boostercloud/metadata-booster": "workspace:^3.0.0",
+    "@boostercloud/eslint-config": "workspace:^3.0.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/faker": "5.1.5",

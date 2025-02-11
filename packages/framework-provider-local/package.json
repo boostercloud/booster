@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-local",
-  "version": "2.19.0",
+  "version": "3.0.0",
   "description": "Debug your Booster projects locally",
   "keywords": [
     "framework-provider-local"
@@ -23,8 +23,8 @@
     "node": ">=20.0.0 <21.0.0"
   },
   "dependencies": {
-    "@boostercloud/framework-common-helpers": "workspace:^2.19.0",
-    "@boostercloud/framework-types": "workspace:^2.19.0",
+    "@boostercloud/framework-common-helpers": "workspace:^3.0.0",
+    "@boostercloud/framework-types": "workspace:^3.0.0",
     "@seald-io/nedb": "4.0.2",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4",
@@ -44,7 +44,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^2.19.0",
+    "@boostercloud/eslint-config": "workspace:^3.0.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/express": "^4.17.21",

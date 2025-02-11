@@ -1,7 +1,7 @@
 {
   "name": "@boostercloud/cli",
   "description": "CLI of the Booster Framework, the next level of abstraction for cloud-native applications",
-  "version": "2.19.0",
+  "version": "3.0.0",
   "author": "Boosterin Labs SLU",
   "homepage": "https://boosterframework.com",
   "publishConfig": {
@@ -12,8 +12,8 @@
   },
   "bugs": "https://github.com/boostercloud/booster/issues",
   "dependencies": {
-    "@boostercloud/framework-core": "workspace:^2.19.0",
-    "@boostercloud/framework-types": "workspace:^2.19.0",
+    "@boostercloud/framework-core": "workspace:^3.0.0",
+    "@boostercloud/framework-types": "workspace:^3.0.0",
     "@oclif/core": "3.15.0",
     "@oclif/plugin-help": "^5",
     "chalk": "^2.4.2",
@@ -29,8 +29,8 @@
     "@effect-ts/core": "^0.60.4"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^2.19.0",
-    "@boostercloud/application-tester": "workspace:^2.19.0",
+    "@boostercloud/eslint-config": "workspace:^3.0.0",
+    "@boostercloud/application-tester": "workspace:^3.0.0",
     "@oclif/test": "^3.0.3",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",

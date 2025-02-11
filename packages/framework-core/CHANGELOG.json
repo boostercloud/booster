@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.0.0",
+      "tag": "@boostercloud/framework-core_v3.0.0",
+      "date": "Tue, 11 Feb 2025 19:54:24 GMT",
+      "comments": {
+        "major": [
+          {
+            "comment": "Node 20 upgrade ",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "50cb5ed3b07c6fad04ea45684e3b78fe03257c06"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^2.19.0` to `3.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^2.19.0` to `3.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^2.19.0` to `3.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^2.19.0` to `3.0.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.0",
       "tag": "@boostercloud/framework-core_v2.19.0",
       "date": "Tue, 07 Jan 2025 15:05:43 GMT",

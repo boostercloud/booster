@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 07 Jan 2025 15:05:43 GMT and should not be manually modified.
+This log was last generated on Tue, 11 Feb 2025 19:54:24 GMT and should not be manually modified.
+
+## 3.0.0
+Tue, 11 Feb 2025 19:54:24 GMT
+
+### Breaking changes
+
+- Node 20 upgrade 
 
 ## 2.19.0
 Tue, 07 Jan 2025 15:05:43 GMT
