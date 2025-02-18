@@ -307,8 +307,8 @@ importers:
         specifier: 3.2.5
         version: 3.2.5
       '@types/uuid':
-        specifier: 8.3.0
-        version: 8.3.0
+        specifier: 10.0.0
+        version: 10.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
         version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
@@ -1275,8 +1275,8 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       uuid:
-        specifier: 8.3.2
-        version: 8.3.2
+        specifier: 11.0.5
+        version: 11.0.5
     devDependencies:
       '@boostercloud/eslint-config':
         specifier: workspace:^3.0.0
@@ -1309,8 +1309,8 @@ importers:
         specifier: 3.2.5
         version: 3.2.5
       '@types/uuid':
-        specifier: 8.3.0
-        version: 8.3.0
+        specifier: 10.0.0
+        version: 10.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
         version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
@@ -1626,8 +1626,8 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       uuid:
-        specifier: 8.3.2
-        version: 8.3.2
+        specifier: 11.0.5
+        version: 11.0.5
       web-streams-polyfill:
         specifier: ~3.3.2
         version: 3.3.3
@@ -1660,8 +1660,8 @@ importers:
         specifier: 3.2.5
         version: 3.2.5
       '@types/uuid':
-        specifier: 8.3.0
-        version: 8.3.0
+        specifier: 10.0.0
+        version: 10.0.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
         version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
@@ -3448,8 +3448,8 @@ packages:
   '@types/through@0.0.33':
     resolution: {integrity: sha512-HsJ+z3QuETzP3cswwtzt2vEIiHBk/dCcHGhbmG5X3ecnwFD/lPrMpliGXxSCg03L9AhrdwA4Oz/qfspkDW+xGQ==}
 
-  '@types/uuid@8.3.0':
-    resolution: {integrity: sha512-eQ9qFW/fhfGJF8WKHGEHZEyVWfZxrT+6CLIJGBcZPfxUh/+BnEj+UCGYMlr9qZuX/2AltsvwrGqp0LhEW8D0zQ==}
+  '@types/uuid@10.0.0':
+    resolution: {integrity: sha512-7gqG38EyHgyP1S+7+xomFtL+ZNHcKv6DwNaCZmJmo1vgMugyF3TCnXVg4t1uk89mLNwnLtnY3TpOpCOyp1/xHQ==}
 
   '@types/validator@13.12.2':
     resolution: {integrity: sha512-6SlHBzUW8Jhf3liqrGGXyTJSIFe4nqlJ5A5KaMZ2l/vbM3Wh3KSybots/wfWVzNLK4D1NZluDlSQIbIEPx6oyA==}
@@ -7372,6 +7372,10 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
+  uuid@11.0.5:
+    resolution: {integrity: sha512-508e6IcKLrhxKdBbcA2b4KQZlLVp2+J5UwQ6F7Drckkc5N9ZJwFa4TgWtsww9UG8fGHbm6gbV19TdM5pQ4GaIA==}
+    hasBin: true
+
   uuid@3.3.2:
     resolution: {integrity: sha512-yXJmeNaw3DnnKAOKJE51sL/ZaYfWJRl1pK9dr19YFCu0ObS231AB1/LbqTKRAQ5kw8A90rA6fr4riOUpTZvQZA==}
     deprecated: Please upgrade  to version 7 or higher.  Older versions may use Math.random() in certain circumstances, which is known to be problematic.  See https://v8.dev/blog/math-random for details.
@@ -9596,7 +9600,7 @@ snapshots:
     dependencies:
       '@types/node': 20.17.17
 
-  '@types/uuid@8.3.0': {}
+  '@types/uuid@10.0.0': {}
 
   '@types/validator@13.12.2': {}
 
@@ -14202,6 +14206,8 @@ snapshots:
       which-typed-array: 1.1.18
 
   utils-merge@1.0.1: {}
+
+  uuid@11.0.5: {}
 
   uuid@3.3.2: {}
 
