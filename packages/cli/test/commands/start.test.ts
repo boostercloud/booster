@@ -5,7 +5,7 @@ import * as Start from '../../src/commands/start'
 import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
 import { Config } from '@oclif/core'
-import { test } from '@oclif/test'
+import { runCommand } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
@@ -43,13 +43,10 @@ describe('start', () => {
 
   describe('run', () => {
     context('when no environment provided', async () => {
-      test
-        .loadConfig({ root: __dirname })
-        .stdout()
-        .command(['start'])
-        .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.match(/No environment set/)
-        })
+      it('shows no environment provided error', async () => {
+        const {stdout} = await runCommand<{name: string}>(['start'], { root: __dirname })
+        expect(stdout).to.match(/No environment set/)
+      })
     })
   })
 
@@ -66,12 +63,14 @@ describe('start', () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Start.default([], {} as Config).init()
+      const config = await Config.load()
+      await new Start.default([], config).init()
       expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     it('without flags', async () => {
-      await new Start.default([], {} as Config).run()
+      const config = await Config.load()
+      await new Start.default([], config).run()
 
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.startProvider).to.have.not.been.called
@@ -82,7 +81,8 @@ describe('start', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Start.default(['-e'], {} as Config).run()
+        const config = await Config.load()
+        await new Start.default(['-e'], config).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -97,7 +97,8 @@ describe('start', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Start.default(['--environment'], {} as Config).run()
+        const config = await Config.load()
+        await new Start.default(['--environment'], config).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -110,7 +111,8 @@ describe('start', () => {
 
     describe('inside a booster project', () => {
       it('entering correct environment', async () => {
-        await new Start.default(['-e', 'fake_environment'], {} as Config).run()
+        const config = await Config.load()
+        await new Start.default(['-e', 'fake_environment'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
@@ -118,7 +120,8 @@ describe('start', () => {
       })
 
       it('entering correct environment and --port flag', async () => {
-        await new Start.default(['-e', 'fake_environment', '--port', '5000'], {} as Config).run()
+        const config = await Config.load()
+        await new Start.default(['-e', 'fake_environment', '--port', '5000'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
@@ -126,7 +129,8 @@ describe('start', () => {
       })
 
       it('entering correct environment and -p flag', async () => {
-        await new Start.default(['-e', 'fake_environment', '-p', '5000'], {} as Config).run()
+        const config = await Config.load()
+        await new Start.default(['-e', 'fake_environment', '-p', '5000'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.startProvider).to.have.been.called
@@ -137,7 +141,8 @@ describe('start', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Start.default(['-e', 'fake_environment', '--nonexistingoption'], {} as Config).run()
+          const config = await Config.load()
+          await new Start.default(['-e', 'fake_environment', '--nonexistingoption'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -153,7 +158,8 @@ describe('start', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Start.default(['-e', 'fake_environment', '--port'], {} as Config).run()
+          const config = await Config.load()
+          await new Start.default(['-e', 'fake_environment', '--port'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -169,7 +175,8 @@ describe('start', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Start.default(['-e', 'fake_environment', '-p'], {} as Config).run()
+          const config = await Config.load()
+          await new Start.default(['-e', 'fake_environment', '-p'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -182,7 +189,8 @@ describe('start', () => {
       })
 
       it('without defining environment and -p', async () => {
-        await new Start.default(['-p', '5000'], {} as Config).run()
+        const config = await Config.load()
+        await new Start.default(['-p', '5000'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.startProvider).to.have.not.been.called

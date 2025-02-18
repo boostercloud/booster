@@ -52,39 +52,45 @@ describe('new', (): void => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Command([], {} as Config).init()
+      const config = await Config.load()
+      await new Command([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {
       it('with no fields', async () => {
-        await new Command([command], {} as Config).run()
+        const config = await Config.load()
+        await new Command([command], config).run()
         const renderedCommand = renderCommand(defaultCommandImports, command, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
       it('creates command with a string field', async () => {
-        await new Command([command, '--fields', 'title:string'], {} as Config).run()
+        const config = await Config.load()
+        await new Command([command, '--fields', 'title:string'], config).run()
         const renderedCommand = renderCommand(defaultCommandImports, command, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
       it('creates command with a number field', async () => {
-        await new Command([command, '--fields', 'quantity:number'], {} as Config).run()
+        const config = await Config.load()
+        await new Command([command, '--fields', 'quantity:number'], config).run()
         const renderedCommand = renderCommand(defaultCommandImports, command, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
       it('creates command with UUID field', async () => {
-        await new Command([command, '--fields', 'identifier:UUID'], {} as Config).run()
+        const config = await Config.load()
+        await new Command([command, '--fields', 'identifier:UUID'], config).run()
         const renderedCommand = renderCommand(uuidCommandImports, command, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(commandPath, renderedCommand)
       })
 
       it('creates command with multiple fields', async () => {
+        const config = await Config.load()
         await new Command(
           [command, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -99,7 +105,8 @@ describe('new', (): void => {
     describe('displays an error', () => {
       it('with empty command name', async () => {
         replace(console, 'error', fake.resolves({}))
-        await new Command([], {} as Config).run()
+        const config = await Config.load()
+        await new Command([], config).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(commandsRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided a command name/)
       })
@@ -108,7 +115,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Command([command, '--fields'], {} as Config).run()
+          const config = await Config.load()
+          await new Command([command, '--fields'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -121,7 +129,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Command([command, '--fields', 'title'], {} as Config).run()
+          const config = await Config.load()
+          await new Command([command, '--fields', 'title'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -134,7 +143,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Command([command, '--fields', 'title:'], {} as Config).run()
+          const config = await Config.load()
+          await new Command([command, '--fields', 'title:'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -148,9 +158,10 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
+          const config = await Config.load()
           await new Command(
             [command, '--fields', 'title:string', 'title:string', 'quantity:number'],
-            {} as Config
+            config
           ).run()
         } catch (e) {
           exceptionThrown = true
