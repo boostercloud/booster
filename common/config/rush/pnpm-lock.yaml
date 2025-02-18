@@ -16,7 +16,7 @@ importers:
         specifier: 3.7.13
         version: 3.7.13(graphql@16.10.0)(react@17.0.2)(subscriptions-transport-ws@0.11.0(graphql@16.10.0))
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -31,8 +31,8 @@ importers:
         specifier: ^16.6.0
         version: 16.10.0
       jsonwebtoken:
-        specifier: 9.0.1
-        version: 9.0.1
+        specifier: 9.0.2
+        version: 9.0.2
       sinon:
         specifier: 9.2.3
         version: 9.2.3
@@ -43,15 +43,15 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       ws:
-        specifier: 8.17.1
-        version: 8.17.1
+        specifier: 8.18.0
+        version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/jsonwebtoken':
-        specifier: 9.0.1
-        version: 9.0.1
+        specifier: 9.0.8
+        version: 9.0.8
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -60,10 +60,10 @@ importers:
         version: 8.5.4
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -98,26 +98,26 @@ importers:
         specifier: 3.5.0
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/cli:
     dependencies:
       '@boostercloud/framework-core':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-core
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
         version: 0.60.5
       '@oclif/core':
         specifier: 3.15.0
-        version: 3.15.0(typescript@5.1.6)
+        version: 3.15.0(typescript@5.7.3)
       '@oclif/plugin-help':
         specifier: ^5
-        version: 5.2.20(@types/node@20.17.17)(typescript@5.1.6)
+        version: 5.2.20(@types/node@20.17.17)(typescript@5.7.3)
       chalk:
         specifier: ^2.4.2
         version: 2.4.2
@@ -143,17 +143,17 @@ importers:
         specifier: ^3.4.0
         version: 3.4.0
       ts-morph:
-        specifier: ^19.0.0
-        version: 19.0.0
+        specifier: ^25.0.1
+        version: 25.0.1
       tslib:
         specifier: ^2.4.0
         version: 2.8.1
     devDependencies:
       '@boostercloud/application-tester':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../application-tester
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@oclif/test':
         specifier: ^3.0.3
@@ -177,8 +177,8 @@ importers:
         specifier: ^6.5.0
         version: 6.5.0
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/mustache':
         specifier: 4.1.0
         version: 4.1.0
@@ -196,10 +196,10 @@ importers:
         version: 3.2.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -253,18 +253,18 @@ importers:
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       ts-patch:
-        specifier: 3.1.2
-        version: 3.1.2
+        specifier: 3.3.0
+        version: 3.3.0
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-common-helpers:
     dependencies:
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -280,7 +280,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -292,8 +292,8 @@ importers:
         specifier: 5.1.5
         version: 5.1.5
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -311,10 +311,10 @@ importers:
         version: 8.3.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -362,28 +362,28 @@ importers:
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-core:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect/cli':
         specifier: 0.35.26
-        version: 0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)
+        version: 0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)
       '@effect/platform':
         specifier: 0.48.24
-        version: 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1)
+        version: 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0)
       '@effect/platform-node':
         specifier: 0.45.26
-        version: 0.45.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(effect@2.4.17)
+        version: 0.45.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(effect@2.4.17)
       '@effect/printer':
         specifier: 0.32.2
         version: 0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17)
@@ -406,8 +406,8 @@ importers:
         specifier: ^2.11.0
         version: 2.16.9
       graphql-scalars:
-        specifier: ^1.17.0
-        version: 1.24.0(graphql@16.10.0)
+        specifier: ^1.24.1
+        version: 1.24.1(graphql@16.10.0)
       graphql-subscriptions:
         specifier: 2.0.0
         version: 2.0.0(graphql@16.10.0)
@@ -418,11 +418,11 @@ importers:
         specifier: 1.3.0
         version: 1.3.0
       jsonwebtoken:
-        specifier: 9.0.1
-        version: 9.0.1
+        specifier: 9.0.2
+        version: 9.0.2
       jwks-rsa:
-        specifier: 3.0.1
-        version: 3.0.1
+        specifier: 3.1.0
+        version: 3.1.0
       reflect-metadata:
         specifier: 0.1.13
         version: 0.1.13
@@ -430,17 +430,17 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       validator:
-        specifier: 13.7.0
-        version: 13.7.0
+        specifier: 13.12.0
+        version: 13.12.0
       ws:
-        specifier: 8.17.1
-        version: 8.17.1
+        specifier: 8.18.0
+        version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@boostercloud/metadata-booster':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../metadata-booster
       '@types/chai':
         specifier: 4.2.18
@@ -455,11 +455,11 @@ importers:
         specifier: 1.1.29
         version: 1.1.29
       '@types/jsonwebtoken':
-        specifier: 9.0.1
-        version: 9.0.1
+        specifier: 9.0.8
+        version: 9.0.8
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -470,14 +470,14 @@ importers:
         specifier: 3.2.5
         version: 3.2.5
       '@types/validator':
-        specifier: 13.1.3
-        version: 13.1.3
+        specifier: 13.12.2
+        version: 13.12.2
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -534,46 +534,46 @@ importers:
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       ts-patch:
-        specifier: 3.1.2
-        version: 3.1.2
+        specifier: 3.3.0
+        version: 3.3.0
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-integration-tests:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-core':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-core
       '@boostercloud/framework-provider-aws':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-aws
       '@boostercloud/framework-provider-azure':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-azure
       '@boostercloud/framework-provider-local':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-local
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
         version: 0.60.5
       '@effect/cli':
         specifier: 0.35.26
-        version: 0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)
+        version: 0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)
       '@effect/platform':
         specifier: 0.48.24
-        version: 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1)
+        version: 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0)
       '@effect/platform-node':
         specifier: 0.45.26
-        version: 0.45.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(effect@2.4.17)
+        version: 0.45.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(effect@2.4.17)
       '@effect/printer':
         specifier: 0.32.2
         version: 0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17)
@@ -611,32 +611,32 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       ws:
-        specifier: 8.17.1
-        version: 8.17.1
+        specifier: 8.18.0
+        version: 8.18.0
     devDependencies:
       '@apollo/client':
         specifier: 3.7.13
         version: 3.7.13(graphql@16.10.0)(react@17.0.2)(subscriptions-transport-ws@0.11.0(graphql@16.10.0))
       '@boostercloud/application-tester':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../application-tester
       '@boostercloud/cli':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../cli
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@boostercloud/framework-provider-aws-infrastructure':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-aws-infrastructure
       '@boostercloud/framework-provider-azure-infrastructure':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-azure-infrastructure
       '@boostercloud/framework-provider-local-infrastructure':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-local-infrastructure
       '@boostercloud/metadata-booster':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../metadata-booster
       '@seald-io/nedb':
         specifier: 4.0.2
@@ -657,11 +657,11 @@ importers:
         specifier: 5.1.5
         version: 5.1.5
       '@types/jsonwebtoken':
-        specifier: 9.0.1
-        version: 9.0.1
+        specifier: 9.0.8
+        version: 9.0.8
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/nedb':
         specifier: ^1.8.12
         version: 1.8.16
@@ -676,10 +676,10 @@ importers:
         version: 3.2.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       cdktf:
         specifier: 0.19.2
         version: 0.19.2(constructs@10.4.2)
@@ -726,11 +726,11 @@ importers:
         specifier: ^3.0.5
         version: 3.2.0(react@17.0.2)
       jsonwebtoken:
-        specifier: 9.0.1
-        version: 9.0.1
+        specifier: 9.0.2
+        version: 9.0.2
       jwks-rsa:
-        specifier: 3.0.1
-        version: 3.0.1
+        specifier: 3.1.0
+        version: 3.1.0
       mocha:
         specifier: 10.2.0
         version: 10.2.0
@@ -766,21 +766,21 @@ importers:
         version: 0.11.0(graphql@16.10.0)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       ts-patch:
-        specifier: 3.1.2
-        version: 3.1.2
+        specifier: 3.3.0
+        version: 3.3.0
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-provider-aws:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -790,7 +790,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/aws-lambda':
         specifier: 8.10.48
@@ -808,8 +808,8 @@ importers:
         specifier: 5.1.5
         version: 5.1.5
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -824,10 +824,10 @@ importers:
         version: 3.2.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       aws-sdk:
         specifier: 2.853.0
         version: 2.853.0
@@ -881,10 +881,10 @@ importers:
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
       velocityjs:
         specifier: ^2.0.0
         version: 2.0.6
@@ -943,13 +943,13 @@ importers:
         specifier: ^1.170.0
         version: 1.204.0
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-provider-aws':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-aws
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -983,7 +983,7 @@ importers:
         version: 1.10.2
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/archiver':
         specifier: 5.1.0
@@ -1004,8 +1004,8 @@ importers:
         specifier: 5.1.5
         version: 5.1.5
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -1020,10 +1020,10 @@ importers:
         version: 3.2.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -1071,10 +1071,10 @@ importers:
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
       velocityjs:
         specifier: ^2.0.0
         version: 2.0.6
@@ -1097,10 +1097,10 @@ importers:
         specifier: ~1.1.0
         version: 1.1.3
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1110,7 +1110,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1122,8 +1122,8 @@ importers:
         specifier: 5.1.5
         version: 5.1.5
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -1135,10 +1135,10 @@ importers:
         version: 3.2.5
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -1183,10 +1183,10 @@ importers:
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-provider-azure-infrastructure:
     dependencies:
@@ -1203,16 +1203,16 @@ importers:
         specifier: ~2.1.0
         version: 2.1.0
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-core':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-core
       '@boostercloud/framework-provider-azure':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-azure
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@cdktf/provider-azurerm':
         specifier: 13.3.0
@@ -1279,7 +1279,7 @@ importers:
         version: 8.3.2
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1294,8 +1294,8 @@ importers:
         specifier: ^9.0.13
         version: 9.0.13
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/mustache':
         specifier: 4.1.0
         version: 4.1.0
@@ -1313,10 +1313,10 @@ importers:
         version: 8.3.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       eslint:
         specifier: ^8.23.1
         version: 8.57.1
@@ -1352,18 +1352,18 @@ importers:
         version: 9.2.3
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-provider-local:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1375,11 +1375,11 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       ws:
-        specifier: 8.17.1
-        version: 8.17.1
+        specifier: 8.18.0
+        version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1394,8 +1394,8 @@ importers:
         specifier: 5.1.5
         version: 5.1.5
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -1413,10 +1413,10 @@ importers:
         version: 8.5.4
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -1467,21 +1467,21 @@ importers:
         version: 2.2.1(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-provider-local-infrastructure:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-common-helpers
       '@boostercloud/framework-provider-local':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-provider-local
       '@boostercloud/framework-types':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1500,7 +1500,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1518,8 +1518,8 @@ importers:
         specifier: 5.1.5
         version: 5.1.5
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -1537,10 +1537,10 @@ importers:
         version: 1.3.12
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -1588,10 +1588,10 @@ importers:
         version: 2.2.1(sinon@9.2.3)
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/framework-types:
     dependencies:
@@ -1603,10 +1603,10 @@ importers:
         version: 0.39.0(@effect-ts/core@0.60.5)
       '@effect/cli':
         specifier: 0.35.26
-        version: 0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)
+        version: 0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)
       '@effect/platform':
         specifier: 0.48.24
-        version: 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1)
+        version: 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0)
       '@effect/printer':
         specifier: 0.32.2
         version: 0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17)
@@ -1632,14 +1632,14 @@ importers:
         specifier: ~3.3.2
         version: 3.3.3
       ws:
-        specifier: 8.17.1
-        version: 8.17.1
+        specifier: 8.18.0
+        version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@boostercloud/metadata-booster':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../metadata-booster
       '@types/chai':
         specifier: 4.2.18
@@ -1648,8 +1648,8 @@ importers:
         specifier: 7.1.4
         version: 7.1.4
       '@types/mocha':
-        specifier: 10.0.1
-        version: 10.0.1
+        specifier: 10.0.10
+        version: 10.0.10
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
@@ -1664,10 +1664,10 @@ importers:
         version: 8.3.0
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -1714,8 +1714,8 @@ importers:
         specifier: 3.5.0
         version: 3.5.0(chai@4.2.0)(sinon@9.2.3)
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../packages/metadata-booster:
     dependencies:
@@ -1726,24 +1726,24 @@ importers:
         specifier: 0.1.13
         version: 0.1.13
       ts-morph:
-        specifier: ^19.0.0
-        version: 19.0.0
+        specifier: ^25.0.1
+        version: 25.0.1
       tslib:
         specifier: ^2.4.0
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^2.19.0
+        specifier: workspace:^3.0.0
         version: link:../../tools/eslint-config
       '@types/node':
         specifier: ^20.17.17
         version: 20.17.17
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       eslint:
         specifier: ^8.23.1
         version: 8.57.1
@@ -1770,22 +1770,22 @@ importers:
         version: 9.2.3
       ts-node:
         specifier: ^10.9.1
-        version: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+        version: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       ts-patch:
-        specifier: 3.1.2
-        version: 3.1.2
+        specifier: 3.3.0
+        version: 3.3.0
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
   ../../tools/eslint-config:
     dependencies:
       '@typescript-eslint/eslint-plugin':
         specifier: ^5.0.0
-        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/parser':
         specifier: ^5.0.0
-        version: 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+        version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       eslint:
         specifier: ^8.23.1
         version: 8.57.1
@@ -1806,8 +1806,8 @@ importers:
         specifier: 2.3.0
         version: 2.3.0
       typescript:
-        specifier: 5.1.6
-        version: 5.1.6
+        specifier: 5.7.3
+        version: 5.7.3
 
 packages:
 
@@ -3291,8 +3291,8 @@ packages:
   '@tokenizer/token@0.3.0':
     resolution: {integrity: sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A==}
 
-  '@ts-morph/common@0.20.0':
-    resolution: {integrity: sha512-7uKjByfbPpwuzkstL3L5MQyuXPSKdoNG93Fmi2JoDcTf3pEP731JdRFAduRVkOs8oqxPsXKA+ScrWkdQ8t/I+Q==}
+  '@ts-morph/common@0.26.1':
+    resolution: {integrity: sha512-Sn28TGl/4cFpcM+jwsH1wLncYq3FtN/BIpem+HOygfBWPT5pAeS5dB4VFVzV8FbnOKHpDLZmvAl4AjPEev5idA==}
 
   '@tsconfig/node10@1.0.11':
     resolution: {integrity: sha512-DcRjDCujK/kCk/cUe8Xz8ZSpm8mS3mNNpta+jGCA6USEDfktlNvm1+IuZ9eTcDbNk41BHwpHHeW+N1lKCz4zOw==}
@@ -3373,8 +3373,8 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
-  '@types/jsonwebtoken@9.0.1':
-    resolution: {integrity: sha512-c5ltxazpWabia/4UzhIoaDcIza4KViOQhdbjRlfcIGVnsE3c3brkz9Z+F/EeJIECOQP7W7US2hNE930cWWkPiw==}
+  '@types/jsonwebtoken@9.0.8':
+    resolution: {integrity: sha512-7fx54m60nLFUVYlxAB1xpe9CBWX2vSrk50Y6ogRJ1v5xxtba7qXTg5BgYDN5dq+yuQQ9HaVlHJyAAt1/mxryFg==}
 
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
@@ -3388,8 +3388,11 @@ packages:
   '@types/minimatch@5.1.2':
     resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
 
-  '@types/mocha@10.0.1':
-    resolution: {integrity: sha512-/fvYntiO1GeICvqbQ3doGDIP97vWmvFt83GKguJ6prmQM2iXZfFcq6YE8KteFyRtX2/h5Hf91BYvPodJKFYv5Q==}
+  '@types/mocha@10.0.10':
+    resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
+
+  '@types/ms@2.1.0':
+    resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
   '@types/mustache@4.1.0':
     resolution: {integrity: sha512-dj4gq0BwsONZw/jqEf1qDBkAhAdBfIb7K+RDEQQvGfd6uTkfzKNxjz6NCeg50bveU0ydi8DruGp/9+FgIxli5w==}
@@ -3457,8 +3460,8 @@ packages:
   '@types/uuid@8.3.0':
     resolution: {integrity: sha512-eQ9qFW/fhfGJF8WKHGEHZEyVWfZxrT+6CLIJGBcZPfxUh/+BnEj+UCGYMlr9qZuX/2AltsvwrGqp0LhEW8D0zQ==}
 
-  '@types/validator@13.1.3':
-    resolution: {integrity: sha512-DaOWN1zf7j+8nHhqXhIgNmS+ltAC53NXqGxYuBhWqWgqolRhddKzfZU814lkHQSTG0IUfQxU7Cg0gb8fFWo2mA==}
+  '@types/validator@13.12.2':
+    resolution: {integrity: sha512-6SlHBzUW8Jhf3liqrGGXyTJSIFe4nqlJ5A5KaMZ2l/vbM3Wh3KSybots/wfWVzNLK4D1NZluDlSQIbIEPx6oyA==}
 
   '@types/wrap-ansi@3.0.0':
     resolution: {integrity: sha512-ltIpx+kM7g/MLRZfkbL7EsCEjfzCcScLpkg37eXEtx5kmrAKBkTJwd1GIAjDSL8wTpM6Hzn5YO4pSb91BEwu1g==}
@@ -4073,8 +4076,8 @@ packages:
     resolution: {integrity: sha512-3Pe/CF1Nn94hyhIYpjtiLhdCoEoz0DqQ+988E9gmeEdQZlojxnOb74wctFyuwWQHzqyf9X7C7MG8juUpqBJT8w==}
     engines: {node: '>=0.8'}
 
-  code-block-writer@12.0.0:
-    resolution: {integrity: sha512-q4dMFMlXtKR3XNBHyMHt/3pwYNA69EDk00lloMOaaUMKPUXBw6lpXtbu3MMVG6/uOihGnRDOlkyqsONEUj60+w==}
+  code-block-writer@13.0.3:
+    resolution: {integrity: sha512-Oofo0pq3IKnsFtuHqSF7TqBfr71aeyZDVJ0HpmqB7FBM2qEigL0iPONSCZSO9pE9dZTAxANe5XHG9Uy0YMv8cg==}
 
   code-excerpt@3.0.0:
     resolution: {integrity: sha512-VHNTVhd7KsLGOqfX3SyeO8RyYPMp1GJOg194VITk04WMYCv4plV68YWe6TJZxd9MhobjtpMRnVky01gqZsalaw==}
@@ -5043,9 +5046,9 @@ packages:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
     deprecated: Glob versions prior to v9 are no longer supported
 
-  global-prefix@3.0.0:
-    resolution: {integrity: sha512-awConJSVCHVGND6x3tmMaKcQvwXLhjdkmomy2W+Goaui8YPgYgXJZewhg3fWC+DlfqqQuWg8AwqjGTD2nAPVWg==}
-    engines: {node: '>=6'}
+  global-prefix@4.0.0:
+    resolution: {integrity: sha512-w0Uf9Y9/nyHinEk5vMJKRie+wa4kR5hmDbEhGGds/kG1PwGLLHKRoNMeJOyCQjjBkANlnScqgzcFwGHgmgLkVA==}
+    engines: {node: '>=16'}
 
   globals@11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
@@ -5092,8 +5095,8 @@ packages:
     peerDependencies:
       graphology-types: '>=0.24.0'
 
-  graphql-scalars@1.24.0:
-    resolution: {integrity: sha512-olbFN39m0XsHHESACUdd7jWU/lGxMMS1B7NZ8XqpqhKZrjBxzeGYAnQ4Ax//huYds771wb7gCznA+65QDuUa+g==}
+  graphql-scalars@1.24.1:
+    resolution: {integrity: sha512-3L553TMPh3YpHQM4x9G4tXcyD+AX8QQOYA6tUn1nrNiWEXE0JfAnWdjoe3WGxRuGjnZrzvHDz62q8S+sSGXXwA==}
     engines: {node: '>=10'}
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0
@@ -5505,6 +5508,10 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
+  isexe@3.1.1:
+    resolution: {integrity: sha512-LpB/54B+/2J5hqQ7imZHfdU31OlgQqx7ZicVlkm9kzg9/w8GKLEcFfJl/t7DCEDueOyBAD6zCCwTO6Fzs0NoEQ==}
+    engines: {node: '>=16'}
+
   isomorphic-ws@4.0.1:
     resolution: {integrity: sha512-BhBvN2MBpWTaSHdWRb/bwdZJ1WaehQ2L1KngkCkfLUGF0mAWAT1sQUQacEmQ0jXkFw/czDXPNQSL5u2/Krsz1w==}
     peerDependencies:
@@ -5656,8 +5663,8 @@ packages:
     resolution: {integrity: sha512-XjwVfRS6jTMsqYs0EsuJ4LGxXV14zQybNd4L2r0UvbVnSF9Af8x7p5MzbJ90Ioz/9TI41/hTCvznF/loiSzn8w==}
     engines: {node: '>=4', npm: '>=1.4.28'}
 
-  jsonwebtoken@9.0.1:
-    resolution: {integrity: sha512-K8wx7eJ5TPvEjuiVSkv167EVboBDv9PZdDoF7BgeQnBLVvZWW9clr2PsQHVJDTKaEIH5JBIwHujGcHp7GgI2eg==}
+  jsonwebtoken@9.0.2:
+    resolution: {integrity: sha512-PRp66vJ865SSqOlgqS8hujT5U4AOgMfhrwYIuIhfKaoSCZcirrmASQr8CX7cUg+RMih+hgznrjp99o+W4pJLHQ==}
     engines: {node: '>=12', npm: '>=6'}
 
   jssha@3.3.1:
@@ -5678,8 +5685,8 @@ packages:
   jwa@2.0.0:
     resolution: {integrity: sha512-jrZ2Qx916EA+fq9cEAeCROWPTfCwi1IVHqT2tapuqLEVVDKFDENFw1oL+MwrTvH6msKxsd1YTDVw6uKEcsrLEA==}
 
-  jwks-rsa@3.0.1:
-    resolution: {integrity: sha512-UUOZ0CVReK1QVU3rbi9bC7N5/le8ziUj0A2ef1Q0M7OPD2KvjEYizptqIxGIo6fSLYDkqBrazILS18tYuRc8gw==}
+  jwks-rsa@3.1.0:
+    resolution: {integrity: sha512-v7nqlfezb9YfHHzYII3ef2a2j1XnGeSE/bK3WfumaYCqONAIstJbrEGapz4kadScZzEt7zYCN7bucj8C0Mv/Rg==}
     engines: {node: '>=14'}
 
   jws@3.2.2:
@@ -5961,10 +5968,6 @@ packages:
     resolution: {integrity: sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==}
     engines: {node: '>=10'}
 
-  minimatch@7.4.6:
-    resolution: {integrity: sha512-sBz8G/YjVniEz6lKPNpKxXwazJe4c19fEfV2GDMX6AjFz+MX9uDWIZW8XreVhkFW3fkIdTv/gxWr/Kks5FFAVw==}
-    engines: {node: '>=10'}
-
   minimatch@9.0.5:
     resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -5997,11 +6000,6 @@ packages:
 
   mkdirp@1.0.4:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
-    engines: {node: '>=10'}
-    hasBin: true
-
-  mkdirp@2.1.6:
-    resolution: {integrity: sha512-+hEnITedc8LAtIP9u3HJDFIdcLV2vXP33sqLLIzkv1Db1zO/1OxbvYf0Y1OC/S/Qo5dxHXepofhmxL02PsKe+A==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -7263,8 +7261,8 @@ packages:
     resolution: {integrity: sha512-uivwYcQaxAucv1CzRp2n/QdYPo4ILf9VXgH19zEIjFx2EJufV16P0JtJVpYHy89DItG6Kwj2oIUjrcK5au+4tQ==}
     engines: {node: '>=8'}
 
-  ts-morph@19.0.0:
-    resolution: {integrity: sha512-D6qcpiJdn46tUqV45vr5UGM2dnIEuTGNxVhg0sk5NX11orcouwj6i1bMqZIz2mZTZB1Hcgy7C3oEVhAT+f6mbQ==}
+  ts-morph@25.0.1:
+    resolution: {integrity: sha512-QJEiTdnz1YjrB3JFhd626gX4rKHDLSjSVMvGGG4v7ONc3RBwa0Eei98G9AT9uNFDMtV54JyuXsFeC+OH0n6bXQ==}
 
   ts-node@10.9.2:
     resolution: {integrity: sha512-f0FFpIdcHgn8zcPSbf1dRevwt047YMnaiJM3u2w2RewrB+fob/zePZcrOyQoLMMO7aBIddLcQIEK5dYjkLnGrQ==}
@@ -7280,8 +7278,8 @@ packages:
       '@swc/wasm':
         optional: true
 
-  ts-patch@3.1.2:
-    resolution: {integrity: sha512-n58F5AqjUMdp9RAKq+E1YBkmONltPVbt1nN+wrmZXoYZek6QcvaTuqvKMhYhr5BxtC53kD/exxIPA1cP1RQxsA==}
+  ts-patch@3.3.0:
+    resolution: {integrity: sha512-zAOzDnd5qsfEnjd9IGy1IRuvA7ygyyxxdxesbhMdutt8AHFjD8Vw8hU2rMF89HX1BKRWFYqKHrO8Q6lw0NeUZg==}
     hasBin: true
 
   tsconfck@3.1.4:
@@ -7378,11 +7376,6 @@ packages:
     resolution: {integrity: sha512-q7QNVDGTdl702bVFiI5eY4l/HkgCM6at9KhcFbgUAzezHFbOVy4+0O/lCjsABEQwbZPravVfBIiBVGo89yzHFg==}
     engines: {node: '>= 0.4'}
 
-  typescript@5.1.6:
-    resolution: {integrity: sha512-zaWCozRZ6DLEWAWFrVDz1H6FVXzUSfTy5FUMWsQlU8Ym5JP9eO4xkTIROFCQvhQf61z6O/G6ugw3SgAnvvm+HA==}
-    engines: {node: '>=14.17'}
-    hasBin: true
-
   typescript@5.7.3:
     resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
@@ -7475,8 +7468,8 @@ packages:
   validate-npm-package-name@3.0.0:
     resolution: {integrity: sha512-M6w37eVCMMouJ9V/sdPGnC5H4uDr73/+xdq0FBLO3TFFX1+7wiUY6Es328NN+y43tmY+doUdN9g9J21vqB7iLw==}
 
-  validator@13.7.0:
-    resolution: {integrity: sha512-nYXQLCBkpJ8X6ltALua9dRrZDHVYxjJ1wgskNt1lH9fzGjs3tgojGSCBjmEPwkWS1y29+DrizMTW19Pr9uB2nw==}
+  validator@13.12.0:
+    resolution: {integrity: sha512-c1Q0mCiPlgdTVVVIJIrBuxNicYE+t/7oKeI9MWLj3fh/uq2Pxh/3eeWbVZ4OcGW1TUf53At0njHw5SMdA3tmMg==}
     engines: {node: '>= 0.10'}
 
   vary@1.1.2:
@@ -7527,6 +7520,11 @@ packages:
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
     engines: {node: '>= 8'}
+    hasBin: true
+
+  which@4.0.0:
+    resolution: {integrity: sha512-GlaYyEb07DPxYCKhKzplCWBJtvxZcZMrL+4UkrTSJHHPyZU4mYYTv3qaOe77H7EODLSSopAUFAc6W8U4yqvscg==}
+    engines: {node: ^16.13.0 || >=18.0.0}
     hasBin: true
 
   widest-line@3.1.0:
@@ -7588,8 +7586,8 @@ packages:
       utf-8-validate:
         optional: true
 
-  ws@8.17.1:
-    resolution: {integrity: sha512-6XQFvXTkbfUOZOKKILFG1PDK2NDQs4azKQl26T0YS5CxqWLgXajbPZ+h4gZekJyRqFU8pvnbAbbs/3TgRPy+GQ==}
+  ws@8.18.0:
+    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -8652,7 +8650,7 @@ snapshots:
   '@azure/msal-node@1.18.4':
     dependencies:
       '@azure/msal-common': 13.3.1
-      jsonwebtoken: 9.0.1
+      jsonwebtoken: 9.0.2
       uuid: 8.3.2
 
   '@azure/web-pubsub@1.1.3':
@@ -8662,7 +8660,7 @@ snapshots:
       '@azure/core-rest-pipeline': 1.18.2
       '@azure/core-tracing': 1.2.0
       '@azure/logger': 1.1.4
-      jsonwebtoken: 9.0.1
+      jsonwebtoken: 9.0.2
       tslib: 2.8.1
     transitivePeerDependencies:
       - supports-color
@@ -8923,9 +8921,9 @@ snapshots:
 
   '@effect-ts/system@0.57.5': {}
 
-  '@effect/cli@0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)':
+  '@effect/cli@0.35.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(@effect/printer-ansi@0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/printer@0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17))(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)':
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1)
+      '@effect/platform': 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0)
       '@effect/printer': 0.32.2(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17)
       '@effect/printer-ansi': 0.32.26(@effect/typeclass@0.23.17(effect@2.4.17))(effect@2.4.17)
       '@effect/schema': 0.64.18(effect@2.4.17)(fast-check@3.23.2)
@@ -8934,31 +8932,31 @@ snapshots:
       toml: 3.0.0
       yaml: 2.7.0
 
-  '@effect/platform-node-shared@0.3.29(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(effect@2.4.17)':
+  '@effect/platform-node-shared@0.3.29(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(effect@2.4.17)':
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1)
+      '@effect/platform': 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0)
       '@parcel/watcher': 2.5.1
       effect: 2.4.17
       multipasta: 0.2.5
 
-  '@effect/platform-node@0.45.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(effect@2.4.17)':
+  '@effect/platform-node@0.45.26(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(effect@2.4.17)':
     dependencies:
-      '@effect/platform': 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1)
-      '@effect/platform-node-shared': 0.3.29(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1))(effect@2.4.17)
+      '@effect/platform': 0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0)
+      '@effect/platform-node-shared': 0.3.29(@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0))(effect@2.4.17)
       effect: 2.4.17
       mime: 3.0.0
       undici: 6.21.1
-      ws: 8.17.1
+      ws: 8.18.0
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  '@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.17.1)':
+  '@effect/platform@0.48.24(@effect/schema@0.64.18(effect@2.4.17)(fast-check@3.23.2))(effect@2.4.17)(ws@8.18.0)':
     dependencies:
       '@effect/schema': 0.64.18(effect@2.4.17)(fast-check@3.23.2)
       effect: 2.4.17
       find-my-way-ts: 0.1.5
-      isomorphic-ws: 5.0.0(ws@8.17.1)
+      isomorphic-ws: 5.0.0(ws@8.18.0)
       multipasta: 0.2.5
       path-browserify: 1.0.1
     transitivePeerDependencies:
@@ -9198,7 +9196,7 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.18.0
 
-  '@oclif/core@2.16.0(@types/node@20.17.17)(typescript@5.1.6)':
+  '@oclif/core@2.16.0(@types/node@20.17.17)(typescript@5.7.3)':
     dependencies:
       '@types/cli-progress': 3.11.6
       ansi-escapes: 4.3.2
@@ -9223,7 +9221,7 @@ snapshots:
       strip-ansi: 6.0.1
       supports-color: 8.1.1
       supports-hyperlinks: 2.3.0
-      ts-node: 10.9.2(@types/node@20.17.17)(typescript@5.1.6)
+      ts-node: 10.9.2(@types/node@20.17.17)(typescript@5.7.3)
       tslib: 2.8.1
       widest-line: 3.1.0
       wordwrap: 1.0.0
@@ -9234,7 +9232,7 @@ snapshots:
       - '@types/node'
       - typescript
 
-  '@oclif/core@3.15.0(typescript@5.1.6)':
+  '@oclif/core@3.15.0(typescript@5.7.3)':
     dependencies:
       ansi-escapes: 4.3.2
       ansi-styles: 4.3.0
@@ -9259,7 +9257,7 @@ snapshots:
       strip-ansi: 6.0.1
       supports-color: 8.1.1
       supports-hyperlinks: 2.3.0
-      tsconfck: 3.1.4(typescript@5.1.6)
+      tsconfck: 3.1.4(typescript@5.7.3)
       widest-line: 3.1.0
       wordwrap: 1.0.0
       wrap-ansi: 7.0.0
@@ -9297,9 +9295,9 @@ snapshots:
       wordwrap: 1.0.0
       wrap-ansi: 7.0.0
 
-  '@oclif/plugin-help@5.2.20(@types/node@20.17.17)(typescript@5.1.6)':
+  '@oclif/plugin-help@5.2.20(@types/node@20.17.17)(typescript@5.7.3)':
     dependencies:
-      '@oclif/core': 2.16.0(@types/node@20.17.17)(typescript@5.1.6)
+      '@oclif/core': 2.16.0(@types/node@20.17.17)(typescript@5.7.3)
     transitivePeerDependencies:
       - '@swc/core'
       - '@swc/wasm'
@@ -9560,11 +9558,10 @@ snapshots:
 
   '@tokenizer/token@0.3.0': {}
 
-  '@ts-morph/common@0.20.0':
+  '@ts-morph/common@0.26.1':
     dependencies:
       fast-glob: 3.3.3
-      minimatch: 7.4.6
-      mkdirp: 2.1.6
+      minimatch: 9.0.5
       path-browserify: 1.0.1
 
   '@tsconfig/node10@1.0.11': {}
@@ -9659,8 +9656,9 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
-  '@types/jsonwebtoken@9.0.1':
+  '@types/jsonwebtoken@9.0.8':
     dependencies:
+      '@types/ms': 2.1.0
       '@types/node': 20.17.17
 
   '@types/keyv@3.1.4':
@@ -9673,7 +9671,9 @@ snapshots:
 
   '@types/minimatch@5.1.2': {}
 
-  '@types/mocha@10.0.1': {}
+  '@types/mocha@10.0.10': {}
+
+  '@types/ms@2.1.0': {}
 
   '@types/mustache@4.1.0': {}
 
@@ -9752,7 +9752,7 @@ snapshots:
 
   '@types/uuid@8.3.0': {}
 
-  '@types/validator@13.1.3': {}
+  '@types/validator@13.12.2': {}
 
   '@types/wrap-ansi@3.0.0': {}
 
@@ -9767,34 +9767,34 @@ snapshots:
 
   '@types/yoga-layout@1.9.2': {}
 
-  '@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6))(eslint@8.57.1)(typescript@5.1.6)':
+  '@typescript-eslint/eslint-plugin@5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3))(eslint@8.57.1)(typescript@5.7.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+      '@typescript-eslint/parser': 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       '@typescript-eslint/scope-manager': 5.62.0
-      '@typescript-eslint/type-utils': 5.62.0(eslint@8.57.1)(typescript@5.1.6)
-      '@typescript-eslint/utils': 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+      '@typescript-eslint/type-utils': 5.62.0(eslint@8.57.1)(typescript@5.7.3)
+      '@typescript-eslint/utils': 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 8.57.1
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare-lite: 1.4.0
       semver: 7.6.3
-      tsutils: 3.21.0(typescript@5.1.6)
+      tsutils: 3.21.0(typescript@5.7.3)
     optionalDependencies:
-      typescript: 5.1.6
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.1.6)':
+  '@typescript-eslint/parser@5.62.0(eslint@8.57.1)(typescript@5.7.3)':
     dependencies:
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/types': 5.62.0
-      '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.7.3)
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 8.57.1
     optionalDependencies:
-      typescript: 5.1.6
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
@@ -9803,21 +9803,21 @@ snapshots:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
 
-  '@typescript-eslint/type-utils@5.62.0(eslint@8.57.1)(typescript@5.1.6)':
+  '@typescript-eslint/type-utils@5.62.0(eslint@8.57.1)(typescript@5.7.3)':
     dependencies:
-      '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.1.6)
-      '@typescript-eslint/utils': 5.62.0(eslint@8.57.1)(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.7.3)
+      '@typescript-eslint/utils': 5.62.0(eslint@8.57.1)(typescript@5.7.3)
       debug: 4.4.0(supports-color@8.1.1)
       eslint: 8.57.1
-      tsutils: 3.21.0(typescript@5.1.6)
+      tsutils: 3.21.0(typescript@5.7.3)
     optionalDependencies:
-      typescript: 5.1.6
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
   '@typescript-eslint/types@5.62.0': {}
 
-  '@typescript-eslint/typescript-estree@5.62.0(typescript@5.1.6)':
+  '@typescript-eslint/typescript-estree@5.62.0(typescript@5.7.3)':
     dependencies:
       '@typescript-eslint/types': 5.62.0
       '@typescript-eslint/visitor-keys': 5.62.0
@@ -9825,20 +9825,20 @@ snapshots:
       globby: 11.1.0
       is-glob: 4.0.3
       semver: 7.6.3
-      tsutils: 3.21.0(typescript@5.1.6)
+      tsutils: 3.21.0(typescript@5.7.3)
     optionalDependencies:
-      typescript: 5.1.6
+      typescript: 5.7.3
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@5.62.0(eslint@8.57.1)(typescript@5.1.6)':
+  '@typescript-eslint/utils@5.62.0(eslint@8.57.1)(typescript@5.7.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.4.1(eslint@8.57.1)
       '@types/json-schema': 7.0.15
       '@types/semver': 7.5.8
       '@typescript-eslint/scope-manager': 5.62.0
       '@typescript-eslint/types': 5.62.0
-      '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.1.6)
+      '@typescript-eslint/typescript-estree': 5.62.0(typescript@5.7.3)
       eslint: 8.57.1
       eslint-scope: 5.1.1
       semver: 7.6.3
@@ -10519,7 +10519,7 @@ snapshots:
 
   clone@2.1.2: {}
 
-  code-block-writer@12.0.0: {}
+  code-block-writer@13.0.3: {}
 
   code-excerpt@3.0.0:
     dependencies:
@@ -11730,11 +11730,11 @@ snapshots:
       once: 1.4.0
       path-is-absolute: 1.0.1
 
-  global-prefix@3.0.0:
+  global-prefix@4.0.0:
     dependencies:
-      ini: 1.3.8
+      ini: 4.1.3
       kind-of: 6.0.3
-      which: 1.3.1
+      which: 4.0.0
 
   globals@11.12.0: {}
 
@@ -11792,7 +11792,7 @@ snapshots:
       graphology-types: 0.24.8
       obliterator: 2.0.5
 
-  graphql-scalars@1.24.0(graphql@16.10.0):
+  graphql-scalars@1.24.1(graphql@16.10.0):
     dependencies:
       graphql: 16.10.0
       tslib: 2.8.1
@@ -12199,13 +12199,15 @@ snapshots:
 
   isexe@2.0.0: {}
 
+  isexe@3.1.1: {}
+
   isomorphic-ws@4.0.1(ws@7.5.10):
     dependencies:
       ws: 7.5.10
 
-  isomorphic-ws@5.0.0(ws@8.17.1):
+  isomorphic-ws@5.0.0(ws@8.18.0):
     dependencies:
-      ws: 8.17.1
+      ws: 8.18.0
 
   istanbul-lib-coverage@3.2.2: {}
 
@@ -12413,10 +12415,16 @@ snapshots:
       ms: 2.1.3
       semver: 5.7.2
 
-  jsonwebtoken@9.0.1:
+  jsonwebtoken@9.0.2:
     dependencies:
       jws: 3.2.2
-      lodash: 4.17.21
+      lodash.includes: 4.3.0
+      lodash.isboolean: 3.0.3
+      lodash.isinteger: 4.0.4
+      lodash.isnumber: 3.0.3
+      lodash.isplainobject: 4.0.6
+      lodash.isstring: 4.0.1
+      lodash.once: 4.1.1
       ms: 2.1.3
       semver: 7.6.3
 
@@ -12445,10 +12453,10 @@ snapshots:
       ecdsa-sig-formatter: 1.0.11
       safe-buffer: 5.2.1
 
-  jwks-rsa@3.0.1:
+  jwks-rsa@3.1.0:
     dependencies:
       '@types/express': 4.17.21
-      '@types/jsonwebtoken': 9.0.1
+      '@types/jsonwebtoken': 9.0.8
       debug: 4.4.0(supports-color@8.1.1)
       jose: 4.15.9
       limiter: 1.1.5
@@ -12715,10 +12723,6 @@ snapshots:
     dependencies:
       brace-expansion: 2.0.1
 
-  minimatch@7.4.6:
-    dependencies:
-      brace-expansion: 2.0.1
-
   minimatch@9.0.5:
     dependencies:
       brace-expansion: 2.0.1
@@ -12745,8 +12749,6 @@ snapshots:
       minimist: 1.2.8
 
   mkdirp@1.0.4: {}
-
-  mkdirp@2.1.6: {}
 
   mocha-skip-if@0.0.3: {}
 
@@ -14228,12 +14230,12 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  ts-morph@19.0.0:
+  ts-morph@25.0.1:
     dependencies:
-      '@ts-morph/common': 0.20.0
-      code-block-writer: 12.0.0
+      '@ts-morph/common': 0.26.1
+      code-block-writer: 13.0.3
 
-  ts-node@10.9.2(@types/node@20.17.17)(typescript@5.1.6):
+  ts-node@10.9.2(@types/node@20.17.17)(typescript@5.7.3):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.11
@@ -14247,22 +14249,22 @@ snapshots:
       create-require: 1.1.1
       diff: 4.0.2
       make-error: 1.3.6
-      typescript: 5.1.6
+      typescript: 5.7.3
       v8-compile-cache-lib: 3.0.1
       yn: 3.1.1
 
-  ts-patch@3.1.2:
+  ts-patch@3.3.0:
     dependencies:
       chalk: 4.1.2
-      global-prefix: 3.0.0
+      global-prefix: 4.0.0
       minimist: 1.2.8
       resolve: 1.22.10
       semver: 7.6.3
       strip-ansi: 6.0.1
 
-  tsconfck@3.1.4(typescript@5.1.6):
+  tsconfck@3.1.4(typescript@5.7.3):
     optionalDependencies:
-      typescript: 5.1.6
+      typescript: 5.7.3
 
   tsconfig-paths@3.15.0:
     dependencies:
@@ -14275,10 +14277,10 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsutils@3.21.0(typescript@5.1.6):
+  tsutils@3.21.0(typescript@5.7.3):
     dependencies:
       tslib: 1.14.1
-      typescript: 5.1.6
+      typescript: 5.7.3
 
   tunnel-agent@0.6.0:
     dependencies:
@@ -14361,8 +14363,6 @@ snapshots:
       typed-array-buffer: 1.0.3
       typed-array-byte-offset: 1.0.4
 
-  typescript@5.1.6: {}
-
   typescript@5.7.3: {}
 
   unbox-primitive@1.1.0:
@@ -14443,7 +14443,7 @@ snapshots:
     dependencies:
       builtins: 1.0.3
 
-  validator@13.7.0: {}
+  validator@13.12.0: {}
 
   vary@1.1.2: {}
 
@@ -14516,6 +14516,10 @@ snapshots:
     dependencies:
       isexe: 2.0.0
 
+  which@4.0.0:
+    dependencies:
+      isexe: 3.1.1
+
   widest-line@3.1.0:
     dependencies:
       string-width: 4.2.3
@@ -14572,7 +14576,7 @@ snapshots:
 
   ws@7.5.10: {}
 
-  ws@8.17.1: {}
+  ws@8.18.0: {}
 
   xml-js@1.6.11:
     dependencies:

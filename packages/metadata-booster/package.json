@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "reflect-metadata": "0.1.13",
-    "ts-morph": "^19.0.0",
+    "ts-morph": "^25.0.1",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4"
   },
@@ -41,8 +41,8 @@
     "@boostercloud/eslint-config": "workspace:^3.0.0",
     "@types/node": "^20.17.17",
     "ts-node": "^10.9.1",
-    "ts-patch": "3.1.2",
-    "typescript": "5.1.6",
+    "ts-patch": "3.3.0",
+    "typescript": "5.7.3",
     "prettier": "2.3.0",
     "sinon": "9.2.3",
     "rimraf": "^5.0.0",
