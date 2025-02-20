@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.1.0",
+      "tag": "@boostercloud/framework-core_v3.1.0",
+      "date": "Thu, 20 Feb 2025 13:42:48 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Upgrades to several dependencies",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "603c554602adee3d3055e039ace4dd319b78d87c"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.0.0` to `3.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.0.0` to `3.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.0.0` to `3.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.0.0` to `3.1.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.0.0",
       "tag": "@boostercloud/framework-core_v3.0.0",
       "date": "Tue, 11 Feb 2025 19:54:24 GMT",
