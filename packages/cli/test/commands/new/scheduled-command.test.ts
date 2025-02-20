@@ -34,13 +34,15 @@ describe('new', (): void => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new ScheduledCommand([], {} as Config).init()
+      const config = await Config.load()
+      await new ScheduledCommand([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {
       it('with scheduled command name', async () => {
-        await new ScheduledCommand([scheduledCommandName], {} as Config).run()
+        const config = await Config.load()
+        await new ScheduledCommand([scheduledCommandName], config).run()
         const renderedCommand = Mustache.render(template('scheduled-command'), {
           imports: defaultScheduledCommandImports,
           name: scheduledCommandName,
@@ -52,7 +54,8 @@ describe('new', (): void => {
     describe('displays an error', () => {
       it('with empty scheduled command name', async () => {
         replace(console, 'error', fake.resolves({}))
-        await new ScheduledCommand([], {} as Config).run()
+        const config = await Config.load()
+        await new ScheduledCommand([], config).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(scheduledCommandRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided a scheduled command name/)
       })
@@ -61,7 +64,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ScheduledCommand([scheduledCommandName, 'AnotherName'], {} as Config).run()
+          const config = await Config.load()
+          await new ScheduledCommand([scheduledCommandName, 'AnotherName'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message

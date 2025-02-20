@@ -35,7 +35,8 @@ describe('add', async () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Projection([], {} as Config).init()
+      const config = await Config.load()
+      await new Projection([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
@@ -54,7 +55,8 @@ describe('add', async () => {
       stub(SourceFile.prototype, 'fixMissingImports').returnsThis()
       stub(SourceFile.prototype, 'save').resolves()
 
-      await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as Config).run()
+      const config = await Config.load()
+      await new Projection(['--read-model', readModelName, '--entity', projectionName], config).run()
 
       expect(Filenames.fileNameWithExtension).to.have.been.calledWith(readModelName)
       expect(Project.prototype.getSourceFileOrThrow).to.have.been.calledOnceWith('post-read-model.ts')
@@ -66,11 +68,12 @@ describe('add', async () => {
 
     describe('displays an error', () => {
       it('with flags missing', async () => {
+        const config = await Config.load()
         let exceptionThrown = false
         let exceptionMessage = null
 
         try {
-          await new Projection([], {} as Config).run()
+          await new Projection([], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -81,11 +84,12 @@ describe('add', async () => {
       })
 
       it('with empty --read-model', async () => {
+        const config = await Config.load()
         let exceptionThrown = false
         let exceptionMessage = null
 
         try {
-          await new Projection(['--entity', projectionName, '--read-model'], {} as Config).run()
+          await new Projection(['--entity', projectionName, '--read-model'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -96,11 +100,12 @@ describe('add', async () => {
       })
 
       it('with empty --entity', async () => {
+        const config = await Config.load()
         let exceptionThrown = false
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity'], {} as Config).run()
+          await new Projection(['--read-model', readModelName, '--entity'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -111,11 +116,12 @@ describe('add', async () => {
       })
 
       it("when projection doesn't have entity id", async () => {
+        const config = await Config.load()
         let exceptionThrown = false
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', 'Post'], {} as Config).run()
+          await new Projection(['--read-model', readModelName, '--entity', 'Post'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -128,11 +134,12 @@ describe('add', async () => {
       })
 
       it('when projection has empty entity id', async () => {
+        const config = await Config.load()
         let exceptionThrown = false
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', 'Post:'], {} as Config).run()
+          await new Projection(['--read-model', readModelName, '--entity', 'Post:'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -145,11 +152,12 @@ describe('add', async () => {
       })
 
       it('when projection has empty entity name', async () => {
+        const config = await Config.load()
         let exceptionThrown = false
         let exceptionMessage = null
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', ':id'], {} as Config).run()
+          await new Projection(['--read-model', readModelName, '--entity', ':id'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -162,6 +170,7 @@ describe('add', async () => {
       })
 
       it("when source file doesn't exist", async () => {
+        const config = await Config.load()
         stub(Project.prototype, 'getSourceFileOrThrow').throws()
         const sourceFileSpy = spy(SourceFile.prototype)
         const methodGeneratorSpy = spy(MethodGenerator.generateProjection)
@@ -170,7 +179,7 @@ describe('add', async () => {
         let exceptionThrown = false
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as Config).run()
+          await new Projection(['--read-model', readModelName, '--entity', projectionName], config).run()
         } catch (e) {
           exceptionThrown = true
         }
@@ -186,6 +195,7 @@ describe('add', async () => {
       })
 
       it("when class doesn't exist in source file", async () => {
+        const config = await Config.load()
         const project = new Project()
         const fakeSourceFile = project.createSourceFile('post.ts', sourceFileText)
 
@@ -200,7 +210,7 @@ describe('add', async () => {
         let exceptionThrown = false
 
         try {
-          await new Projection(['--read-model', readModelName, '--entity', projectionName], {} as Config).run()
+          await new Projection(['--read-model', readModelName, '--entity', projectionName], config).run()
         } catch (e) {
           exceptionThrown = true
         }

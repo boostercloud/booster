@@ -75,19 +75,22 @@ describe('new', (): void => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new ReadModel([], {} as Config).init()
+      const config = await Config.load()
+      await new ReadModel([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {
       it('with no fields and no projects', async () => {
-        await new ReadModel([readModelName], {} as Config).run()
+        const config = await Config.load()
+        await new ReadModel([readModelName], config).run()
         const renderedReadModel = renderReadModel(defaultReadModelImports, readModelName, [], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(readModelPath, renderedReadModel)
       })
 
       it('creates ReadModel with a string field', async () => {
-        await new ReadModel([readModelName, '--fields', 'title:string'], {} as Config).run()
+        const config = await Config.load()
+        await new ReadModel([readModelName, '--fields', 'title:string'], config).run()
         const renderedReadModel = renderReadModel(
           defaultReadModelImports,
           readModelName,
@@ -98,7 +101,8 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with a string field projecting Post:id', async () => {
-        await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:id'], {} as Config).run()
+        const config = await Config.load()
+        await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:id'], config).run()
         const renderedReadModel = renderReadModel(
           projectingReadModelImports,
           readModelName,
@@ -109,7 +113,8 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with a number field', async () => {
-        await new ReadModel([readModelName, '--fields', 'quantity:number'], {} as Config).run()
+        const config = await Config.load()
+        await new ReadModel([readModelName, '--fields', 'quantity:number'], config).run()
         const renderedReadModel = renderReadModel(
           defaultReadModelImports,
           readModelName,
@@ -120,9 +125,10 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with a number field projecting Post:id', async () => {
+        const config = await Config.load()
         await new ReadModel(
           [readModelName, '--fields', 'quantity:number', '--projects', 'Post:id'],
-          {} as Config
+          config
         ).run()
         const renderedReadModel = renderReadModel(
           projectingReadModelImports,
@@ -134,7 +140,8 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with UUID field', async () => {
-        await new ReadModel([readModelName, '--fields', 'identifier:UUID'], {} as Config).run()
+        const config = await Config.load()
+        await new ReadModel([readModelName, '--fields', 'identifier:UUID'], config).run()
         const renderedReadModel = renderReadModel(
           defaultReadModelImports,
           readModelName,
@@ -145,9 +152,10 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with UUID field projecting Post:id', async () => {
+        const config = await Config.load()
         await new ReadModel(
           [readModelName, '--fields', 'identifier:UUID', '--projects', 'Post:id'],
-          {} as Config
+          config
         ).run()
         const renderedReadModel = renderReadModel(
           projectingReadModelImports,
@@ -159,9 +167,10 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with multiple fields', async () => {
+        const config = await Config.load()
         await new ReadModel(
           [readModelName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -173,9 +182,10 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with multiple fields projecting Post:id', async () => {
+        const config = await Config.load()
         await new ReadModel(
           [readModelName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID', '--projects', 'Post:id'],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -189,6 +199,7 @@ describe('new', (): void => {
       })
 
       it('creates ReadModel with multiple fields projecting Post:id and Comment:id', async () => {
+        const config = await Config.load()
         await new ReadModel(
           [
             readModelName,
@@ -200,7 +211,7 @@ describe('new', (): void => {
             'Post:id',
             'Comment:id',
           ],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -219,7 +230,8 @@ describe('new', (): void => {
     describe('displays an error', () => {
       it('with empty ReadModel name', async () => {
         replace(console, 'error', fake.resolves({}))
-        await new ReadModel([], {} as Config).run()
+        const config = await Config.load()
+        await new ReadModel([], config).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(readModelsRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided a read model name/)
       })
@@ -228,7 +240,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -241,7 +254,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields', 'title:string', '--projects'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields', 'title:string', '--projects'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -254,7 +268,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -267,7 +282,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--projects'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--projects'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -281,7 +297,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields', 'title'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields', 'title'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -294,7 +311,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields', 'title:'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields', 'title:'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -308,7 +326,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -322,7 +341,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields', 'title:string', '--projects', 'Post:'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -336,7 +356,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new ReadModel([readModelName, '--fields', 'title:string', '--projects', ':id'], {} as Config).run()
+          const config = await Config.load()
+          await new ReadModel([readModelName, '--fields', 'title:string', '--projects', ':id'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -350,9 +371,10 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
+          const config = await Config.load()
           await new ReadModel(
             [readModelName, '--fields', 'title:string', 'title:string', 'quantity:number'],
-            {} as Config
+            config
           ).run()
         } catch (e) {
           exceptionThrown = true
