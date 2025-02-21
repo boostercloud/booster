@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch Booster App",
+      "type": "node-terminal",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/index.ts",
+      "preLaunchTask": "tsc: build",
+      "cwd": "${workspaceFolder}",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "sourceMaps": true,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ]   
+}
