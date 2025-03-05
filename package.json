@@ -1,0 +1,13 @@
+{
+  "name": "booster-mixed",
+  "version": "1.0.0",
+  "description": "Merging the compiled .js* altogether",
+  "type": "module",
+  "scripts": {    
+    "mix": "node scripts/repo-mixing.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0"
+  }
+}
