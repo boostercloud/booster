@@ -68,7 +68,13 @@ export async function areDatabaseReadModelsUp(cosmosDb: CosmosClient, config: Bo
 export async function isGraphQLFunctionUp(): Promise<boolean> {
   try {
     const restAPIUrl = await graphqlFunctionUrl()
-    const response = await request(restAPIUrl, 'POST')
+    const response = await request(
+      restAPIUrl,
+      'POST',
+      JSON.stringify({
+        query: 'query { __typename }',
+      })
+    )
     return response.status === 200
   } catch (e) {
     return false

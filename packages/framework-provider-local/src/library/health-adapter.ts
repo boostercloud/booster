@@ -43,7 +43,13 @@ export async function areDatabaseReadModelsUp(): Promise<boolean> {
 export async function isGraphQLFunctionUp(): Promise<boolean> {
   try {
     const url = await graphqlFunctionUrl()
-    const response = await request(url, 'POST')
+    const response = await request(
+      url,
+      'POST',
+      JSON.stringify({
+        query: 'query { __typename }',
+      })
+    )
     return response.status === 200
   } catch (e) {
     return false
