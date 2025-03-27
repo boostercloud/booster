@@ -11,6 +11,7 @@ export async function databaseUrl(): Promise<Array<string>> {
 }
 
 export async function countAll(database: Nedb): Promise<number> {
+  await database.loadDatabaseAsync()
   const count = await database.countAsync({})
   return count ?? 0
 }
@@ -43,7 +44,13 @@ export async function areDatabaseReadModelsUp(): Promise<boolean> {
 export async function isGraphQLFunctionUp(): Promise<boolean> {
   try {
     const url = await graphqlFunctionUrl()
-    const response = await request(url, 'POST')
+    const response = await request(
+      url,
+      'POST',
+      JSON.stringify({
+        query: 'query { __typename }',
+      })
+    )
     return response.status === 200
   } catch (e) {
     return false

@@ -19,12 +19,22 @@ export async function isContainerUp(
   containerName: string
 ): Promise<boolean> {
   const container = getContainer(cosmosDb, config, containerName)
-  const { resources } = await container.items.query('SELECT TOP 1 1 FROM c', { maxItemCount: -1 }).fetchAll()
+  const { resources } = await container.items
+    .query({
+      query: 'SELECT TOP 1 1 FROM c',
+      parameters: [],
+    })
+    .fetchAll()
   return resources !== undefined
 }
 
 export async function countAll(container: Container): Promise<number> {
-  const { resources } = await container.items.query('SELECT VALUE COUNT(1) FROM c', { maxItemCount: -1 }).fetchAll()
+  const { resources } = await container.items
+    .query({
+      query: 'SELECT VALUE COUNT(1) FROM c',
+      parameters: [],
+    })
+    .fetchAll()
   return resources ? resources[0] : 0
 }
 
@@ -68,7 +78,13 @@ export async function areDatabaseReadModelsUp(cosmosDb: CosmosClient, config: Bo
 export async function isGraphQLFunctionUp(): Promise<boolean> {
   try {
     const restAPIUrl = await graphqlFunctionUrl()
-    const response = await request(restAPIUrl, 'POST')
+    const response = await request(
+      restAPIUrl,
+      'POST',
+      JSON.stringify({
+        query: 'query { __typename }',
+      })
+    )
     return response.status === 200
   } catch (e) {
     return false
