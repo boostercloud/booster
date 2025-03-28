@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.1.1",
+      "tag": "@boostercloud/framework-core_v3.1.1",
+      "date": "Fri, 28 Mar 2025 14:51:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixes issues with the sensors",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "3e55a7ad2406fe5ac747b92432ebaa99345b1f29"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.1.0` to `3.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.1.0` to `3.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.1.0` to `3.1.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.1.0` to `3.1.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.1.0",
       "tag": "@boostercloud/framework-core_v3.1.0",
       "date": "Thu, 20 Feb 2025 13:42:48 GMT",

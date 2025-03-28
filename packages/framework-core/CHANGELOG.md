@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 20 Feb 2025 13:42:48 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Mar 2025 14:51:54 GMT and should not be manually modified.
+
+## 3.1.1
+Fri, 28 Mar 2025 14:51:54 GMT
+
+### Patches
+
+- Fixes issues with the sensors
 
 ## 3.1.0
 Thu, 20 Feb 2025 13:42:48 GMT
