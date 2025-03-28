@@ -26,10 +26,6 @@ on:
         type: string
 
     secrets:
-      BOT_AWS_ACCESS_KEY_ID:
-        required: true
-      BOT_AWS_SECRET_ACCESS_KEY:
-        required: true
       AZURE_CLIENTID:
         required: true
       AZURE_SECRET:
