@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.1.2",
+      "tag": "@boostercloud/framework-core_v3.1.2",
+      "date": "Mon, 14 Apr 2025 15:27:47 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixes handling of event handler errors",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "9b7ddfbff4486804afdb28a08ec4825b5564269d"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.1.1` to `3.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.1.1` to `3.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.1.1` to `3.1.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.1.1` to `3.1.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.1.1",
       "tag": "@boostercloud/framework-core_v3.1.1",
       "date": "Fri, 28 Mar 2025 14:51:54 GMT",

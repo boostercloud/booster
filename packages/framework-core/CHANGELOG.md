@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 28 Mar 2025 14:51:54 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Apr 2025 15:27:47 GMT and should not be manually modified.
+
+## 3.1.2
+Mon, 14 Apr 2025 15:27:47 GMT
+
+### Patches
+
+- Fixes handling of event handler errors
 
 ## 3.1.1
 Fri, 28 Mar 2025 14:51:54 GMT
