@@ -17,6 +17,7 @@ import { EventStore } from '../src/services/event-store'
 import { RegisterHandler } from '../src/booster-register-handler'
 import { random } from 'faker'
 import { BoosterEventProcessor } from '../src/booster-event-processor'
+import { PromisesError } from '@boostercloud/framework-common-helpers'
 
 class SomeEvent {
   public constructor(readonly id: UUID) {}
@@ -347,6 +348,73 @@ describe('BoosterEventProcessor', () => {
 
         expect(RegisterHandler.handle).to.have.been.calledWith(config, capturedRegister)
         expect(capturedRegister.eventList[0]).to.be.deep.equal(someEvent.value)
+      })
+
+      it('continues processing other events when one event handler fails', async () => {
+        const failingHandler = fake.rejects(new Error('Handler failed'))
+        const successHandler = fake.resolves({})
+
+        config.eventHandlers[SomeEvent.name] = [{ handle: failingHandler }]
+        config.eventHandlers[SomeNotification.name] = [{ handle: successHandler }]
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventProcessor = BoosterEventProcessor as any
+        await boosterEventProcessor.dispatchEntityEventsToEventHandlers([someEvent, someNotification], config)
+
+        expect(failingHandler).to.have.been.calledOnce
+        expect(successHandler).to.have.been.calledOnce
+        expect(config.logger?.error).to.have.been.calledWith(
+          '[Booster]|BoosterEventDispatcher.dispatchEntityEventsToEventHandlers: ',
+          match(/Failed to process handlers for event SomeEvent/)
+        )
+      })
+
+      it('handles PromisesError from event handlers and logs failed reasons', async () => {
+        const promisesError = new PromisesError([
+          { status: 'rejected', reason: new Error('Handler 1 failed') },
+          { status: 'rejected', reason: new Error('Handler 2 failed') },
+        ])
+        const failingHandler = fake.rejects(promisesError)
+
+        config.eventHandlers[SomeEvent.name] = [{ handle: failingHandler }]
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventProcessor = BoosterEventProcessor as any
+        await boosterEventProcessor.dispatchEntityEventsToEventHandlers([someEvent], config)
+
+        expect(failingHandler).to.have.been.calledOnce
+        expect(config.logger?.error).to.have.been.calledWith(
+          '[Booster]|BoosterEventDispatcher.dispatchEntityEventsToEventHandlers: ',
+          'Failed to process handlers for event SomeEvent:',
+          match((value) => {
+            return (
+              Array.isArray(value) &&
+              value.length === 1 &&
+              Array.isArray(value[0].failedReasons) &&
+              value[0].failedReasons.length === 2 &&
+              value[0].failedReasons[0].message === 'Handler 1 failed' &&
+              value[0].failedReasons[1].message === 'Handler 2 failed'
+            )
+          })
+        )
+      })
+
+      it('processes all event handlers for an event even if one fails', async () => {
+        const failingHandler = fake.rejects(new Error('Handler failed'))
+        const successHandler = fake.resolves({})
+
+        config.eventHandlers[SomeEvent.name] = [{ handle: failingHandler }, { handle: successHandler }]
+
+        replace(RegisterHandler, 'handle', fake())
+
+        const boosterEventProcessor = BoosterEventProcessor as any
+        await boosterEventProcessor.dispatchEntityEventsToEventHandlers([someEvent], config)
+
+        expect(failingHandler).to.have.been.calledOnce
+        expect(successHandler).to.have.been.calledOnce
+        expect(config.logger?.error).to.have.been.called
       })
     })
 
