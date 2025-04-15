@@ -40,6 +40,7 @@ import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
 import {
   areDatabaseReadModelsUp,
+  areRocketFunctionsUp,
   databaseEventsHealthDetails,
   databaseReadModelsHealthDetails,
   databaseUrl,
@@ -132,7 +133,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     graphQLFunctionUrl: graphqlFunctionUrl,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
-    areRocketFunctionsUp: notImplemented as any,
+    areRocketFunctionsUp: areRocketFunctionsUp,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
