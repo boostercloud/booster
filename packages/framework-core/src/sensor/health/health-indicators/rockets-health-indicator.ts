@@ -22,6 +22,24 @@ export class RocketsHealthIndicator {
         },
       }
     }
+
+    // Check if we're looking for a specific rocket
+    const componentPath = healthIndicatorMetadata.healthIndicatorConfiguration.id
+    const rocketName = componentPath.split('/')[1] // rockets/<rocket-name>
+
+    if (rocketName) {
+      const rocketStatus = results[rocketName]
+      if (rocketStatus === undefined) {
+        throw new Error(`Rocket "${rocketName}" not found`)
+      }
+      return {
+        name: rocketName,
+        id: `${BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS}/${rocketName}`,
+        status: rocketStatus ? HealthStatus.UP : HealthStatus.DOWN,
+      }
+    }
+
+    // return all rockets status
     return {
       name: 'Rockets',
       id: BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS,
@@ -29,7 +47,7 @@ export class RocketsHealthIndicator {
       components: Object.entries(results).map(([rocketFunctionApp, status]) => {
         return {
           name: rocketFunctionApp,
-          id: rocketFunctionApp, // @TODO: put the rocket's id instead of its name
+          id: `${BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS}/${rocketFunctionApp}`,
           status: status ? HealthStatus.UP : HealthStatus.DOWN,
         }
       }),
