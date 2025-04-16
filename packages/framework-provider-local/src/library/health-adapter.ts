@@ -96,8 +96,13 @@ export async function areRocketFunctionsUp(config: BoosterConfig): Promise<{ [ke
   const results: { [key: string]: boolean } = {}
   if (config.rockets) {
     for (const rocket of config.rockets) {
-      // Use package names as identifiers for local environment
-      results[rocket.packageName] = true
+      const params = rocket.parameters as { rocketProviderPackage: string }
+      if (params?.rocketProviderPackage) {
+        const basePackage = params.rocketProviderPackage
+          .replace(/^@[^/]+\//, '') // Remove scope (@org/)
+          .replace(/-[^-]+$/, '') // Remove last segment after dash (provider)
+        results[basePackage] = true
+      }
     }
   }
   return results

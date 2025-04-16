@@ -44,10 +44,10 @@ export class RocketsHealthIndicator {
       name: 'Rockets',
       id: BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS,
       status: this.getOverAllHealthStatus(results),
-      components: Object.entries(results).map(([rocketFunctionApp, status]) => {
+      components: Object.entries(results).map(([rocketName, status]) => {
         return {
-          name: rocketFunctionApp,
-          id: `${BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS}/${rocketFunctionApp}`,
+          name: rocketName,
+          id: `${BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS}/${rocketName}`,
           status: status ? HealthStatus.UP : HealthStatus.DOWN,
         }
       }),
