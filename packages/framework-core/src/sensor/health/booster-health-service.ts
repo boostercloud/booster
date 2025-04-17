@@ -6,6 +6,7 @@ import {
   HealthIndicatorMetadata,
   HealthIndicatorResult,
   HealthIndicatorsResult,
+  HealthStatus,
   UserEnvelope,
 } from '@boostercloud/framework-types'
 import { childHealthProviders, isEnabled, metadataFromId, rootHealthProviders } from './health-utils'
@@ -28,7 +29,12 @@ export class BoosterHealthService {
       const healthProviders = this.getHealthProviders()
       const parents = this.parentsHealthProviders(healthEnvelope, healthProviders)
       const healthIndicatorResults = await this.boosterHealthProviderResolver(parents, healthProviders)
-      return await this.config.provider.api.requestSucceeded(healthIndicatorResults)
+
+      // Check if all components are healthy (considering UNKNOWN rockets as healthy)
+      const isHealthy = this.isOverallHealthy(healthIndicatorResults)
+
+      // Use the new health specific response handler
+      return await this.config.provider.api.healthRequestResult(healthIndicatorResults, isHealthy)
     } catch (e) {
       return await this.config.provider.api.requestFailed(e)
     }
@@ -141,5 +147,27 @@ export class BoosterHealthService {
       return
     }
     return await boosterTokenVerifier.verify(token)
+  }
+
+  private isOverallHealthy(results: Array<HealthIndicatorsResult>): boolean {
+    for (const result of results) {
+      // Special case: UNKNOWN status for rockets is considered healthy
+      if (result.id === BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS && result.status === HealthStatus.UNKNOWN) {
+        continue
+      }
+
+      // Check current component's status
+      if (result.status !== HealthStatus.UP) {
+        return false
+      }
+
+      // Recursively check child components if they exist
+      if (result.components && result.components.length > 0) {
+        if (!this.isOverallHealthy(result.components)) {
+          return false
+        }
+      }
+    }
+    return true
   }
 }

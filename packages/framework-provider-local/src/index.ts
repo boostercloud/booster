@@ -7,7 +7,7 @@ import {
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
-import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { healthRequestResult, requestFailed, requestSucceeded } from './library/api-adapter'
 import { EventRegistry, GraphQLService, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
@@ -110,6 +110,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   api: {
     requestSucceeded,
     requestFailed,
+    healthRequestResult,
   },
   connections: {
     storeData: storeConnectionData.bind(null, connectionRegistry),

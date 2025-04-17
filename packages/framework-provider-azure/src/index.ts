@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
-import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { healthRequestResult, requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
   rawEventsToEnvelopes,
@@ -134,6 +134,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   api: {
     requestSucceeded,
     requestFailed,
+    healthRequestResult,
   },
   connections: {
     storeData: storeConnectionData.bind(null, cosmosClient),

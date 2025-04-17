@@ -26,3 +26,13 @@ export async function requestFailed(error: Error): Promise<APIResult> {
     reason: error.message,
   }
 }
+
+export async function healthRequestResult(body: unknown, isHealthy: boolean): Promise<APIResult> {
+  return {
+    status: 'success',
+    result: body,
+    headers: {
+      'status-code': isHealthy ? 200 : 503,
+    },
+  }
+}

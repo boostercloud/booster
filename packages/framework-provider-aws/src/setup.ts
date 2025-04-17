@@ -103,6 +103,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     api: {
       requestSucceeded,
       requestFailed,
+      healthRequestResult: async (body: unknown, isHealthy: boolean): Promise<unknown> => notImplementedResult()
     },
     connections: {
       storeData: storeConnectionData.bind(null, dynamoDB),
