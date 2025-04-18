@@ -162,7 +162,9 @@ function expectApplicationChild(boosterResult: any): void {
 async function getHealth(url: string, componentUrl?: string, expectedHttpStatus = 200): Promise<any> {
   const path = componentUrl ? `${url}booster/${componentUrl}` : url
   console.log(path)
-  const result = await request(path)
+  const result = await request(path, 'GET', '', {
+    acceptedStatusCodes: [503], // Accept 503 as a valid response code for health checks
+  })
   expect(result).to.not.be.undefined
   expect(result.status).to.be.eq(expectedHttpStatus)
   return JSON.parse(result.body as any)

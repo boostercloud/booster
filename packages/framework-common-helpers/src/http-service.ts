@@ -1,11 +1,12 @@
 import * as https from 'https'
-import * as http from 'http'
 import { RequestOptions } from 'https'
+import * as http from 'http'
 import { IncomingMessage } from 'node:http'
 
 export interface PostConfiguration {
   contentType?: string
   timeout?: number
+  acceptedStatusCodes?: number[] // Additional status codes to accept as valid responses
 }
 
 export interface PostResult {
@@ -19,7 +20,7 @@ export async function request(
   data = '',
   config: PostConfiguration = {}
 ): Promise<PostResult> {
-  const { contentType = 'application/json', timeout = 10000 } = config
+  const { contentType = 'application/json', timeout = 10000, acceptedStatusCodes = [] } = config
   const options: RequestOptions = {
     method: method,
     headers: {
@@ -40,7 +41,8 @@ export async function request(
         if (!res?.statusCode) {
           return reject(new Error('Unknown HTTP status code'))
         }
-        if (res.statusCode < 200 || res.statusCode > 299) {
+        // Accept 2xx codes or any explicitly accepted status codes
+        if ((res.statusCode < 200 || res.statusCode > 299) && !acceptedStatusCodes.includes(res.statusCode)) {
           return reject(new Error(`HTTP status code ${res.statusCode}`))
         }
 
