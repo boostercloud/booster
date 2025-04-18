@@ -52,7 +52,7 @@ describe('Health end-to-end tests', () => {
   })
 
   it('database health returns the indicator', async () => {
-    const boosterDatabase = (await getHealth(url, 'database', 200))[0]
+    const boosterDatabase = (await getHealth(url, 'database', 503))[0]
     expectBoosterDatabase(boosterDatabase)
     const databaseEvents = boosterDatabase.components.find((element: any) => element.id === 'booster/database/events')
     expectDatabaseEvents(databaseEvents)
