@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 14 Apr 2025 15:27:47 GMT and should not be manually modified.
+This log was last generated on Tue, 22 Apr 2025 14:30:07 GMT and should not be manually modified.
+
+## 3.2.0
+Tue, 22 Apr 2025 14:30:07 GMT
+
+### Minor changes
+
+- Enhancements to health sensor functionality
 
 ## 3.1.2
 Mon, 14 Apr 2025 15:27:47 GMT
