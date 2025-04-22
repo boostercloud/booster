@@ -6,6 +6,8 @@ import {
   EventSearchParameters,
   EventSearchRequest,
   EventSearchResponse,
+  ProjectionFor,
+  QueryEnvelope,
   ReadModelByIdRequestArgs,
   ReadModelInterface,
   ReadModelRequestArgs,
@@ -14,7 +16,20 @@ import {
   TimeKey,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
-import { GraphQLFieldResolver, GraphQLInputObjectType, GraphQLSchema } from 'graphql'
+import {
+  FieldNode,
+  FragmentDefinitionNode,
+  getNamedType,
+  GraphQLFieldResolver,
+  GraphQLInputObjectType,
+  GraphQLList,
+  GraphQLNonNull,
+  GraphQLObjectType,
+  GraphQLResolveInfo,
+  GraphQLSchema,
+  isObjectType,
+  Kind,
+} from 'graphql'
 import { pluralize } from 'inflected'
 import { BoosterCommandDispatcher } from '../../booster-command-dispatcher'
 import { BoosterEventsReader } from '../../booster-events-reader'
@@ -24,9 +39,13 @@ import { GraphQLMutationGenerator } from './graphql-mutation-generator'
 import { GraphQLQueryGenerator } from './graphql-query-generator'
 import { GraphQLSubscriptionGenerator } from './graphql-subcriptions-generator'
 import { GraphQLTypeInformer } from './graphql-type-informer'
+import { BoosterQueryDispatcher } from '../../booster-query-dispatcher'
+import { SelectionSetNode } from 'graphql/language/ast'
+import { GraphQLInputType, GraphQLNamedInputType } from 'graphql/type/definition'
 
 export class GraphQLGenerator {
   private static commandsDispatcher: BoosterCommandDispatcher
+  private static queriesDispatcher: BoosterQueryDispatcher
   private static readModelsReader: BoosterReadModelsReader
   private static eventsReader: BoosterEventsReader
   private static schema: GraphQLSchema
@@ -36,6 +55,7 @@ export class GraphQLGenerator {
     if (!this.schema) {
       logger.debug('Generating GraphQL schema...')
       this.commandsDispatcher = new BoosterCommandDispatcher(config)
+      this.queriesDispatcher = new BoosterQueryDispatcher(config)
       this.readModelsReader = new BoosterReadModelsReader(config)
       this.eventsReader = new BoosterEventsReader(config)
 
@@ -46,8 +66,10 @@ export class GraphQLGenerator {
       const queryGenerator = new GraphQLQueryGenerator(
         config,
         Object.values(config.readModels).map((m) => m.class),
+        config.queryHandlers,
         typeInformer,
         this.readModelByIDResolverBuilder.bind(this, config),
+        this.queriesResolverBuilder.bind(this),
         this.readModelResolverBuilder.bind(this),
         this.eventResolver.bind(this),
         generatedFiltersByTypeName
@@ -56,7 +78,8 @@ export class GraphQLGenerator {
       const mutationGenerator = new GraphQLMutationGenerator(
         config.commandHandlers,
         typeInformer,
-        this.commandResolverBuilder.bind(this)
+        this.commandResolverBuilder.bind(this),
+        config
       )
 
       const subscriptionGenerator = new GraphQLSubscriptionGenerator(
@@ -64,7 +87,8 @@ export class GraphQLGenerator {
         typeInformer,
         this.subscriptionByIDResolverBuilder.bind(this, config),
         this.subscriptionResolverBuilder.bind(this, config),
-        generatedFiltersByTypeName
+        generatedFiltersByTypeName,
+        config
       )
 
       this.schema = new GraphQLSchema({
@@ -82,10 +106,20 @@ export class GraphQLGenerator {
   ): GraphQLFieldResolver<unknown, GraphQLResolverContext, ReadModelRequestArgs<ReadModelInterface>> {
     return (parent, args, context, info) => {
       let isPaginated = false
+      const fields: ProjectionFor<unknown> = this.getFields(info) as ProjectionFor<unknown>
+      let select: ProjectionFor<unknown> | undefined = fields.length > 0 ? fields : undefined
       if (info?.fieldName === `List${pluralize(readModelClass.name)}`) {
         isPaginated = true
+        if (select) {
+          // In paginated queries, the `items[].` field needs to be removed from the select fields before querying the database
+          select = select
+            .map((field: string) => {
+              return field.split('.').slice(1).join('.')
+            })
+            .filter((str: string) => str.trim().length > 0) as ProjectionFor<unknown>
+        }
       }
-      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass, args, context, isPaginated)
+      const readModelEnvelope = toReadModelRequestEnvelope(readModelClass, args, context, isPaginated, select)
       return this.readModelsReader.search(readModelEnvelope)
     }
   }
@@ -119,11 +153,20 @@ export class GraphQLGenerator {
     commandClass: AnyClass
   ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { input: unknown }> {
     return async (parent, args, context) => {
-      const commandEnvelope = toCommandEnvelope(commandClass.name, args.input, context)
+      const commandEnvelope = toEnvelope(commandClass.name, args.input, context) as CommandEnvelope
       const result = await this.commandsDispatcher.dispatchCommand(commandEnvelope, context)
       // It could be that the command didn't return anything
       // so in that case we return `true`, as GraphQL doesn't have a `null` type
       return result ?? true
+    }
+  }
+
+  public static queriesResolverBuilder(
+    queryClass: AnyClass
+  ): GraphQLFieldResolver<unknown, GraphQLResolverContext, { input: unknown }> {
+    return async (parent, args, context) => {
+      const queryEnvelope = toEnvelope(queryClass.name, args.input, context) as QueryEnvelope
+      return await this.queriesDispatcher.dispatchQuery(queryEnvelope, context)
     }
   }
 
@@ -181,13 +224,139 @@ export class GraphQLGenerator {
       sortBy: {},
     }
   }
+
+  /**
+   * Extracts the fields from a GraphQLResolveInfo object. This object is part of a GraphQL request and the goal is to
+   * identify the fields in the request. For example, for the following GraphQL query request:
+   *
+   * ```graphql
+   * query {
+   *   CartReadModel {
+   *     id
+   *     cartItems {
+   *       id
+   *       quantity
+   *     }
+   *   }
+   * }
+   * ```
+   *
+   * it will return the following list of fields: `['id', 'cartItems[].id', 'cartItems[].quantity']`
+   *
+   * @param {GraphQLResolveInfo} info - The GraphQLResolveInfo object.
+   * @returns {string[]} - The extracted fields.
+   * @private
+   */
+  private static getFields(info: GraphQLResolveInfo): string[] {
+    let fields: string[] = []
+
+    /**
+     * Checks if a type is a list.
+     * @param {any} type - The type to check.
+     * @returns {boolean} - True if the type is a list, false otherwise.
+     */
+    const isList = (type: any): boolean => {
+      if (type instanceof GraphQLNonNull) {
+        return type.ofType instanceof GraphQLList
+      }
+      return type instanceof GraphQLList
+    }
+
+    /**
+     * Extracts fields from a selection set.
+     * @param {SelectionSetNode} selectionSet - The selection set.
+     * @param {string[]} path - The current path.
+     * @param {GraphQLObjectType | any} parentType - The parent type.
+     * @param {Map<string, FragmentDefinitionNode>} fragments - The fragment definitions.
+     * @returns {string[]} - The extracted fields.
+     */
+    const extractFields = (
+      selectionSet: SelectionSetNode,
+      path: string[] = [],
+      parentType: GraphQLObjectType | any,
+      fragments: Map<string, FragmentDefinitionNode>
+    ): string[] => {
+      let subFields: string[] = []
+      if (selectionSet && selectionSet.selections) {
+        selectionSet.selections.forEach((selection: any) => {
+          if (selection.kind === Kind.FIELD) {
+            const fieldName = selection.name.value
+            const field = parentType.getFields()[fieldName]
+
+            if (!field) {
+              return
+            }
+
+            const fieldType: GraphQLNamedInputType = getNamedType(field.type as GraphQLNamedInputType)
+            const currentPath = [...path, fieldName]
+
+            if (isList(field.type)) {
+              const elementType = getNamedType(field.type.ofType)
+              if (isObjectType(elementType)) {
+                currentPath[currentPath.length - 1] += '[]'
+              }
+            }
+
+            if (!selection.selectionSet) {
+              subFields.push(currentPath.join('.'))
+            } else {
+              const nextParentType = isObjectType(fieldType) ? fieldType : parentType
+              subFields = subFields.concat(
+                extractFields(selection.selectionSet, currentPath, nextParentType, fragments)
+              )
+            }
+          } else if (selection.kind === Kind.FRAGMENT_SPREAD) {
+            const fragmentName = selection.name.value
+            const fragment = fragments.get(fragmentName)
+
+            if (fragment) {
+              subFields = subFields.concat(extractFields(fragment.selectionSet, path, parentType, fragments))
+            }
+          } else if (selection.kind === Kind.INLINE_FRAGMENT) {
+            const inlineFragmentType = selection.typeCondition
+              ? info.schema.getType(selection.typeCondition.name.value)
+              : parentType
+
+            if (isObjectType(inlineFragmentType)) {
+              subFields = subFields.concat(extractFields(selection.selectionSet, path, inlineFragmentType, fragments))
+            }
+          }
+        })
+      }
+      return subFields
+    }
+
+    // Collect all fragment definitions
+    const fragments = new Map<string, FragmentDefinitionNode>()
+    info.fragments &&
+      Object.keys(info.fragments).forEach((fragmentName) => {
+        fragments.set(fragmentName, info.fragments[fragmentName] as FragmentDefinitionNode)
+      })
+
+    info.fieldNodes.forEach((fieldNode: FieldNode) => {
+      const firstField: string = fieldNode.name.value
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const firstFieldType = info.schema.getQueryType().getFields()[firstField].type
+      const rootType: GraphQLObjectType = getNamedType(
+        firstFieldType as GraphQLInputType
+      ) as unknown as GraphQLObjectType
+
+      if (fieldNode.selectionSet) {
+        fields = fields.concat(extractFields(fieldNode.selectionSet, [], rootType, fragments))
+      }
+    })
+
+    return fields
+  }
 }
 
 function toReadModelRequestEnvelope(
   readModelClass: Class<ReadModelInterface>,
   args: ReadModelRequestArgs<ReadModelInterface>,
   context: GraphQLResolverContext,
-  paginatedVersion = false
+  paginatedVersion = false,
+  select?: ProjectionFor<unknown> | undefined
 ): ReadModelRequestEnvelope<ReadModelInterface> {
   return {
     requestID: context.requestID,
@@ -200,6 +369,7 @@ function toReadModelRequestEnvelope(
     afterCursor: args.afterCursor,
     paginatedVersion,
     version: 1, // TODO: How to pass the version through GraphQL?
+    select,
   }
 }
 
@@ -212,11 +382,11 @@ function toEventSearchRequest(args: EventSearchParameters, context: GraphQLResol
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function toCommandEnvelope(commandName: string, value: any, context: GraphQLResolverContext): CommandEnvelope {
+function toEnvelope(typeName: string, value: any, context: GraphQLResolverContext): CommandEnvelope | QueryEnvelope {
   return {
     requestID: context.requestID,
     currentUser: context.user,
-    typeName: commandName,
+    typeName: typeName,
     value,
     version: 1, // TODO: How to pass the version through GraphQL?
     context: {

@@ -1,4 +1,4 @@
-import * as childProcess from 'child-process-promise'
+import * as execa from 'execa'
 import * as process from 'process'
 import { ProcessError, ProcessService } from '.'
 import { Layer, tryCatch, tryCatchPromise } from '@boostercloud/framework-types/dist/effect'
@@ -7,7 +7,7 @@ import { unknownToError } from '../../common/errors'
 const exec = (command: string, cwd?: string) =>
   tryCatchPromise(
     async () => {
-      const { stdout, stderr } = await childProcess.exec(command, { cwd })
+      const { stdout, stderr } = await execa.command(command, { cwd })
       const result = `
 ${stderr ? `There were some issues running the command: ${stderr}\n` : ''}
 ${stdout}

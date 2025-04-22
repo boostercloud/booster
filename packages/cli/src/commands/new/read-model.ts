@@ -1,4 +1,4 @@
-import * as Oclif from '@oclif/command'
+import { Flags, Args } from '@oclif/core'
 import BaseCommand from '../../common/base-command'
 import { Script } from '../../common/script'
 import Brand from '../../common/brand'
@@ -20,23 +20,25 @@ import { classNameToFileName } from '../../common/filenames'
 export default class ReadModel extends BaseCommand {
   public static description = 'create a new read model'
   public static flags = {
-    help: Oclif.flags.help({ char: 'h' }),
-    fields: Oclif.flags.string({
+    help: Flags.help({ char: 'h' }),
+    fields: Flags.string({
       char: 'f',
       description: 'fields that this read model will contain',
       multiple: true,
     }),
-    projects: Oclif.flags.string({
+    projects: Flags.string({
       char: 'p',
       description: 'entities that this read model will project to build its state',
       multiple: true,
     }),
   }
 
-  public static args = [{ name: 'readModelName' }]
+  public static args = {
+    readModelName: Args.string(),
+  }
 
   public async run(): Promise<void> {
-    const { args, flags } = this.parse(ReadModel)
+    const { args, flags } = await this.parse(ReadModel)
 
     try {
       const fields = flags.fields ?? []

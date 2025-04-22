@@ -1,7 +1,7 @@
 import * as path from 'path'
 import { expect } from 'chai'
-import { sandboxPathFor, removeFolders, fileExists } from '../../helper/file-helper'
-import { exec } from 'child-process-promise'
+import { fileExists, removeFolders, sandboxPathFor } from '../../helper/file-helper'
+import { command } from 'execa'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -14,8 +14,8 @@ describe('Build', () => {
     buildSandboxDir = createSandboxProject(sandboxPathFor('build'))
   })
 
-  after(() => {
-    removeFolders([buildSandboxDir])
+  after(async () => {
+    await removeFolders([buildSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -26,7 +26,7 @@ describe('Build', () => {
         ['boost build', 'Checking project structure', 'Building project', 'Build complete'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} build`, { cwd: buildSandboxDir })
+      const { stdout } = await command(`${cliPath} build`, { cwd: buildSandboxDir })
 
       expect(stdout).to.match(expectedOutputRegex)
       expect(fileExists(path.join(buildSandboxDir, 'dist', 'index.js'))).to.be.true
@@ -52,8 +52,8 @@ describe('Compile fallback', () => {
     fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
   })
 
-  after(() => {
-    removeFolders([compileSandboxDir])
+  after(async () => {
+    await removeFolders([compileSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -64,7 +64,7 @@ describe('Compile fallback', () => {
         ['boost build', 'Checking project structure', 'Building project', 'Build complete'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} build`, { cwd: compileSandboxDir })
+      const { stdout } = await command(`${cliPath} build`, { cwd: compileSandboxDir })
 
       expect(stdout).to.match(expectedOutputRegex)
       expect(fileExists(path.join(compileSandboxDir, 'eureka'))).to.be.true

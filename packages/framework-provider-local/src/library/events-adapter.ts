@@ -35,6 +35,7 @@ export async function readEntityEventsSince(
     createdAt: {
       $gt: fromTime,
     },
+    deletedAt: { $exists: false },
   }
   const result = await eventRegistry.query(query)
 
@@ -107,6 +108,13 @@ export async function storeSnapshot(
   await retryIfError(() => eventRegistry.store(persistableEntitySnapshot), OptimisticConcurrencyUnexpectedVersionError)
   logger.debug('Snapshot stored')
   return persistableEntitySnapshot
+}
+
+/**
+ * Dummy method that'll always return true, since local provider won't be tracking dispatched events
+ */
+export async function storeDispatchedEvent() {
+  return true
 }
 
 async function persistEvent(eventRegistry: EventRegistry, eventEnvelope: EventEnvelope): Promise<void> {

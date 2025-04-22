@@ -1,18 +1,16 @@
 import { CosmosClient, SqlQuerySpec } from '@azure/cosmos'
 import {
-  EventEnvelope,
   BoosterConfig,
-  UUID,
   EntitySnapshotEnvelope,
-  NonPersistedEventEnvelope,
+  EventEnvelope,
   NonPersistedEntitySnapshotEnvelope,
+  UUID,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent, partitionKeyForSnapshot } from './partition-keys'
 import { Context } from '@azure/functions'
 
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const originOfTime = new Date(0).toISOString()
 
 export function rawEventsToEnvelopes(context: Context): Array<EventEnvelope> {
@@ -26,11 +24,14 @@ export async function readEntityEventsSince(
   entityID: UUID,
   since?: string
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-adapter#readEntityEventsSince')
   const fromTime = since ? since : originOfTime
   const querySpec: SqlQuerySpec = {
     query:
       `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
-      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
+      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ` +
+      'AND NOT IS_DEFINED(c["deletedAt"]) ' +
+      `ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
     parameters: [
       {
         name: '@partitionKey',
@@ -47,6 +48,7 @@ export async function readEntityEventsSince(
     .container(config.resourceNames.eventsStore)
     .items.query(querySpec)
     .fetchAll()
+  logger.debug(`Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`, resources)
   return resources as Array<EventEnvelope>
 }
 
@@ -88,43 +90,13 @@ export async function readEntityLatestSnapshot(
   }
 }
 
-export async function storeEvents(
-  cosmosDb: CosmosClient,
-  eventEnvelopes: Array<NonPersistedEventEnvelope>,
-  config: BoosterConfig
-): Promise<Array<EventEnvelope>> {
-  const logger = getLogger(config, 'events-adapter#storeEvents')
-  logger.debug('[EventsAdapter#storeEvents] Storing EventEnvelopes with eventEnvelopes:', eventEnvelopes)
-  const persistableEvents = []
-  for (const eventEnvelope of eventEnvelopes) {
-    const persistableEvent: EventEnvelope = {
-      ...eventEnvelope,
-      createdAt: new Date().toISOString(),
-    }
-    await cosmosDb
-      .database(config.resourceNames.applicationStack)
-      .container(config.resourceNames.eventsStore)
-      .items.create({
-        ...persistableEvent,
-        [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-          eventEnvelope.entityTypeName,
-          eventEnvelope.entityID
-        ),
-        [eventsStoreAttributes.sortKey]: persistableEvent.createdAt,
-      })
-    persistableEvents.push(persistableEvent)
-  }
-  logger.debug('[EventsAdapter#storeEvents] EventEnvelope stored')
-  return persistableEvents
-}
-
 export async function storeSnapshot(
   cosmosDb: CosmosClient,
   snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
   config: BoosterConfig
 ): Promise<EntitySnapshotEnvelope> {
   const logger = getLogger(config, 'events-adapter#storeSnapshot')
-  logger.debug('[EventsAdapter#storeSnapshot] Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
+  logger.debug('Storing snapshot with snapshotEnvelope:', snapshotEnvelope)
 
   const partitionKey = partitionKeyForSnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
   /**
@@ -179,4 +151,32 @@ export async function storeSnapshot(
   })
   logger.debug('Snapshot stored', snapshotEnvelope)
   return persistableEntitySnapshot
+}
+
+export async function storeDispatchedEvent(
+  cosmosDb: CosmosClient,
+  eventEnvelope: EventEnvelope,
+  config: BoosterConfig
+): Promise<boolean> {
+  const logger = getLogger(config, 'events-adapter#storeDispatchedEvent')
+  logger.debug('[EventsAdapter#storeDispatchedEvent] Storing EventEnvelope for event with ID: ', eventEnvelope.id)
+  try {
+    await cosmosDb
+      .database(config.resourceNames.applicationStack)
+      .container(config.resourceNames.dispatchedEventsStore)
+      .items.create({
+        eventId: eventEnvelope.id,
+      })
+    return true
+  } catch (e) {
+    if (e.code === 409) {
+      // If an item with the same ID already exists in the container, it will return a 409 status code.
+      // See https://learn.microsoft.com/en-us/rest/api/cosmos-db/http-status-codes-for-cosmosdb
+      logger.debug('[EventsAdapter#storeDispatchedEvent] Event has already been dispatched', eventEnvelope.id)
+      return false
+    } else {
+      logger.error('[EventsAdapter#storeDispatchedEvent] Error storing dispatched event', e)
+      throw e
+    }
+  }
 }

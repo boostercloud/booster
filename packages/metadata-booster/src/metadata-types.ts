@@ -31,6 +31,7 @@ export interface TypeMetadata {
 export interface PropertyMetadata {
   name: string
   typeInfo: TypeMetadata
+  dependencies: Array<string>
 }
 
 export interface ClassMetadata {

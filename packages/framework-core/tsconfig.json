@@ -6,7 +6,6 @@
   },
   "include": ["src/**/*"],
   "ts-node": {
-    "compiler": "ttypescript",
     "compilerOptions": {
       "plugins": [
         {

@@ -1,4 +1,4 @@
-import { Command } from '@boostercloud/framework-core'
+import { Command, NonExposed, Trace } from "@boostercloud/framework-core";
 import { CommandInput, Register, UserEnvelope, UUID } from '@boostercloud/framework-types'
 import { CartItemChanged } from '../events/cart-item-changed'
 import {
@@ -18,7 +18,12 @@ import {
   before: [ChangeCartItem.beforeFn, ChangeCartItem.beforeFnV2],
 })
 export class ChangeCartItem {
-  public constructor(readonly cartId: UUID, readonly productId: UUID, readonly quantity: number) {}
+  public constructor(
+    readonly cartId: UUID,
+    readonly productId: UUID,
+    readonly quantity: number,
+    @NonExposed readonly test: number
+  ) {}
 
   public static async beforeFn(input: CommandInput, currentUser?: UserEnvelope): Promise<CommandInput> {
     if (input.cartId === beforeHookMutationID) {
@@ -29,6 +34,7 @@ export class ChangeCartItem {
       throw new Error(commandHandlerBeforeErrorCartMessage)
     }
     const result = await Promise.resolve()
+    input.test = 1
     console.log(result)
     return input
   }
@@ -42,6 +48,7 @@ export class ChangeCartItem {
     return input
   }
 
+  @Trace('CHANGE_CART_ITEM_HANDLER')
   public static async handle(command: ChangeCartItem, register: Register): Promise<void> {
     if (command.cartId === commandHandlerErrorCartId || command.cartId === commandHandlerErrorIgnoredCartId) {
       throw new Error(commandHandlerErrorCartMessage)

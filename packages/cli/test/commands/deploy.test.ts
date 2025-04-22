@@ -2,11 +2,11 @@ import { expect } from '../expect'
 import { fancy } from 'fancy-test'
 import { restore, fake, replace } from 'sinon'
 import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
-import { test } from '@oclif/test'
+import { runCommand } from '@oclif/test'
 import * as Deploy from '../../src/commands/deploy'
 import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
-import { IConfig } from '@oclif/config'
+import { Config } from '@oclif/core'
 import * as environment from '../../src/services/environment'
 import * as packageManagerImpl from '../../src/services/package-manager/live.impl'
 import * as configService from '../../src/services/config-service'
@@ -89,12 +89,10 @@ describe('deploy', () => {
 
   describe('run', () => {
     context('when no environment provided', async () => {
-      test
-        .stdout()
-        .command(['deploy'])
-        .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.match(/No environment set/)
-        })
+      it('shows no environment provided error', async () => {
+        const {stdout} = await runCommand<{name: string}>(['deploy'], { root: __dirname })
+        expect(stdout).to.match(/No environment set/)
+      })
     })
   })
 
@@ -113,12 +111,14 @@ describe('deploy', () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Deploy.default([], {} as IConfig).init()
+      const config = await Config.load()
+      await new Deploy.default([], config).init()
       expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     it('without flags', async () => {
-      await new Deploy.default([], {} as IConfig).run()
+      const config = await Config.load()
+      await new Deploy.default([], config).run()
 
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.deployToCloudProvider).to.have.not.been.called
@@ -129,7 +129,8 @@ describe('deploy', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Deploy.default(['-e'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Deploy.default(['-e'], config).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -144,7 +145,8 @@ describe('deploy', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Deploy.default(['--environment'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Deploy.default(['--environment'], config).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -157,7 +159,8 @@ describe('deploy', () => {
 
     describe('inside a booster project', () => {
       it('entering correct environment', async () => {
-        await new Deploy.default(['-e', 'fake_environment'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Deploy.default(['-e', 'fake_environment'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.deployToCloudProvider).to.have.been.called
@@ -168,13 +171,14 @@ describe('deploy', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Deploy.default(['-e', 'fake_environment', '--nonexistingoption'], {} as IConfig).run()
+          const config = await Config.load()
+          await new Deploy.default(['-e', 'fake_environment', '--nonexistingoption'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(exceptionMessage).to.contain('Nonexistent flag: --nonexistingoption')
         expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
         expect(providerService.deployToCloudProvider).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Deployment complete!')

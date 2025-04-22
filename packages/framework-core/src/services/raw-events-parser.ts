@@ -12,13 +12,13 @@ type EnvelopesPerEntity = Record<string, Array<EventEnvelope>>
 export class RawEventsParser {
   public static async streamPerEntityEvents(
     config: BoosterConfig,
-    rawEvents: unknown,
+    eventEnvelopes: Array<EventEnvelope>,
     callbackFn: EventsStreamingCallback
   ): Promise<void> {
     const logger = getLogger(config, 'RawEventsParser#streamPerEntityEvents')
-    const eventEnvelopesPerEntity = config.provider.events
-      .rawToEnvelopes(rawEvents)
+    const eventEnvelopesPerEntity = eventEnvelopes
       .filter(isEventKind)
+      .filter(isNotDeleted)
       .reduce(groupByEntity, {})
 
     const processes = Object.values(eventEnvelopesPerEntity).map(async (entityEnvelopes) => {
@@ -44,6 +44,10 @@ export class RawEventsParser {
 
 function isEventKind(envelope: EventEnvelope): boolean {
   return envelope.kind == 'event'
+}
+
+function isNotDeleted(envelope: EventEnvelope): boolean {
+  return !envelope?.deletedAt
 }
 
 function groupByEntity(envelopesPerEntity: EnvelopesPerEntity, envelope: EventEnvelope): EnvelopesPerEntity {

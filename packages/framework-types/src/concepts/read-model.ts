@@ -2,13 +2,22 @@ import { ReadModelAuthorizer, ReadModelFilterHooks, UUID } from '.'
 import { Class } from '../typelevel'
 import { PropertyMetadata } from '@boostercloud/metadata-booster'
 
+export interface BoosterMetadata {
+  version: number
+  schemaVersion: number
+  optimisticConcurrencyValue?: string | number
+  lastUpdateAt?: string
+  lastProjectionInfo?: {
+    entityId: string
+    entityName: string
+    entityUpdatedAt: string
+    projectionMethod: string
+  }
+}
+
 export interface ReadModelInterface {
   id: UUID
-  boosterMetadata?: {
-    version: number
-    schemaVersion: number
-    optimisticConcurrencyValue?: string | number
-  }
+  boosterMetadata?: BoosterMetadata
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any
 }
@@ -18,4 +27,13 @@ export interface ReadModelMetadata<TReadModel extends ReadModelInterface = ReadM
   readonly properties: Array<PropertyMetadata>
   readonly authorizer: ReadModelAuthorizer
   readonly before: NonNullable<ReadModelFilterHooks<TReadModel>['before']>
+}
+
+export enum ProjectionInfoReason {
+  ENTITY_PROJECTED,
+  ENTITY_DELETED,
+}
+
+export interface ProjectionInfo {
+  reason: ProjectionInfoReason
 }

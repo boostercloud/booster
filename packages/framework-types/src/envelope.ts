@@ -8,7 +8,7 @@ import {
   UUID,
 } from './concepts'
 import { GraphQLClientMessage } from './graphql-websocket-messages'
-import { FilterFor, SortFor } from './searcher'
+import { FilterFor, ProjectionFor, SortFor } from './searcher'
 import { Class } from './typelevel'
 
 /**
@@ -22,10 +22,20 @@ export interface Envelope {
   context?: ContextEnvelope
 }
 
-export interface CommandEnvelope extends Envelope {
+export interface TypedEnvelope extends Envelope {
   typeName: string
   version: number
+}
+
+export interface CommandEnvelope extends TypedEnvelope {
   value: CommandInput
+}
+
+export type QueryEnvelope = CommandEnvelope
+
+export interface HealthEnvelope extends Envelope {
+  componentPath: string
+  token?: string
 }
 
 export interface ScheduledCommandEnvelope extends Envelope {
@@ -34,9 +44,7 @@ export interface ScheduledCommandEnvelope extends Envelope {
 
 export type SuperKindType = 'domain' | 'notification' | 'booster'
 
-export interface EventStoreEntryEnvelope extends Envelope {
-  typeName: string
-  version: number
+export interface EventStoreEntryEnvelope extends TypedEnvelope {
   superKind: SuperKindType
   entityID: UUID
   entityTypeName: string
@@ -48,7 +56,9 @@ export interface NonPersistedEventEnvelope extends EventStoreEntryEnvelope {
 }
 
 export interface EventEnvelope extends NonPersistedEventEnvelope {
+  id?: string
   createdAt: string
+  deletedAt?: string
 }
 
 export interface NonPersistedEntitySnapshotEnvelope extends EventStoreEntryEnvelope {
@@ -62,6 +72,7 @@ export interface EntitySnapshotEnvelope extends NonPersistedEntitySnapshotEnvelo
   /** Time when this snapshot was actually persisted in the database. */
   persistedAt: string
 }
+
 export interface EventSearchRequest extends Envelope {
   parameters: EventSearchParameters
 }
@@ -93,7 +104,8 @@ export interface EventSearchResponse {
   requestID: UUID
   user?: UserEnvelope
   createdAt: string
-  value: EventInterface
+  value: EventInterface | NotificationInterface
+  deletedAt?: string
 }
 
 export interface ReadModelEnvelope {
@@ -130,6 +142,7 @@ export interface ReadModelRequestEnvelope<TReadModel extends ReadModelInterface>
   limit?: number
   afterCursor?: unknown
   paginatedVersion?: boolean // Used only for retrocompatibility
+  select?: ProjectionFor<TReadModel>
 }
 
 export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
@@ -141,6 +154,7 @@ export interface ReadModelRequestArgs<TReadModel extends ReadModelInterface> {
 
 export interface ReadModelByIdRequestArgs {
   id: string
+
   [sequenceKey: string]: string | undefined
 }
 
@@ -148,12 +162,15 @@ export type ReadModelRequestProperties<TReadModel> = Record<string, FilterFor<TR
 
 export type ReadModelSortProperties<TReadModel> = Record<string, SortFor<TReadModel>>
 
+export type EventType = 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
+
 export interface GraphQLRequestEnvelope extends Envelope {
-  eventType: 'CONNECT' | 'MESSAGE' | 'DISCONNECT'
+  eventType: EventType
   connectionID?: string
   value?: GraphQLOperation | GraphQLClientMessage
   token?: string
 }
+
 export type GraphQLRequestEnvelopeError = Pick<GraphQLRequestEnvelope, 'eventType' | 'connectionID' | 'requestID'> & {
   error: Error
 }
@@ -198,4 +215,17 @@ export interface ContextEnvelope {
   }
   /** Provider-dependent raw request context object */
   rawContext: unknown
+}
+
+export type EventEnvelopeFromDatabase = EventEnvelope & { id: string }
+export type EntitySnapshotEnvelopeFromDatabase = EntitySnapshotEnvelope & { id: string }
+export interface EventDeleteParameters {
+  entityTypeName: string
+  entityID: string
+  createdAt: string
+}
+export interface SnapshotDeleteParameters {
+  entityID: UUID
+  entityTypeName: string
+  createdAt: string
 }

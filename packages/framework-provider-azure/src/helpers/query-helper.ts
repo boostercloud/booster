@@ -1,13 +1,33 @@
-import { CosmosClient, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
+import { CosmosClient, ItemDefinition, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
 import {
   BoosterConfig,
   FilterFor,
   InvalidParameterError,
   Operation,
+  ProjectionFor,
   ReadModelListResult,
   SortFor,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+
+export async function replaceOrDeleteItem(
+  cosmosDb: CosmosClient,
+  container: string,
+  config: BoosterConfig,
+  id: string,
+  partitionKey: string,
+  newValue?: ItemDefinition
+): Promise<void> {
+  if (newValue) {
+    await cosmosDb
+      .database(config.resourceNames.applicationStack)
+      .container(container)
+      .item(id, partitionKey)
+      .replace(newValue)
+  } else {
+    await cosmosDb.database(config.resourceNames.applicationStack).container(container).item(id, partitionKey).delete()
+  }
+}
 
 export async function search<TResult>(
   cosmosDb: CosmosClient,
@@ -18,11 +38,12 @@ export async function search<TResult>(
   afterCursor?: Record<string, string> | undefined,
   paginatedVersion = false,
   order?: SortFor<unknown>,
-  projections = '*'
+  projections: ProjectionFor<unknown> | string = '*'
 ): Promise<Array<TResult> | ReadModelListResult<TResult>> {
   const logger = getLogger(config, 'query-helper#search')
   const filterExpression = buildFilterExpression(filters)
-  const queryDefinition = `SELECT ${projections} FROM c ${
+  const projectionsExpression = buildProjections(projections)
+  const queryDefinition = `SELECT ${projectionsExpression} FROM c ${
     filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression
   }`
   const queryWithOrder = queryDefinition + buildOrderExpression(order)
@@ -39,12 +60,21 @@ export async function search<TResult>(
     parameters: buildExpressionAttributeValues(filters),
   }
 
-  logger.debug('Running search with the following params: \n', querySpec)
-  const { resources } = await cosmosDb
+  logger.debug('Running search with the following params: \n', JSON.stringify(querySpec))
+  let { resources } = await cosmosDb
     .database(config.resourceNames.applicationStack)
     .container(containerName)
     .items.query(querySpec)
     .fetchAll()
+
+  resources = nestProperties(resources)
+  resources = resources.map((resource) => ({
+    ...resource,
+    boosterMetadata: {
+      ...resource.boosterMetadata,
+      optimisticConcurrencyValue: resource._etag,
+    },
+  }))
 
   if (paginatedVersion) {
     return {
@@ -104,12 +134,14 @@ function buildOperation(
           return `CONTAINS(${propName}, ${holder(index)})`
         case 'beginsWith':
           return `STARTSWITH(${propName}, ${holder(index)})`
-        case 'includes': {
+        case 'includes':
           return `ARRAY_CONTAINS(${propName}, ${holder(index)}, true)`
-        }
-        case 'isDefined': {
+        case 'isDefined':
           return value ? `IS_DEFINED(${propName})` : `NOT IS_DEFINED(${propName})`
-        }
+        case 'regex':
+          return `RegexMatch(${propName}, ${holder(index)})`
+        case 'iRegex':
+          return `RegexMatch(${propName}, ${holder(index)}, 'i')`
         default:
           if (typeof value === 'object') {
             return buildOperation(operation, value, usedPlaceholders, propName)
@@ -211,4 +243,221 @@ function toLocalSortFor(
     }
   })
   return sortedList
+}
+
+function buildProjections(projections: ProjectionFor<unknown> | string = '*'): string {
+  if (typeof projections !== 'object') {
+    return projections
+  }
+
+  // Preprocess the projections
+  const preprocessedProjections = preprocessProjections(projections)
+
+  // Helper function to convert dot notation to square-bracket notation
+  const toSquareBracketsNotation = (path: string): string => {
+    return path
+      .split('.')
+      .map((part) => `["${part}"]`)
+      .join('')
+  }
+
+  // Group fields by the root property
+  const groupedFields: { [key: string]: string[] } = {}
+  Object.values(preprocessedProjections).forEach((field: string) => {
+    const root: string = field.split('.')[0]
+    if (!groupedFields[root]) {
+      groupedFields[root] = []
+    }
+    groupedFields[root].push(field)
+  })
+
+  return Object.keys(groupedFields)
+    .map((root: string): string => {
+      const fields = groupedFields[root]
+      if (root.endsWith('[]')) {
+        const arrayRoot: string = root.slice(0, -2)
+        const subFields = fields
+          .map((f: string) => f.replace(`${root}.`, ''))
+          .map(toSquareBracketsNotation)
+          .map((f: string) => `item${f}`)
+          .join(', ')
+        return `ARRAY(SELECT ${subFields} FROM item IN c["${arrayRoot}"]) AS ${arrayRoot}`
+      } else if (fields.length === 1 && !fields[0].includes('.')) {
+        // Simple field
+        return `c${toSquareBracketsNotation(fields[0])}`
+      } else {
+        // Nested object fields
+        const nestedFields: { [key: string]: string[] } = {}
+        fields.forEach((f: string) => {
+          const parts = f.split('.').slice(1)
+          if (parts.length > 0) {
+            const nestedRoot = parts[0]
+            if (!nestedFields[nestedRoot]) {
+              nestedFields[nestedRoot] = []
+            }
+            nestedFields[nestedRoot].push(parts.join('.'))
+          }
+        })
+
+        return Object.keys(nestedFields)
+          .map((nestedRoot: string) => {
+            const subFields = nestedFields[nestedRoot]
+              .map((f: string) => `c${toSquareBracketsNotation(`${root}.${f}`)} AS "${root}.${f}"`)
+              .join(', ')
+            if (nestedRoot.endsWith('[]')) {
+              const arrayNestedRoot = nestedRoot.slice(0, -2)
+              const subArrayFields = nestedFields[nestedRoot]
+                .map((f: string) => {
+                  const subFieldParts = f.split('.').slice(1).join('.')
+                  return `item${toSquareBracketsNotation(subFieldParts)}`
+                })
+                .join(', ')
+              return `ARRAY(SELECT ${subArrayFields} FROM item IN c${toSquareBracketsNotation(
+                `${root}.${arrayNestedRoot}`
+              )}) AS "${root}.${arrayNestedRoot}"`
+            }
+            return subFields
+          })
+          .join(', ')
+      }
+    })
+    .join(', ')
+}
+
+/**
+ * Preprocesses the projections to handle nested arrays and objects.
+ *
+ * @param {ProjectionFor<unknown>} projections - The projections to preprocess.
+ * @returns {ProjectionFor<unknown>} - The preprocessed projections.
+ */
+function preprocessProjections(projections: ProjectionFor<unknown>): ProjectionFor<unknown> {
+  const processed = new Set<string>()
+
+  Object.values(projections).forEach((field: string) => {
+    const parts = field.split('.')
+    const arrayIndices = parts.reduce((acc, part, index) => {
+      if (part.endsWith('[]')) acc.push(index)
+      return acc
+    }, [] as number[])
+
+    if (
+      arrayIndices.length === 0 ||
+      (arrayIndices[0] === 0 && arrayIndices.length === 1) ||
+      (arrayIndices[0] === 1 && arrayIndices.length === 1)
+    ) {
+      // This block is accessed when one of the following occurs:
+      // - No arrays in the projection
+      // - Top-level array not followed by another array
+      // - Array nested within a top-level property, no arrays follow
+      processed.add(field)
+    } else {
+      // Cases with nested arrays or arrays deeper in the structure
+      const processToIndex = arrayIndices[0] === 0 || arrayIndices[0] === 1 ? arrayIndices[1] : arrayIndices[0]
+      const processedField = parts.slice(0, processToIndex + 1).join('.')
+      processed.add(processedField.slice(0, -2)) // Remove the '[]' from the last part
+    }
+  })
+
+  // Convert the Set back to the original type of projections
+  if (Array.isArray(projections)) {
+    return Array.from(processed) as ProjectionFor<unknown>
+  } else {
+    return Array.from(processed).reduce((acc, field) => {
+      ;(acc as any)[field] = field
+      return acc
+    }, {} as ProjectionFor<unknown>)
+  }
+}
+
+/**
+ * Transforms the flat properties returned by Cosmos DB into a nested structure. For example, the following object:
+ *
+ * ```json
+ * {
+ *   "foo.bar": "baz",
+ *   "items": [{"qux.quux": "corge"}]
+ * }
+ * ```
+ *
+ * is transformed to this:
+ *
+ * ```json
+ * {
+ *   "foo": {
+ *     "bar": "baz"
+ *   },
+ *   "items": [
+ *     {
+ *       "qux": {
+ *           "quux": "corge"
+ *         }
+ *     }
+ *   ]
+ * }
+ * ```
+ *
+ * @param {any} obj - The object to be nested.
+ * @returns {any} - The nested object.
+ */
+function nestProperties(obj: any): any {
+  const result = {}
+
+  /**
+   * Sets a nested property on an object.
+   * @param {any} obj - The object on which to set the property.
+   * @param {string[]} path - The path to the property.
+   * @param {any} value - The value to set.
+   */
+  function setNestedProperty(obj: any, path: string[], value: any): void {
+    let current = obj
+    for (let i = 0; i < path.length - 1; i++) {
+      if (!current[path[i]]) {
+        current[path[i]] = {}
+      }
+      current = current[path[i]]
+    }
+    current[path[path.length - 1]] = value
+  }
+
+  /**
+   * Processes an object, nesting its properties.
+   * @param {any} input - The object to process.
+   * @param {any} output - The object to output.
+   */
+  function processObject(input: any, output: any): void {
+    for (const key in input) {
+      if (Object.prototype.hasOwnProperty.call(input, key)) {
+        const value = input[key]
+        const keys = key.split('.')
+        setNestedProperty(output, keys, value)
+      }
+    }
+  }
+
+  /**
+   * Processes an array, nesting its properties.
+   * @param {any[]} arr - The array to process.
+   * @returns {any[]} - The processed array.
+   */
+  function processArray(arr: any[]): any[] {
+    return arr.map((item: any): any => {
+      if (Array.isArray(item)) {
+        return processArray(item)
+      } else if (item !== null && typeof item === 'object') {
+        const nestedItem = {}
+        processObject(item, nestedItem)
+        return nestedItem
+      } else {
+        return item
+      }
+    })
+  }
+
+  if (Array.isArray(obj)) {
+    return processArray(obj)
+  } else if (obj !== null && typeof obj === 'object') {
+    processObject(obj, result)
+  }
+
+  return result
 }

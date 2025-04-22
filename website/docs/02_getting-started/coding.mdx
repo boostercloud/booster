@@ -2,7 +2,7 @@
 description: How to have the backend up and running for a blog application in a few minutes
 ---
 import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
-import CustomLink from '@site/src/components/CustomLink'
+import {CLStepByStep, CLExampleApps, CLAskMeRepo} from '@site/src/components/CustomLinkWrappers'
 
 # Build a Booster app in minutes
 
@@ -22,9 +22,8 @@ the instructions. After some prompted questions, the CLI will ask you to select 
 
 ```shell
 ? What's the package name of your provider infrastructure library? (Use arrow keys)
-❯ @boostercloud/framework-provider-aws (AWS)
   @boostercloud/framework-provider-azure (Azure)
-  @boostercloud/framework-provider-kubernetes (Kubernetes) [Experimental]
+❯ @boostercloud/framework-provider-aws (AWS) - Deprecated
   Other
 ```
 
@@ -297,11 +296,9 @@ Read models are _projections_ of one or more entities into a new object that is 
 `Post` entity:
 
 <TerminalWindow>
-
 ```bash
 boost new:read-model PostReadModel --fields title:string author:string --projects Post:id
 ```
-
 </TerminalWindow>
 
 We have used a new flag, `--projects`, that allow us to specify the entities (can be many) the read model will
@@ -603,7 +600,7 @@ capabilities!
 
 In the following video, you will find how to create a backend for a question-asking application from scratch. This application would allow
 users to create questions and like them. This video goes from creating the project to incrementally deploying features in the application.
-You can find the code both for the frontend and the backend in <CustomLink href="https://github.com/boostercloud/examples/tree/master/askme" onClick={() => fathom.trackGoal('NE1EADCK', 0)}> this GitHub repo. </CustomLink>
+You can find the code both for the frontend and the backend in <CLAskMeRepo>[this GitHub repo](https://github.com/boostercloud/examples/tree/master/askme)</CLAskMeRepo>.
 
 <div align="center">
   <iframe
@@ -619,4 +616,4 @@ You can find the code both for the frontend and the backend in <CustomLink href=
 
 ### All the guides and examples
 
-Check out the <CustomLink href="https://github.com/boostercloud/booster/tree/main/examples" onClick={() => fathom.trackGoal('GYHPPIBS', 0)}> step-by-step guides </CustomLink> and the <CustomLink href="https://github.com/boostercloud/examples" onClick={() => fathom.trackGoal('YY7T3ZSZ', 0)}> example apps repository </CustomLink> to see Booster in use.
+Check out the <CLExampleApps>[example apps repository](https://github.com/boostercloud/examples)</CLExampleApps> to see Booster in use.

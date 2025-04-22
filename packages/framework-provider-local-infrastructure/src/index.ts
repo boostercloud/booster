@@ -1,5 +1,5 @@
 import * as express from 'express'
-import { GraphQLService } from '@boostercloud/framework-provider-local'
+import { GraphQLService, HealthService } from '@boostercloud/framework-provider-local'
 import { BoosterConfig, ProviderInfrastructure, RocketDescriptor, UserApp } from '@boostercloud/framework-types'
 import * as path from 'path'
 import { requestFailed } from './http'
@@ -8,6 +8,8 @@ import * as cors from 'cors'
 import { configureScheduler } from './scheduler'
 import { RocketLoader } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './infrastructure-rocket'
+import { HealthController } from './controllers/health-controller'
+import * as process from 'process'
 
 export * from './test-helper/local-test-helper'
 export * from './infrastructure-rocket'
@@ -45,6 +47,8 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       const router = express.Router()
       const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
       const graphQLService = new GraphQLService(userProject as UserApp)
+      const healthService = new HealthService(userProject as UserApp)
+      router.use('/sensor/health', new HealthController(healthService).router)
       router.use('/graphql', new GraphQLController(graphQLService).router)
       if (rockets && rockets.length > 0) {
         rockets.forEach((rocket) => {

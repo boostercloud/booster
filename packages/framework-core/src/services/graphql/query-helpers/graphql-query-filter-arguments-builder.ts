@@ -3,30 +3,32 @@ import {
   GraphQLFieldConfigArgumentMap,
   GraphQLFloat,
   GraphQLID,
-  GraphQLInputFieldConfigMap,
+  GraphQLInputFieldConfig,
   GraphQLInputObjectType,
   GraphQLList,
   GraphQLScalarType,
   GraphQLString,
-  Thunk,
+  ThunkObjMap,
 } from 'graphql'
 import { getClassMetadata } from '../../../decorators/metadata'
 import { PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
 import { GraphQLJSON } from 'graphql-scalars'
-import { AnyClass, UUID } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig, UUID } from '@boostercloud/framework-types'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
-import { DateScalar, isExternalType } from '../common'
+import { DateScalar, isExternalType, nonExcludedFields } from '../common'
 
 export class GraphqlQueryFilterArgumentsBuilder {
   constructor(
     private readonly typeInformer: GraphQLTypeInformer,
-    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {},
+    private readonly config: BoosterConfig
   ) {}
 
-  public generateFilterArguments(type: AnyClass): GraphQLFieldConfigArgumentMap {
+  public generateFilterArguments(type: AnyClass, excludeProps: Array<string>): GraphQLFieldConfigArgumentMap {
     const metadata = getClassMetadata(type)
     const args: GraphQLFieldConfigArgumentMap = {}
-    metadata.fields
+    const finalFields: Array<PropertyMetadata> = nonExcludedFields(metadata.fields, excludeProps)
+    finalFields
       .filter((field: PropertyMetadata) => !field.typeInfo.isGetAccessor)
       .forEach((prop: PropertyMetadata) => {
         args[prop.name] = {
@@ -43,17 +45,17 @@ export class GraphqlQueryFilterArgumentsBuilder {
 
     if (this.generatedFiltersByTypeName[filterName]) return this.generatedFiltersByTypeName[filterName]
     if (prop.typeInfo.typeGroup === 'Array') return this.generateArrayFilterFor(prop)
-    let fields: Thunk<GraphQLInputFieldConfigMap> = {}
+    let fields: ThunkObjMap<GraphQLInputFieldConfig> = {}
 
     if (prop.typeInfo.name === 'UUID' || prop.typeInfo.name === 'Date') {
       fields = this.generateFilterInputTypes(prop.typeInfo)
     } else if (prop.typeInfo.type && (prop.typeInfo.typeGroup === 'Class' || prop.typeInfo.typeGroup === 'Object')) {
       if (isExternalType(prop.typeInfo)) return GraphQLJSON
-      let nestedProperties: GraphQLInputFieldConfigMap = {}
+      let nestedProperties: ThunkObjMap<GraphQLInputFieldConfig> = {}
       const metadata = getClassMetadata(prop.typeInfo.type)
       if (metadata.fields.length === 0) return GraphQLJSON
-
-      this.typeInformer.generateGraphQLTypeForClass(prop.typeInfo.type, true)
+      const excludeProps = this.config.nonExposedGraphQLMetadataKey[prop.name]
+      this.typeInformer.generateGraphQLTypeForClass(prop.typeInfo.type, excludeProps, true)
 
       for (const prop of metadata.fields) {
         const property = { [prop.name]: { type: this.generateFilterFor(prop) } }
@@ -81,7 +83,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
     filterName = filterName.charAt(0).toUpperCase() + filterName.substr(1)
 
     if (!this.generatedFiltersByTypeName[filterName]) {
-      const propFilters: GraphQLInputFieldConfigMap = {}
+      const propFilters: ThunkObjMap<GraphQLInputFieldConfig> = {}
       property.typeInfo.parameters.forEach((param) => {
         let graphqlType: GraphQLScalarType
         switch (param.typeGroup) {
@@ -110,7 +112,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
     return this.generatedFiltersByTypeName[filterName]
   }
 
-  private generateFilterInputTypes(typeMetadata: TypeMetadata): GraphQLInputFieldConfigMap {
+  private generateFilterInputTypes(typeMetadata: TypeMetadata): ThunkObjMap<GraphQLInputFieldConfig> {
     const { name, typeGroup } = typeMetadata
     if (typeGroup === 'Boolean')
       return {
@@ -126,7 +128,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         lt: { type: GraphQLFloat },
         gte: { type: GraphQLFloat },
         gt: { type: GraphQLFloat },
-        in: { type: GraphQLList(GraphQLFloat) },
+        in: { type: new GraphQLList(GraphQLFloat) },
         isDefined: { type: GraphQLBoolean },
       }
     if (typeGroup === 'String')
@@ -137,9 +139,11 @@ export class GraphqlQueryFilterArgumentsBuilder {
         lt: { type: GraphQLString },
         gte: { type: GraphQLString },
         gt: { type: GraphQLString },
-        in: { type: GraphQLList(GraphQLString) },
+        in: { type: new GraphQLList(GraphQLString) },
         beginsWith: { type: GraphQLString },
         contains: { type: GraphQLString },
+        regex: { type: GraphQLString },
+        iRegex: { type: GraphQLString },
         isDefined: { type: GraphQLBoolean },
       }
     // use `name`, `typeGroup` === 'Class'
@@ -147,10 +151,12 @@ export class GraphqlQueryFilterArgumentsBuilder {
       return {
         eq: { type: GraphQLID },
         ne: { type: GraphQLID },
-        in: { type: GraphQLList(GraphQLID) },
+        in: { type: new GraphQLList(GraphQLID) },
+        beginsWith: { type: GraphQLString },
+        contains: { type: GraphQLString },
         isDefined: { type: GraphQLBoolean },
       }
-    // use `name`, `typeGroup` === 'Interface'
+    // use `name`, `typeGroup` === 'Interface'.
     if (name === 'Date')
       return {
         eq: { type: DateScalar },
@@ -159,7 +165,7 @@ export class GraphqlQueryFilterArgumentsBuilder {
         lt: { type: DateScalar },
         gte: { type: DateScalar },
         gt: { type: DateScalar },
-        in: { type: GraphQLList(DateScalar) },
+        in: { type: new GraphQLList(DateScalar) },
         isDefined: { type: GraphQLBoolean },
       }
     if (typeGroup === 'Enum') {

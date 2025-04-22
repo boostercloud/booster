@@ -6,12 +6,11 @@ import { ProviderLibrary, BoosterConfig } from '@boostercloud/framework-types'
 import * as Nuke from '../../src/commands/nuke'
 import * as providerService from '../../src/services/provider-service'
 import { oraLogger } from '../../src/services/logger'
-import { IConfig } from '@oclif/config'
-import { test } from '@oclif/test'
+import { Config } from '@oclif/core'
+import { runCommand } from '@oclif/test'
 import * as environment from '../../src/services/environment'
 import * as configService from '../../src/services/config-service'
 import * as projectChecker from '../../src/services/project-checker'
-
 const rewire = require('rewire')
 const nuke = rewire('../../src/commands/nuke')
 const runTasks = nuke.__get__('runTasks')
@@ -117,12 +116,10 @@ describe('nuke', () => {
 
   describe('run', () => {
     context('when no environment provided', async () => {
-      test
-        .stdout()
-        .command(['nuke'])
-        .it('shows no environment provided error', (ctx) => {
-          expect(ctx.stdout).to.match(/No environment set/)
-        })
+      it('shows no environment provided error', async () => {
+        const {stdout} = await runCommand<{name: string}>(['nuke'], { root: __dirname })
+        expect(stdout).to.match(/No environment set/)
+      })
     })
   })
 
@@ -139,12 +136,14 @@ describe('nuke', () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Nuke.default([], {} as IConfig).init()
+      const config = await Config.load()
+      await new Nuke.default([], config).init()
       expect(projectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     it('without flags', async () => {
-      await new Nuke.default([], {} as IConfig).run()
+      const config = await Config.load()
+      await new Nuke.default([], config).run()
 
       expect(configService.compileProjectAndLoadConfig).to.have.not.been.called
       expect(providerService.nukeCloudProviderResources).to.have.not.been.called
@@ -155,7 +154,8 @@ describe('nuke', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Nuke.default(['-e'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Nuke.default(['-e'], config).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -170,7 +170,8 @@ describe('nuke', () => {
       let exceptionThrown = false
       let exceptionMessage = ''
       try {
-        await new Nuke.default(['--environment'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Nuke.default(['--environment'], config).run()
       } catch (e) {
         exceptionThrown = true
         exceptionMessage = e.message
@@ -184,7 +185,8 @@ describe('nuke', () => {
     describe('inside a booster project', () => {
       it('entering correct environment and application name', async () => {
         replace(Prompter.prototype, 'defaultOrPrompt', fake.resolves('new-booster-app'))
-        await new Nuke.default(['-e', 'fake_environment'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Nuke.default(['-e', 'fake_environment'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
@@ -192,7 +194,8 @@ describe('nuke', () => {
       })
 
       it('entering correct environment and --force flag', async () => {
-        await new Nuke.default(['-e', 'fake_environment', '--force'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Nuke.default(['-e', 'fake_environment', '--force'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
@@ -200,7 +203,8 @@ describe('nuke', () => {
       })
 
       it('entering correct environment and -f flag', async () => {
-        await new Nuke.default(['-e', 'fake_environment', '-f'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Nuke.default(['-e', 'fake_environment', '-f'], config).run()
 
         expect(configService.compileProjectAndLoadConfig).to.have.been.called
         expect(providerService.nukeCloudProviderResources).to.have.been.called
@@ -212,7 +216,8 @@ describe('nuke', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Nuke.default(['-e', 'fake_environment'], {} as IConfig).run()
+          const config = await Config.load()
+          await new Nuke.default(['-e', 'fake_environment'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -228,19 +233,21 @@ describe('nuke', () => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Nuke.default(['-e', 'fake_environment', '--nonexistingoption'], {} as IConfig).run()
+          const config = await Config.load()
+          await new Nuke.default(['-e', 'fake_environment', '--nonexistingoption'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
         expect(exceptionThrown).to.be.equal(true)
-        expect(exceptionMessage).to.contain('Unexpected argument: --nonexistingoption')
+        expect(exceptionMessage).to.contain('Nonexistent flag: --nonexistingoption')
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
         expect(oraLogger.info).to.have.not.been.calledWithMatch('Removal complete!')
       })
 
       it('without defining environment and --force', async () => {
-        await new Nuke.default(['--force'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Nuke.default(['--force'], config).run()
 
         expect(providerService.nukeCloudProviderResources).to.have.not.been.called
         expect(oraLogger.fail).to.have.been.calledWithMatch(/No environment set/)

@@ -14,7 +14,7 @@ import { GraphQLJSON } from 'graphql-scalars'
 import { GraphQLTypeInformer } from '../graphql-type-informer'
 import { GraphqlQuerySortBuilder } from '../query-helpers/graphql-query-sort-builder'
 import { GraphqlQueryFilterArgumentsBuilder } from '../query-helpers/graphql-query-filter-arguments-builder'
-import { AnyClass } from '@boostercloud/framework-types'
+import { AnyClass, BoosterConfig } from '@boostercloud/framework-types'
 
 export class GraphqlQueryListedGenerator {
   private graphqlQueryFilterArgumentsBuilder: GraphqlQueryFilterArgumentsBuilder
@@ -24,19 +24,22 @@ export class GraphqlQueryListedGenerator {
     private readonly readModels: AnyClass[],
     private readonly typeInformer: GraphQLTypeInformer,
     private readonly filterResolverBuilder: ResolverBuilder,
-    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {}
+    protected generatedFiltersByTypeName: Record<string, GraphQLInputObjectType> = {},
+    private readonly config: BoosterConfig
   ) {
     this.graphqlQueryFilterArgumentsBuilder = new GraphqlQueryFilterArgumentsBuilder(
       typeInformer,
-      generatedFiltersByTypeName
+      generatedFiltersByTypeName,
+      config
     )
-    this.graphqlQuerySortBuilder = new GraphqlQuerySortBuilder(typeInformer)
+    this.graphqlQuerySortBuilder = new GraphqlQuerySortBuilder(typeInformer, config)
   }
 
   public generateListedQueries(): GraphQLFieldConfigMap<unknown, GraphQLResolverContext> {
     const queries: GraphQLFieldConfigMap<unknown, GraphQLResolverContext> = {}
     for (const readModel of this.readModels) {
-      const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel)
+      const excludeProp = this.config.nonExposedGraphQLMetadataKey[readModel.name]
+      const graphQLType = this.typeInformer.generateGraphQLTypeForClass(readModel, excludeProp)
       queries[`List${inflected.pluralize(readModel.name)}`] = {
         type: new GraphQLNonNull(
           new GraphQLObjectType({
@@ -48,15 +51,19 @@ export class GraphqlQueryListedGenerator {
             },
           })
         ),
-        args: this.generateListedQueriesFields(readModel.name, readModel),
+        args: this.generateListedQueriesFields(readModel.name, readModel, excludeProp),
         resolve: this.filterResolverBuilder(readModel),
       }
     }
     return queries
   }
 
-  private generateListedQueriesFields(name: string, type: AnyClass): GraphQLFieldConfigArgumentMap {
-    const filterArguments = this.graphqlQueryFilterArgumentsBuilder.generateFilterArguments(type)
+  private generateListedQueriesFields(
+    name: string,
+    type: AnyClass,
+    excludeProps: Array<string>
+  ): GraphQLFieldConfigArgumentMap {
+    const filterArguments = this.graphqlQueryFilterArgumentsBuilder.generateFilterArguments(type, excludeProps)
     const filter: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: `List${type.name}Filter`,
       fields: () => ({
@@ -66,7 +73,7 @@ export class GraphqlQueryListedGenerator {
         not: { type: filter },
       }),
     })
-    const sortArguments = this.graphqlQuerySortBuilder.generateSortArguments(type)
+    const sortArguments = this.graphqlQuerySortBuilder.generateSortArguments(type, excludeProps)
     const sort: GraphQLInputObjectType = new GraphQLInputObjectType({
       name: `${name}SortBy`,
       fields: () => ({

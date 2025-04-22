@@ -1,0 +1,56 @@
+import DocCardList from '@theme/DocCardList'
+
+# Scaling Booster Azure Functions
+
+Booster Azure Provider relies on CosmosDB [change feed processor](https://learn.microsoft.com/en-us/azure/cosmos-db/nosql/change-feed-processor) to consume new events.
+In CosmosDB, the partition keys are distributed in ranges, where each range represents a physical partition. [Unlike logical partitions,
+physical partitions are an internal implementation of the system and Azure Cosmos DB entirely manages physical partitions](https://learn.microsoft.com/en-us/azure/cosmos-db/partitioning-overview#physical-partitions)
+
+With Booster EventStream functionality, we could define the number of physical partitions our events are split and create instances for each partition.
+
+To enable EventStream, set the `EventStreamConfiguration` in the configuration object:
+
+:::warning
+Currently, only available for Azure provider.
+:::
+
+```typescript
+  config.eventStreamConfiguration = {
+    enabled: true,
+    parameters: {
+      streamTopic: 'test',
+      partitionCount: 3,
+      messageRetention: 1,
+      maxRetries: 5,
+      mode: 'exponential'
+    },
+  }
+```
+
+## Parameters
+* StreamTopic: Define the internal topic name Booster will use.
+* PartitionCount: Number of Event Hub partitions. The number of functions app consumer instances will match the partition count
+* MessageRetention: Specifies the number of days to retain the events for this Event Hub
+* MaxRetries: Number of retries to consume an event
+* Mode: Retry mode. It could be `fixed` or `exponential`
+
+Note: `maxRetries` and `mode` are configured at Function level
+
+## Infrastructure
+
+Enabling `EventStreamConfiguration` will apply some changes to the infrastructure:
+
+* Two functions will be created
+  * One function with a CosmosDB consumer that will produce Event Hubs events. Also, it will include the readModels functions, schedule functions app, etc...
+  * One function with an Event Hub consumer function app. This function will allow you to define the number of instances to be created
+* A new container to handle duplicated consumed events
+* A new Event Hub will be added for event handling.
+
+## Recommendations
+
+[From the Azure documentation](https://learn.microsoft.com/en-us/azure/event-hubs/dynamically-add-partitions#recommendations):
+
+Dynamically adding partitions isn't recommended. While the existing data preserves ordering, partition hashing will be broken for messages hashed after the
+partition count changes due to addition of partitions.
+
+<DocCardList />

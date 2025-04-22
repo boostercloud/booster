@@ -1,6 +1,12 @@
 import { Projects, ReadModel } from '@boostercloud/framework-core'
 import { UserWithEmail } from '../roles'
-import { ProjectionResult, ReadModelAction, UUID } from '@boostercloud/framework-types'
+import {
+  ProjectionInfo,
+  ProjectionInfoReason,
+  ProjectionResult,
+  ReadModelAction,
+  UUID,
+} from '@boostercloud/framework-types'
 import { Product, ProductType } from '../entities/product'
 import { Money } from '../common/money'
 import { Pack } from '../entities/pack'
@@ -23,7 +29,7 @@ export class ProductReadModel {
     readonly packs?: Array<Pack>
   ) {}
 
-  @Projects(Product, 'id')
+  @Projects(Product, 'id', ProductReadModel.unProjectWithProduct)
   public static updateWithProduct(product: Product): ProjectionResult<ProductReadModel> {
     if (product.deleted) {
       return ReadModelAction.Delete
@@ -43,12 +49,24 @@ export class ProductReadModel {
     }
   }
 
-  @Projects(Pack, 'products')
+  public static unProjectWithProduct(
+    _product: Product,
+    _currentProductReadModel?: ProductReadModel,
+    _projectionInfo?: ProjectionInfo
+  ): ProjectionResult<ProductReadModel> {
+    return ReadModelAction.Delete
+  }
+
+  @Projects(Pack, 'products', ProductReadModel.updateWithPack)
   public static updateWithPack(
     pack: Pack,
     readModelID: UUID,
-    currentProductReadModel?: ProductReadModel
+    currentProductReadModel?: ProductReadModel,
+    projectionInfo?: ProjectionInfo
   ): ProjectionResult<ProductReadModel> {
+    if (projectionInfo?.reason === ProjectionInfoReason.ENTITY_DELETED) {
+      return ReadModelAction.Delete
+    }
     if (!currentProductReadModel) {
       return ReadModelAction.Nothing
     } else {

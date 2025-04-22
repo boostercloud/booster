@@ -1,0 +1,95 @@
+# Remove events
+
+:::warning
+This is an experimental functionality. Please note that this functionality is only supported by Azure and Local providers.
+:::
+
+Booster allows to delete past events and their related entities as to update the affected ReadModels.
+
+By using the `Booster.deleteEvent` command it is possible to indicate the event to be deleted. To do so, you must indicate:
+
+* entityID: The `id` of the entity of the event to be deleted
+* entityTypeName: The entity type name of the event entity to be deleted
+* createdAt: The date of creation of the event.
+
+Example:
+```typescript
+import { Booster, Command } from '@boostercloud/framework-core'
+import { EventDeleteParameters } from '@boostercloud/framework-types'
+
+@Command({
+  authorize: 'all',
+})
+export class HardDelete {
+  public constructor(readonly entityId: string, readonly entityTypeName: string, readonly createdAt: string) {}
+
+  public static async handle(command: HardDelete): Promise<boolean> {
+    const parameters: EventDeleteParameters = {
+      entityID: command.entityId,
+      entityTypeName: command.entityTypeName,
+      createdAt: command.createdAt,
+    }
+    return await Booster.deleteEvent(parameters)
+  }
+}
+```
+
+When executing this command, Booster will update the selected event in the corresponding database with an empty value and a deletion date.
+This way, it will be reflected in the system that there was an event that was subsequently deleted.
+
+Deleted events are ignored by Booster, but they can be accessed using the corresponding methods (`eventsByEntity` and `eventsByType`).
+
+The entities associated with a deleted event will be permanently removed from the database.
+
+ReadModels are not automatically modified or deleted and it is up to the user to act accordingly.
+To do so, the methods annotated with `@Project` of the ReadModels have a third parameter `unProject` which allows to define a
+function that will be executed when the entity defined in the projection and with the `joinKey` defined in the projection is deleted.
+
+This third parameter will be a static function with the same parameters as the method we are projecting.
+
+It is possible to use the same method that is used for projecting to resolve the deletions by simply specifying this
+method as `unProject`.
+
+Example:
+```typescript
+  @Projects(Pack, 'products', ProductReadModel.updateWithPack)
+  public static updateWithPack(
+    pack: Pack,
+    readModelID: UUID,
+    currentProductReadModel?: ProductReadModel,
+    projectionInfo?: ProjectionInfo
+  ): ProjectionResult<ProductReadModel> {
+    if (projectionInfo?.reason === ProjectionInfoReason.ENTITY_DELETED) {
+      return ReadModelAction.Delete
+    }
+    //   ... other code
+  }
+```
+
+In this case, if the `Pack` entity with the joinKey `products` is deleted, the `updateWithPack` method will be executed and will include a last parameter called `projectionInfo`.
+This parameter contains the `reason` field, which in this case will be set to `ENTITY_DELETED` to indicate that the entity is being deleted.
+
+Another option is to define your own deletion method independent of the projection method. In case of deletion the method
+called will be the newly defined method.
+
+Example:
+```typescript
+  @Projects(Product, 'id', ProductReadModel.unProjectWithProduct)
+  public static updateWithProduct(product: Product): ProjectionResult<ProductReadModel> {
+    // ... other code
+  }
+
+  public static unProjectWithProduct(
+    _product: Product,
+    _currentProductReadModel?: ProductReadModel,
+    _projectionInfo?: ProjectionInfo
+  ): ProjectionResult<ProductReadModel> {
+    return ReadModelAction.Delete
+  }
+```
+
+([See more details about how to delete a ReadModel in the docs](https://docs.boosterframework.com/architecture/read-model/#deleting-read-models))
+
+:::warning
+Please note that these changes are final and it is not possible to retrieve the information once they have been made.
+:::

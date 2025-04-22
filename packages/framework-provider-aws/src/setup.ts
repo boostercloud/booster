@@ -1,5 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
+import {
+  BoosterConfig,
+  HasInfrastructure,
+  HealthEnvelope,
+  ProviderLibrary,
+  RocketDescriptor,
+} from '@boostercloud/framework-types'
 import { DynamoDB } from 'aws-sdk'
 import { requestFailed, requestSucceeded } from './library/api-gateway-io'
 import {
@@ -12,6 +18,7 @@ import {
   rawEventsToEnvelopes,
   readEntityEventsSince,
   readEntityLatestSnapshot,
+  storeDispatchedEvent,
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
@@ -60,12 +67,20 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     // ProviderEventsLibrary
     events: {
       rawToEnvelopes: rawEventsToEnvelopes,
+      rawStreamToEnvelopes: notImplementedResult as any,
+      dedupEventStream: notImplementedResult as any,
+      produce: notImplementedResult as any,
       forEntitySince: readEntityEventsSince.bind(null, dynamoDB),
       latestEntitySnapshot: readEntityLatestSnapshot.bind(null, dynamoDB),
       search: searchEvents.bind(null, dynamoDB),
       searchEntitiesIDs: searchEntitiesIds.bind(null, dynamoDB),
       store: storeEvents.bind(null, dynamoDB),
       storeSnapshot: storeSnapshot.bind(null, dynamoDB),
+      storeDispatched: storeDispatchedEvent,
+      findDeletableEvent: notImplementedResult as any,
+      findDeletableSnapshot: notImplementedResult as any,
+      deleteEvent: notImplementedResult as any,
+      deleteSnapshot: notImplementedResult as any,
     },
     // ProviderReadModelsLibrary
     readModels: {
@@ -88,6 +103,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     api: {
       requestSucceeded,
       requestFailed,
+      healthRequestResult: async (body: unknown, isHealthy: boolean): Promise<unknown> => notImplementedResult(),
     },
     connections: {
       storeData: storeConnectionData.bind(null, dynamoDB),
@@ -101,6 +117,20 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
     },
     rockets: {
       rawToEnvelopes: rawRocketInputToEnvelope,
+    },
+    sensor: {
+      databaseEventsHealthDetails: async (config: BoosterConfig): Promise<unknown> => notImplementedResult(),
+      databaseReadModelsHealthDetails: async (config: BoosterConfig): Promise<unknown> => notImplementedResult(),
+      isDatabaseEventUp: async (config: BoosterConfig): Promise<boolean> => notImplementedResult(),
+      areDatabaseReadModelsUp: async (config: BoosterConfig): Promise<boolean> => notImplementedResult(),
+      databaseUrls: async (config: BoosterConfig): Promise<Array<string>> => notImplementedResult(),
+      isGraphQLFunctionUp: async (config: BoosterConfig): Promise<boolean> => notImplementedResult(),
+      graphQLFunctionUrl: async (config: BoosterConfig): Promise<string> => notImplementedResult(),
+      rawRequestToHealthEnvelope: (rawRequest: unknown): HealthEnvelope => {
+        throw new Error('Not implemented')
+      },
+      areRocketFunctionsUp: async (config: BoosterConfig): Promise<{ [key: string]: boolean }> =>
+        notImplementedResult(),
     },
     // ProviderInfrastructureGetter
     infrastructure: () => {
@@ -119,6 +149,10 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => {
       return infrastructure.Infrastructure(rockets)
     },
   }
+}
+
+function notImplementedResult() {
+  return Promise.reject('Not implemented')
 }
 
 export * from './constants'

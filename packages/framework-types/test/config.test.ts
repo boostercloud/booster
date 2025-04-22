@@ -13,7 +13,7 @@ describe('the config type', () => {
 
     it('gets the application stack name from the app name', () => {
       fc.assert(
-        fc.property(fc.string(1, 10), (appName) => {
+        fc.property(fc.string({ minLength: 1, maxLength: 10 }), (appName) => {
           const cfg = new BoosterConfig('test')
           cfg.appName = appName
           expect(cfg.resourceNames.applicationStack).to.equal(`${appName}-app`)
@@ -23,7 +23,7 @@ describe('the config type', () => {
 
     it('gets the events store name from the app name', () => {
       fc.assert(
-        fc.property(fc.string(1, 10), (appName) => {
+        fc.property(fc.string({ minLength: 1, maxLength: 10 }), (appName) => {
           const cfg = new BoosterConfig('test')
           cfg.appName = appName
           expect(cfg.resourceNames.eventsStore).to.equal(`${appName}-app-events-store`)
@@ -33,11 +33,15 @@ describe('the config type', () => {
 
     it('gets well-formatted readmodel names, based on the application name', () => {
       fc.assert(
-        fc.property(fc.string(1, 10), fc.string(1, 10), (appName, readModelName) => {
-          const cfg = new BoosterConfig('test')
-          cfg.appName = appName
-          expect(cfg.resourceNames.forReadModel(readModelName)).to.equal(`${appName}-app-${readModelName}`)
-        })
+        fc.property(
+          fc.string({ minLength: 1, maxLength: 10 }),
+          fc.string({ minLength: 1, maxLength: 10 }),
+          (appName, readModelName) => {
+            const cfg = new BoosterConfig('test')
+            cfg.appName = appName
+            expect(cfg.resourceNames.forReadModel(readModelName)).to.equal(`${appName}-app-${readModelName}`)
+          }
+        )
       )
     })
   })

@@ -5,10 +5,12 @@ import {
   NotFoundError,
   ScheduledCommandInterface,
   ScheduleCommandGlobalError,
+  TraceActionTypes,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { RegisterHandler } from './booster-register-handler'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
+import { Trace } from './instrumentation'
 
 export class BoosterScheduledCommandDispatcher {
   private readonly globalErrorDispatcher: BoosterGlobalErrorDispatcher
@@ -17,6 +19,7 @@ export class BoosterScheduledCommandDispatcher {
     this.globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)
   }
 
+  @Trace(TraceActionTypes.SCHEDULED_COMMAND_HANDLER)
   public async dispatchCommand(commandEnvelope: ScheduledCommandEnvelope): Promise<void> {
     const logger = getLogger(this.config, 'BoosterScheduledCommandDispatcher#dispatchCommand')
     logger.debug('Dispatching the following scheduled command envelope: ', commandEnvelope)
@@ -40,7 +43,9 @@ export class BoosterScheduledCommandDispatcher {
       logger.debug('Calling "handle" method on command: ', command)
       await command.handle(register)
     } catch (e) {
-      const error = await this.globalErrorDispatcher.dispatch(new ScheduleCommandGlobalError(e))
+      const error = await this.globalErrorDispatcher.dispatch(
+        new ScheduleCommandGlobalError(commandEnvelope, commandMetadata, e)
+      )
       if (error) throw error
     }
     logger.debug('Command dispatched with register: ', register)

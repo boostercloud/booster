@@ -7,8 +7,8 @@ import {
   PaginatedEntityIdResult,
 } from '@boostercloud/framework-types'
 import { getLogger, unique } from '@boostercloud/framework-common-helpers'
-import { EventRegistry } from '..'
 import { buildFiltersForByFilters, buildFiltersForByTime, resultToEventSearchResponse } from './events-searcher-builder'
+import { EventRegistry } from '..'
 
 const DEFAULT_CREATED_AT_SORT_ORDER = -1
 const DEFAULT_KIND_FILTER = { kind: 'event' }
@@ -46,7 +46,11 @@ export async function searchEntitiesIds(
       afterCursor
     )}, entityTypeName: ${entityTypeName}`
   )
-  const filterQuery = { ...DEFAULT_KIND_FILTER, entityTypeName: entityTypeName }
+  const filterQuery = {
+    ...DEFAULT_KIND_FILTER,
+    entityTypeName: entityTypeName,
+    deletedAt: { $exists: false },
+  }
 
   const result = (await eventRegistry.query(filterQuery, DEFAULT_CREATED_AT_SORT_ORDER, undefined, {
     entityID: 1,

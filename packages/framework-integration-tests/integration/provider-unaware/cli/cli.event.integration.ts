@@ -8,7 +8,7 @@ import {
   sandboxPathFor,
   writeFileContent,
 } from '../../helper/file-helper'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 // Imported from another package to avoid duplication
 // It is OK-ish, since integration tests are always run in the context of the whole monorepo
 import { createSandboxProject } from '../../../../cli/src/common/sandbox'
@@ -22,8 +22,8 @@ describe('Event', () => {
     eventSandboxDir = createSandboxProject(sandboxPathFor('event'))
   })
 
-  after(() => {
-    removeFolders([eventSandboxDir])
+  after(async () => {
+    await removeFolders([eventSandboxDir])
   })
 
   const cliPath = path.join('..', '..', 'cli', 'bin', 'run')
@@ -34,7 +34,7 @@ describe('Event', () => {
         ['boost new:event', 'Verifying project', 'Creating new event', 'Event generated'].join('(.|\n)*')
       )
 
-      const { stdout } = await exec(`${cliPath} new:event CartChanged`, { cwd: eventSandboxDir })
+      const { stdout } = await command(`${cliPath} new:event CartChanged`, { cwd: eventSandboxDir })
       expect(stdout).to.match(expectedOutputRegex)
     })
 
@@ -43,7 +43,7 @@ describe('Event', () => {
         const FILE_CART_CHANGED_EVENT = `${eventSandboxDir}/src/events/cart-changed.ts`
         removeFiles([FILE_CART_CHANGED_EVENT])
 
-        await exec(`${cliPath} new:event CartChanged`, { cwd: eventSandboxDir })
+        await command(`${cliPath} new:event CartChanged`, { cwd: eventSandboxDir })
 
         const expectedEventContent = loadFixture('events/cart-changed.ts')
         const eventContent = readFileContent(FILE_CART_CHANGED_EVENT)
@@ -60,7 +60,7 @@ describe('Event', () => {
       it('should create new event', async () => {
         const FILE_CART_CHANGED_WITH_FIELDS_EVENT = `${eventSandboxDir}/src/events/cart-changed-with-fields.ts`
 
-        await exec(`${cliPath} new:event CartChangedWithFields --fields cartId:UUID sku:string quantity:number`, {
+        await command(`${cliPath} new:event CartChangedWithFields --fields cartId:UUID sku:string quantity:number`, {
           cwd: eventSandboxDir,
         })
 
@@ -79,7 +79,7 @@ describe('Event', () => {
   context('Invalid event', () => {
     describe('missing event name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:event`, { cwd: eventSandboxDir })
+        const { stderr } = await command(`${cliPath} new:event`, { cwd: eventSandboxDir })
 
         expect(stderr).to.match(/You haven't provided an event name, but it is required, run with --help for usage/)
       })

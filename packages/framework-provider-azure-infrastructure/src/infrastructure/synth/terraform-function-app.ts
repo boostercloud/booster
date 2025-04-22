@@ -1,47 +1,58 @@
-import { TerraformStack } from 'cdktf'
-import { AppServicePlan, FunctionApp, ResourceGroup, StorageAccount } from '@cdktf/provider-azurerm'
+import { servicePlan, storageAccount, windowsFunctionApp } from '@cdktf/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
-import { BoosterConfig } from '@boostercloud/framework-types'
+import { ApplicationSynthStack } from '../types/application-synth-stack'
+import { WindowsFunctionAppConfig } from '@cdktf/provider-azurerm/lib/windows-function-app'
 
 export class TerraformFunctionApp {
   static build(
-    terraformStack: TerraformStack,
-    resourceGroup: ResourceGroup,
-    applicationServicePlan: AppServicePlan,
-    storageAccount: StorageAccount,
-    appPrefix: string,
+    {
+      terraformStack,
+      azureProvider,
+      appPrefix,
+      resourceGroup,
+      resourceGroupName,
+      cosmosdbDatabase,
+    }: ApplicationSynthStack,
+    applicationServicePlan: servicePlan.ServicePlan,
+    storageAccount: storageAccount.StorageAccount,
+    suffixName: string,
     functionAppName: string,
-    cosmosDatabaseName: string,
-    apiManagementServiceName: string,
-    cosmosDbConnectionString: string,
-    config: BoosterConfig
-  ): FunctionApp {
-    const id = toTerraformName(appPrefix, 'func')
-    return new FunctionApp(terraformStack, id, {
+    zipFile?: string,
+    appSettings?: { [key: string]: string }
+  ): windowsFunctionApp.WindowsFunctionApp {
+    if (!cosmosdbDatabase) {
+      throw new Error('Undefined cosmosdbDatabase resource')
+    }
+    if (!applicationServicePlan) {
+      throw new Error('Undefined applicationServicePlan resource')
+    }
+    const id = toTerraformName(appPrefix, suffixName)
+    const functionConfig: Exclude<WindowsFunctionAppConfig, 'zipDeployFile'> = {
       name: functionAppName,
       location: resourceGroup.location,
-      resourceGroupName: resourceGroup.name,
-      appServicePlanId: applicationServicePlan.id,
-      appSettings: {
-        FUNCTIONS_WORKER_RUNTIME: 'node',
-        AzureWebJobsStorage: storageAccount.primaryConnectionString,
-        WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: storageAccount.primaryConnectionString,
-        WEBSITE_RUN_FROM_PACKAGE: '',
-        WEBSITE_CONTENTSHARE: id,
-        WEBSITE_NODE_DEFAULT_VERSION: '~14',
-        ...config.env,
-        BOOSTER_ENV: config.environmentName,
-        BOOSTER_REST_API_URL: `https://${apiManagementServiceName}.azure-api.net/${config.environmentName}`,
-        COSMOSDB_CONNECTION_STRING: `AccountEndpoint=https://${cosmosDatabaseName}.documents.azure.com:443/;AccountKey=${cosmosDbConnectionString};`,
-      },
-      osType: 'linux',
+      resourceGroupName: resourceGroupName,
+      servicePlanId: applicationServicePlan.id,
+      appSettings: appSettings ?? {},
       storageAccountName: storageAccount.name,
       storageAccountAccessKey: storageAccount.primaryAccessKey,
-      version: '~3',
       dependsOn: [resourceGroup],
       lifecycle: {
         ignoreChanges: ['app_settings["WEBSITE_RUN_FROM_PACKAGE"]'],
       },
-    })
+      provider: azureProvider,
+      siteConfig: {
+        applicationStack: {
+          nodeVersion: '~20',
+        },
+      },
+      functionsExtensionVersion: '~4',
+    }
+    if (zipFile) {
+      return new windowsFunctionApp.WindowsFunctionApp(terraformStack, id, {
+        ...functionConfig,
+        zipDeployFile: zipFile,
+      })
+    }
+    return new windowsFunctionApp.WindowsFunctionApp(terraformStack, id, functionConfig)
   }
 }

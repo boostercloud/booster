@@ -324,6 +324,40 @@ mutation {
 Remember that, in case you want to subscribe to a read model that is restricted to a specific set of roles, you must send the **access token** retrieved upon sign-in. Check ["Authorizing operations"](#authorizing-operations) to know how to do this.
 :::
 
+:::note
+You can disable the creation of all the infrastructure and functionality needed to manage subscriptions by setting `config.enableSubscriptions=false` in your `Booster.config` block
+:::
+
+
+## Non exposing properties and parameters
+
+By default, all properties and parameters of the command constructor and/or read model are accessible through GraphQL. It is possible to not expose any of them adding the `@NonExposed` annotation to the constructor property or parameter.
+
+Example
+```typescript
+@ReadModel({
+  authorize: 'all',
+})
+export class CartReadModel {
+  @NonExposed
+  private internalProperty: number
+
+  public constructor(
+    readonly id: UUID,
+    readonly cartItems: Array<CartItem>,
+    readonly checks: number,
+    public shippingAddress?: Address,
+    public payment?: Payment,
+    public cartItemsIds?: Array<string>,
+    @NonExposed readonly internalParameter?: number
+  ) {
+    ...
+  }
+  
+  ...
+}
+```
+
 ## Adding before hooks to your read models
 
 When you send queries or subscriptions to your read models, you can tell Booster to execute some code before executing the operation. These are called `before` hooks, and they receive a `ReadModelRequestEnvelope` object representing the current request.
@@ -424,6 +458,25 @@ function beforeFn(input: CommandInput, currentUser?: UserEnvelope): CommandInput
 ```
 
 As you can see, we just check if the `cartUserId` is equal to the `currentUser.id`, which is the user id extracted from the auth token. This way, we can throw an exception and avoid this user to call this command.
+
+## Adding before hooks to your queries
+
+You can use `before` hooks also in your queries, and [they work as the Read Models ones](#Adding-before-hooks-to-your-read-models), with a slight difference: **we don't modify `filters` but `inputs` (the parameters sent with a query)**. Apart from that, it's pretty much the same, here's an example:
+
+```typescript
+@Query({
+  authorize: 'all',
+  before: [CartTotalQuantity.beforeFn],
+})
+export class CartTotalQuantity {
+  public constructor(readonly cartId: UUID, @NonExposed readonly multiply: number) {}
+
+  public static async beforeFn(input: QueryInput, currentUser?: UserEnvelope): Promise<QueryInput> {
+    input.multiply = 100
+    return input
+  }
+}
+```
 
 ## Reading events
 
@@ -572,9 +625,8 @@ query {
 
 - Subscriptions don't work for the events API yet
 - You can only query events, but not write them through this API. Use a command for that.
-- Currently, only available on the AWS provider.
 
-## Filter & Pagination
+## Filter, Pagination and Projections
 
 ### Filtering a read model
 
@@ -646,17 +698,26 @@ query {
 
 #### String filters
 
-| Filter     |  Value   |                Description |
-| :--------- | :------: | -------------------------: |
-| eq         |  String  |                   Equal to |
-| ne         |  String  |               Not equal to |
-| gt         |  String  |               Greater than |
-| gte        |  String  |      Greater or equal than |
-| lt         |  String  |                 Lower than |
-| lte        |  String  |        Lower or equal than |
-| in         | [String] |      Exists in given array |
-| beginsWith |  String  | Starts with a given substr |
-| contains   |  String  |    Contains a given substr |
+| Filter     |  Value   |                         Description |
+|:-----------| :------: |------------------------------------:|
+| eq         |  String  |                            Equal to |
+| ne         |  String  |                        Not equal to |
+| gt         |  String  |                        Greater than |
+| gte        |  String  |               Greater or equal than |
+| lt         |  String  |                          Lower than |
+| lte        |  String  |                 Lower or equal than |
+| in         | [String] |               Exists in given array |
+| beginsWith |  String  |          Starts with a given substr |
+| contains   |  String  |             Contains a given substr |
+| regex*     |  String  |                  Regular expression |
+| iRegex*    |  String  | Case insensitive Regular expression |
+
+**NOTE**: 
+
+:::note
+`regex` and `iRegex` are supported by Azure and Local Provider only
+:::
+
 
 Example:
 
@@ -737,7 +798,7 @@ query {
 }
 ```
 
-### Getting and filtering read models data at code level
+### Getting, filtering and projecting read models data at code level
 
 Booster allows you to get your read models data in your commands handlers and event handlers using the `Booster.readModel` method.
 
@@ -771,7 +832,71 @@ export class GetProductsCount {
 }
 ```
 
-> **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
+You can select which fields you want to get in your read model using the `select` method:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class GetProductsCount {
+  public constructor(readonly filters: Record<string, any>) {}
+
+  public static async handle(): Promise<unknown> {
+    const searcher = Booster.readModel(ProductReadModel)
+            .filter({
+              sku: { contains: 'toy' },
+              or: [
+                {
+                  description: { contains: 'fancy' },
+                },
+                {
+                  description: { contains: 'great' },
+                },
+              ],
+            })
+            .select(['sku', 'description'])
+    const result = await searcher.search()
+    return { count: result.length }
+  }
+}
+```
+
+The searcher result using `select` will generate an array of objects with the `sku` and `description` fields of the `ProductReadModel` read model. If you don't use `select` the result will be an array of `ProductReadModel` instances.
+You can also select properties in objects which are part of an array property in a model. For that, the parent array properties need to be notated with the `[]` suffix. For example:
+
+```typescript
+@Command({
+  authorize: 'all',
+})
+export class GetCartItems {
+  public constructor(readonly filters: Record<string, any>) {}
+
+  public static async handle(): Promise<unknown> {
+    const searcher = Booster.readModel(CartReadModel)
+            .select(['id', 'cartItems[].productId'])
+    const result = await searcher.search()
+    return { count: result.length }
+  }
+}
+```
+
+The above search will return an array of carts with their `id` property, as well as an array of the `cartItems` of each cart with only the `productId` for each item.
+
+:::warning
+Only available for Azure and Local Providers. `select` will be ignored for AWS Provider.
+:::
+
+:::warning
+Using `select` will skip any Read Models migrations that need to be applied to the result. If you need to apply migrations to the result, don't use `select`.
+:::
+
+:::warning
+Support for selecting fields from objects inside arrays is limited to arrays that are at most nested inside another property, e.g., `['category.relatedCategories[].name']`. Selecting fields from arrays that are nested deeper than that (e.g., `['foo.bar.items[].id']`) will return the entire object.
+:::
+
+:::warning
+Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
+:::
 
 ### Using sorting
 
@@ -814,7 +939,9 @@ This is a preview feature available only for some Providers and with some limita
   - Nested fields supported.
   - Sort by more than one file: **unsupported**.
 
-> **Warning**: It is not possible to sort by fields defined as Interface, only classes or primitives types.
+:::warning
+It is not possible to sort by fields defined as Interface, only classes or primitives types.
+:::
 
 ### Using pagination
 

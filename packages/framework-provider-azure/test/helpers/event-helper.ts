@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEnvelope } from '@boostercloud/framework-types'
-import { random, date } from 'faker'
+import { date, random } from 'faker'
 import { Context, ExecutionContext, Logger as AzureLogger, TraceContext } from '@azure/functions'
 
 export function createMockEventEnvelopes(numOfEvents = 1): Array<EventEnvelope> {
@@ -18,9 +18,10 @@ export function createMockEventEnvelopes(numOfEvents = 1): Array<EventEnvelope> 
       entityTypeName: random.word(),
       requestID: random.uuid(),
       createdAt: date.past().toISOString(),
+      id: random.uuid(),
     },
     0,
-    numOfEvents
+    numOfEvents,
   )
 }
 
@@ -46,7 +47,8 @@ export function wrapEventEnvelopesForCosmosDB(eventEnvelopes: Array<EventEnvelop
     invocationId: '',
     log: {} as AzureLogger,
     traceContext: {} as TraceContext,
-    done(err?: Error | string | null, result?: any): void {},
+    done(err?: Error | string | null, result?: any): void {
+    },
     bindings: { rawEvent: eventEnvelopes },
   }
 }

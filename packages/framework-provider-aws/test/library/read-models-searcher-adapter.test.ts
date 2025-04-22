@@ -190,21 +190,20 @@ describe('Read models searcher adapter', () => {
       const expectedInput = {
         ...expectedParams,
         FilterExpression:
-          '(attribute_exists(#days) and attribute_not_exists(#mainItem) and attribute_exists(#mainItem.#sku) and attribute_exists(#mainItem.#sku.#price))',
+          '(attribute_exists(#days) and attribute_not_exists(#mainItem) and attribute_exists(#mainItem.#sku) and attribute_exists(#mainItem.#price))',
         ExpressionAttributeNames: {
           '#days': 'days',
           '#mainItem': 'mainItem',
           '#sku': 'sku',
           '#price': 'price',
         },
-        ExpressionAttributeValues: {},
       }
       const filters: FilterFor<Product> = {
         and: [
           { days: { isDefined: true } },
           { mainItem: { isDefined: false } },
           { mainItem: { sku: { isDefined: true } } },
-          { mainItem: { sku: { price: { isDefined: true } } } },
+          { mainItem: { price: { isDefined: true } } },
         ],
       }
 

@@ -1,7 +1,5 @@
-import { ApolloClient, ApolloQueryResult } from 'apollo-client'
-import { NormalizedCacheObject } from 'apollo-cache-inmemory'
+import { ApolloClient, ApolloQueryResult, NormalizedCacheObject, gql } from '@apollo/client'
 import { internet, random } from 'faker'
-import gql from 'graphql-tag'
 import { expect } from '../../helper/expect'
 import { sleep, waitForIt } from '../../helper/sleep'
 import {
@@ -735,7 +733,7 @@ describe('Events end-to-end tests', () => {
         let cursor: Record<'id', string> | undefined = undefined
         let count = 9999
         let pages = 0
-        const items = []
+        const items: any[] = []
         while (count != 0) {
           const result: any = await anonymousClient.mutate({
             variables: {
@@ -773,6 +771,53 @@ describe('Events end-to-end tests', () => {
         // There are exactly the expected number of ids
         expect(currentEntitiesIds.length).to.be.equal(numberOfProvisionedEvents + 1)
       })
+    })
+  })
+
+  describe('Global event handler', () => {
+    it('should update read model', async () => {
+      const mockLogEventId = UUID.generate()
+      await anonymousClient.mutate({
+        variables: {
+          logEventId: mockLogEventId,
+          value: 'test',
+        },
+        mutation: gql`
+          mutation LogEvent($logEventId: ID!, $value: String!) {
+            LogEvent(input: { logEventId: $logEventId, value: $value })
+          }
+        `,
+      })
+
+      const result = await waitForIt(
+        () => {
+          return anonymousClient.query({
+            variables: {
+              filter: {
+                id: {
+                  eq: mockLogEventId,
+                },
+              },
+            },
+            query: gql`
+              query ListLogEventReceivedTestReadModels($filter: ListLogEventReceivedTestReadModelFilter) {
+                ListLogEventReceivedTestReadModels(filter: $filter) {
+                  items {
+                    id
+                    value
+                  }
+                }
+              }
+            `,
+          })
+        },
+        (result) => {
+          const items = result?.data?.ListLogEventReceivedTestReadModels?.items
+          return items?.length === 1
+        }
+      )
+
+      expect(result?.data?.ListLogEventReceivedTestReadModels?.items[0].value).to.be.eq('test')
     })
   })
 })

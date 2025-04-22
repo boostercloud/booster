@@ -1,5 +1,5 @@
 import { fake, replace, restore, spy, stub } from 'sinon'
-import { IConfig } from '@oclif/config'
+import { Config } from '@oclif/core'
 import { ClassDeclaration, MethodDeclarationStructure, Project, SourceFile } from 'ts-morph'
 import * as ProjectChecker from '../../../src/services/project-checker'
 import { expect } from '../../expect'
@@ -32,7 +32,8 @@ describe('add', async () => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Reducer([], {} as IConfig).init()
+      const config = await Config.load()
+      await new Reducer([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
@@ -58,7 +59,8 @@ describe('add', async () => {
       })
 
       it('generates reducer correctly', async () => {
-        await new Reducer(['--entity', entityName, '--event', 'PostCreated'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Reducer(['--entity', entityName, '--event', 'PostCreated'], config).run()
 
         expect(Filenames.fileNameWithExtension).to.have.been.calledWith(entityName)
         expect(Project.prototype.getSourceFileOrThrow).to.have.been.calledOnceWith('post.ts')
@@ -70,7 +72,8 @@ describe('add', async () => {
       })
 
       it('generates multiple reducers correctly', async () => {
-        await new Reducer(['--entity', entityName, '--event', 'PostCreated', 'PostUpdated'], {} as IConfig).run()
+        const config = await Config.load()
+        await new Reducer(['--entity', entityName, '--event', 'PostCreated', 'PostUpdated'], config).run()
 
         expect(Filenames.fileNameWithExtension).to.have.been.calledWith(entityName)
         expect(Project.prototype.getSourceFileOrThrow).to.have.been.calledOnceWith('post.ts')
@@ -91,15 +94,15 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Reducer([], {} as IConfig).run()
+          const config = await Config.load()
+          await new Reducer([], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
         }
 
         expect(exceptionThrown).to.be.true
-        expect(exceptionMessage).to.contain('Missing required flag')
-        expect(exceptionMessage).to.contain('--entity ENTITY')
+        expect(exceptionMessage).to.contain('Missing required flag entity')
       })
 
       it('with empty --entity flag', async () => {
@@ -107,7 +110,8 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Reducer(['--event', 'PostCreated', '--entity'], {} as IConfig).run()
+          const config = await Config.load()
+          await new Reducer(['--event', 'PostCreated', '--entity'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -122,7 +126,8 @@ describe('add', async () => {
         let exceptionMessage = null
 
         try {
-          await new Reducer(['--entity', entityName, '--event'], {} as IConfig).run()
+          const config = await Config.load()
+          await new Reducer(['--entity', entityName, '--event'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -141,7 +146,8 @@ describe('add', async () => {
         let exceptionThrown = false
 
         try {
-          await new Reducer(['--entity', entityName, '--event', 'PostCreated'], {} as IConfig).run()
+          const config = await Config.load()
+          await new Reducer(['--entity', entityName, '--event', 'PostCreated'], config).run()
         } catch (e) {
           exceptionThrown = true
         }
@@ -171,7 +177,8 @@ describe('add', async () => {
         let exceptionThrown = false
 
         try {
-          await new Reducer(['--entity', entityName, '--event', 'PostUpdated'], {} as IConfig).run()
+          const config = await Config.load()
+          await new Reducer(['--entity', entityName, '--event', 'PostUpdated'], config).run()
         } catch (e) {
           exceptionThrown = true
         }

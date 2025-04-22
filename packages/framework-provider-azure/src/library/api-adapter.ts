@@ -12,11 +12,20 @@ export interface ContextResponse {
   cookies?: Cookie[]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const WEB_SOCKET_PROTOCOL_HEADER = 'Sec-WebSocket-Protocol'
+
 export async function requestSucceeded(
   body?: unknown,
   headers?: Record<string, number | string | ReadonlyArray<string>>
-): Promise<ContextResponse> {
+): Promise<ContextResponse | void> {
+  if (!body && (!headers || Object.keys(headers).length === 0)) {
+    return
+  }
+  const isWebSocket = headers && Object.keys(headers).includes(WEB_SOCKET_PROTOCOL_HEADER)
+  let extraParams: Record<string, unknown> = {}
+  if (isWebSocket) {
+    extraParams = { Subprotocol: headers[WEB_SOCKET_PROTOCOL_HEADER] }
+  }
   return {
     headers: {
       'Access-Control-Allow-Origin': '*',
@@ -25,6 +34,7 @@ export async function requestSucceeded(
     },
     status: 200,
     body: body ? JSON.stringify(body) : '',
+    ...extraParams,
   }
 }
 
@@ -41,5 +51,16 @@ export async function requestFailed(error: Error): Promise<ContextResponse> {
       title: toClassTitle(error),
       reason: error.message,
     }),
+  }
+}
+
+export async function healthRequestResult(body: unknown, isHealthy: boolean): Promise<ContextResponse> {
+  return {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
+    },
+    status: isHealthy ? 200 : 503,
+    body: JSON.stringify(body),
   }
 }

@@ -24,7 +24,7 @@ export default function BoosterChat(): JSX.Element {
   }
 
   const handleSearch = async (query: string) => {
-    if (query?.trim() === '' || query === null) {
+    if (query?.trim() === '') {
       return
     }
 
@@ -79,11 +79,8 @@ export default function BoosterChat(): JSX.Element {
       <AskAIDisclaimer />
       {!hasSearched && (
         <div className="bc-quick-questions-panel">
-          <button
-            className="bc-quick-question"
-            onClick={() => onQuickQuestionClick('What is Booster Framework?')}
-          >
-           What is Booster Framework?
+          <button className="bc-quick-question" onClick={() => onQuickQuestionClick('What is Booster Framework?')}>
+            What is Booster Framework?
           </button>
           <button className="bc-quick-question" onClick={() => onQuickQuestionClick("Summary of Booster's components")}>
             Summary of Booster's components
@@ -108,12 +105,7 @@ export default function BoosterChat(): JSX.Element {
           </button>
         </div>
       )}
-      <ChatResponse 
-        questionId={questionId}
-        response={response} 
-        loading={loading} 
-        hasFinished={hasFinished}
-        />
+      <ChatResponse questionId={questionId} response={response} loading={loading} hasFinished={hasFinished} />
     </div>
   )
 }

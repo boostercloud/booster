@@ -48,11 +48,13 @@ export async function readEntityEventsSince(
       ScanIndexForward: true, // Ascending order (older timestamps first)
     })
     .promise()
+  const resultItems: Array<EventEnvelope> = result.Items as Array<EventEnvelope>
+  const validEvents = resultItems.filter((item) => !item.deletedAt)
   logger.debug(
     `[EventsAdapter#readEntityEventsSince] Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`,
-    result.Items
+    validEvents
   )
-  return result.Items as Array<EventEnvelope>
+  return validEvents
 }
 
 export async function readEntityLatestSnapshot(
@@ -114,50 +116,37 @@ export async function storeSnapshot(
   snapshotEnvelope: NonPersistedEntitySnapshotEnvelope,
   config: BoosterConfig
 ): Promise<EntitySnapshotEnvelope> {
-  try {
-    const logger = getLogger(config, 'EventsAdapter#storeSnapshot')
-    logger.debug('Storing the following snapshot:', snapshotEnvelope)
+  const logger = getLogger(config, 'EventsAdapter#storeSnapshot')
+  logger.debug('Storing the following snapshot:', snapshotEnvelope)
 
-    const partitionKey = partitionKeyForEntitySnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
-    /**
-     * The sort key of the snapshot matches the sort key of the last event that generated it.
-     * Entity snapshots can be potentially created by competing processes, and this way
-     * of storing the data makes snapshot creation an idempotent operation, allowing us to
-     * aggressively cache snapshots. If the snapshot already exists, it will be silently overwritten.
-     */
-    const sortKey = snapshotEnvelope.snapshottedEventCreatedAt
-    const persistableSnapshot = {
-      ...snapshotEnvelope,
-      createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
-      persistedAt: new Date().toISOString(),
-    }
-    await dynamoDB
-      .put({
-        TableName: config.resourceNames.eventsStore,
-        ConditionExpression: `${eventsStoreAttributes.partitionKey} <> :partitionKey AND ${eventsStoreAttributes.sortKey} <> :sortKey`,
-        ExpressionAttributeValues: {
-          ':partitionKey': partitionKey,
-          ':sortKey': sortKey,
-        },
-        Item: {
-          ...persistableSnapshot,
-          [eventsStoreAttributes.partitionKey]: partitionKey,
-          [eventsStoreAttributes.sortKey]: sortKey,
-          [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
-            snapshotEnvelope.entityTypeName,
-            snapshotEnvelope.kind
-          ),
-        },
-      })
-      .promise()
-    return persistableSnapshot
-  } catch (e) {
-    const error = e as Error
-    if (error.name == 'ConditionalCheckFailedException') {
-      throw new OptimisticConcurrencyUnexpectedVersionError(error.message)
-    }
-    throw e
+  const partitionKey = partitionKeyForEntitySnapshot(snapshotEnvelope.entityTypeName, snapshotEnvelope.entityID)
+  /**
+   * The sort key of the snapshot matches the sort key of the last event that generated it.
+   * Entity snapshots can be potentially created by competing processes, and this way
+   * of storing the data makes snapshot creation an idempotent operation, allowing us to
+   * aggressively cache snapshots. If the snapshot already exists, it will be silently overwritten.
+   */
+  const sortKey = snapshotEnvelope.snapshottedEventCreatedAt
+  const persistableSnapshot = {
+    ...snapshotEnvelope,
+    createdAt: snapshotEnvelope.snapshottedEventCreatedAt,
+    persistedAt: new Date().toISOString(),
   }
+  await dynamoDB
+    .put({
+      TableName: config.resourceNames.eventsStore,
+      Item: {
+        ...persistableSnapshot,
+        [eventsStoreAttributes.partitionKey]: partitionKey,
+        [eventsStoreAttributes.sortKey]: sortKey,
+        [eventsStoreAttributes.indexByEntity.partitionKey]: partitionKeyForIndexByEntity(
+          snapshotEnvelope.entityTypeName,
+          snapshotEnvelope.kind
+        ),
+      },
+    })
+    .promise()
+  return persistableSnapshot
 }
 
 async function persistEvent(
@@ -200,4 +189,11 @@ async function persistEvent(
     }
     throw e
   }
+}
+
+/**
+ * Dummy method that'll always return true, since local provider won't be tracking dispatched events
+ */
+export async function storeDispatchedEvent() {
+  return true
 }

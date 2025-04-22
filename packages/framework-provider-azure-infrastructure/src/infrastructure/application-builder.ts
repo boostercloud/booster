@@ -2,17 +2,17 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { AzureStack } from './azure-stack'
 import * as ckdtfTemplate from './templates/cdktf'
-import { createFunctionResourceGroupName, createResourceGroupName, renderToFile } from './helper/utils'
+import { renderToFile } from './helper/utils'
 import { getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { App } from 'cdktf'
 import { ZipResource } from './types/zip-resource'
 import { FunctionZip } from './helper/function-zip'
-import { FunctionDefinition } from './types/functionDefinition'
 import { RocketBuilder, RocketZipResource } from './rockets/rocket-builder'
 
 export interface ApplicationBuild {
   azureStack: AzureStack
   zipResource: ZipResource
+  consumerZipResource?: ZipResource | undefined
   rocketsZipResources?: RocketZipResource[] | undefined
 }
 
@@ -23,43 +23,41 @@ export class ApplicationBuilder {
     await this.generateSynthFiles()
 
     const app = new App()
-    const azureStack = await this.synthApplication(app)
+    let webPubSubBaseFile: string | undefined
+    if (this.config.enableSubscriptions) {
+      webPubSubBaseFile = await FunctionZip.copyBaseZip(this.config)
+    }
+    const azureStack = await this.synthApplication(app, webPubSubBaseFile)
     const rocketBuilder = new RocketBuilder(this.config, azureStack.applicationStack, this.rockets)
     await rocketBuilder.synthRocket()
+    // add rocket-related env vars to main function app settings
+    azureStack.addAppSettingsToFunctionApp(this.rockets)
     app.synth()
 
-    const featureDefinitions = this.mountFeatureDefinitions(azureStack)
-    const zipResource = await FunctionZip.copyZip(featureDefinitions, 'functionApp.zip')
-
+    azureStack.applicationStack.functionDefinitions = FunctionZip.buildAzureFunctions(this.config)
+    azureStack.applicationStack.consumerFunctionDefinitions = FunctionZip.buildAzureConsumerFunctions(this.config)
+    const zipResource = await FunctionZip.copyZip(azureStack.applicationStack.functionDefinitions!, 'functionApp.zip')
+    let consumerZipResource: ZipResource | undefined
+    if (this.config.eventStreamConfiguration.enabled) {
+      consumerZipResource = await FunctionZip.copyZip(
+        azureStack.applicationStack.consumerFunctionDefinitions!,
+        'consumerFunctionApp.zip'
+      )
+    }
     const rocketsZipResources = await rocketBuilder.mountRocketsZipResources()
 
     return {
       azureStack,
       zipResource,
+      consumerZipResource,
       rocketsZipResources,
     }
   }
 
-  public async uploadFile(zipResource: ZipResource): Promise<void> {
-    const logger = getLogger(this.config, 'ApplicationBuilder#uploadFile')
-    logger.info('Uploading zip file')
-    const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)
-    const functionAppName = createFunctionResourceGroupName(resourceGroupName)
-    await FunctionZip.deployZip(functionAppName, resourceGroupName, zipResource)
-    logger.info('Zip file uploaded')
-  }
-
-  private async synthApplication(app: App): Promise<AzureStack> {
+  private async synthApplication(app: App, destinationFile?: string): Promise<AzureStack> {
     const logger = getLogger(this.config, 'ApplicationBuilder#synthApplication')
     logger.info('Synth...')
-    return new AzureStack(app, this.config.appName + this.config.environmentName)
-  }
-
-  private mountFeatureDefinitions(azureStack: AzureStack): Array<FunctionDefinition> {
-    const logger = getLogger(this.config, 'ApplicationBuilder#mountFeatureDefinitions')
-    logger.info('Generating Azure functions')
-    azureStack.applicationStack.functionDefinitions = FunctionZip.buildAzureFunctions(this.config)
-    return azureStack.applicationStack.functionDefinitions
+    return new AzureStack(app, this.config.appName + this.config.environmentName, this.config, destinationFile)
   }
 
   private async generateSynthFiles(): Promise<void> {

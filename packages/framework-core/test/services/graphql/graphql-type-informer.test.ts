@@ -18,6 +18,7 @@ import { GraphQLEnumValueConfig, GraphQLEnumValueConfigMap } from 'graphql/type/
 import { DateScalar } from '../../../src/services/graphql/common'
 
 describe('GraphQLTypeInformer', () => {
+  const nonExposed = ['ignoredParameter']
   let sut: GraphQLTypeInformer
   const logger: Logger = {
     debug() {},
@@ -49,7 +50,8 @@ describe('GraphQLTypeInformer', () => {
         otherParameter: readonly Parameters[],
         somePromiseParameter: Promise<string>,
         somePromiseParameter2: Promise<number>,
-        somePromiseParameter3: Promise<number | undefined> | undefined
+        somePromiseParameter3: Promise<number | undefined> | undefined,
+        ignoredParameter: number
       ) {
         this.someProperty = someProperty
         this.someParameters = someParameters
@@ -61,33 +63,40 @@ describe('GraphQLTypeInformer', () => {
     }
 
     it('should return expected GraphQL Type', () => {
-      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
       expect(result.toString()).to.be.deep.equal('TestClass')
     })
 
     it('should process complex ReadonlyArray', () => {
-      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
       const someParametersValue =
         result instanceof GraphQLObjectType ? result.getFields()['someParameters'].type : undefined
       const otherParameterValue =
         result instanceof GraphQLObjectType ? result.getFields()['otherParameter'].type : undefined
       expect(someParametersValue).to.be.deep.equal(
-        GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSON)))))
+        new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLJSON)))))
       )
-      expect(otherParameterValue).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLJSON))))
+      expect(otherParameterValue).to.be.deep.equal(new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLJSON))))
     })
 
     it('should process Promises', () => {
-      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass)
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
       const somePromiseParameter =
         result instanceof GraphQLObjectType ? result.getFields()['somePromiseParameter'].type : undefined
-      expect(somePromiseParameter).to.be.deep.equal(GraphQLNonNull(GraphQLString))
+      expect(somePromiseParameter).to.be.deep.equal(new GraphQLNonNull(GraphQLString))
       const somePromiseParameter2 =
         result instanceof GraphQLObjectType ? result.getFields()['somePromiseParameter2'].type : undefined
-      expect(somePromiseParameter2).to.be.deep.equal(GraphQLNonNull(GraphQLFloat))
+      expect(somePromiseParameter2).to.be.deep.equal(new GraphQLNonNull(GraphQLFloat))
       const somePromiseParameter3 =
         result instanceof GraphQLObjectType ? result.getFields()['somePromiseParameter3'].type : undefined
       expect(somePromiseParameter3).to.be.deep.equal(GraphQLFloat)
+    })
+
+    it('should ignore nonExposed', () => {
+      const result = sut.generateGraphQLTypeForClass(TestClass as AnyClass, nonExposed)
+      const somePromiseParameter =
+        result instanceof GraphQLObjectType ? result.getFields()['ignoredParameter'] : undefined
+      expect(somePromiseParameter).to.be.undefined
     })
 
     describe('Get or create GraphQLType', () => {
@@ -100,7 +109,7 @@ describe('GraphQLTypeInformer', () => {
           name: 'UUID', // UUID and Date types are by name
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLID))
+        expect(result).to.be.deep.equal(new GraphQLNonNull(GraphQLID))
       })
 
       it('should return Date!', () => {
@@ -108,7 +117,7 @@ describe('GraphQLTypeInformer', () => {
           name: 'Date', // UUID and Date types are by name
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(DateScalar))
+        expect(result).to.be.deep.equal(new GraphQLNonNull(DateScalar))
       })
 
       it('should return GraphQLString', () => {
@@ -117,7 +126,7 @@ describe('GraphQLTypeInformer', () => {
           typeGroup: 'String', // by typeGroup
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLString))
+        expect(result).to.be.deep.equal(new GraphQLNonNull(GraphQLString))
       })
 
       it('should return GraphQLFloat', () => {
@@ -126,7 +135,7 @@ describe('GraphQLTypeInformer', () => {
           typeGroup: 'Number', // by typeGroup
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLFloat))
+        expect(result).to.be.deep.equal(new GraphQLNonNull(GraphQLFloat))
       })
 
       it('should return GraphQLBoolean', () => {
@@ -135,7 +144,7 @@ describe('GraphQLTypeInformer', () => {
           typeGroup: 'Boolean', // by typeGroup
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLBoolean))
+        expect(result).to.be.deep.equal(new GraphQLNonNull(GraphQLBoolean))
       })
 
       it('should return GraphQLEnumType', () => {
@@ -155,7 +164,7 @@ describe('GraphQLTypeInformer', () => {
           isGetAccessor: false,
         } as TypeMetadata)
 
-        const expectedResult = GraphQLNonNull(
+        const expectedResult = new GraphQLNonNull(
           new GraphQLEnumType({
             name: 'enum',
             values: {
@@ -186,7 +195,7 @@ describe('GraphQLTypeInformer', () => {
           isGetAccessor: false,
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLList(GraphQLNonNull(GraphQLBoolean))))
+        expect(result).to.be.deep.equal(new GraphQLNonNull(new GraphQLList(new GraphQLNonNull(GraphQLBoolean))))
       })
 
       it('should return GraphQLJSON', () => {
@@ -195,7 +204,7 @@ describe('GraphQLTypeInformer', () => {
           typeGroup: 'Object',
         } as TypeMetadata)
 
-        expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSON))
+        expect(result).to.be.deep.equal(new GraphQLNonNull(GraphQLJSON))
       })
 
       describe('default', () => {
@@ -214,7 +223,7 @@ describe('GraphQLTypeInformer', () => {
             isGetAccessor: false,
           } as TypeMetadata)
 
-          expect(result).to.be.deep.equal(GraphQLNonNull(GraphQLJSON))
+          expect(result).to.be.deep.equal(new GraphQLNonNull(GraphQLJSON))
         })
       })
     })

@@ -1,17 +1,35 @@
 import {
   BoosterConfig,
-  InvalidVersionError,
-  SchemaMigrationMetadata,
-  ReadModelInterface,
   FilterFor,
+  InvalidVersionError,
+  ReadModelInterface,
   ReadModelListResult,
+  SchemaMigrationMetadata,
+  TraceActionTypes,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
+import { Trace } from './instrumentation'
 
 export class ReadModelSchemaMigrator {
   private static readonly LIMIT = 100
 
   public constructor(private config: BoosterConfig) {}
+
+  /**
+   * **NOTE:** Read model schema migration is deprecated. Prefer data migration.
+   */
+  @Trace(TraceActionTypes.READ_MODEL_SCHEMA_MIGRATOR_MIGRATE)
+  public async migrate<TMigratableReadModel extends ReadModelInterface>(
+    readModel: TMigratableReadModel,
+    readModelName: string
+  ): Promise<TMigratableReadModel> {
+    this.checkVersionRange(readModel, readModelName)
+    if (this.needsMigration(readModel, readModelName)) {
+      return await this.applyAllMigrations(readModel, readModelName)
+    }
+
+    return readModel // The current version is exactly the same as the version of the concept
+  }
 
   public async migrateAll(readModelName: string, batchSize = ReadModelSchemaMigrator.LIMIT): Promise<number> {
     const filterFor = this.buildFilterForSearchReadModelsToMigrate(readModelName)
@@ -32,18 +50,6 @@ export class ReadModelSchemaMigrator {
       total += toMigrate.count ?? 0
     } while (cursor)
     return total
-  }
-
-  public async migrate<TMigratableReadModel extends ReadModelInterface>(
-    readModel: TMigratableReadModel,
-    readModelName: string
-  ): Promise<TMigratableReadModel> {
-    this.checkVersionRange(readModel, readModelName)
-    if (this.needsMigration(readModel, readModelName)) {
-      return await this.applyAllMigrations(readModel, readModelName)
-    }
-
-    return readModel // The current version is exactly the same as the version of the concept
   }
 
   private checkVersionRange(readModel: ReadModelInterface, readModelName: string): void {
@@ -85,13 +91,13 @@ export class ReadModelSchemaMigrator {
       migratedValue = await this.applyMigration(migratedValue, migrations.get(toVersion))
     }
 
-    const newReadModel = {
-      ...migratedValue,
+    const newReadModel = Object.assign(migratedValue, {
       boosterMetadata: {
         ...oldReadModel.boosterMetadata,
         schemaVersion: currentVersion,
       },
-    }
+    })
+
     logger.debug('ReadModel after schema migration:\n', newReadModel)
     return newReadModel
   }

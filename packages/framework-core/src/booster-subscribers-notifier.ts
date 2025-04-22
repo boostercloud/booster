@@ -6,6 +6,7 @@ import {
   ReadModelInterface,
   SubscriptionEnvelope,
   GraphQLData,
+  TraceActionTypes,
 } from '@boostercloud/framework-types'
 import { GraphQLSchema, DocumentNode } from 'graphql'
 import * as graphql from 'graphql'
@@ -14,6 +15,7 @@ import { FilteredReadModelPubSub, ReadModelPubSub } from './services/pub-sub/rea
 import { GraphQLResolverContext } from './services/graphql/common'
 import { ExecutionResult } from 'graphql/execution/execute'
 import { Promises, getLogger } from '@boostercloud/framework-common-helpers'
+import { Trace } from './instrumentation'
 
 export class BoosterSubscribersNotifier {
   private readonly graphQLSchema: GraphQLSchema
@@ -22,6 +24,7 @@ export class BoosterSubscribersNotifier {
     this.graphQLSchema = GraphQLGenerator.generateSchema(config)
   }
 
+  @Trace(TraceActionTypes.DISPATCH_SUBSCRIBER_NOTIFIER)
   public async dispatch(request: unknown): Promise<void> {
     const logger = getLogger(this.config, 'BoosterSubscribersNotifier#dispatch')
     try {

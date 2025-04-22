@@ -9,7 +9,7 @@ import { AzureTestHelper } from '@boostercloud/framework-provider-azure-infrastr
 
 before(async () => {
   await setEnv()
-  const configuredAssets = ['assets', 'assetFile.txt']
+  const configuredAssets = ['assets', 'assetFile.txt', 'host.json']
   const sandboxedProject = createSandboxProject(sandboxPathFor('deploy'), configuredAssets)
   await overrideWithBoosterLocalDependencies(sandboxedProject)
   AzureTestHelper.ensureAzureConfiguration()

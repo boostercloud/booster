@@ -18,6 +18,8 @@ describe('stub publisher', () => {
   const directoryFileMocks: fs.Dirent[] = [
     {
       name: 'fake-command.stub',
+      path: '/someDir',
+      parentPath: '/someDir',
       isFile: () => true,
       isDirectory: () => false,
       isBlockDevice: () => false,
@@ -28,6 +30,8 @@ describe('stub publisher', () => {
     },
     {
       name: 'fake-event.stub',
+      path: '/someDir',
+      parentPath: '/someDir',
       isFile: () => true,
       isDirectory: () => false,
       isBlockDevice: () => false,
@@ -38,6 +42,8 @@ describe('stub publisher', () => {
     },
     {
       name: 'fake-stub.ts',
+      path: '/someDir',
+      parentPath: '/someDir',
       isFile: () => true,
       isDirectory: () => false,
       isBlockDevice: () => false,
@@ -48,6 +54,8 @@ describe('stub publisher', () => {
     },
     {
       name: 'fake-directory-1',
+      path: '/someDir',
+      parentPath: '/someDir',
       isFile: () => false,
       isDirectory: () => true,
       isBlockDevice: () => false,
@@ -58,6 +66,8 @@ describe('stub publisher', () => {
     },
     {
       name: 'fake-directory-2',
+      path: '/someDir',
+      parentPath: '/someDir',
       isFile: () => false,
       isDirectory: () => true,
       isBlockDevice: () => false,
@@ -154,6 +164,8 @@ describe('stub publisher', () => {
         const filteredFiles = createTemplateFileMap([
           {
             name: 'fake-file-1.stub',
+            path: '/someDir',
+            parentPath: '/someDir',
             isFile: () => true,
             isDirectory: () => false,
             isBlockDevice: () => false,
@@ -164,6 +176,8 @@ describe('stub publisher', () => {
           },
           {
             name: 'fake-file-2.stub',
+            path: '/someDir',
+            parentPath: '/someDir',
             isFile: () => true,
             isDirectory: () => false,
             isBlockDevice: () => false,
@@ -187,6 +201,8 @@ describe('stub publisher', () => {
         const filteredFiles = createTemplateFileMap([
           {
             name: 'fake-directory',
+            path: '/someDir',
+            parentPath: '/someDir',
             isFile: () => false,
             isDirectory: () => true,
             isBlockDevice: () => false,
@@ -204,6 +220,8 @@ describe('stub publisher', () => {
         const filteredFiles = createTemplateFileMap([
           {
             name: 'fake-stub.ts',
+            path: '/someDir',
+            parentPath: '/someDir',
             isFile: () => true,
             isDirectory: () => false,
             isBlockDevice: () => false,

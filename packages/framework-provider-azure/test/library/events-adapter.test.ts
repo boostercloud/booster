@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import * as EventsAdapter from '../../src/library/events-adapter'
-import { createStubInstance, fake, restore, match, stub, SinonStubbedInstance } from 'sinon'
+import { createStubInstance, fake, match, restore, SinonStubbedInstance, stub } from 'sinon'
 import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-types'
 import { CosmosClient } from '@azure/cosmos'
 import { eventsStoreAttributes } from '../../src/constants'
@@ -73,7 +73,7 @@ describe('Events adapter', () => {
         match({
           query:
             `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
-            `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
+            `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime AND NOT IS_DEFINED(c["deletedAt"]) ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
           parameters: [
             {
               name: '@partitionKey',
@@ -117,28 +117,19 @@ describe('Events adapter', () => {
     })
   })
 
-  describe('The "storeEvents" method', () => {
-    it('Publishes the eventEnvelopes passed via parameter', async () => {
-      await EventsAdapter.storeEvents(mockCosmosDbClient as any, [mockEvents[0]], mockConfig)
+  describe('The "storeDispatchedEvent" method', () => {
+    it('Persists the IDs of the eventEnvelopes passed via parameters', async () => {
+      await EventsAdapter.storeDispatchedEvent(mockCosmosDbClient as any, mockEvents[0], mockConfig)
 
       expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
       expect(
         mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
-      ).to.have.been.calledWithExactly(mockConfig.resourceNames.eventsStore)
+      ).to.have.been.calledWithExactly(mockConfig.resourceNames.dispatchedEventsStore)
       expect(
         mockCosmosDbClient
           .database(mockConfig.resourceNames.applicationStack)
-          .container(mockConfig.resourceNames.eventsStore).items.create
-      ).to.have.been.calledWithExactly(
-        match({
-          ...mockEvents[0],
-          [eventsStoreAttributes.partitionKey]: partitionKeyForEvent(
-            mockEvents[0].entityTypeName,
-            mockEvents[0].entityID
-          ),
-          [eventsStoreAttributes.sortKey]: match.defined,
-        })
-      )
+          .container(mockConfig.resourceNames.dispatchedEventsStore).items.create
+      ).to.have.been.calledWithExactly(match({ eventId: mockEvents[0].id }))
     })
   })
 })
