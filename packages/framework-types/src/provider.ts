@@ -397,6 +397,15 @@ export interface ProviderAPIHandling {
    * @returns A promise that resolves with the error.
    */
   requestFailed(error: Error): Promise<unknown>
+
+  /**
+   * Handles a health check response with appropriate status code.
+   *
+   * @param body - The health check results
+   * @param isHealthy - Whether all the components (except UNKNOWN rockets) are UP
+   * @returns A promise that resolves with the response
+   */
+  healthRequestResult(body: unknown, isHealthy: boolean): Promise<unknown>
 }
 
 export interface ProviderInfrastructure {

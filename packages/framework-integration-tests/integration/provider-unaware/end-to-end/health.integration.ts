@@ -17,7 +17,7 @@ describe('Health end-to-end tests', () => {
   })
 
   it('root health returns all indicators', async () => {
-    const jsonResult = await getHealth(url)
+    const jsonResult = await getHealth(url, undefined, 503)
 
     const boosterResult = jsonResult.find((element: any) => element.id === 'booster')
     expectBooster(boosterResult)
@@ -47,12 +47,12 @@ describe('Health end-to-end tests', () => {
   })
 
   it('function health returns the indicator', async () => {
-    const boosterFunction = (await getHealth(url, 'function'))[0]
+    const boosterFunction = (await getHealth(url, 'function', 200))[0]
     expectBoosterFunction(boosterFunction)
   })
 
   it('database health returns the indicator', async () => {
-    const boosterDatabase = (await getHealth(url, 'database'))[0]
+    const boosterDatabase = (await getHealth(url, 'database', 503))[0]
     expectBoosterDatabase(boosterDatabase)
     const databaseEvents = boosterDatabase.components.find((element: any) => element.id === 'booster/database/events')
     expectDatabaseEvents(databaseEvents)
@@ -71,12 +71,12 @@ describe('Health end-to-end tests', () => {
   })
 
   it('events database health returns the indicator', async () => {
-    const databaseEvents = (await getHealth(url, 'database/events'))[0]
+    const databaseEvents = (await getHealth(url, 'database/events', 200))[0]
     expectDatabaseEvents(databaseEvents)
   })
 
   it('readmodels database health returns the indicator', async () => {
-    const databaseReadModels = (await getHealth(url, 'database/readmodels'))[0]
+    const databaseReadModels = (await getHealth(url, 'database/readmodels', 200))[0]
     expectDatabaseReadModels(databaseReadModels)
   })
 })
@@ -159,11 +159,13 @@ function expectApplicationChild(boosterResult: any): void {
   expect(boosterResult.components).to.be.undefined
 }
 
-async function getHealth(url: string, componentUrl?: string): Promise<any> {
+async function getHealth(url: string, componentUrl?: string, expectedHttpStatus = 200): Promise<any> {
   const path = componentUrl ? `${url}booster/${componentUrl}` : url
   console.log(path)
-  const result = await request(path)
+  const result = await request(path, 'GET', '', {
+    acceptedStatusCodes: [503], // Accept 503 as a valid response code for health checks
+  })
   expect(result).to.not.be.undefined
-  expect(result.status).to.be.eq(200)
+  expect(result.status).to.be.eq(expectedHttpStatus)
   return JSON.parse(result.body as any)
 }

@@ -1,6 +1,6 @@
 import { EventRegistry, ReadModelRegistry } from '../services'
 import { eventsDatabase, readModelsDatabase } from '../paths'
-import { boosterLocalPort, HealthEnvelope, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, boosterLocalPort, HealthEnvelope, UUID } from '@boostercloud/framework-types'
 import { existsSync } from 'fs'
 import * as express from 'express'
 import { request } from '@boostercloud/framework-common-helpers'
@@ -89,4 +89,21 @@ export async function databaseReadModelsHealthDetails(readModelRegistry: ReadMod
     file: readModelsDatabase,
     count: count,
   }
+}
+
+export async function areRocketFunctionsUp(config: BoosterConfig): Promise<{ [key: string]: boolean }> {
+  // In local provider, rockets run in the same process, so they're always "up" if configured
+  const results: { [key: string]: boolean } = {}
+  if (config.rockets) {
+    for (const rocket of config.rockets) {
+      const params = rocket.parameters as { rocketProviderPackage: string }
+      if (params?.rocketProviderPackage) {
+        const basePackage = params.rocketProviderPackage
+          .replace(/^@[^/]+\//, '') // Remove scope (@org/)
+          .replace(/-[^-]+$/, '') // Remove last segment after dash (provider)
+        results[basePackage] = true
+      }
+    }
+  }
+  return results
 }

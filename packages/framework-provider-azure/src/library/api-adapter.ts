@@ -53,3 +53,14 @@ export async function requestFailed(error: Error): Promise<ContextResponse> {
     }),
   }
 }
+
+export async function healthRequestResult(body: unknown, isHealthy: boolean): Promise<ContextResponse> {
+  return {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Content-Type': 'application/json',
+    },
+    status: isHealthy ? 200 : 503,
+    body: JSON.stringify(body),
+  }
+}

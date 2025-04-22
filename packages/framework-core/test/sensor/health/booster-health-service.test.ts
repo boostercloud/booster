@@ -11,11 +11,17 @@ const issuer = 'auth0'
 
 describe('BoosterHealthService', () => {
   const config = new BoosterConfig('test')
+  let healthRequestResult: any
+
   before(() => {
     config.provider = {
       api: {
         requestSucceeded: fake((request: any) => request),
         requestFailed: fake((error: any) => error),
+        healthRequestResult: (body: any, isHealthy: boolean) => {
+          healthRequestResult = { body, isHealthy }
+          return body
+        },
       },
     } as unknown as ProviderLibrary
   })
@@ -27,6 +33,7 @@ describe('BoosterHealthService', () => {
     config.sensorConfiguration.health.globalAuthorizer = {
       authorize: 'all',
     }
+    healthRequestResult = undefined
   })
 
   it('All indicators are UP', async () => {
@@ -209,6 +216,42 @@ describe('BoosterHealthService', () => {
     const readModelsResult = await boosterHealth(config)
     expectDatabaseReadModels(readModelsResult, 'UP')
   })
+
+  describe('Health Response Status', () => {
+    it('returns isHealthy true when all components are UP', async () => {
+      config.provider.sensor = defaultSensor()
+      await boosterHealth(config)
+      expect(healthRequestResult.isHealthy).to.be.true
+    })
+
+    it('returns isHealthy false when any component is DOWN', async () => {
+      config.provider.sensor = defaultSensor()
+      config.provider.sensor.isGraphQLFunctionUp = fake(() => false)
+      await boosterHealth(config)
+      expect(healthRequestResult.isHealthy).to.be.false
+    })
+
+    it('returns isHealthy true when rockets are UNKNOWN', async () => {
+      config.provider.sensor = defaultSensor()
+      config.provider.sensor.areRocketFunctionsUp = fake(() => ({})) // Empty object means no rockets
+      await boosterHealth(config)
+      expect(healthRequestResult.isHealthy).to.be.true
+    })
+
+    it('returns isHealthy false when rockets are DOWN', async () => {
+      config.provider.sensor = defaultSensor()
+      config.provider.sensor.areRocketFunctionsUp = fake(() => ({ rocket1: false }))
+      await boosterHealth(config)
+      expect(healthRequestResult.isHealthy).to.be.false
+    })
+
+    it('returns isHealthy true when rockets are UP', async () => {
+      config.provider.sensor = defaultSensor()
+      config.provider.sensor.areRocketFunctionsUp = fake(() => ({ rocket1: true }))
+      await boosterHealth(config)
+      expect(healthRequestResult.isHealthy).to.be.true
+    })
+  })
 })
 
 function defaultSensor(token?: string, url?: string) {
@@ -223,14 +266,18 @@ function defaultSensor(token?: string, url?: string) {
     rawRequestToHealthEnvelope: fake(() => {
       return { token: token, componentPath: url }
     }),
-    areRocketFunctionsUp: fake(() => ''),
+    areRocketFunctionsUp: fake(() => ({ rocket1: true })),
   }
 }
 
 async function boosterHealth(config: BoosterConfig): Promise<any> {
   const boosterHealthService = new BoosterHealthService(config)
   const result = (await boosterHealthService.boosterHealth(undefined)) as any
-  return result[0]
+  // For backwards compatibility with existing tests that expect the first component
+  if (Array.isArray(result)) {
+    return result[0]
+  }
+  return result
 }
 
 function getBoosterFunction(boosterResult: any) {

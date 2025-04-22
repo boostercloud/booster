@@ -57,7 +57,7 @@ export class ApplicationBuilder {
   private async synthApplication(app: App, destinationFile?: string): Promise<AzureStack> {
     const logger = getLogger(this.config, 'ApplicationBuilder#synthApplication')
     logger.info('Synth...')
-    return new AzureStack(app, this.config.appName + this.config.environmentName, destinationFile)
+    return new AzureStack(app, this.config.appName + this.config.environmentName, this.config, destinationFile)
   }
 
   private async generateSynthFiles(): Promise<void> {

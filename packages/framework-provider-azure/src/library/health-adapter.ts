@@ -102,12 +102,21 @@ export async function isRocketFunctionUp(rocketFunctionAppName: string): Promise
 }
 
 export async function areRocketFunctionsUp(): Promise<{ [key: string]: boolean }> {
-  const functionAppNames =
-    process.env[environmentVarNames.rocketFunctionAppNames]?.split(',').filter((str) => str.trim() !== '') || []
+  const mappingString = process.env[environmentVarNames.rocketPackageMapping] || ''
+  const rocketPackageMapping = mappingString
+    .split(';')
+    .filter(Boolean)
+    .reduce((acc, pair) => {
+      const [pkg, func] = pair.split(':')
+      if (pkg && func) {
+        acc[pkg] = func
+      }
+      return acc
+    }, {} as Record<string, string>)
   const results = await Promise.all(
-    functionAppNames.map(async (functionAppName: string) => {
+    Object.entries(rocketPackageMapping).map(async ([packageName, functionAppName]) => {
       const isUp = await isRocketFunctionUp(functionAppName)
-      return { [functionAppName]: isUp }
+      return { [packageName]: isUp }
     })
   )
 

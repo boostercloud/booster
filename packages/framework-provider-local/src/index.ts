@@ -7,7 +7,7 @@ import {
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
-import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { healthRequestResult, requestFailed, requestSucceeded } from './library/api-adapter'
 import { EventRegistry, GraphQLService, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
@@ -40,6 +40,7 @@ import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
 import {
   areDatabaseReadModelsUp,
+  areRocketFunctionsUp,
   databaseEventsHealthDetails,
   databaseReadModelsHealthDetails,
   databaseUrl,
@@ -109,6 +110,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   api: {
     requestSucceeded,
     requestFailed,
+    healthRequestResult,
   },
   connections: {
     storeData: storeConnectionData.bind(null, connectionRegistry),
@@ -132,7 +134,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     graphQLFunctionUrl: graphqlFunctionUrl,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
-    areRocketFunctionsUp: notImplemented as any,
+    areRocketFunctionsUp: areRocketFunctionsUp,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {
