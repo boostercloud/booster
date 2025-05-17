@@ -12,7 +12,7 @@ import { BoosterEventProcessor } from './booster-event-processor'
 export class BoosterEventStreamConsumer {
   @Trace(TraceActionTypes.CONSUME_STREAM_EVENTS)
   public static async consume(rawEvents: unknown, config: BoosterConfig): Promise<void> {
-    const logger = getLogger(config, 'BoosterEventDispatcher#dispatch')
+    const logger = getLogger(config, 'BoosterEventStreamConsumer#consume')
     const eventStore = new EventStore(config)
     const readModelStore = new ReadModelStore(config)
     logger.debug(
