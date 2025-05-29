@@ -100,7 +100,7 @@ async function processProperties(source: any, result: any, propertiesMap: any): 
   for (const key of Object.keys(propertiesMap)) {
     if (key === '__isArray' || key === '__children') continue
 
-    if (source[key] !== undefined) {
+    if (key in source) {
       if (propertiesMap[key].__isArray) {
         result[key] = []
         const value = source[key]
