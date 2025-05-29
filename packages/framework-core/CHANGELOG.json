@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.2.1",
+      "tag": "@boostercloud/framework-core_v3.2.1",
+      "date": "Thu, 29 May 2025 16:15:02 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix a bug where Booster would crash if an error was thrown in an async getter on a ReadModel",
+            "author": "Hendrik Depauw <128361530+hendrik-depauw-lemon@users.noreply.github.com>",
+            "commit": "cb8e0ad71d656ef4a42ccdc2a6d5e88007883c98"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.2.0` to `3.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.2.0` to `3.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.2.0` to `3.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.2.0` to `3.2.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.0",
       "tag": "@boostercloud/framework-core_v3.2.0",
       "date": "Tue, 22 Apr 2025 14:30:07 GMT",
