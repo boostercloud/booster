@@ -287,7 +287,7 @@ interface ResourceNames {
  * Configuration for retrying event store operations
  * @interface
  */
-interface RetryConfig {
+export interface RetryConfig {
   /** Maximum number or retry attempts for event store operations */
   maxRetries: number
 

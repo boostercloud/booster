@@ -1,4 +1,4 @@
-import { Class, Logger } from '@boostercloud/framework-types'
+import { Class, Logger, RetryConfig } from '@boostercloud/framework-types'
 
 /**
  * Retries an async function if it fails with an error that matches the given class.
@@ -39,4 +39,52 @@ function checkRetryError(e: Error, errorClassThatRetries: Class<Error>, logger?:
     logger?.debug('[checkRetryError] Logic failed with an error that must not be retried. Rethrowing')
     throw e
   }
+}
+
+/**
+ * Retries an async function with exponential backoff and jitter.
+ * @param logicToRetry Async function to retry
+ * @param config Retry configuration
+ * @param logger Optional logger for retry attempts
+ * @returns The result of the first successful retry
+ */
+export async function retryWithBackoff<TReturn>(
+  logicToRetry: () => Promise<TReturn>,
+  config: RetryConfig,
+  logger?: Logger
+): Promise<TReturn> {
+  let attempts = 0
+  let lastError: Error | undefined
+
+  while (attempts < config.maxRetries) {
+    try {
+      return await logicToRetry()
+    } catch (error) {
+      attempts++
+      lastError = error as Error
+
+      if (attempts === config.maxRetries) {
+        logger?.error(`[retryWithBackoff] Failed after ${attempts} attempts`, lastError)
+        throw lastError
+      }
+
+      const delay = calculateRetryDelay(attempts, config)
+      logger?.debug(`[retryWithBackoff] Attempt ${attempts} failed, retrying in ${delay}ms...`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+
+  throw lastError
+}
+
+/**
+ * Calculates the delay for a retry attempt using exponential backoff with jitter.
+ * @param attempt Current attempt number (1-based)
+ * @param config Retry configuration
+ * @returns Delay in milliseconds
+ */
+export function calculateRetryDelay(attempt: number, config: RetryConfig): number {
+  const baseDelay = Math.min(config.initialDelay * Math.pow(config.backoffFactor, attempt - 1), config.maxDelay)
+  const jitter = baseDelay * config.jitterFactor * (Math.random() * 2 - 1)
+  return baseDelay * jitter
 }
