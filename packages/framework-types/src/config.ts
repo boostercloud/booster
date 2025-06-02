@@ -259,6 +259,14 @@ export class BoosterConfig {
       }
     }
   }
+
+  public readonly eventStoreRetry: RetryConfig = {
+    maxRetries: 3,
+    initialDelay: 1000,
+    maxDelay: 30000,
+    backoffFactor: 2,
+    jitterFactor: 0.1,
+  }
 }
 
 export const BoosterConfigTag = Context.GenericTag<BoosterConfig>('BoosterConfig')
@@ -273,6 +281,27 @@ interface ResourceNames {
   streamTopic: string
 
   forReadModel(entityName: string): string
+}
+
+/**
+ * Configuration for retrying event store operations
+ * @interface
+ */
+interface RetryConfig {
+  /** Maximum number or retry attempts for event store operations */
+  maxRetries: number
+
+  /** Initial delay in milliseconds before the first retry */
+  initialDelay: number
+
+  /** Maximum delay in milliseconds between retries */
+  maxDelay: number
+
+  /** Multiplier for exponential backoff (each retry will wait initialDelay * (backoffFactor ^ attempt)) */
+  backoffFactor: number
+
+  /** Random jitter factor (0-1) to prevent thundering herd */
+  jitterFactor: number
 }
 
 type EntityName = string
