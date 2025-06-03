@@ -302,6 +302,15 @@ export interface RetryConfig {
 
   /** Random jitter factor (0-1) to prevent thundering herd */
   jitterFactor: number
+
+  /** Whether to retry all errors by default. If false, only errors in retryableErrors will be retried */
+  retryAllErrors?: boolean
+
+  /** List of error class names that should never be retried, regardless of other settings */
+  nonRetryableErrors?: Array<string>
+
+  /** List of error class names that should be retried when retryAllErrors is false */
+  retryableErrors?: Array<string>
 }
 
 type EntityName = string

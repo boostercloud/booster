@@ -63,6 +63,11 @@ export async function retryWithBackoff<TReturn>(
       attempts++
       lastError = error as Error
 
+      if (!shouldRetryError(lastError, config)) {
+        logger?.debug(`[retryWithBackoff] Error ${lastError.name} is not retryable, failing immediately`)
+        throw lastError
+      }
+
       if (attempts === config.maxRetries) {
         logger?.error(`[retryWithBackoff] Failed after ${attempts} attempts`, lastError)
         throw lastError
@@ -87,4 +92,28 @@ export function calculateRetryDelay(attempt: number, config: RetryConfig): numbe
   const baseDelay = Math.min(config.initialDelay * Math.pow(config.backoffFactor, attempt - 1), config.maxDelay)
   const jitter = baseDelay * config.jitterFactor * (Math.random() * 2 - 1)
   return Math.min(baseDelay + jitter, config.maxDelay)
+}
+
+/**
+ * Determines if an error should be retried based on the provided configuration.
+ * @param error The error to check
+ * @param config Retry configuration
+ * @returns True if the error should be retried, false otherwise
+ */
+function shouldRetryError(error: Error, config: RetryConfig): boolean {
+  // First check non-retryable errors
+  if (config.nonRetryableErrors) {
+    if (config.nonRetryableErrors.includes(error.name)) {
+      return false
+    }
+  }
+
+  // If retryAllErrors is false, only retry specified errors
+  if (config.retryAllErrors === false) {
+    if (!config.retryableErrors) return false
+    return config.retryableErrors.includes(error.name)
+  }
+
+  // If retryAllErrors is true or not specified, retry all errors
+  return true
 }

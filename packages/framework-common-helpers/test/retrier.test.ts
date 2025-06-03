@@ -146,5 +146,159 @@ describe('the `retrier` helpers', () => {
       expect(logger.debug).to.have.been.calledTwice // Two retry attempts
       expect(logger.error).to.not.have.been.called // No error logging since it succeeded
     })
+
+    describe('error filtering', () => {
+      class RetryableError extends Error {
+        constructor(message: string) {
+          super(message)
+          this.name = 'RetryableError'
+        }
+      }
+
+      class NonRetryableError extends Error {
+        constructor(message: string) {
+          super(message)
+          this.name = 'NonRetryableError'
+        }
+      }
+
+      class OtherError extends Error {
+        constructor(message: string) {
+          super(message)
+          this.name = 'OtherError'
+        }
+      }
+
+      it('retries all errors when retryAllErrors is true', async () => {
+        const config: RetryConfig = {
+          ...defaultConfig,
+          retryAllErrors: true,
+        }
+
+        let retries = 0
+        const result = await retryWithBackoff(async () => {
+          retries++
+          if (retries <= 2) throw new OtherError('some error')
+          return 'success'
+        }, config)
+
+        expect(result).to.be.equal('success')
+        expect(retries).to.be.equal(3)
+      })
+
+      it('retries all errors when retryAllErrors is undefined', async () => {
+        const config: RetryConfig = {
+          ...defaultConfig,
+          retryAllErrors: undefined,
+        }
+
+        let retries = 0
+        const result = await retryWithBackoff(async () => {
+          retries++
+          if (retries <= 2) throw new OtherError('some error')
+          return 'success'
+        }, config)
+
+        expect(result).to.be.equal('success')
+        expect(retries).to.be.equal(3)
+      })
+
+      it('only retries errors in retryableErrors when retryAllErrors is false', async () => {
+        const config: RetryConfig = {
+          ...defaultConfig,
+          retryAllErrors: false,
+          retryableErrors: ['RetryableError'],
+        }
+
+        let retries = 0
+        const result = await retryWithBackoff(async () => {
+          retries++
+          if (retries <= 2) throw new RetryableError('retryable error')
+          return 'success'
+        }, config)
+
+        expect(result).to.be.equal('success')
+        expect(retries).to.be.equal(3)
+      })
+
+      it('does not retry errors no in retryableErrors when retryAllErrors is false', async () => {
+        const config: RetryConfig = {
+          ...defaultConfig,
+          retryAllErrors: false,
+          retryableErrors: ['RetryableError'],
+        }
+
+        let retries = 0
+        const returnedValuePromise = retryWithBackoff(async () => {
+          retries++
+          throw new OtherError('non-retryable error')
+        }, config)
+
+        await expect(returnedValuePromise).to.eventually.be.rejectedWith('non-retryable error')
+        expect(retries).to.be.equal(1)
+      })
+
+      it('never retries errors in nonRetryableErrors regardless of other settings', async () => {
+        const config: RetryConfig = {
+          ...defaultConfig,
+          retryAllErrors: true,
+          nonRetryableErrors: ['NonRetryableError'],
+        }
+
+        let retries = 0
+        const returnedValuePromise = retryWithBackoff(async () => {
+          retries++
+          throw new NonRetryableError('non-retryable error')
+        }, config)
+
+        await expect(returnedValuePromise).to.eventually.be.rejectedWith('non-retryable error')
+        expect(retries).to.be.equal(1)
+      })
+
+      it('nonRetryableErrors take precedence over retryableErrors', async () => {
+        const config: RetryConfig = {
+          ...defaultConfig,
+          retryAllErrors: false,
+          retryableErrors: ['RetryableError', 'NonRetryableError'],
+          nonRetryableErrors: ['NonRetryableError'],
+        }
+
+        let retries = 0
+        const returnedValuePromise = retryWithBackoff(async () => {
+          retries++
+          if (retries <= 2) throw new NonRetryableError('non-retryable error')
+          return 'success'
+        }, config)
+
+        await expect(returnedValuePromise).to.eventually.be.rejectedWith('non-retryable error')
+        expect(retries).to.be.equal(1)
+      })
+
+      it('logs when skipping retry due to error type', async () => {
+        const logger = {
+          debug: fake(),
+          error: fake(),
+        }
+
+        const config: RetryConfig = {
+          ...defaultConfig,
+          retryAllErrors: false,
+          retryableErrors: ['RetryableError'],
+        }
+
+        const returnedValuePromise = retryWithBackoff(
+          async () => {
+            throw new OtherError('non-retryable error')
+          },
+          config,
+          logger as any
+        )
+
+        await expect(returnedValuePromise).to.eventually.be.rejectedWith('non-retryable error')
+        expect(logger.debug).to.have.been.calledWith(
+          '[retryWithBackoff] Error OtherError is not retryable, failing immediately'
+        )
+      })
+    })
   })
 })
