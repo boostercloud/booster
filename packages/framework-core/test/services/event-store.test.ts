@@ -26,6 +26,7 @@ describe('EventStore', () => {
 
   class AnEvent {
     public constructor(readonly id: UUID, readonly entityId: string, readonly delta: number) {}
+
     public entityID(): UUID {
       return this.entityId
     }
@@ -33,9 +34,11 @@ describe('EventStore', () => {
 
   class AnotherEvent {
     public constructor(readonly id: UUID) {}
+
     public entityID(): UUID {
       return this.id
     }
+
     public getPrefixedId(prefix: string): string {
       return `${prefix}-${this.id}`
     }
@@ -43,9 +46,11 @@ describe('EventStore', () => {
 
   class AnEntity {
     public constructor(readonly id: UUID, readonly count: number) {}
+
     public getId(): UUID {
       return this.id
     }
+
     public static reducerThatCallsEntityMethod(event: AnEvent, currentEntity?: AnEntity): AnEntity {
       if (currentEntity) {
         currentEntity.getId()
@@ -567,7 +572,7 @@ describe('EventStore', () => {
       })
 
       context('when persisting the entity fails', () => {
-        it('does not throw an exception and returns undefined', async () => {
+        it('does not throw an exception and returns undefined after all retries fail', async () => {
           //eslint-disable-next-line @typescript-eslint/no-explicit-any
           const eventStore = new EventStore(config) as any
 
@@ -635,7 +640,7 @@ describe('EventStore', () => {
           }
 
           expect(eventStore.storeSnapshot).to.have.been.calledOnce
-          expect(config.provider.events.storeSnapshot).to.have.been.calledOnce
+          expect(config.provider.events.storeSnapshot).to.have.been.calledThrice // default number of retries is 3
           expect(entity).to.be.undefined
         })
       })
