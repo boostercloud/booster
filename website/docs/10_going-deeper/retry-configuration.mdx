@@ -1,0 +1,84 @@
+# Retry configuration
+
+Booster provides a configurable retry mechanism for event store operations with exponential backoff and error filtering capabilities. This feature helps handle transient failures and ensures reliable event processing.
+
+## Configuration
+
+You can configure the retry behavior in your Booster configuration file:
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-booster-app'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  // Configure retry behavior for event store operations
+  config.eventStoreRetry = {
+    maxRetries: 3,                    // Maximum number of retry attempts
+    initialDelay: 100,                // Initial delay in milliseconds
+    maxDelay: 1000,                   // Maximum delay between retries
+    backoffFactor: 2,                 // Multiplier for exponential backoff
+    jitterFactor: 0.1,                // Random jitter factor (0-1)
+    retryAllErrors: true,             // Whether to retry all errors by default
+    nonRetryableErrors: ['ErrorA'],   // Errors that should never be retried
+    retryableErrors: ['ErrorB'],      // Errors that should be retried when retryAllErrors is false
+  }
+})
+```
+
+## Retry Behavior
+
+The retry mechanism follows these rules:
+
+1. If `retryAllErrors` is true (default) or undefined, all errors are retried except those in `nonRetryableErrors`
+2. If `retryAllErrors` is false, only errors in `retryableErrors` are retried
+3. `nonRetryableErrors` takes precedence over other settings
+4. The delay beteen retries follows an exponential backoff pattern with jitter to prevent thundering herd problems
+
+## Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| maxRetries | number | 3 | Maximum number of retry attempts |
+| initialDelay | number | 100 | Initial delay before first retry in milliseconds |
+| maxDelay | number | 1000 | Maximum delay between retries in milliseconds |
+| backoffFactor | number | 2 | Multiplier for exponential backoff |
+| jitterFactor | number | 0.1 | Random jitter factor (0-1) to prevent thundering herd |
+| retryAllErrors | boolean | true | Whether to retry all errors by default |
+| nonRetryableErrors | string[] | undefined | List of error class names that should never be retried |
+| retryableErrors | string[] | undefined | List of error class names that should be retried when `retryAllErrors` is false |
+
+## Example: Filtering Specific Errors
+
+Here's an example of how to configure retry behavior for specific error types:
+
+```typescript
+config.eventStoreRetry = {
+  maxRetries: 3,
+  initialDelay: 100,
+  maxDelay: 1000,
+  backoffFactor: 2,
+  jitterFactor: 0.1,
+  retryAllErrors: false,
+  retryableErrors: ['NetworkError', 'TimeoutError'],
+  nonRetryableErrors: ['ValidationError', 'AuthenticationError'],
+}
+```
+
+In this example:
+- Only `NetworkError` and `TimeoutError` will be retried
+- `ValidationError` and `AuthenticationError` will never be retried
+- Other errors will not be retried
+
+## Logging
+
+The retry mechanism includes detailed logging of retry attempts and failures. You can see these logs in your cloud provider's log aggregator (e.g., Application Insights for Azure).
+
+Example log messages:
+```
+[retryWithBackoff] Attempt 1 failed, retrying in 100ms...
+[retryWithBackoff] Error ValidationError is not retryable, failing immediately
+[retryWithBackoff] Failed after 3 attempts
+```
