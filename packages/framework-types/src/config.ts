@@ -288,7 +288,7 @@ interface ResourceNames {
  * @interface
  */
 export interface RetryConfig {
-  /** Maximum number or retry attempts for event store operations */
+  /** Maximum number of retry attempts for event store operations */
   maxRetries: number
 
   /** Initial delay in milliseconds before the first retry */

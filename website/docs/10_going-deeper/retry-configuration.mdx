@@ -35,7 +35,7 @@ The retry mechanism follows these rules:
 1. If `retryAllErrors` is true (default) or undefined, all errors are retried except those in `nonRetryableErrors`
 2. If `retryAllErrors` is false, only errors in `retryableErrors` are retried
 3. `nonRetryableErrors` takes precedence over other settings
-4. The delay beteen retries follows an exponential backoff pattern with jitter to prevent thundering herd problems
+4. The delay between retries follows an exponential backoff pattern with jitter to prevent thundering herd problems
 
 ## Configuration Options
 
