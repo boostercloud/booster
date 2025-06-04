@@ -82,3 +82,19 @@ Example log messages:
 [retryWithBackoff] Error ValidationError is not retryable, failing immediately
 [retryWithBackoff] Failed after 3 attempts
 ```
+
+## Azure Provider Configuration
+
+When using the Azure provider, you can override the Cosmos DB client's retry behavior by setting the following environment variables:
+
+| Environment Variable | Description |
+|----------------------|-------------|
+| `COSMOSDB_MAX_RETRIES` | Maximum number of retry attempts |
+| `COSMOSDB_RETRY_INTERVAL` | Fixed retry interval in milliseconds |
+| `COSMOSDB_MAX_WAIT_TIME` | Maximum wait time in seconds |
+
+These settings will override the Cosmos DB client's default retry behavior. If any of these variables are not set, the client will use its built-in defaults.
+
+:::note
+These settings are specific to the Azure provider and control the retry behavior of the Cosmos DB client. They are separate from the general event store retry configuration described above.
+:::
