@@ -23,7 +23,7 @@
     "node": ">=20.0.0 <21.0.0"
   },
   "dependencies": {
-    "@azure/cosmos": "^4.0.0",
+    "@azure/cosmos": "^4.3.0",
     "@azure/functions": "^1.2.2",
     "@azure/identity": "~4.7.0",
     "@azure/event-hubs": "5.11.1",
