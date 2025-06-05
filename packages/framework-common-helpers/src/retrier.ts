@@ -91,7 +91,7 @@ export async function retryWithBackoff<TReturn>(
 export function calculateRetryDelay(attempt: number, config: RetryConfig): number {
   const baseDelay = Math.min(config.initialDelay * Math.pow(config.backoffFactor, attempt - 1), config.maxDelay)
   const jitter = baseDelay * config.jitterFactor * (Math.random() * 2 - 1)
-  return Math.min(baseDelay + jitter, config.maxDelay)
+  return Math.max(0, Math.min(baseDelay + jitter, config.maxDelay))
 }
 
 /**
