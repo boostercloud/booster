@@ -1,4 +1,4 @@
-import { Class, Logger } from '@boostercloud/framework-types'
+import { Class, Logger, RetryConfig } from '@boostercloud/framework-types'
 
 /**
  * Retries an async function if it fails with an error that matches the given class.
@@ -39,4 +39,81 @@ function checkRetryError(e: Error, errorClassThatRetries: Class<Error>, logger?:
     logger?.debug('[checkRetryError] Logic failed with an error that must not be retried. Rethrowing')
     throw e
   }
+}
+
+/**
+ * Retries an async function with exponential backoff and jitter.
+ * @param logicToRetry Async function to retry
+ * @param config Retry configuration
+ * @param logger Optional logger for retry attempts
+ * @returns The result of the first successful retry
+ */
+export async function retryWithBackoff<TReturn>(
+  logicToRetry: () => Promise<TReturn>,
+  config: RetryConfig,
+  logger?: Logger
+): Promise<TReturn> {
+  let attempts = 0
+  let lastError: Error | undefined
+
+  while (attempts < config.maxRetries) {
+    try {
+      return await logicToRetry()
+    } catch (error) {
+      attempts++
+      lastError = error as Error
+
+      if (!shouldRetryError(lastError, config)) {
+        logger?.debug(`[retryWithBackoff] Error ${lastError.name} is not retryable, failing immediately`)
+        throw lastError
+      }
+
+      if (attempts === config.maxRetries) {
+        logger?.error(`[retryWithBackoff] Failed after ${attempts} attempts`, lastError)
+        throw lastError
+      }
+
+      const delay = calculateRetryDelay(attempts, config)
+      logger?.debug(`[retryWithBackoff] Attempt ${attempts} failed, retrying in ${delay}ms...`)
+      await new Promise((resolve) => setTimeout(resolve, delay))
+    }
+  }
+
+  throw lastError
+}
+
+/**
+ * Calculates the delay for a retry attempt using exponential backoff with jitter.
+ * @param attempt Current attempt number (1-based)
+ * @param config Retry configuration
+ * @returns Delay in milliseconds
+ */
+export function calculateRetryDelay(attempt: number, config: RetryConfig): number {
+  const baseDelay = Math.min(config.initialDelay * Math.pow(config.backoffFactor, attempt - 1), config.maxDelay)
+  const jitter = baseDelay * config.jitterFactor * (Math.random() * 2 - 1)
+  return Math.max(0, Math.min(baseDelay + jitter, config.maxDelay))
+}
+
+/**
+ * Determines if an error should be retried based on the provided configuration.
+ * @param error The error to check
+ * @param config Retry configuration
+ * @returns True if the error should be retried, false otherwise
+ */
+function shouldRetryError(error: Error, config: RetryConfig): boolean {
+  // First check non-retryable errors
+  if (config.nonRetryableErrors) {
+    if (config.nonRetryableErrors.includes(error.name)) {
+      return false
+    }
+  }
+
+  // If retryAllErrors is false, only retry specified errors
+  if (config.retryAllErrors === false) {
+    if (!config.retryableErrors) return false
+    return config.retryableErrors.includes(error.name)
+  }
+
+  // If retryAllErrors is true or not specified, retry all errors
+  return true
 }

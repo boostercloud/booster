@@ -115,7 +115,8 @@ const sidebars = {
         'going-deeper/instrumentation',
         'going-deeper/remove-events',
         'going-deeper/azure-scale',
-        'going-deeper/event-batches'
+        'going-deeper/event-batches',
+        'going-deeper/retry-configuration',
       ],
     },
     'frequently-asked-questions',
