@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.3.0",
+      "tag": "@boostercloud/framework-core_v3.3.0",
+      "date": "Thu, 05 Jun 2025 16:54:54 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Improve event store resilience",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "2a07221013748cf6ce333b743071387add5d23f1"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.2.1` to `3.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.2.1` to `3.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.2.1` to `3.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.2.1` to `3.3.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.1",
       "tag": "@boostercloud/framework-core_v3.2.1",
       "date": "Thu, 29 May 2025 16:15:02 GMT",

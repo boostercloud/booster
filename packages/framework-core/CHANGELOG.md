@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 29 May 2025 16:15:02 GMT and should not be manually modified.
+This log was last generated on Thu, 05 Jun 2025 16:54:54 GMT and should not be manually modified.
+
+## 3.3.0
+Thu, 05 Jun 2025 16:54:54 GMT
+
+### Minor changes
+
+- Improve event store resilience
 
 ## 3.2.1
 Thu, 29 May 2025 16:15:02 GMT
