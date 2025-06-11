@@ -27,15 +27,20 @@ export class BoosterEventProcessor {
     return async (entityName, entityID, eventEnvelopes, config) => {
       // Filter events that have already been dispatched
       const eventsNotDispatched = await BoosterEventProcessor.filterDispatched(config, eventEnvelopes, eventStore)
-      const eventEnvelopesProcessors = [
-        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventsNotDispatched, config),
-      ]
+      const eventEnvelopesProcessors = []
 
-      // Read models are not updated for notification events (events that are not related to an entity but a topic)
-      if (!(entityName in config.topicToEvent)) {
+      // Only process events that haven't been dispatched yet
+      if (eventsNotDispatched.length > 0) {
         eventEnvelopesProcessors.push(
-          BoosterEventProcessor.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
+          BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventsNotDispatched, config)
         )
+
+        // Read models are not updated for notification events (events that are not related to an entity but a topic)
+        if (!(entityName in config.topicToEvent)) {
+          eventEnvelopesProcessors.push(
+            BoosterEventProcessor.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
+          )
+        }
       }
 
       await Promises.allSettledAndFulfilled(eventEnvelopesProcessors)
