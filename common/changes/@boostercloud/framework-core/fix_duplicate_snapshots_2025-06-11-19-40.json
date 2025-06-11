@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Fixes duplicate snapshot generation",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
