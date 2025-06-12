@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.3.1",
+      "tag": "@boostercloud/framework-core_v3.3.1",
+      "date": "Thu, 12 Jun 2025 17:47:56 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixes duplicate snapshot generation",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "72291d6033bf97430188229781430038ea8f6e68"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.3.0` to `3.3.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.3.0` to `3.3.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.3.0` to `3.3.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.3.0` to `3.3.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.0",
       "tag": "@boostercloud/framework-core_v3.3.0",
       "date": "Thu, 05 Jun 2025 16:54:54 GMT",

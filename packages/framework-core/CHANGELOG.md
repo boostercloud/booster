@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 05 Jun 2025 16:54:54 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Jun 2025 17:47:56 GMT and should not be manually modified.
+
+## 3.3.1
+Thu, 12 Jun 2025 17:47:56 GMT
+
+### Patches
+
+- Fixes duplicate snapshot generation
 
 ## 3.3.0
 Thu, 05 Jun 2025 16:54:54 GMT
