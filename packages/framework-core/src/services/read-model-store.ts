@@ -8,6 +8,8 @@ import {
   FilterFor,
   OptimisticConcurrencyUnexpectedVersionError,
   ProjectionGlobalError,
+  ProjectionInfo,
+  ProjectionInfoReason,
   ProjectionMetadata,
   ProjectionResult,
   ReadModelAction,
@@ -17,16 +19,18 @@ import {
   UUID,
 } from '@boostercloud/framework-types'
 import { createInstance, getLogger, Promises, retryIfError } from '@boostercloud/framework-common-helpers'
+import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { readModelSearcher } from './read-model-searcher'
 import { ReadModelSchemaMigrator } from '../read-model-schema-migrator'
-import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 
 export class ReadModelStore {
   public constructor(readonly config: BoosterConfig) {}
 
-  public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope): Promise<void> {
+  public async project(entitySnapshotEnvelope: EntitySnapshotEnvelope, deleteEvent = false): Promise<void> {
     const logger = getLogger(this.config, 'ReadModelStore#project')
-    const projections = this.config.projections[entitySnapshotEnvelope.entityTypeName]
+    const projections = deleteEvent
+      ? this.getUnProjections(entitySnapshotEnvelope)
+      : this.entityProjections(entitySnapshotEnvelope)
     if (!projections) {
       logger.debug(`No projections found for entity ${entitySnapshotEnvelope.entityTypeName}. Skipping...`)
       return
@@ -51,6 +55,7 @@ export class ReadModelStore {
           entityMetadata,
           entitySnapshotEnvelope,
           readModelName,
+          deleteEvent,
           sequenceKey
         )
       }
@@ -132,6 +137,57 @@ export class ReadModelStore {
     }
   }
 
+  private getUnProjections(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope
+  ): Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> {
+    const unProjections: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> =
+      this.entityUnProjections(entitySnapshotEnvelope)
+    const projections: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> =
+      this.entityProjections(entitySnapshotEnvelope)
+    if (projections?.length > 0) {
+      if (!unProjections) {
+        throw new Error(`Missing UnProjections for entity ${entitySnapshotEnvelope.entityTypeName}`)
+      }
+      const missingProjection = this.findFirstMissingProjection(projections, unProjections)
+      if (missingProjection) {
+        throw new Error(
+          `Missing UnProjection for ReadModel ${missingProjection.class.name} with joinKey ${missingProjection.joinKey} for entity ${entitySnapshotEnvelope.entityTypeName}`
+        )
+      }
+    }
+    return unProjections
+  }
+
+  private entityProjections(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope
+  ): Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> {
+    return this.config.projections[entitySnapshotEnvelope.entityTypeName]
+  }
+
+  private entityUnProjections(
+    entitySnapshotEnvelope: EntitySnapshotEnvelope
+  ): Array<ProjectionMetadata<EntityInterface, ReadModelInterface>> {
+    return this.config.unProjections[entitySnapshotEnvelope.entityTypeName]
+  }
+
+  private findFirstMissingProjection(
+    sources: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>,
+    to: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>
+  ): ProjectionMetadata<EntityInterface, ReadModelInterface> | undefined {
+    return sources.find(
+      (source: ProjectionMetadata<EntityInterface, ReadModelInterface>) => !this.someProjection(to, source)
+    )
+  }
+
+  private someProjection(
+    sources: Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>,
+    to: ProjectionMetadata<EntityInterface, ReadModelInterface>
+  ): boolean {
+    const contains = (source: ProjectionMetadata<EntityInterface, ReadModelInterface>) =>
+      source.class.name === to.class.name && source.joinKey.toString() === to.joinKey.toString()
+    return sources.some(contains)
+  }
+
   private sequenceKeyForProjection(
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>
@@ -150,6 +206,7 @@ export class ReadModelStore {
     entityMetadata: EntityMetadata,
     entitySnapshotEnvelope: EntitySnapshotEnvelope,
     readModelName: string,
+    deleteEvent: boolean,
     sequenceKey?: SequenceKey
   ): Promise<Array<PromiseSettledResult<unknown>> | undefined> {
     const currentReadModels: Array<ReadModelInterface> = await this.getReadModels(
@@ -167,6 +224,7 @@ export class ReadModelStore {
           projectionMetadata,
           entityInstance,
           entityMetadata,
+          deleteEvent,
           currentReadModel
         )
         existingReadModelsProjections.push(...newProjections)
@@ -179,7 +237,8 @@ export class ReadModelStore {
       sequenceKey,
       projectionMetadata,
       entityInstance,
-      entityMetadata
+      entityMetadata,
+      deleteEvent
     )
     return Promises.allSettledAndFulfilled(newProjections)
   }
@@ -191,6 +250,7 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entityInstance: EntityInterface,
     entityMetadata: EntityMetadata,
+    deleteEvent: boolean,
     currentReadModel?: ReadModelInterface
   ): Promise<Array<Promise<unknown>>> {
     const projections: Array<Promise<unknown>> = []
@@ -214,6 +274,7 @@ export class ReadModelStore {
             sequenceKey,
             entityInstance,
             projectionMetadata,
+            deleteEvent,
             readModelId,
             readModel
           )
@@ -228,6 +289,7 @@ export class ReadModelStore {
           sequenceKey,
           entityInstance,
           projectionMetadata,
+          deleteEvent,
           currentReadModel?.id,
           currentReadModel
         )
@@ -242,6 +304,7 @@ export class ReadModelStore {
     sequenceKey: SequenceKey | undefined,
     entityInstance: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
+    deleteEvent: boolean,
     readModelId?: UUID,
     currentReadModel?: ReadModelInterface
   ): Promise<unknown> {
@@ -259,6 +322,7 @@ export class ReadModelStore {
           entitySnapshotEnvelope,
           entityInstance,
           projectionMetadata,
+          deleteEvent,
           currentReadModel,
           entitySnapshotEnvelope,
           readModelId,
@@ -285,6 +349,7 @@ export class ReadModelStore {
     entitySnapshotEnvelope: EntitySnapshotEnvelope,
     entity: EntityInterface,
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
+    deleteEvent: boolean,
     currentReadModel?: ReadModelInterface,
     lastProjectedEntity?: EntitySnapshotEnvelope,
     currentReadModelID?: UUID,
@@ -319,13 +384,17 @@ export class ReadModelStore {
     const currentDatabaseVersion: number = migratedReadModel?.boosterMetadata?.version ?? 0
 
     let newReadModel: any
+    const projectionInfo: ProjectionInfo = {
+      reason: deleteEvent ? ProjectionInfoReason.ENTITY_DELETED : ProjectionInfoReason.ENTITY_PROJECTED,
+    }
     try {
       newReadModel = await this.callProjectionFunction(
         entitySnapshotEnvelope,
         projectionMetadata,
         entity,
         migratedReadModel,
-        readModelID
+        readModelID,
+        projectionInfo
       )
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(this.config)
@@ -399,15 +468,16 @@ export class ReadModelStore {
     projectionMetadata: ProjectionMetadata<EntityInterface, ReadModelInterface>,
     entity: EntityInterface,
     migratedReadModel: ReadModelInterface | undefined,
-    readModelID: UUID | undefined
+    readModelID: UUID | undefined,
+    projectionInfo: ProjectionInfo
   ): Promise<ProjectionResult<TReadModel> | undefined> {
     try {
       const projectionMetadataJoinKey = projectionMetadata.joinKey
       const projectionFunction = this.getProjectionFunction(projectionMetadata)
       if (this.isJoinKeyByEntity(projectionMetadataJoinKey)) {
         return Array.isArray(entity[projectionMetadataJoinKey])
-          ? projectionFunction(entity, readModelID, migratedReadModel || null)
-          : projectionFunction(entity, migratedReadModel || null)
+          ? projectionFunction(entity, readModelID, migratedReadModel || null, projectionInfo)
+          : projectionFunction(entity, migratedReadModel || null, projectionInfo)
       }
       return projectionFunction(entity, readModelID, migratedReadModel || null)
     } catch (e) {

@@ -1,7 +1,7 @@
 import { HealthIndicatorMetadata } from '@boostercloud/framework-types'
 import 'mocha'
 import {
-  childrenHealthProviders,
+  childHealthProviders,
   isEnabled,
   metadataFromId,
   parentId,
@@ -165,13 +165,13 @@ describe('Health utils', () => {
   })
 
   it('childrenHealthProviders', () => {
-    expect(childrenHealthProviders(root, healthProviders)).to.be.deep.equal([rootChildren1, rootChildren2])
-    expect(childrenHealthProviders(rootChildren1, healthProviders)).to.be.deep.equal([
+    expect(childHealthProviders(root, healthProviders)).to.be.deep.equal([rootChildren1, rootChildren2])
+    expect(childHealthProviders(rootChildren1, healthProviders)).to.be.deep.equal([
       rootChildren1Children1,
       rootChildren1Children2,
     ])
-    expect(childrenHealthProviders(rootChildren1Children1, healthProviders)).to.be.deep.equal([])
-    expect(childrenHealthProviders(rootChildren1Children2, healthProviders)).to.be.deep.equal([])
-    expect(childrenHealthProviders(rootChildren2, healthProviders)).to.be.deep.equal([])
+    expect(childHealthProviders(rootChildren1Children1, healthProviders)).to.be.deep.equal([])
+    expect(childHealthProviders(rootChildren1Children2, healthProviders)).to.be.deep.equal([])
+    expect(childHealthProviders(rootChildren2, healthProviders)).to.be.deep.equal([])
   })
 })

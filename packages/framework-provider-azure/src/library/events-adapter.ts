@@ -24,11 +24,14 @@ export async function readEntityEventsSince(
   entityID: UUID,
   since?: string
 ): Promise<Array<EventEnvelope>> {
+  const logger = getLogger(config, 'events-adapter#readEntityEventsSince')
   const fromTime = since ? since : originOfTime
   const querySpec: SqlQuerySpec = {
     query:
       `SELECT * FROM c WHERE c["${eventsStoreAttributes.partitionKey}"] = @partitionKey ` +
-      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
+      `AND c["${eventsStoreAttributes.sortKey}"] > @fromTime ` +
+      'AND NOT IS_DEFINED(c["deletedAt"]) ' +
+      `ORDER BY c["${eventsStoreAttributes.sortKey}"] ASC`,
     parameters: [
       {
         name: '@partitionKey',
@@ -45,6 +48,7 @@ export async function readEntityEventsSince(
     .container(config.resourceNames.eventsStore)
     .items.query(querySpec)
     .fetchAll()
+  logger.debug(`Loaded events for entity ${entityTypeName} with ID ${entityID} with result:`, resources)
   return resources as Array<EventEnvelope>
 }
 

@@ -122,4 +122,77 @@ You will get the following GraphQL query and subscriptions:
 query CartTotalQuantityQuery($cartId: ID!): Float!
 ```
 
-> [!NOTE] Query subscriptions are not supported yet
+:::note
+Query subscriptions are not supported yet
+:::
+
+###  Returning union types
+Booster supports returning graphql union types. For example, this `SearchMedia` query returning books and movies.
+
+
+```typescript
+export type MediaValue = BookReadModel | MovieReadModel
+
+class SearchResult {
+  readonly results!: MediaValue[]
+  constructor(results: MediaValue[]) {
+    this.results = results
+  }
+}
+
+@Query({
+  authorize: 'all',
+})
+export class SearchMedia {
+  public constructor(readonly searchword: string) {}
+
+  public static async handle(query: SearchMedia, queryInfo: QueryInfo): Promise<SearchResult> {
+    const [books, movies] = await Promise.all([
+      Booster.readModel(BookReadModel)
+        .filter({
+          title: {
+            contains: query.searchword,
+          },
+        })
+        .search(),
+      Booster.readModel(MovieReadModel)
+        .filter({
+          title: {
+            contains: query.searchword,
+          },
+        })
+        .search(),
+    ])
+    const response = [...books, ...movies]
+
+    return {
+      results: response,
+    }
+  }
+}
+```
+
+This generates the following query 
+
+```graphql
+SearchMedia ( input SearchMediaInput! ) SearchResult!
+```
+
+The GraphQL union querying functionality can then be used. An example for the query above could be the following.
+
+```graphql
+{
+  SearchMedia(input: { searchword: "Oppenheimer" }) {
+    results {
+      __typename
+      ... on BookReadModel {
+        title
+        pages
+      }
+      ... on MovieReadModel {
+        title
+      }
+    }
+  }
+}
+```

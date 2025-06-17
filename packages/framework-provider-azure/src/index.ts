@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HasInfrastructure, ProviderLibrary, RocketDescriptor } from '@boostercloud/framework-types'
-import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { healthRequestResult, requestFailed, requestSucceeded } from './library/api-adapter'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 import {
   rawEventsToEnvelopes,
@@ -9,7 +9,7 @@ import {
   storeDispatchedEvent,
   storeSnapshot,
 } from './library/events-adapter'
-import { CosmosClient } from '@azure/cosmos'
+import { CosmosClient, CosmosClientOptions } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
 import {
   deleteReadModel,
@@ -38,6 +38,7 @@ import { EventHubProducerClient, RetryMode } from '@azure/event-hubs'
 import { dedupEventStream, rawEventsStreamToEnvelopes } from './library/events-stream-consumer-adapter'
 import {
   areDatabaseReadModelsUp,
+  areRocketFunctionsUp,
   databaseEventsHealthDetails,
   databaseReadModelsHealthDetails,
   databaseUrl,
@@ -46,13 +47,35 @@ import {
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
 } from './library/health-adapter'
+import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 import { storeEvents } from './library/events-store-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
   cosmosClient = {} as any
 } else {
-  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
+  const cosmosClientOptions: CosmosClientOptions = {
+    connectionString: process.env[environmentVarNames.cosmosDbConnectionString] as string,
+    // Overrides default retry options if any of the environment variables are set
+    ...((process.env[environmentVarNames.cosmosDbMaxRetries] ||
+      process.env[environmentVarNames.cosmosDbRetryInterval] ||
+      process.env[environmentVarNames.cosmosDbMaxWaitTime]) && {
+      connectionPolicy: {
+        retryOptions: {
+          ...(process.env[environmentVarNames.cosmosDbMaxRetries] && {
+            maxRetryAttemptCount: Number(process.env[environmentVarNames.cosmosDbMaxRetries]),
+          }),
+          ...(process.env[environmentVarNames.cosmosDbRetryInterval] && {
+            fixedRetryIntervalInMilliseconds: Number(process.env[environmentVarNames.cosmosDbRetryInterval]),
+          }),
+          ...(process.env[environmentVarNames.cosmosDbMaxWaitTime] && {
+            maxWaitTimeInSeconds: Number(process.env[environmentVarNames.cosmosDbMaxWaitTime]),
+          }),
+        },
+      },
+    }),
+  }
+  cosmosClient = new CosmosClient(cosmosClientOptions)
 }
 
 let producer: EventHubProducerClient
@@ -106,6 +129,10 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     search: searchEvents.bind(null, cosmosClient),
     searchEntitiesIDs: searchEntitiesIds.bind(null, cosmosClient),
     storeDispatched: storeDispatchedEvent.bind(null, cosmosClient),
+    findDeletableEvent: findDeletableEvent.bind(null, cosmosClient),
+    findDeletableSnapshot: findDeletableSnapshot.bind(null, cosmosClient),
+    deleteEvent: deleteEvent.bind(null, cosmosClient),
+    deleteSnapshot: deleteSnapshot.bind(null, cosmosClient),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -128,6 +155,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
   api: {
     requestSucceeded,
     requestFailed,
+    healthRequestResult,
   },
   connections: {
     storeData: storeConnectionData.bind(null, cosmosClient),
@@ -151,6 +179,7 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
     graphQLFunctionUrl: graphqlFunctionUrl,
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
+    areRocketFunctionsUp: areRocketFunctionsUp,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

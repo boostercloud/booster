@@ -1,5 +1,11 @@
 import { ReadModel, Projects } from '@boostercloud/framework-core'
-import { UUID, ProjectionResult } from '@boostercloud/framework-types'
+import {
+  UUID,
+  ProjectionResult,
+  ProjectionInfoReason,
+  ReadModelAction,
+  ProjectionInfo,
+} from '@boostercloud/framework-types'
 import { Product } from '../entities/product'
 
 interface ProductIDWithPrice {
@@ -18,8 +24,15 @@ export class ProductsBySKU {
     readonly record?: Record<string, number>
   ) {}
 
-  @Projects(Product, 'sku')
-  public static projectProduct(entity: Product, currentProductsBySKU?: ProductsBySKU): ProjectionResult<ProductsBySKU> {
+  @Projects(Product, 'sku', ProductsBySKU.projectProduct)
+  public static projectProduct(
+    entity: Product,
+    currentProductsBySKU?: ProductsBySKU,
+    projectionInfo?: ProjectionInfo
+  ): ProjectionResult<ProductsBySKU> {
+    if (projectionInfo?.reason === ProjectionInfoReason.ENTITY_DELETED) {
+      return ReadModelAction.Delete
+    }
     // The purpose of this projection is to test the Optimistic concurrency. We have a read model that accumulates entities
     // with different IDs. One instance of this read model (with id == product sku) will be updated when multiple instances
     // of the product entity (with the same SKU but different id) are changed.

@@ -7,7 +7,7 @@ import {
   storeEvents,
   storeSnapshot,
 } from './library/events-adapter'
-import { requestFailed, requestSucceeded } from './library/api-adapter'
+import { healthRequestResult, requestFailed, requestSucceeded } from './library/api-adapter'
 import { EventRegistry, GraphQLService, ReadModelRegistry } from './services'
 import { rawGraphQLRequestToEnvelope } from './library/graphql-adapter'
 
@@ -40,6 +40,7 @@ import { rawRocketInputToEnvelope } from './library/rocket-adapter'
 import { WebSocketServerAdapter } from './library/web-socket-server-adapter'
 import {
   areDatabaseReadModelsUp,
+  areRocketFunctionsUp,
   databaseEventsHealthDetails,
   databaseReadModelsHealthDetails,
   databaseUrl,
@@ -48,6 +49,7 @@ import {
   isGraphQLFunctionUp,
   rawRequestToSensorHealth,
 } from './library/health-adapter'
+import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 import * as process from 'process'
 
 export * from './paths'
@@ -82,6 +84,10 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     search: searchEvents.bind(null, eventRegistry),
     searchEntitiesIDs: searchEntitiesIds.bind(null, eventRegistry),
     storeDispatched: storeDispatchedEvent,
+    findDeletableEvent: findDeletableEvent.bind(null, eventRegistry),
+    findDeletableSnapshot: findDeletableSnapshot.bind(null, eventRegistry),
+    deleteEvent: deleteEvent.bind(null, eventRegistry),
+    deleteSnapshot: deleteSnapshot.bind(null, eventRegistry),
   },
   // ProviderReadModelsLibrary
   readModels: {
@@ -104,6 +110,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
   api: {
     requestSucceeded,
     requestFailed,
+    healthRequestResult,
   },
   connections: {
     storeData: storeConnectionData.bind(null, connectionRegistry),
@@ -127,6 +134,7 @@ export const Provider = (rocketDescriptors?: RocketDescriptor[]): ProviderLibrar
     isGraphQLFunctionUp: isGraphQLFunctionUp,
     graphQLFunctionUrl: graphqlFunctionUrl,
     rawRequestToHealthEnvelope: rawRequestToSensorHealth,
+    areRocketFunctionsUp: areRocketFunctionsUp,
   },
   // ProviderInfrastructureGetter
   infrastructure: () => {

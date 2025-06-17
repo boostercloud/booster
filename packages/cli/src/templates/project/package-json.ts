@@ -31,12 +31,12 @@ export const template = `{
     "prettier":  "2.3.0",
     "typescript": "5.1.6",
     "ts-node": "9.1.1",
-    "@types/node": "^18.18.2",
+    "@types/node": "^20.17.17",
     "ts-patch": "3.1.2",
     "graphql": "^16.6.0"
   },
   "engines": {
-    "node": ">=18.0.0 <19.0.0"
+    "node": ">=20.0.0 <21.0.0"
   },
   "homepage": "{{{homepage}}}",
   "license": "{{{license}}}",

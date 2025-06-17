@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "2.16.0",
+  "version": "3.3.1",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -33,36 +33,36 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "engines": {
-    "node": ">=18.0.0 <19.0.0"
+    "node": ">=20.0.0 <21.0.0"
   },
   "peerDependencies": {
     "graphql": "^16.6.0"
   },
   "dependencies": {
     "tslib": "^2.4.0",
-    "uuid": "8.3.2",
+    "uuid": "11.0.5",
     "@effect-ts/core": "^0.60.4",
     "@effect-ts/node": "~0.39.0",
-    "effect": "2.4.17",
-    "@effect/cli": "0.35.26",
-    "@effect/platform": "0.48.24",
-    "@effect/printer": "0.32.2",
-    "@effect/printer-ansi": "0.32.26",
-    "@effect/schema": "0.64.18",
-    "@effect/typeclass": "0.23.17",
+    "effect": "3.13.2",
+    "@effect/cli": "0.56.2",
+    "@effect/platform": "0.77.2",
+    "@effect/printer": "0.41.2",
+    "@effect/printer-ansi": "0.41.2",
+    "@effect/schema": "0.75.5",
+    "@effect/typeclass": "0.32.2",
     "web-streams-polyfill": "~3.3.2",
-    "ws": "8.17.1"
+    "ws": "8.18.0"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^2.16.0",
-    "@boostercloud/metadata-booster": "workspace:^2.16.0",
+    "@boostercloud/eslint-config": "workspace:^3.3.1",
+    "@boostercloud/metadata-booster": "workspace:^3.3.1",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
-    "@types/mocha": "10.0.1",
-    "@types/node": "^18.18.2",
+    "@types/mocha": "10.0.10",
+    "@types/node": "^20.17.17",
     "@types/sinon": "10.0.0",
     "@types/sinon-chai": "3.2.5",
-    "@types/uuid": "8.3.0",
+    "@types/uuid": "10.0.0",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.23.1",
@@ -76,7 +76,7 @@
     "nyc": "^15.1.0",
     "sinon": "9.2.3",
     "sinon-chai": "3.5.0",
-    "typescript": "5.1.6",
+    "typescript": "5.7.3",
     "prettier": "2.3.0",
     "eslint-plugin-unicorn": "~44.0.2",
     "graphql": "^16.6.0",

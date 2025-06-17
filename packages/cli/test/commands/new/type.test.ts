@@ -52,39 +52,45 @@ describe('new', (): void => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Type([], {} as Config).init()
+      const config = await Config.load()
+      await new Type([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {
-      it('with no fields', async () => {
-        await new Type([typeName], {} as Config).run()
+      it('with no fields', async () => {      
+        const config = await Config.load()
+        await new Type([typeName], config).run()
         const renderedType = renderType(defaultTypeImports, typeName, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
       it('creates Type with a string field', async () => {
-        await new Type([typeName, '--fields', 'title:string'], {} as Config).run()
+        const config = await Config.load()
+        await new Type([typeName, '--fields', 'title:string'], config).run()
         const renderedType = renderType(defaultTypeImports, typeName, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
       it('creates Type with a number field', async () => {
-        await new Type([typeName, '--fields', 'quantity:number'], {} as Config).run()
+        const config = await Config.load()
+        await new Type([typeName, '--fields', 'quantity:number'], config).run()
         const renderedType = renderType(defaultTypeImports, typeName, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
       it('creates Type with UUID field', async () => {
-        await new Type([typeName, '--fields', 'identifier:UUID'], {} as Config).run()
+        const config = await Config.load()
+        await new Type([typeName, '--fields', 'identifier:UUID'], config).run()
         const renderedType = renderType(uuidTypeImports, typeName, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(typePath, renderedType)
       })
 
       it('creates Type with multiple fields', async () => {
+        const config = await Config.load()
         await new Type(
           [typeName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -99,7 +105,8 @@ describe('new', (): void => {
     describe('displays an error', () => {
       it('with empty Type name', async () => {
         replace(console, 'error', fake.resolves({}))
-        await new Type([], {} as Config).run()
+        const config = await Config.load()
+        await new Type([], config).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(typesRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided a type name/)
       })
@@ -108,7 +115,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Type([typeName, '--fields'], {} as Config).run()
+          const config = await Config.load()
+          await new Type([typeName, '--fields'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -121,7 +129,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Type([typeName, '--fields', 'title'], {} as Config).run()
+          const config = await Config.load()
+          await new Type([typeName, '--fields', 'title'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -134,7 +143,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Type([typeName, '--fields', 'title:'], {} as Config).run()
+          const config = await Config.load()
+          await new Type([typeName, '--fields', 'title:'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -148,7 +158,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Type([typeName, '--fields', 'title:string', 'title:string', 'quantity:number'], {} as Config).run()
+          const config = await Config.load()
+          await new Type([typeName, '--fields', 'title:string', 'title:string', 'quantity:number'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message

@@ -882,13 +882,21 @@ export class GetCartItems {
 
 The above search will return an array of carts with their `id` property, as well as an array of the `cartItems` of each cart with only the `productId` for each item.
 
-> **Warning**: Only available for Azure and Local Providers. `select` will be ignored for AWS Provider.
+:::warning
+Only available for Azure and Local Providers. `select` will be ignored for AWS Provider.
+:::
 
-> **Warning**: Using `select` will skip any Read Models migrations that need to be applied to the result. If you need to apply migrations to the result, don't use `select`.
+:::warning
+Using `select` will skip any Read Models migrations that need to be applied to the result. If you need to apply migrations to the result, don't use `select`.
+:::
 
-> **Warning**: Support for selecting fields from objects inside arrays is limited to arrays that are at most nested inside another property, e.g., `['category.relatedCategories[].name']`. Selecting fields from arrays that are nested deeper than that (e.g., `['foo.bar.items[].id']`) is not expected to yield the expected results.
+:::warning
+Support for selecting fields from objects inside arrays is limited to arrays that are at most nested inside another property, e.g., `['category.relatedCategories[].name']`. Selecting fields from arrays that are nested deeper than that (e.g., `['foo.bar.items[].id']`) will return the entire object.
+:::
 
-> **Warning**: Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
+:::warning
+Notice that `ReadModel`s are eventually consistent objects that are calculated as all events in all entities that affect the read model are settled. You should not assume that a read model is a proper source of truth, so you shouldn't use this feature for data validations. If you need to query the most up-to-date current state, consider fetching your Entities, instead of ReadModels, with `Booster.entity`
+:::
 
 ### Using sorting
 
@@ -931,7 +939,9 @@ This is a preview feature available only for some Providers and with some limita
   - Nested fields supported.
   - Sort by more than one file: **unsupported**.
 
-> **Warning**: It is not possible to sort by fields defined as Interface, only classes or primitives types.
+:::warning
+It is not possible to sort by fields defined as Interface, only classes or primitives types.
+:::
 
 ### Using pagination
 

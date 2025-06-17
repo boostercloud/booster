@@ -1,5 +1,5 @@
 import * as path from 'path'
-import { exec } from 'child-process-promise'
+import { command } from 'execa'
 import {
   createFolder,
   dirContents,
@@ -8,9 +8,9 @@ import {
   readFileContent,
   removeFolders,
 } from '../../helper/file-helper'
-import { ChildProcess } from 'child_process'
 import { overrideWithBoosterLocalDependencies } from '../../helper/deps-helper'
 import { expect } from '../../helper/expect'
+import { ChildProcess, exec as cpExec } from 'child_process'
 
 // The Booster CLI version used should match the integration tests' version
 const BOOSTER_VERSION = require('../../../package.json').version
@@ -29,8 +29,10 @@ describe('Project', () => {
 
   before(async () => {
     // Required by Github actions CI/CD, because it doesn't have git configured
-    await exec('git config --global user.name || git config --global user.name "Booster Test"')
-    await exec('git config --global user.email || git config --global user.email "test@booster.cloud"')
+    await command('git config --global user.name || git config --global user.name "Booster Test"', { shell: true })
+    await command('git config --global user.email || git config --global user.email "test@booster.cloud"', {
+      shell: true,
+    })
 
     createFolder(SANDBOX_INTEGRATION_DIR)
   })
@@ -93,8 +95,21 @@ describe('Project', () => {
         })
 
         cliProcess.stdout.on('end', () => {
-          cliProcess.stdin?.end()
           resolve()
+          //
+          // if (cliProcess.stdin) {
+          //   console.log('Attempting to end stdin')
+          //   try {
+          //     cliProcess.stdin.end()
+          //     console.log('stdin ended')
+          //   } catch (error) {
+          //     console.error('Error ending stdin:', error)
+          //   }
+          // } else {
+          //   resolve()
+          // }
+          // cliProcess.stdin?.end()
+          // resolve()
         })
 
         cliProcess.stdout.on('error', () => {
@@ -112,16 +127,22 @@ describe('Project', () => {
     flags: Array<string> = [],
     promptAnswers?: PromptAnswers
   ): Promise<{ stdout: string; stderr: string }> => {
-    const cliProcess = exec(`${cliPath} new:project ${projectName} ${flags.join(' ')}`, {
-      cwd: SANDBOX_INTEGRATION_DIR,
+    return new Promise((resolve, reject) => {
+      const cliProcess = cpExec(
+        `${cliPath} new:project ${projectName} ${flags.join(' ')}`,
+        {
+          cwd: SANDBOX_INTEGRATION_DIR,
+        },
+        (error, stdout, stderr) => {
+          if (error) reject(error)
+          else resolve({ stdout, stderr })
+        }
+      )
+
+      if (promptAnswers) {
+        handlePrompt(cliProcess, promptAnswers).catch(reject)
+      }
     })
-
-    if (promptAnswers) {
-      await handlePrompt(cliProcess.childProcess, promptAnswers)
-    }
-
-    const { stdout, stderr } = await cliProcess
-    return { stdout, stderr }
   }
 
   const packageJsonAssertions = (
@@ -240,13 +261,20 @@ describe('Project', () => {
       it('should create a new project using short flags to configure it', async () => {
         const projectName = 'cart-demo-short-flags'
         const flags = [
-          `-a "${AUTHOR}"`,
-          `-d "${DESCRIPTION}"`,
-          `-H "${HOMEPAGE}"`,
-          `-l "${LICENSE}"`,
-          `-p "${PROVIDER}"`,
-          `-r "${REPO_URL}"`,
-          `-v "${VERSION}"`,
+          '-a',
+          `"${AUTHOR}"`,
+          '-d',
+          `"${DESCRIPTION}"`,
+          '-H',
+          `"${HOMEPAGE}"`,
+          '-l',
+          `"${LICENSE}"`,
+          '-p',
+          `"${PROVIDER}"`,
+          '-r',
+          `"${REPO_URL}"`,
+          '-v',
+          `"${VERSION}"`,
           // We skip dependencies and git installation to make this test faster
           '--skipInstall',
           '--skipGit',
@@ -259,13 +287,20 @@ describe('Project', () => {
       it('should create a new project using long flags to configure it', async () => {
         const projectName = 'cart-demo-long-flags'
         const flags = [
-          `--author "${AUTHOR}"`,
-          `--description "${DESCRIPTION}"`,
-          `--homepage "${HOMEPAGE}"`,
-          `--license "${LICENSE}"`,
-          `--providerPackageName "${PROVIDER}"`,
-          `--repository "${REPO_URL}"`,
-          `--version "${VERSION}"`,
+          '--author',
+          `"${AUTHOR}"`,
+          '--description',
+          `"${DESCRIPTION}"`,
+          '--homepage',
+          `"${HOMEPAGE}"`,
+          '--license',
+          `"${LICENSE}"`,
+          '--providerPackageName',
+          `"${PROVIDER}"`,
+          '--repository',
+          `"${REPO_URL}"`,
+          '--version',
+          `"${VERSION}"`,
           // We skip dependencies and git installation to make this test faster
           '--skipInstall',
           '--skipGit',
@@ -297,8 +332,11 @@ describe('Project', () => {
         })
 
         it('passes linter', async () => {
-          await expect(exec('npm run lint:check', { cwd: projectPath(projectName), capture: ['stderr', 'stdout'] })).to
-            .be.eventually.fulfilled
+          await expect(
+            command('npm run lint:check', {
+              cwd: projectPath(projectName),
+            })
+          ).to.be.eventually.fulfilled
         }).timeout(TEST_TIMEOUT)
 
         // TODO: Remove the skip when there is at leas one version published of framework-common-helpers
@@ -307,9 +345,9 @@ describe('Project', () => {
           // Rewrite dependencies to use local versions
           await overrideWithBoosterLocalDependencies(fullProjectPath)
           // Install those dependencies
-          await exec('npm install --omit=dev --omit=optional --no-bin-links', { cwd: fullProjectPath })
+          await command('npm install --omit=dev --omit=optional --no-bin-links', { cwd: fullProjectPath })
 
-          await expect(exec('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
+          await expect(command('npm run build', { cwd: fullProjectPath })).to.be.eventually.fulfilled
         })
       })
 
@@ -369,8 +407,10 @@ describe('Project', () => {
           license: LICENSE,
         }
         const flags = [
-          `--providerPackageName "${PROVIDER}"`,
-          `--repository "${REPO_URL}"`,
+          '--providerPackageName',
+          `"${PROVIDER}"`,
+          '--repository',
+          `"${REPO_URL}"`,
           // We skip dependencies and git installation to make this test faster
           '--skipInstall',
           '--skipGit',
@@ -385,7 +425,7 @@ describe('Project', () => {
   context('Invalid project', () => {
     describe('missing project name', () => {
       it('should fail', async () => {
-        const { stderr } = await exec(`${cliPath} new:project`, { cwd: SANDBOX_INTEGRATION_DIR })
+        const { stderr } = await command(`${cliPath} new:project`, { cwd: SANDBOX_INTEGRATION_DIR })
 
         expect(stderr).to.match(/You haven't provided a project name, but it is required, run with --help for usage/)
       })
@@ -398,13 +438,20 @@ describe('Project', () => {
         )
 
         const flags = [
-          `--author "${AUTHOR}"`,
-          `--description "${DESCRIPTION}"`,
-          `--homepage "${HOMEPAGE}"`,
-          `--license "${LICENSE}"`,
-          '--providerPackageName "invalid-provider"',
-          `--repository "${REPO_URL}"`,
-          `--version "${VERSION}"`,
+          '--author',
+          `"${AUTHOR}"`,
+          '--description',
+          `"${DESCRIPTION}"`,
+          '--homepage',
+          `"${HOMEPAGE}"`,
+          '--license',
+          `"${LICENSE}"`,
+          '--providerPackageName',
+          '"invalid-provider"',
+          '--repository',
+          `"${REPO_URL}"`,
+          '--version',
+          `"${VERSION}"`,
           // We skip dependencies and git installation to make this test faster
           '--skipInstall',
           '--skipGit',

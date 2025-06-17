@@ -1,6 +1,140 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 06 Aug 2024 20:59:53 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Jun 2025 17:47:56 GMT and should not be manually modified.
+
+## 3.3.1
+Thu, 12 Jun 2025 17:47:56 GMT
+
+### Patches
+
+- Fixes duplicate snapshot generation
+
+## 3.3.0
+Thu, 05 Jun 2025 16:54:54 GMT
+
+### Minor changes
+
+- Improve event store resilience
+
+## 3.2.1
+Thu, 29 May 2025 16:15:02 GMT
+
+### Patches
+
+- Fix a bug where Booster would crash if an error was thrown in an async getter on a ReadModel
+
+## 3.2.0
+Tue, 22 Apr 2025 14:30:07 GMT
+
+### Minor changes
+
+- Enhancements to health sensor functionality
+
+## 3.1.2
+Mon, 14 Apr 2025 15:27:47 GMT
+
+### Patches
+
+- Fixes handling of event handler errors
+
+## 3.1.1
+Fri, 28 Mar 2025 14:51:54 GMT
+
+### Patches
+
+- Fixes issues with the sensors
+
+## 3.1.0
+Thu, 20 Feb 2025 13:42:48 GMT
+
+### Minor changes
+
+- Upgrades to several dependencies
+
+## 3.0.0
+Tue, 11 Feb 2025 19:54:24 GMT
+
+### Breaking changes
+
+- Node 20 upgrade 
+
+## 2.19.0
+Tue, 07 Jan 2025 15:05:43 GMT
+
+### Minor changes
+
+- Enhance storing events in batches in Azure provider
+
+## 2.18.8
+Tue, 17 Dec 2024 14:48:18 GMT
+
+### Patches
+
+- Update processProperties function to fix readModel getters where return type is an array of objects
+- Added graphql union types to query return type generation
+
+## 2.18.7
+Mon, 09 Dec 2024 14:07:07 GMT
+
+### Patches
+
+- Replace child-process-promise with execa
+
+## 2.18.6
+Mon, 25 Nov 2024 15:49:50 GMT
+
+### Patches
+
+- Fixes optimistic concurrency issue found when projecting read models
+
+## 2.18.5
+Tue, 29 Oct 2024 18:40:31 GMT
+
+### Patches
+
+- Add mandatory subscriptionId property
+
+## 2.18.4
+Tue, 08 Oct 2024 15:06:52 GMT
+
+### Patches
+
+- Remove unnecessary @cdktf/provider-azurerm dependency from Azure provider package
+
+## 2.18.3
+Mon, 30 Sep 2024 19:09:52 GMT
+
+### Patches
+
+- Fix handling of deeply-nested arrays an sub-array properties in Read Model queries in local provider
+
+## 2.18.2
+Wed, 25 Sep 2024 18:23:11 GMT
+
+### Patches
+
+- Correct handling of deeply-nested arrays and sub-array properties in Read Model queries
+
+## 2.18.1
+Wed, 04 Sep 2024 18:51:46 GMT
+
+### Patches
+
+- Fix types for Projects decorator
+
+## 2.18.0
+Thu, 29 Aug 2024 21:39:42 GMT
+
+### Minor changes
+
+- Add remove events
+
+## 2.17.0
+Wed, 21 Aug 2024 00:15:44 GMT
+
+### Minor changes
+
+- Health sensors for Rockets
 
 ## 2.16.0
 Tue, 06 Aug 2024 20:59:53 GMT

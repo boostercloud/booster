@@ -25,6 +25,7 @@ import { RocketDescriptor, RocketFunction } from './rockets'
 import { DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS, HealthIndicatorMetadata, Logger, SensorConfiguration } from '.'
 import { TraceConfiguration } from './instrumentation/trace-types'
 import { Context } from 'effect'
+import { AzureConfiguration, DEFAULT_CHUNK_SIZE } from './provider/azure-configuration'
 
 /**
  * Class used by external packages that needs to get a representation of
@@ -85,6 +86,7 @@ export class BoosterConfig {
   public readonly eventHandlers: Record<EventName, Array<EventHandlerInterface>> = {}
   public readonly readModels: Record<ReadModelName, ReadModelMetadata> = {}
   public readonly projections: Record<EntityName, Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>> = {}
+  public readonly unProjections: Record<EntityName, Array<ProjectionMetadata<EntityInterface, ReadModelInterface>>> = {}
   public readonly readModelSequenceKeys: Record<EntityName, string> = {}
   public readonly roles: Record<RoleName, RoleMetadata> = {}
   public readonly schemaMigrations: Record<ConceptName, Map<Version, SchemaMigrationMetadata>> = {}
@@ -97,6 +99,12 @@ export class BoosterConfig {
         authorize: 'all',
       },
       booster: DEFAULT_SENSOR_HEALTH_BOOSTER_CONFIGURATIONS,
+    },
+  }
+  public readonly azureConfiguration: AzureConfiguration = {
+    enableEventBatching: true, // enable batching by default
+    cosmos: {
+      batchSize: DEFAULT_CHUNK_SIZE,
     },
   }
 
@@ -251,6 +259,14 @@ export class BoosterConfig {
       }
     }
   }
+
+  public readonly eventStoreRetry: RetryConfig = {
+    maxRetries: 3,
+    initialDelay: 1000,
+    maxDelay: 30000,
+    backoffFactor: 2,
+    jitterFactor: 0.1,
+  }
 }
 
 export const BoosterConfigTag = Context.GenericTag<BoosterConfig>('BoosterConfig')
@@ -265,6 +281,36 @@ interface ResourceNames {
   streamTopic: string
 
   forReadModel(entityName: string): string
+}
+
+/**
+ * Configuration for retrying event store operations
+ * @interface
+ */
+export interface RetryConfig {
+  /** Maximum number of retry attempts for event store operations */
+  maxRetries: number
+
+  /** Initial delay in milliseconds before the first retry */
+  initialDelay: number
+
+  /** Maximum delay in milliseconds between retries */
+  maxDelay: number
+
+  /** Multiplier for exponential backoff (each retry will wait initialDelay * (backoffFactor ^ attempt)) */
+  backoffFactor: number
+
+  /** Random jitter factor (0-1) to prevent thundering herd */
+  jitterFactor: number
+
+  /** Whether to retry all errors by default. If false, only errors in retryableErrors will be retried */
+  retryAllErrors?: boolean
+
+  /** List of error class names that should never be retried, regardless of other settings */
+  nonRetryableErrors?: Array<string>
+
+  /** List of error class names that should be retried when retryAllErrors is false */
+  retryableErrors?: Array<string>
 }
 
 type EntityName = string

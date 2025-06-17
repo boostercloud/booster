@@ -13,7 +13,7 @@ import { EventsStreamingCallback } from './services/raw-events-parser'
 import { ReadModelStore } from './services/read-model-store'
 import { RegisterHandler } from './booster-register-handler'
 import { BoosterGlobalErrorDispatcher } from './booster-global-error-dispatcher'
-import { createInstance, getLogger, Promises } from '@boostercloud/framework-common-helpers'
+import { createInstance, getLogger, Promises, PromisesError } from '@boostercloud/framework-common-helpers'
 import { NotificationInterface } from 'framework-types/dist'
 import { Trace } from './instrumentation'
 import { BOOSTER_GLOBAL_EVENT_HANDLERS } from './decorators'
@@ -27,15 +27,20 @@ export class BoosterEventProcessor {
     return async (entityName, entityID, eventEnvelopes, config) => {
       // Filter events that have already been dispatched
       const eventsNotDispatched = await BoosterEventProcessor.filterDispatched(config, eventEnvelopes, eventStore)
-      const eventEnvelopesProcessors = [
-        BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventsNotDispatched, config),
-      ]
+      const eventEnvelopesProcessors = []
 
-      // Read models are not updated for notification events (events that are not related to an entity but a topic)
-      if (!(entityName in config.topicToEvent)) {
+      // Only process events that haven't been dispatched yet
+      if (eventsNotDispatched.length > 0) {
         eventEnvelopesProcessors.push(
-          BoosterEventProcessor.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
+          BoosterEventProcessor.dispatchEntityEventsToEventHandlers(eventsNotDispatched, config)
         )
+
+        // Read models are not updated for notification events (events that are not related to an entity but a topic)
+        if (!(entityName in config.topicToEvent)) {
+          eventEnvelopesProcessors.push(
+            BoosterEventProcessor.snapshotAndUpdateReadModels(config, entityName, entityID, eventStore, readModelStore)
+          )
+        }
       }
 
       await Promises.allSettledAndFulfilled(eventEnvelopesProcessors)
@@ -89,24 +94,42 @@ export class BoosterEventProcessor {
     config: BoosterConfig
   ): Promise<void> {
     const logger = getLogger(config, 'BoosterEventDispatcher.dispatchEntityEventsToEventHandlers')
-    for (const eventEnvelope of entityEventEnvelopes) {
-      let eventHandlers = config.eventHandlers[eventEnvelope.typeName] || []
-      const globalEventHandler = config.eventHandlers[BOOSTER_GLOBAL_EVENT_HANDLERS]
-      if (globalEventHandler && globalEventHandler.length > 0) {
-        eventHandlers = eventHandlers.concat(globalEventHandler)
-      }
-      if (!eventHandlers || eventHandlers.length == 0) {
-        logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
-        continue
-      }
-      const eventInstance = this.getEventInstance(config, eventEnvelope)
-      if (eventHandlers && eventHandlers.length > 0) {
-        await Promises.allSettledAndFulfilled(
-          eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
-            logger.debug('Calling "handle" method on event handler: ', eventHandler)
-            await this.callEventHandler(eventHandler, eventInstance, eventEnvelope, config)
-          })
-        )
+    try {
+      await Promises.allSettledAndFulfilled(
+        entityEventEnvelopes.map(async (eventEnvelope) => {
+          let eventHandlers = config.eventHandlers[eventEnvelope.typeName] || []
+          const globalEventHandler = config.eventHandlers[BOOSTER_GLOBAL_EVENT_HANDLERS]
+          if (globalEventHandler && globalEventHandler.length > 0) {
+            eventHandlers = eventHandlers.concat(globalEventHandler)
+          }
+          if (!eventHandlers || eventHandlers.length == 0) {
+            logger.debug(`No event-handlers found for event ${eventEnvelope.typeName}. Skipping...`)
+            return
+          }
+          const eventInstance = this.getEventInstance(config, eventEnvelope)
+          if (eventHandlers && eventHandlers.length > 0) {
+            try {
+              await Promises.allSettledAndFulfilled(
+                eventHandlers.map(async (eventHandler: EventHandlerInterface) => {
+                  logger.debug('Calling "handle" method on event handler: ', eventHandler)
+                  await this.callEventHandler(eventHandler, eventInstance, eventEnvelope, config)
+                })
+              )
+            } catch (error) {
+              if (error instanceof PromisesError) {
+                logger.error(`Failed to process handlers for event ${eventEnvelope.typeName}:`, error.failedReasons)
+              } else {
+                logger.error(`Unexpected error processing handlers for event ${eventEnvelope.typeName}:`, error)
+              }
+            }
+          }
+        })
+      )
+    } catch (error) {
+      if (error instanceof PromisesError) {
+        logger.error('Failed to process events:', error.failedReasons)
+      } else {
+        logger.error('Unexpected error processing events:', error)
       }
     }
   }
@@ -127,6 +150,8 @@ export class BoosterEventProcessor {
   ): Promise<void> {
     const register = new Register(eventEnvelope.requestID, {}, RegisterHandler.flush, eventEnvelope.currentUser)
     try {
+      const logger = getLogger(config, 'BoosterEventProcessor#handleEvent')
+      logger.debug('Calling "handle" method on event handler: ', eventHandler)
       await eventHandler.handle(eventInstance, register)
     } catch (e) {
       const globalErrorDispatcher = new BoosterGlobalErrorDispatcher(config)

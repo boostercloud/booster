@@ -169,6 +169,46 @@ describe('Query helper', () => {
       )
     })
 
+    it('Executes a SQL query with a projectionFor projection that has a deeply nested array of objects', async () => {
+      await search(
+        mockCosmosDbClient as any,
+        mockConfig,
+        mockReadModelName,
+        {},
+        undefined,
+        undefined,
+        false,
+        undefined,
+        [
+          'id',
+          'x.arr[].z',
+          'foo.bar.items[].id',
+          'foo.bar.baz.items[].id',
+          'arr[].subArr[].id',
+          'arr[].id',
+        ] as ProjectionFor<unknown>
+      )
+
+      expect(mockCosmosDbClient.database).to.have.been.calledWithExactly(mockConfig.resourceNames.applicationStack)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container
+      ).to.have.been.calledWithExactly(`${mockReadModelName}`)
+      expect(
+        mockCosmosDbClient.database(mockConfig.resourceNames.applicationStack).container(`${mockReadModelName}`).items
+          .query
+      ).to.have.been.calledWith(
+        match({
+          query:
+            'SELECT c["id"], ' +
+            'ARRAY(SELECT item["z"] FROM item IN c["x"]["arr"]) AS "x.arr", ' +
+            'c["foo"]["bar"]["items"] AS "foo.bar.items", c["foo"]["bar"]["baz"]["items"] AS "foo.bar.baz.items", ' +
+            'ARRAY(SELECT item["subArr"], item["id"] FROM item IN c["arr"]) AS arr ' +
+            'FROM c ',
+          parameters: [],
+        })
+      )
+    })
+
     it('Executes a SQL query with a star projection in the read model table', async () => {
       await search(
         mockCosmosDbClient as any,

@@ -42,39 +42,45 @@ describe('new', (): void => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Event([], {} as Config).init()
+      const config = await Config.load()
+      await new Event([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {
       it('with no fields', async () => {
-        await new Event([eventName], {} as Config).run()
+        const config = await Config.load()
+        await new Event([eventName], config).run()
         const renderedEvent = renderEvent(eventName, [])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath, renderedEvent)
       })
 
       it('creates Event with a string field', async () => {
-        await new Event([eventName, '--fields', 'title:string'], {} as Config).run()
+        const config = await Config.load()
+        await new Event([eventName, '--fields', 'title:string'], config).run()
         const renderedEvent = renderEvent(eventName, [{ name: 'title', type: 'string' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath, renderedEvent)
       })
 
       it('creates Event with a number field', async () => {
-        await new Event([eventName, '--fields', 'quantity:number'], {} as Config).run()
+        const config = await Config.load()
+        await new Event([eventName, '--fields', 'quantity:number'], config).run()
         const renderedEvent = renderEvent(eventName, [{ name: 'quantity', type: 'number' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath, renderedEvent)
       })
 
       it('creates Event with UUID field', async () => {
-        await new Event([eventName, '--fields', 'identifier:UUID'], {} as Config).run()
+        const config = await Config.load()
+        await new Event([eventName, '--fields', 'identifier:UUID'], config).run()
         const renderedEvent = renderEvent(eventName, [{ name: 'identifier', type: 'UUID' }])
         expect(fs.outputFile).to.have.been.calledWithMatch(eventPath, renderedEvent)
       })
 
       it('creates Event with multiple fields', async () => {
+        const config = await Config.load()
         await new Event(
           [eventName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -89,7 +95,8 @@ describe('new', (): void => {
     describe('displays an error', () => {
       it('with empty Event name', async () => {
         replace(console, 'error', fake.resolves({}))
-        await new Event([], {} as Config).run()
+        const config = await Config.load()
+        await new Event([], config).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(eventsRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an event name/)
       })
@@ -98,7 +105,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Event([eventName, '--fields'], {} as Config).run()
+          const config = await Config.load()
+          await new Event([eventName, '--fields'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -111,7 +119,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Event([eventName, '--fields', 'title'], {} as Config).run()
+          const config = await Config.load()
+          await new Event([eventName, '--fields', 'title'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -124,7 +133,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Event([eventName, '--fields', 'title:'], {} as Config).run()
+          const config = await Config.load()
+          await new Event([eventName, '--fields', 'title:'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -138,9 +148,10 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
+          const config = await Config.load()
           await new Event(
             [eventName, '--fields', 'title:string', 'title:string', 'quantity:number'],
-            {} as Config
+            config
           ).run()
         } catch (e) {
           exceptionThrown = true

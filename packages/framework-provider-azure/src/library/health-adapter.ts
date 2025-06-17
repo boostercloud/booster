@@ -19,12 +19,22 @@ export async function isContainerUp(
   containerName: string
 ): Promise<boolean> {
   const container = getContainer(cosmosDb, config, containerName)
-  const { resources } = await container.items.query('SELECT TOP 1 1 FROM c', { maxItemCount: -1 }).fetchAll()
+  const { resources } = await container.items
+    .query({
+      query: 'SELECT TOP 1 1 FROM c',
+      parameters: [],
+    })
+    .fetchAll()
   return resources !== undefined
 }
 
 export async function countAll(container: Container): Promise<number> {
-  const { resources } = await container.items.query('SELECT VALUE COUNT(1) FROM c', { maxItemCount: -1 }).fetchAll()
+  const { resources } = await container.items
+    .query({
+      query: 'SELECT VALUE COUNT(1) FROM c',
+      parameters: [],
+    })
+    .fetchAll()
   return resources ? resources[0] : 0
 }
 
@@ -47,6 +57,10 @@ export async function graphqlFunctionUrl(): Promise<string> {
   }
 }
 
+export async function rocketFunctionAppUrl(functionAppName: string): Promise<string> {
+  return `https://${functionAppName}.azurewebsites.net`
+}
+
 export async function isDatabaseEventUp(cosmosDb: CosmosClient, config: BoosterConfig): Promise<boolean> {
   return await isContainerUp(cosmosDb, config, config.resourceNames.eventsStore)
 }
@@ -64,11 +78,49 @@ export async function areDatabaseReadModelsUp(cosmosDb: CosmosClient, config: Bo
 export async function isGraphQLFunctionUp(): Promise<boolean> {
   try {
     const restAPIUrl = await graphqlFunctionUrl()
-    const response = await request(restAPIUrl, 'POST')
+    const response = await request(
+      restAPIUrl,
+      'POST',
+      JSON.stringify({
+        query: 'query { __typename }',
+      })
+    )
     return response.status === 200
   } catch (e) {
     return false
   }
+}
+
+export async function isRocketFunctionUp(rocketFunctionAppName: string): Promise<boolean> {
+  try {
+    const functionAppUrl = await rocketFunctionAppUrl(rocketFunctionAppName)
+    const response = await request(functionAppUrl, 'GET')
+    return response.status === 200
+  } catch (e) {
+    return false
+  }
+}
+
+export async function areRocketFunctionsUp(): Promise<{ [key: string]: boolean }> {
+  const mappingString = process.env[environmentVarNames.rocketPackageMapping] || ''
+  const rocketPackageMapping = mappingString
+    .split(';')
+    .filter(Boolean)
+    .reduce((acc, pair) => {
+      const [pkg, func] = pair.split(':')
+      if (pkg && func) {
+        acc[pkg] = func
+      }
+      return acc
+    }, {} as Record<string, string>)
+  const results = await Promise.all(
+    Object.entries(rocketPackageMapping).map(async ([packageName, functionAppName]) => {
+      const isUp = await isRocketFunctionUp(functionAppName)
+      return { [packageName]: isUp }
+    })
+  )
+
+  return results.reduce((acc, result) => ({ ...acc, ...result }), {})
 }
 
 export function rawRequestToSensorHealthComponentPath(rawRequest: Context): string {

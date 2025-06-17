@@ -27,7 +27,7 @@ export function rootHealthProviders(
   )
 }
 
-export function childrenHealthProviders(
+export function childHealthProviders(
   healthIndicatorMetadata: HealthIndicatorMetadata,
   healthProviders: Record<string, HealthIndicatorMetadata>
 ): Array<HealthIndicatorMetadata> {

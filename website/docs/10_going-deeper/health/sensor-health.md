@@ -87,10 +87,18 @@ Booster provides the following endpoints to retrieve the enabled components:
 * https://your-application-url/sensor/health/booster/database/events: Events status
 * https://your-application-url/sensor/health/booster/database/readmodels: ReadModels status
 * https://your-application-url/sensor/health/booster/function: Functions status
+* https://your-application-url/sensor/health/rockets: All rockets status
+* https://your-application-url/sensor/health/rockets/rocket-name: Individual rocket status
 * https://your-application-url/sensor/health/your-component-id: User defined status
 * https://your-application-url/sensor/health/your-component-id/your-component-child-id: User child component status 
 
-Depending on the `showChildren` configuration, children components will be included or not.
+:::note
+When accessing individual rocket health status, the rocket-name is derived from the rocket's package name. For example,
+if your rocket package is `@org/my-rocket-provider`, the rocket name would be `my-rocket`. The name is extracted by
+removing the scope (`@org`) and the provider suffix (`-provider`).
+:::
+
+Depending on the `showChildren` configuration, child components will be included or not.
 
 ### Health Status Response
 
@@ -99,8 +107,8 @@ Each component response will contain the following information:
 * status: The component or subsystem status
 * name: component description
 * id: string. unique component identifier. You can request a component status using the id in the url
-* details: optional object. If `details` is true, specific details about this component.
-* components: optional object. If `showChildren` is true, children components health status.  
+* details: optional object. If `details` is enabled, specific details about this component.
+* components: optional object. If `showChildren` is enabled, child components health status.  
 
 Example: 
 
@@ -141,6 +149,18 @@ Example:
 ]
 ```
 
+### HTTP Status Codes
+
+The health endpoint returns different HTTP status codes based on the overall health of the application:
+
+* 200 OK: All components are healthy (UP), or in the case of rockets, either UP or UNKNOWN
+* 503 Service Unavailable: One or more components are unhealthy (DOWN or PARTIALLY_UP)
+
+:::note
+When checking rockets health, an UNKNOWN status (when no rockets are found) is considered health and will return a 200
+status code.
+:::
+
 ### Get specific component health information
 
 Use the `id` field to get specific component health information. Booster provides the following ids:
@@ -150,6 +170,8 @@ Use the `id` field to get specific component health information. Booster provide
 * booster/database
 * booster/database/events
 * booster/database/readmodels
+* rockets
+* rockets/rocket-name (NEW: You can now check individual rocket health)
 
 You can provide new components:
 ```typescript
@@ -189,8 +211,8 @@ Health components are fully configurable, allowing you to display the informatio
 Configuration options:
 * enabled: If false, this indicator and the components of this indicator will be skipped
 * details: If false, the indicator will not include the details
-* showChildren: If false, this indicator will not include children components in the tree.
-  * Children components will be shown through children urls
+* showChildren: If false, this indicator will not include child components in the tree.
+  * Child components will be shown through child urls
 * authorize: Authorize configuration. [See security documentation](https://docs.boosterframework.com/security/security) 
 
 #### Booster components default configuration
@@ -314,14 +336,34 @@ export class ApplicationHealthIndicator {
     * file: Read Models database file
     * count: number of total rows
 
-> **Note**: details will be included only if `details` is enabled
+:::note
+Details will be included only if `details` is enabled
+:::
 
+#### rockets
+
+* status:
+  * UP: All rockets are UP
+  * PARTIALLY_UP: Some rockets are UP and some are DOWN
+  * DOWN: All rockets are DOWN
+  * UNKNOWN: No rockets are found (considered healthy for HTTP status)
+
+You can now check individual rocket health using the
+endpoint: http://your-application-url/sensor/health/rockets/rocket-name
+
+:::note
+Rocket health sensors are only available for the Azure provider. When using the local provider, rocket health status
+will always be UP since rockets run in the same process as the main Booster application. The health check behavior
+described above (UP, PARTIALLY_UP, DOWN, UNKNOWN) applies specifically to the Azure provider where rockets run as
+separate functions.
+:::
 
 ### Health status
 
 Available status are
 
 * UP: The component or subsystem is working as expected
+* PARTIALLY_UP: The component is partially working or has reduced functionality
 * DOWN: The component is not working
 * OUT_OF_SERVICE: The component is out of service temporarily
 * UNKNOWN: The component state is unknown
@@ -351,17 +393,17 @@ If all components are enable and showChildren is set to true:
 
 ```text
 ├── booster
-│  ├── database
-│    ├── events
-│    └── readmodels
-└  └── function
+│  ├── database
+│    ├── events
+│    └── readmodels
+└  └── function
 ```
 
 If the database component is disabled, the same url will return:
 
 ```text
 ├── booster
-└  └── function
+└  └── function
 ```
 
 If the request url is https://your-application-url/sensor/health/database, the component will not be returned
@@ -370,7 +412,7 @@ If the request url is https://your-application-url/sensor/health/database, the c
 [Empty]
 ```
 
-And the children components will be disabled too using direct url https://your-application-url/sensor/health/database/events
+And the child components will be disabled too using direct url https://your-application-url/sensor/health/database/events
 
 ```text
 [Empty]
@@ -380,8 +422,8 @@ If database is enabled and showChildren is set to false and using https://your-a
 
 ```text
 ├── booster
-│  ├── database
-│  └── function
+│  ├── database
+│  └── function
 ```
 
 using https://your-application-url/sensor/health/database, children will not be visible

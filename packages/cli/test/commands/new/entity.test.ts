@@ -75,25 +75,29 @@ describe('new', (): void => {
     })
 
     it('init calls checkCurrentDirBoosterVersion', async () => {
-      await new Entity([], {} as Config).init()
+      const config = await Config.load()
+      await new Entity([], config).init()
       expect(ProjectChecker.checkCurrentDirBoosterVersion).to.have.been.called
     })
 
     describe('Created correctly', () => {
       it('with no fields and no reduces', async () => {
-        await new Entity([entityName], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([entityName], config).run()
         const renderedEntity = renderEntity(defaultEntityImports, entityName, [], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field', async () => {
-        await new Entity([entityName, '--fields', 'title:string'], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([entityName, '--fields', 'title:string'], config).run()
         const renderedEntity = renderEntity(defaultEntityImports, entityName, [{ name: 'title', type: 'string' }], [])
         expect(fs.outputFile).to.have.been.calledWithMatch(entityPath, renderedEntity)
       })
 
       it('creates Entity with a string field reducing PostCreated', async () => {
-        await new Entity([entityName, '--fields', 'title:string', '--reduces', 'PostCreated'], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([entityName, '--fields', 'title:string', '--reduces', 'PostCreated'], config).run()
         const renderedEntity = renderEntity(
           reducingEntityImports,
           entityName,
@@ -104,7 +108,8 @@ describe('new', (): void => {
       })
 
       it('creates Entity with a number field', async () => {
-        await new Entity([entityName, '--fields', 'quantity:number'], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([entityName, '--fields', 'quantity:number'], config).run()
         const renderedEntity = renderEntity(
           defaultEntityImports,
           entityName,
@@ -115,7 +120,8 @@ describe('new', (): void => {
       })
 
       it('creates Entity with a number field reducing PostCreated', async () => {
-        await new Entity([entityName, '--fields', 'quantity:number', '--reduces', 'PostCreated'], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([entityName, '--fields', 'quantity:number', '--reduces', 'PostCreated'], config).run()
         const renderedEntity = renderEntity(
           reducingEntityImports,
           entityName,
@@ -126,7 +132,8 @@ describe('new', (): void => {
       })
 
       it('creates Entity with UUID field', async () => {
-        await new Entity([entityName, '--fields', 'identifier:UUID'], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([entityName, '--fields', 'identifier:UUID'], config).run()
         const renderedEntity = renderEntity(
           defaultEntityImports,
           entityName,
@@ -137,7 +144,8 @@ describe('new', (): void => {
       })
 
       it('creates Entity with UUID field reducing PostCreated', async () => {
-        await new Entity([entityName, '--fields', 'identifier:UUID', '--reduces', 'PostCreated'], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([entityName, '--fields', 'identifier:UUID', '--reduces', 'PostCreated'], config).run()
         const renderedEntity = renderEntity(
           reducingEntityImports,
           entityName,
@@ -148,9 +156,10 @@ describe('new', (): void => {
       })
 
       it('creates Entity with multiple fields', async () => {
+        const config = await Config.load()
         await new Entity(
           [entityName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID'],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -162,9 +171,10 @@ describe('new', (): void => {
       })
 
       it('creates Entity with multiple fields reducing PostCreated', async () => {
+        const config = await Config.load()
         await new Entity(
           [entityName, '--fields', 'title:string', 'quantity:number', 'identifier:UUID', '--reduces', 'PostCreated'],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -176,6 +186,7 @@ describe('new', (): void => {
       })
 
       it('creates Entity with multiple fields reducing PostCreated and CommentCreated', async () => {
+        const config = await Config.load()
         await new Entity(
           [
             entityName,
@@ -187,7 +198,7 @@ describe('new', (): void => {
             'PostCreated',
             'CommentCreated',
           ],
-          {} as Config
+          config
         ).run()
         const fields = [
           { name: 'title', type: 'string' },
@@ -205,7 +216,8 @@ describe('new', (): void => {
     describe('displays an error', () => {
       it('with empty Entity name', async () => {
         replace(console, 'error', fake.resolves({}))
-        await new Entity([], {} as Config).run()
+        const config = await Config.load()
+        await new Entity([], config).run()
         expect(fs.outputFile).to.have.not.been.calledWithMatch(entitysRoot)
         expect(console.error).to.have.been.calledWithMatch(/You haven't provided an entity name/)
       })
@@ -214,7 +226,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields'], {} as Config).run()
+          const config = await Config.load()
+          await new Entity([entityName, '--fields'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -227,7 +240,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', 'title:string', '--reduces'], {} as Config).run()
+          const config = await Config.load()
+          await new Entity([entityName, '--fields', 'title:string', '--reduces'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -240,7 +254,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', '--reduces'], {} as Config).run()
+          const config = await Config.load()
+          await new Entity([entityName, '--fields', '--reduces'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -253,7 +268,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', 'title', '--reduces'], {} as Config).run()
+          const config = await Config.load()
+          await new Entity([entityName, '--fields', 'title', '--reduces'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -266,7 +282,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', 'title'], {} as Config).run()
+          const config = await Config.load()
+          await new Entity([entityName, '--fields', 'title'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -279,7 +296,8 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
-          await new Entity([entityName, '--fields', 'title:'], {} as Config).run()
+          const config = await Config.load()
+          await new Entity([entityName, '--fields', 'title:'], config).run()
         } catch (e) {
           exceptionThrown = true
           exceptionMessage = e.message
@@ -293,9 +311,10 @@ describe('new', (): void => {
         let exceptionThrown = false
         let exceptionMessage = ''
         try {
+          const config = await Config.load()
           await new Entity(
             [entityName, '--fields', 'title:string', 'title:string', 'quantity:number'],
-            {} as Config
+            config
           ).run()
         } catch (e) {
           exceptionThrown = true

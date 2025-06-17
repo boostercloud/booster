@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-types */
 import { EntitySnapshotEnvelope, EventEnvelope, EventStoreEntryEnvelope } from '@boostercloud/framework-types'
 import { eventsDatabase } from '../paths'
+
 const DataStore = require('@seald-io/nedb')
 
 export class EventRegistry {
@@ -35,6 +36,24 @@ export class EventRegistry {
       cursor = cursor.limit(Number(limit))
     }
     return await cursor.execAsync()
+  }
+
+  public async replaceOrDeleteItem(id: string, newValue?: EventEnvelope | EntitySnapshotEnvelope): Promise<void> {
+    if (newValue) {
+      await new Promise((resolve, reject) =>
+        this.events.update({ _id: id }, newValue, { multi: true }, (err: any, numRemoved: number) => {
+          if (err) reject(err)
+          else resolve(numRemoved)
+        })
+      )
+    } else {
+      await new Promise((resolve, reject) =>
+        this.events.remove({ _id: id }, { multi: true }, (err: any, numRemoved: number) => {
+          if (err) reject(err)
+          else resolve(numRemoved)
+        })
+      )
+    }
   }
 
   public async queryLatestSnapshot(query: object): Promise<EntitySnapshotEnvelope | undefined> {

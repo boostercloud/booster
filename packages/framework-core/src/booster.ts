@@ -4,6 +4,7 @@ import {
   BoosterConfigTag,
   Class,
   EntityInterface,
+  EventDeleteParameters,
   EventSearchParameters,
   EventSearchResponse,
   PaginatedEntitiesIdsResult,
@@ -21,6 +22,7 @@ import { JwksUriTokenVerifier, JWT_ENV_VARS } from './services/token-verifiers'
 import { BoosterAuthorizer } from './booster-authorizer'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
 import { readModelSearcher } from './services/read-model-searcher'
+import { BoosterDeleteEventDispatcher } from './booster-delete-event-dispatcher'
 import { eventSearch } from './booster-event-search'
 import { Effect, pipe } from 'effect'
 import { Command } from '@effect/cli'
@@ -115,6 +117,10 @@ export class Booster {
     afterCursor?: Record<string, string>
   ): Promise<PaginatedEntitiesIdsResult> {
     return await this.config.provider.events.searchEntitiesIDs(this.config, limit, afterCursor, entityTypeName)
+  }
+
+  public static async deleteEvent(parameters: EventDeleteParameters): Promise<boolean> {
+    return await BoosterDeleteEventDispatcher.deleteEvent(this.config, parameters)
   }
 
   /**

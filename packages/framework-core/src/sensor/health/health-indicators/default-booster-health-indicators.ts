@@ -10,6 +10,7 @@ import { BoosterDatabaseHealthIndicator } from './booster-database-health-indica
 import { BoosterDatabaseEventsHealthIndicator } from './booster-database-events-health-indicator'
 import { BoosterFunctionHealthIndicator } from './booster-function-health-indicator'
 import { BoosterDatabaseReadModelsHealthIndicator } from './booster-database-read-models-health-indicator'
+import { RocketsHealthIndicator } from './rockets-health-indicator'
 
 function buildMetadata(
   config: BoosterConfig,
@@ -59,11 +60,18 @@ export function defaultBoosterHealthIndicators(config: BoosterConfig): Record<st
     'Booster Database ReadModels',
     BoosterDatabaseReadModelsHealthIndicator
   )
+  const rocketFunctions = buildMetadata(
+    config,
+    BOOSTER_HEALTH_INDICATORS_IDS.ROCKETS,
+    'Rockets',
+    RocketsHealthIndicator
+  )
   return {
     [root.healthIndicatorConfiguration.id]: root,
     [boosterFunction.healthIndicatorConfiguration.id]: boosterFunction,
     [boosterDatabase.healthIndicatorConfiguration.id]: boosterDatabase,
     [databaseEvents.healthIndicatorConfiguration.id]: databaseEvents,
     [databaseReadModels.healthIndicatorConfiguration.id]: databaseReadModels,
+    [rocketFunctions.healthIndicatorConfiguration.id]: rocketFunctions,
   }
 }

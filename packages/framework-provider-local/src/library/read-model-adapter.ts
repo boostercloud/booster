@@ -114,6 +114,10 @@ export async function deleteReadModel(
 ): Promise<void> {
   const logger = getLogger(config, 'read-model-adapter#deleteReadModel')
   logger.debug(`Entering to Read model deleted. ID=${readModel.id}.Name=${readModelName}`)
-  await db.deleteById(readModel.id, readModelName)
-  logger.debug(`Read model deleted. ID=${readModel.id}. Name=${readModelName}`)
+  try {
+    await db.deleteById(readModel.id, readModelName)
+    logger.debug(`Read model deleted. ${readModelName} ID = ${readModel.id}`)
+  } catch (e) {
+    logger.warn(`Read model to delete ${readModelName} ID = ${readModel.id} not found`)
+  }
 }
