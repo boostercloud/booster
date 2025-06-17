@@ -2,6 +2,90 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.3.1",
+      "tag": "@boostercloud/framework-core_v3.3.1",
+      "date": "Thu, 12 Jun 2025 17:47:56 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixes duplicate snapshot generation",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "72291d6033bf97430188229781430038ea8f6e68"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.3.0` to `3.3.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.3.0` to `3.3.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.3.0` to `3.3.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.3.0` to `3.3.1`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@boostercloud/framework-core_v3.3.0",
+      "date": "Thu, 05 Jun 2025 16:54:54 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Improve event store resilience",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "2a07221013748cf6ce333b743071387add5d23f1"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.2.1` to `3.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.2.1` to `3.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.2.1` to `3.3.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.2.1` to `3.3.0`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@boostercloud/framework-core_v3.2.1",
+      "date": "Thu, 29 May 2025 16:15:02 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix a bug where Booster would crash if an error was thrown in an async getter on a ReadModel",
+            "author": "Hendrik Depauw <128361530+hendrik-depauw-lemon@users.noreply.github.com>",
+            "commit": "cb8e0ad71d656ef4a42ccdc2a6d5e88007883c98"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.2.0` to `3.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.2.0` to `3.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.2.0` to `3.2.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.2.0` to `3.2.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.0",
       "tag": "@boostercloud/framework-core_v3.2.0",
       "date": "Tue, 22 Apr 2025 14:30:07 GMT",

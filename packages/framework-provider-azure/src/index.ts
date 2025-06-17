@@ -9,7 +9,7 @@ import {
   storeDispatchedEvent,
   storeSnapshot,
 } from './library/events-adapter'
-import { CosmosClient } from '@azure/cosmos'
+import { CosmosClient, CosmosClientOptions } from '@azure/cosmos'
 import { environmentVarNames } from './constants'
 import {
   deleteReadModel,
@@ -54,7 +54,28 @@ let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
   cosmosClient = {} as any
 } else {
-  cosmosClient = new CosmosClient(process.env[environmentVarNames.cosmosDbConnectionString] as string)
+  const cosmosClientOptions: CosmosClientOptions = {
+    connectionString: process.env[environmentVarNames.cosmosDbConnectionString] as string,
+    // Overrides default retry options if any of the environment variables are set
+    ...((process.env[environmentVarNames.cosmosDbMaxRetries] ||
+      process.env[environmentVarNames.cosmosDbRetryInterval] ||
+      process.env[environmentVarNames.cosmosDbMaxWaitTime]) && {
+      connectionPolicy: {
+        retryOptions: {
+          ...(process.env[environmentVarNames.cosmosDbMaxRetries] && {
+            maxRetryAttemptCount: Number(process.env[environmentVarNames.cosmosDbMaxRetries]),
+          }),
+          ...(process.env[environmentVarNames.cosmosDbRetryInterval] && {
+            fixedRetryIntervalInMilliseconds: Number(process.env[environmentVarNames.cosmosDbRetryInterval]),
+          }),
+          ...(process.env[environmentVarNames.cosmosDbMaxWaitTime] && {
+            maxWaitTimeInSeconds: Number(process.env[environmentVarNames.cosmosDbMaxWaitTime]),
+          }),
+        },
+      },
+    }),
+  }
+  cosmosClient = new CosmosClient(cosmosClientOptions)
 }
 
 let producer: EventHubProducerClient

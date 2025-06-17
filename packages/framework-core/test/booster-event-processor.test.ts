@@ -112,6 +112,7 @@ describe('BoosterEventProcessor', () => {
         const boosterEventProcessor = BoosterEventProcessor as any
         replace(boosterEventProcessor, 'snapshotAndUpdateReadModels', fake())
         replace(boosterEventProcessor, 'dispatchEntityEventsToEventHandlers', fake())
+        replace(boosterEventProcessor, 'filterDispatched', fake.resolves([someEvent]))
 
         const callback = boosterEventProcessor.eventProcessor(stubEventStore, stubReadModelStore)
 

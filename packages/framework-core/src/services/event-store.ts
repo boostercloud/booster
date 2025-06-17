@@ -16,7 +16,7 @@ import {
   TraceActionTypes,
   UUID,
 } from '@boostercloud/framework-types'
-import { createInstance, getLogger } from '@boostercloud/framework-common-helpers'
+import { createInstance, getLogger, retryWithBackoff } from '@boostercloud/framework-common-helpers'
 import { BoosterGlobalErrorDispatcher } from '../booster-global-error-dispatcher'
 import { SchemaMigrator } from '../schema-migrator'
 import { BoosterEntityMigrated } from '../core-concepts/data-migration/events/booster-entity-migrated'
@@ -103,7 +103,11 @@ export class EventStore {
     const logger = getLogger(this.config, 'EventStore#storeDispatchedEvent')
     try {
       logger.debug('Storing event in the dispatched event store:', eventEnvelope)
-      return await this.config.provider.events.storeDispatched(eventEnvelope, this.config)
+      return await retryWithBackoff(
+        () => this.config.provider.events.storeDispatched(eventEnvelope, this.config),
+        this.config.eventStoreRetry,
+        logger
+      )
     } catch (e) {
       logger.debug('Could not store dispatched event. Continue its processing.', { error: e, eventEnvelope })
       return true
@@ -117,7 +121,11 @@ export class EventStore {
     const logger = getLogger(this.config, 'EventStore#storeSnapshot')
     try {
       logger.debug('Storing snapshot in the event store:', snapshot)
-      return await this.config.provider.events.storeSnapshot(snapshot, this.config)
+      return await retryWithBackoff(
+        () => this.config.provider.events.storeSnapshot(snapshot, this.config),
+        this.config.eventStoreRetry,
+        logger
+      )
     } catch (e) {
       logger.error(
         `The snapshot for entity ${snapshot.typeName} with ID ${

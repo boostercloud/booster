@@ -6,17 +6,18 @@ import {
   Instance,
   NonPersistedEventEnvelope,
   NotFoundError,
+  NotificationInterface,
+  ReducerMetadata,
   Register,
   SuperKindType,
   UUID,
-  NotificationInterface,
-  ReducerMetadata,
 } from '@boostercloud/framework-types'
 import { BoosterEntityMigrated } from './core-concepts/data-migration/events/booster-entity-migrated'
 import { BoosterDataMigrationStarted } from './core-concepts/data-migration/events/booster-data-migration-started'
 import { BoosterDataMigrationFinished } from './core-concepts/data-migration/events/booster-data-migration-finished'
 import { Booster } from './booster'
 import { BoosterEntityTouched } from './core-concepts/touch-entity/events/booster-entity-touched'
+import { getLogger, retryWithBackoff } from '@boostercloud/framework-common-helpers'
 
 const boosterEventsTypesNames: Array<string> = [
   BoosterEntityMigrated.name,
@@ -31,9 +32,16 @@ export class RegisterHandler {
       return
     }
 
-    await config.provider.events.store(
-      register.eventList.map((event) => RegisterHandler.wrapEvent(config, event, register)),
-      config
+    const logger = getLogger(config, 'RegisterHandler#handle')
+
+    await retryWithBackoff(
+      () =>
+        config.provider.events.store(
+          register.eventList.map((event) => RegisterHandler.wrapEvent(config, event, register)),
+          config
+        ),
+      config.eventStoreRetry,
+      logger
     )
   }
 
