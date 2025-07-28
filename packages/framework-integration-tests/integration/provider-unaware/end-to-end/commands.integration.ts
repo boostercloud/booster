@@ -163,4 +163,80 @@ describe('Commands end-to-end tests', () => {
       expect(result?.data?.LogSomething).to.be.true
     })
   })
+
+  context('with migration commands', () => {
+    let client: ApolloClient<NormalizedCacheObject>
+
+    before(async () => {
+      client = applicationUnderTest.graphql.client()
+    })
+
+    it('successfully migrates all read models for a specific read model', async () => {
+      const response = await client.mutate({
+        variables: {
+          readModelName: 'CartReadModel',
+        },
+        mutation: gql`
+          mutation MigrateAllReadModel($readModelName: String!) {
+            MigrateAllReadModel(input: { readModelName: $readModelName })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.MigrateAllReadModel).to.be.a('string')
+      expect(response?.data?.MigrateAllReadModel).to.include('Migrated')
+      expect(response?.data?.MigrateAllReadModel).to.include('CartReadModel')
+    })
+
+    it('successfully migrates all read models for a different read model', async () => {
+      const response = await client.mutate({
+        variables: {
+          readModelName: 'ProductReadModel',
+        },
+        mutation: gql`
+          mutation MigrateAllReadModel($readModelName: String!) {
+            MigrateAllReadModel(input: { readModelName: $readModelName })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.MigrateAllReadModel).to.be.a('string')
+      expect(response?.data?.MigrateAllReadModel).to.include('Migrated')
+      expect(response?.data?.MigrateAllReadModel).to.include('ProductReadModel')
+    })
+
+    it('handles migration for non-existent read model gracefully', async () => {
+      const response = await client.mutate({
+        variables: {
+          readModelName: 'NonExistentReadModel',
+        },
+        mutation: gql`
+          mutation MigrateAllReadModel($readModelName: String!) {
+            MigrateAllReadModel(input: { readModelName: $readModelName })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.MigrateAllReadModel).to.be.a('string')
+      expect(response?.data?.MigrateAllReadModel).to.include('NonExistentReadModel')
+    })
+
+    it('successfully runs general data migrations', async () => {
+      const response = await client.mutate({
+        variables: {},
+        mutation: gql`
+          mutation {
+            MigrateCommand
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      // MigrateCommand doesn't return a value, so we just check it doesn't throw
+      expect(response?.data?.MigrateCommand).to.not.be.undefined
+    })
+  })
 })
