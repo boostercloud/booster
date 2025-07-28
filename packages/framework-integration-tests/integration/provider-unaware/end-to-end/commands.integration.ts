@@ -207,8 +207,8 @@ describe('Commands end-to-end tests', () => {
       expect(response?.data?.MigrateAllReadModel).to.include('ProductReadModel')
     })
 
-    it('handles migration for non-existent read model gracefully', async () => {
-      const response = await client.mutate({
+    it('fails when trying to migrate a non-existent read model', async () => {
+      const resultPromise = client.mutate({
         variables: {
           readModelName: 'NonExistentReadModel',
         },
@@ -219,9 +219,7 @@ describe('Commands end-to-end tests', () => {
         `,
       })
 
-      expect(response).not.to.be.null
-      expect(response?.data?.MigrateAllReadModel).to.be.a('string')
-      expect(response?.data?.MigrateAllReadModel).to.include('NonExistentReadModel')
+      await expect(resultPromise).to.be.eventually.rejectedWith(/Resource Not Found/)
     })
 
     it('successfully runs general data migrations', async () => {
