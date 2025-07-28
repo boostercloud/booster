@@ -47,7 +47,7 @@ describe('ReadModelSchemaMigrator', () => {
   })
   const config = new BoosterConfig('test')
 
-  describe('migrate', async () => {
+  describe('migrate', () => {
     config.schemaMigrations['TestConcept'] = migrations
     const migrator = new ReadModelSchemaMigrator(config)
 

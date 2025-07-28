@@ -47,7 +47,7 @@ export class ReadModelSchemaMigrator {
       const migratedReadModels = await Promise.all(migrationPromises)
       const persistPromises = migratedReadModels.map((readModel) => this.persistReadModel(readModel, readModelName))
       await Promise.all(persistPromises)
-      total += toMigrate.count ?? 0
+      total += toMigrate.items.length
     } while (cursor)
     return total
   }
