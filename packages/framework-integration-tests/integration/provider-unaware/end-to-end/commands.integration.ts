@@ -174,7 +174,7 @@ describe('Commands end-to-end tests', () => {
     it('successfully migrates all read models for a specific read model', async () => {
       const response = await client.mutate({
         variables: {
-          readModelName: 'CartReadModel',
+          readModelName: 'BookReadModel',
         },
         mutation: gql`
           mutation MigrateAllReadModel($readModelName: String!) {
@@ -186,13 +186,13 @@ describe('Commands end-to-end tests', () => {
       expect(response).not.to.be.null
       expect(response?.data?.MigrateAllReadModel).to.be.a('string')
       expect(response?.data?.MigrateAllReadModel).to.include('Migrated')
-      expect(response?.data?.MigrateAllReadModel).to.include('CartReadModel')
+      expect(response?.data?.MigrateAllReadModel).to.include('BookReadModel')
     })
 
     it('successfully migrates all read models for a different read model', async () => {
       const response = await client.mutate({
         variables: {
-          readModelName: 'ProductReadModel',
+          readModelName: 'MovieReadModel',
         },
         mutation: gql`
           mutation MigrateAllReadModel($readModelName: String!) {
@@ -204,7 +204,7 @@ describe('Commands end-to-end tests', () => {
       expect(response).not.to.be.null
       expect(response?.data?.MigrateAllReadModel).to.be.a('string')
       expect(response?.data?.MigrateAllReadModel).to.include('Migrated')
-      expect(response?.data?.MigrateAllReadModel).to.include('ProductReadModel')
+      expect(response?.data?.MigrateAllReadModel).to.include('MovieReadModel')
     })
 
     it('fails when trying to migrate a non-existent read model', async () => {
