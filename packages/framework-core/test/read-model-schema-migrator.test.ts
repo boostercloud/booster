@@ -2,8 +2,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
 import { expect } from './expect'
-import { BoosterConfig, SchemaMigrationMetadata, ReadModelInterface, UUID } from '@boostercloud/framework-types'
+import { BoosterConfig, ReadModelInterface, SchemaMigrationMetadata, UUID } from '@boostercloud/framework-types'
 import { ReadModelSchemaMigrator } from '../src/read-model-schema-migrator'
+import 'mocha'
+import { fake, replaceGetter } from 'sinon'
 
 class TestConceptV1 {
   public constructor(readonly id: UUID, readonly field1: string) {}
@@ -44,10 +46,11 @@ describe('ReadModelSchemaMigrator', () => {
     toVersion: 3,
   })
   const config = new BoosterConfig('test')
-  config.schemaMigrations['TestConcept'] = migrations
-  const migrator = new ReadModelSchemaMigrator(config)
 
-  describe('migrate', async () => {
+  describe('migrate', () => {
+    config.schemaMigrations['TestConcept'] = migrations
+    const migrator = new ReadModelSchemaMigrator(config)
+
     it('throws when the schemaVersion of the concept to migrate is lower than 1', async () => {
       const toMigrate: ReadModelInterface = {
         id: 'id',
@@ -112,6 +115,38 @@ describe('ReadModelSchemaMigrator', () => {
       const got = (await migrator.migrate(toMigrate, 'TestConcept')) as TestConceptV3
       expect(got).not.to.be.equal(toMigrate) // This checks the reference is not the same (i.e. a different object is returned)
       expect(got).to.be.deep.equal(expected)
+    })
+  })
+
+  describe('migrateAll', () => {
+    it('returns 0 when there are not ReadModels with schemaVersion less than expected', async () => {
+      const config = new BoosterConfig('test')
+      replaceGetter(config, 'provider', () => {
+        return {
+          readModels: {
+            search: fake.returns({ items: [] }),
+          },
+        } as any
+      })
+      const migrator = new ReadModelSchemaMigrator(config)
+      const number = await migrator.migrateAll('TestConcept')
+      expect(number).to.be.deep.equal(0)
+    })
+
+    it('returns ReadModels with schemaVersion less than expected', async () => {
+      const config = new BoosterConfig('test')
+      replaceGetter(config, 'provider', () => {
+        return {
+          readModels: {
+            search: fake.returns({ items: [{ id: 1 }, { id: 2 }, { id: 3 }], count: 3, cursor: { id: 10 } }),
+            store: fake.resolves(''),
+          },
+        } as any
+      })
+      config.schemaMigrations['TestConcept'] = migrations
+      const migrator = new ReadModelSchemaMigrator(config)
+      const number = await migrator.migrateAll('TestConcept')
+      expect(number).to.be.deep.equal(3)
     })
   })
 })

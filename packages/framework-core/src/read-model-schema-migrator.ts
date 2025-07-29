@@ -1,14 +1,18 @@
 import {
   BoosterConfig,
+  FilterFor,
   InvalidVersionError,
-  SchemaMigrationMetadata,
   ReadModelInterface,
+  ReadModelListResult,
+  SchemaMigrationMetadata,
   TraceActionTypes,
 } from '@boostercloud/framework-types'
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { Trace } from './instrumentation'
 
 export class ReadModelSchemaMigrator {
+  private static readonly LIMIT = 100
+
   public constructor(private config: BoosterConfig) {}
 
   /**
@@ -25,6 +29,27 @@ export class ReadModelSchemaMigrator {
     }
 
     return readModel // The current version is exactly the same as the version of the concept
+  }
+
+  public async migrateAll(readModelName: string, batchSize = ReadModelSchemaMigrator.LIMIT): Promise<number> {
+    const filterFor = this.buildFilterForSearchReadModelsToMigrate(readModelName)
+    let cursor: Record<'id', string> | undefined = undefined
+    let total = 0
+    do {
+      const toMigrate: ReadModelListResult<ReadModelInterface> = await this.searchReadModelsToMigrate(
+        readModelName,
+        filterFor,
+        batchSize,
+        cursor
+      )
+      cursor = toMigrate.items.length >= batchSize ? toMigrate.cursor : undefined
+      const migrationPromises = toMigrate.items.map((item) => this.applyAllMigrations(item, readModelName))
+      const migratedReadModels = await Promise.all(migrationPromises)
+      const persistPromises = migratedReadModels.map((readModel) => this.persistReadModel(readModel, readModelName))
+      await Promise.all(persistPromises)
+      total += toMigrate.items.length
+    } while (cursor)
+    return total
   }
 
   private checkVersionRange(readModel: ReadModelInterface, readModelName: string): void {
@@ -100,5 +125,61 @@ export class ReadModelSchemaMigrator {
 
   private static readModelSchemaVersion(readModel: ReadModelInterface): number {
     return readModel.boosterMetadata?.schemaVersion ?? 1
+  }
+
+  private buildFilterForSearchReadModelsToMigrate(readModelName: string): FilterFor<ReadModelInterface> {
+    const expectedVersion = this.config.currentVersionFor(readModelName)
+    return {
+      or: [
+        {
+          boosterMetadata: {
+            schemaVersion: {
+              lt: expectedVersion,
+            },
+          },
+        },
+        {
+          boosterMetadata: {
+            schemaVersion: {
+              isDefined: false,
+            },
+          },
+        },
+      ],
+    }
+  }
+
+  private async searchReadModelsToMigrate(
+    readModelName: string,
+    filterFor: FilterFor<ReadModelInterface>,
+    limit: number,
+    cursor: undefined | Record<'id', string>
+  ): Promise<ReadModelListResult<ReadModelInterface>> {
+    return (await this.config.provider.readModels.search<ReadModelInterface>(
+      this.config,
+      readModelName,
+      filterFor,
+      {},
+      limit,
+      cursor,
+      true
+    )) as ReadModelListResult<ReadModelInterface>
+  }
+
+  private persistReadModel(newReadModel: ReadModelInterface, readModelName: string): Promise<unknown> {
+    const logger = getLogger(this.config, 'ReadModelSchemaMigrator#persistReadModel')
+    if (!(newReadModel && newReadModel.boosterMetadata)) {
+      throw new Error(`Error migrating ReadModel: ${newReadModel}`)
+    }
+    const currentReadModelVersion: number = newReadModel?.boosterMetadata?.version ?? 0
+    const schemaVersion: number =
+      newReadModel?.boosterMetadata?.schemaVersion ?? this.config.currentVersionFor(readModelName)
+    newReadModel.boosterMetadata = {
+      ...newReadModel?.boosterMetadata,
+      version: currentReadModelVersion + 1,
+      schemaVersion: schemaVersion,
+    }
+    logger.debug('Storing new version of read model', newReadModel)
+    return this.config.provider.readModels.store(this.config, readModelName, newReadModel, currentReadModelVersion)
   }
 }

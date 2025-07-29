@@ -163,4 +163,63 @@ describe('Commands end-to-end tests', () => {
       expect(result?.data?.LogSomething).to.be.true
     })
   })
+
+  context('with migration commands', () => {
+    let client: ApolloClient<NormalizedCacheObject>
+
+    before(async () => {
+      client = applicationUnderTest.graphql.client()
+    })
+
+    it('successfully migrates all read models for a specific read model', async () => {
+      const response = await client.mutate({
+        variables: {
+          readModelName: 'BookReadModel',
+        },
+        mutation: gql`
+          mutation MigrateAllReadModel($readModelName: String!) {
+            MigrateAllReadModel(input: { readModelName: $readModelName })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.MigrateAllReadModel).to.be.a('string')
+      expect(response?.data?.MigrateAllReadModel).to.include('Migrated')
+      expect(response?.data?.MigrateAllReadModel).to.include('BookReadModel')
+    })
+
+    it('successfully migrates all read models for a different read model', async () => {
+      const response = await client.mutate({
+        variables: {
+          readModelName: 'MovieReadModel',
+        },
+        mutation: gql`
+          mutation MigrateAllReadModel($readModelName: String!) {
+            MigrateAllReadModel(input: { readModelName: $readModelName })
+          }
+        `,
+      })
+
+      expect(response).not.to.be.null
+      expect(response?.data?.MigrateAllReadModel).to.be.a('string')
+      expect(response?.data?.MigrateAllReadModel).to.include('Migrated')
+      expect(response?.data?.MigrateAllReadModel).to.include('MovieReadModel')
+    })
+
+    it('fails when trying to migrate a non-existent read model', async () => {
+      const resultPromise = client.mutate({
+        variables: {
+          readModelName: 'NonExistentReadModel',
+        },
+        mutation: gql`
+          mutation MigrateAllReadModel($readModelName: String!) {
+            MigrateAllReadModel(input: { readModelName: $readModelName })
+          }
+        `,
+      })
+
+      await expect(resultPromise).to.be.eventually.rejectedWith(/Resource Not Found/)
+    })
+  })
 })
