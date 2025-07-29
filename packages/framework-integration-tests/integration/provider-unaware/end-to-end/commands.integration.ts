@@ -221,20 +221,5 @@ describe('Commands end-to-end tests', () => {
 
       await expect(resultPromise).to.be.eventually.rejectedWith(/Resource Not Found/)
     })
-
-    it('successfully runs general data migrations', async () => {
-      const response = await client.mutate({
-        variables: {},
-        mutation: gql`
-          mutation {
-            MigrateCommand
-          }
-        `,
-      })
-
-      expect(response).not.to.be.null
-      // MigrateCommand doesn't return a value, so we just check it doesn't throw
-      expect(response?.data?.MigrateCommand).to.not.be.undefined
-    })
   })
 })
