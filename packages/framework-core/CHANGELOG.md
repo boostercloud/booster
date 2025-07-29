@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 12 Jun 2025 17:47:56 GMT and should not be manually modified.
+This log was last generated on Tue, 29 Jul 2025 17:53:33 GMT and should not be manually modified.
+
+## 3.4.0
+Tue, 29 Jul 2025 17:53:33 GMT
+
+### Minor changes
+
+- Add migrateAll ReadModels
 
 ## 3.3.1
 Thu, 12 Jun 2025 17:47:56 GMT
