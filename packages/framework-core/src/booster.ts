@@ -63,6 +63,7 @@ export class Booster {
    * Initializes the Booster project
    */
   public static start(codeRootPath: string): void {
+    registerShutdownSignalHandlers()
     const projectRootPath = codeRootPath.replace(new RegExp(this.config.codeRelativePath + '$'), '')
     this.config.userProjectRootPath = projectRootPath
     Importer.importUserProjectFiles(codeRootPath)
@@ -209,4 +210,23 @@ function checkAndGetCurrentEnv(): string {
     )
   }
   return env
+}
+
+function registerShutdownSignalHandlers(): void {
+  const signals = ['SIGINT', 'SIGTERM', 'SIGQUIT']
+  signals.forEach((signal) => {
+    process.on(signal, () => {
+      shutDownGracefully(signal)
+    })
+  })
+}
+
+function shutDownGracefully(signal: string): void {
+  console.log(`Received signal '${signal}'. Shutting down gracefully...`)
+  cleanup()
+  process.exit(0)
+}
+
+function cleanup(): void {
+  // Does Booster have dedicated clean up to do ?
 }
