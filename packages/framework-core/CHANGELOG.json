@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.4.1",
+      "tag": "@boostercloud/framework-core_v3.4.1",
+      "date": "Fri, 01 Aug 2025 17:44:35 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Disallow getters and methods in SortFor and FilterFor types",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "633f7dc476359608ebaf46196ca629f0e0d4dea4"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.4.0` to `3.4.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.4.0` to `3.4.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.4.0` to `3.4.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.4.0` to `3.4.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.0",
       "tag": "@boostercloud/framework-core_v3.4.0",
       "date": "Tue, 29 Jul 2025 17:53:33 GMT",

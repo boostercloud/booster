@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 29 Jul 2025 17:53:33 GMT and should not be manually modified.
+This log was last generated on Fri, 01 Aug 2025 17:44:35 GMT and should not be manually modified.
+
+## 3.4.1
+Fri, 01 Aug 2025 17:44:35 GMT
+
+### Patches
+
+- Disallow getters and methods in SortFor and FilterFor types
 
 ## 3.4.0
 Tue, 29 Jul 2025 17:53:33 GMT
