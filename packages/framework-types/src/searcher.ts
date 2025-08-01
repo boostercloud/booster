@@ -157,12 +157,21 @@ type Paths<T, TLevels extends any[] = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]> = TLevels 
 
 export type ProjectionFor<TType> = Array<Paths<TType>>
 
+/**
+ * Utility type that extracts only data properties from a type, excluding methods and getters.
+ * This ensures that FilterFor and SortFor only allow operations on stored data properties,
+ * not computed values or methods.
+ */
+type DataProperties<T> = {
+  [K in keyof T]: T[K] extends (...args: any[]) => any ? never : K
+}[keyof T]
+
 export type SortFor<TType> = {
-  [TProp in keyof TType]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
+  [TProp in DataProperties<TType>]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
 }
 
 export type FilterFor<TType> = {
-  [TProp in keyof TType]?: Operation<TType[TProp]>
+  [TProp in DataProperties<TType>]?: Operation<TType[TProp]>
 } &
   FilterCombinators<TType> &
   IsDefinedOperator
@@ -181,6 +190,8 @@ export type Operation<TType> = TType extends Array<infer TElementType>
   ? ScalarOperators<TType>
   : TType extends boolean
   ? BooleanOperators<TType>
+  : TType extends Date
+  ? ScalarOperators<TType>
   : TType extends Record<string, any>
   ? FilterFor<TType>
   : never
