@@ -28,6 +28,66 @@ import { Context } from 'effect'
 import { AzureConfiguration, DEFAULT_CHUNK_SIZE } from './provider/azure-configuration'
 
 /**
+ * Configuration provider interface for external configuration sources
+ */
+export interface ConfigurationProvider {
+  /**
+   * Retrieve a configuration value by key
+   * @param key The configuration key to retrieve
+   * @returns Promise resolving to the configuration value or undefined if not found
+   */
+  getValue(key: string): Promise<string | undefined>
+
+  /**
+   * Check if the configuration provider is available and properly initialized
+   * @returns Promise resolving to a true if available, false otherwise
+   */
+  isAvailable(): Promise<boolean>
+
+  /**
+   * Priority of this configuration provider (higher number = higher priority
+   */
+  readonly priority: number
+
+  /**
+   * Name identifier for this configuration provider
+   */
+  readonly name: string
+}
+
+/**
+ * Configuration resolution result with source tracking
+ */
+export interface ConfiguratonResolution {
+  value: string | undefined
+  source: string
+  key: string
+}
+
+/**
+ * Configuration resolver that manages multiple providers with fallback
+ */
+export interface ConfigurationResolver {
+  /**
+   * Resolve a configuration value from all available providers
+   * @param key The configuration key to resolve
+   * @returns Promise resolving to the configuration resolution result
+   */
+  resolve(key: string): Promise<ConfiguratonResolution>
+
+  /**
+   * Add a configuration provider
+   * @param provider The configuration provider to add
+   */
+  addProvider(provider: ConfigurationProvider): void
+
+  /**
+   * Get all registered providers sorted by priority
+   */
+  getProviders(): ConfigurationProvider[]
+}
+
+/**
  * Class used by external packages that needs to get a representation of
  * the booster config. Used mainly for vendor-specific deployment packages
  */
