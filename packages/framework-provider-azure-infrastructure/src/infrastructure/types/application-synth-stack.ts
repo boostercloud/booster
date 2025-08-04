@@ -1,5 +1,6 @@
 import {
   apiManagementApi,
+  appConfiguration,
   applicationGateway,
   cosmosdbAccount,
   cosmosdbSqlContainer,
@@ -13,10 +14,10 @@ import {
   resourceGroup,
   servicePlan,
   storageAccount,
-  virtualNetwork,
-  webPubsub,
   subnet,
   subnetNetworkSecurityGroupAssociation,
+  virtualNetwork,
+  webPubsub,
   webPubsubHub,
   windowsFunctionApp,
 } from '@cdktf/provider-azurerm'
@@ -62,5 +63,6 @@ export interface ApplicationSynthStack extends StackNames {
   consumerFunctionDefinitions?: Array<FunctionDefinition>
   eventHubNamespace?: eventhubNamespace.EventhubNamespace
   eventHub?: eventhub.Eventhub
+  appConfiguration?: appConfiguration.AppConfiguration
   rocketStack?: Array<TerraformResource>
 }

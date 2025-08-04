@@ -35,6 +35,7 @@ import { TerraformSubnetSecurity } from './gateway/terraform-subnet-security'
 import { BASIC_SERVICE_PLAN } from '../constants'
 import { TerraformFunctionAppSettings } from './terraform-function-app-settings'
 import { configuration } from '../helper/params'
+import { TerraformAppConfiguration } from './terraform-app-configuration'
 
 export class ApplicationSynth {
   readonly config: BoosterConfig
@@ -93,6 +94,7 @@ export class ApplicationSynth {
     stack.cosmosdbDatabase = TerraformCosmosdbDatabase.build(stack)
     stack.cosmosdbSqlDatabase = TerraformCosmosdbSqlDatabase.build(stack, this.config)
     stack.containers = TerraformContainers.build(stack, this.config)
+    this.buildAppConfiguration(stack)
     this.buildEventHub(stack)
     this.buildWebPubSub(stack)
     if (BASIC_SERVICE_PLAN === 'true') {
@@ -130,6 +132,13 @@ export class ApplicationSynth {
       stack.functionAppName,
       zipFile
     )
+  }
+
+  private buildAppConfiguration(stack: ApplicationSynthStack): void {
+    if (TerraformAppConfiguration.isEnabled(this.config)) {
+      const appConfigResource = new TerraformAppConfiguration(stack.terraformStack, stack, this.config)
+      stack.appConfiguration = appConfigResource.appConfiguration
+    }
   }
 
   private buildEventHub(stack: ApplicationSynthStack): void {
