@@ -49,6 +49,7 @@ import {
 } from './library/health-adapter'
 import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 import { storeEvents } from './library/events-store-adapter'
+import { ConfigurationAdapter } from './library/configuration-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -113,6 +114,29 @@ if (
  */
 export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
   return require(packageName)
+}
+
+/**
+ * Initialize Azure App Configuration adapter if configured
+ */
+function initializeAzureAppConfiguration(config: any): void {
+  const azureAppConfigOptions = config._azureAppConfigOptions
+  if (azureAppConfigOptions?.enabled) {
+    const adapter = new ConfigurationAdapter(
+      azureAppConfigOptions.connectionString,
+      azureAppConfigOptions.endpoint,
+      azureAppConfigOptions.labelFilter
+    )
+    config.addConfigurationProvider(adapter)
+  }
+}
+
+/**
+ * Setup Azure App Configuration for the given Booster configuration
+ * This function should be called during configuration setup to enable Azure App Configuration
+ */
+export function setupAzureAppConfiguration(config: any): void {
+  initializeAzureAppConfiguration(config)
 }
 
 export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
@@ -201,3 +225,4 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
 })
 
 export * from './constants'
+export * from './library/configuration-adapter'
