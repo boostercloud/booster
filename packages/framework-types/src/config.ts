@@ -203,6 +203,9 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
+  /** Configuration providers for external configuration sources (Azure App Configuration, etc.) **/
+  public readonly configurationProviders: ConfigurationProvider[] = []
+
   /**
    * Add `TokenVerifier` implementations to this array to enable token verification.
    * When a bearer token arrives in a request 'Authorization' header, it will be checked
@@ -259,6 +262,43 @@ export class BoosterConfig {
 
   public validate(): void {
     this.validateAllMigrations()
+  }
+
+  /**
+   * Register a configuration provider for external configuration sources
+   * @param provider The configuration provider to register
+   */
+  public addConfigurationProvider(provider: ConfigurationProvider): void {
+    // Remove any existing provider with the same name
+    const existingIndex = this.configurationProviders.findIndex((p) => p.name === provider.name)
+    if (existingIndex >= 0) {
+      this.configurationProviders.splice(existingIndex, 1)
+    }
+
+    // Add the new provider and sort by priority (highest first)
+    this.configurationProviders.push(provider)
+    this.configurationProviders.sort((a, b) => b.priority - a.priority)
+  }
+
+  /**
+   * Enable Azure App Configuration for this environment
+   * This is a convenience method that automatically configures the Azure App Configuration provider
+   * @param options Configuration options for Azure App Configuration
+   */
+  public enableAzureAppConfiguration(options?: {
+    connectionString?: string
+    endpoint?: string
+    labelFilter?: string
+  }): void {
+    // This method signature needs to remain in framework-types, but the actual implementation
+    // will be provided by the Azure provider package to avoid circular dependencies
+    // Store the options in a special property that the Azure provider can read
+    ;(this as any)._azureAppConfigOptions = {
+      connectionString: options?.connectionString,
+      endpoint: options?.endpoint,
+      labelFilter: options?.labelFilter,
+      enabled: true,
+    }
   }
 
   public get provider(): ProviderLibrary {
