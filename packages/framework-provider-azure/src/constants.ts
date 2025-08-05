@@ -37,6 +37,8 @@ export const environmentVarNames = {
   eventHubMode: 'EVENTHUB_MODE',
   rocketFunctionAppNames: 'ROCKET_FUNCTION_APP_NAMES',
   rocketPackageMapping: 'ROCKET_PACKAGE_MAPPING',
+  appConfigurationConnectionString: 'AZURE_APP_CONFIG_CONNECTION_STRING',
+  appConfigurationEndpoint: 'AZURE_APP_CONFIG_ENDPOINT',
 } as const
 
 // Azure special error codes

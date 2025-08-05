@@ -108,35 +108,30 @@ if (
   })
 }
 
+const azureAppConfigConnectionString = process.env[environmentVarNames.appConfigurationConnectionString]
+const azureAppConfigEndpoint = process.env[environmentVarNames.appConfigurationEndpoint]
+
+if (azureAppConfigConnectionString || azureAppConfigEndpoint) {
+  try {
+    const config = require('@boostercloud/framework-core').Booster.config
+
+    const provider = ConfigurationAdapter.fromEnvironment()
+    config.addConfigurationProvider(provider)
+  } catch (error) {
+    console.warn('[Azure Provider] Failed to initialize Azure App Configuration adapter:', error)
+  }
+} else {
+  console.warn(
+    '[Azure Provider] No Azure App Configuration connection string or endpoint found. The configuration adapter will not be available.',
+  )
+}
+
 /* We load the infrastructure package dynamically here to avoid including it in the
  * dependencies that are deployed in the lambda functions. The infrastructure
  * package is only used during the deploy.
  */
 export function loadInfrastructurePackage(packageName: string): HasInfrastructure {
   return require(packageName)
-}
-
-/**
- * Initialize Azure App Configuration adapter if configured
- */
-function initializeAzureAppConfiguration(config: any): void {
-  const azureAppConfigOptions = config._azureAppConfigOptions
-  if (azureAppConfigOptions?.enabled) {
-    const adapter = new ConfigurationAdapter(
-      azureAppConfigOptions.connectionString,
-      azureAppConfigOptions.endpoint,
-      azureAppConfigOptions.labelFilter
-    )
-    config.addConfigurationProvider(adapter)
-  }
-}
-
-/**
- * Setup Azure App Configuration for the given Booster configuration
- * This function should be called during configuration setup to enable Azure App Configuration
- */
-export function setupAzureAppConfiguration(config: any): void {
-  initializeAzureAppConfiguration(config)
 }
 
 export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
