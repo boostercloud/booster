@@ -122,7 +122,7 @@ if (azureAppConfigConnectionString || azureAppConfigEndpoint) {
   }
 } else {
   console.warn(
-    '[Azure Provider] No Azure App Configuration connection string or endpoint found. The configuration adapter will not be available.',
+    '[Azure Provider] No Azure App Configuration connection string or endpoint found. The configuration adapter will not be available.'
   )
 }
 
