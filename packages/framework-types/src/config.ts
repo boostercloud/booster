@@ -58,7 +58,7 @@ export interface ConfigurationProvider {
 /**
  * Configuration resolution result with source tracking
  */
-export interface ConfiguratonResolution {
+export interface ConfigurationResolution {
   value: string | undefined
   source: string
   key: string
@@ -73,7 +73,7 @@ export interface ConfigurationResolver {
    * @param key The configuration key to resolve
    * @returns Promise resolving to the configuration resolution result
    */
-  resolve(key: string): Promise<ConfiguratonResolution>
+  resolve(key: string): Promise<ConfigurationResolution>
 
   /**
    * Add a configuration provider

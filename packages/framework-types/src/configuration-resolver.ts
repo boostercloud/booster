@@ -1,4 +1,4 @@
-import { ConfigurationProvider, ConfigurationResolver, ConfiguratonResolution } from './config'
+import { ConfigurationProvider, ConfigurationResolver, ConfigurationResolution } from './config'
 
 export class DefaultConfigurationResolver implements ConfigurationResolver {
   private providers: ConfigurationProvider[] = []
@@ -23,7 +23,7 @@ export class DefaultConfigurationResolver implements ConfigurationResolver {
     return [...this.providers]
   }
 
-  async resolve(key: string): Promise<ConfiguratonResolution> {
+  async resolve(key: string): Promise<ConfigurationResolution> {
     // Try each provider in priority order
     for (const provider of this.providers) {
       try {
