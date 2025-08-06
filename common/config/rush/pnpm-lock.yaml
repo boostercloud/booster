@@ -16,7 +16,7 @@ importers:
         specifier: 3.7.13
         version: 3.7.13(graphql@16.10.0)(react@17.0.2)(subscriptions-transport-ws@0.11.0(graphql@16.10.0))
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -47,7 +47,7 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/jsonwebtoken':
         specifier: 9.0.8
@@ -104,10 +104,10 @@ importers:
   ../../packages/cli:
     dependencies:
       '@boostercloud/framework-core':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-core
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -150,10 +150,10 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/application-tester':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../application-tester
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@oclif/test':
         specifier: ^4.1.10
@@ -264,7 +264,7 @@ importers:
   ../../packages/framework-common-helpers:
     dependencies:
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -280,7 +280,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -370,10 +370,10 @@ importers:
   ../../packages/framework-core:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect/cli':
         specifier: 0.56.2
@@ -437,10 +437,10 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@boostercloud/metadata-booster':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../metadata-booster
       '@types/chai':
         specifier: 4.2.18
@@ -545,22 +545,22 @@ importers:
   ../../packages/framework-integration-tests:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-core':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-core
       '@boostercloud/framework-provider-aws':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-aws
       '@boostercloud/framework-provider-azure':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-azure
       '@boostercloud/framework-provider-local':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-local
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -618,25 +618,25 @@ importers:
         specifier: 3.7.13
         version: 3.7.13(graphql@16.10.0)(react@17.0.2)(subscriptions-transport-ws@0.11.0(graphql@16.10.0))
       '@boostercloud/application-tester':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../application-tester
       '@boostercloud/cli':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../cli
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@boostercloud/framework-provider-aws-infrastructure':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-aws-infrastructure
       '@boostercloud/framework-provider-azure-infrastructure':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-azure-infrastructure
       '@boostercloud/framework-provider-local-infrastructure':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-local-infrastructure
       '@boostercloud/metadata-booster':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../metadata-booster
       '@seald-io/nedb':
         specifier: 4.0.2
@@ -777,10 +777,10 @@ importers:
   ../../packages/framework-provider-aws:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -790,7 +790,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/aws-lambda':
         specifier: 8.10.48
@@ -943,13 +943,13 @@ importers:
         specifier: ^1.170.0
         version: 1.204.0
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-provider-aws':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-aws
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -983,7 +983,7 @@ importers:
         version: 1.10.2
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/archiver':
         specifier: 5.1.0
@@ -1081,6 +1081,9 @@ importers:
 
   ../../packages/framework-provider-azure:
     dependencies:
+      '@azure/app-configuration':
+        specifier: ^1.7.0
+        version: 1.9.0
       '@azure/cosmos':
         specifier: ^4.3.0
         version: 4.4.1
@@ -1097,10 +1100,10 @@ importers:
         specifier: ~1.1.0
         version: 1.1.3
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1110,7 +1113,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1203,16 +1206,16 @@ importers:
         specifier: ~4.7.0
         version: 4.7.0
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-core':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-core
       '@boostercloud/framework-provider-azure':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-azure
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@cdktf/provider-azurerm':
         specifier: 13.18.0
@@ -1279,7 +1282,7 @@ importers:
         version: 11.0.5
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1360,10 +1363,10 @@ importers:
   ../../packages/framework-provider-local:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1379,7 +1382,7 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1475,13 +1478,13 @@ importers:
   ../../packages/framework-provider-local-infrastructure:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-common-helpers
       '@boostercloud/framework-provider-local':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-provider-local
       '@boostercloud/framework-types':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1500,7 +1503,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1636,10 +1639,10 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@boostercloud/metadata-booster':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../metadata-booster
       '@types/chai':
         specifier: 4.2.18
@@ -1733,7 +1736,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^3.4.0
+        specifier: workspace:^3.4.1
         version: link:../../tools/eslint-config
       '@types/node':
         specifier: ^20.17.17
@@ -2703,6 +2706,10 @@ packages:
 
   '@azure/abort-controller@2.1.2':
     resolution: {integrity: sha512-nBrLsEWm4J2u5LpAPjxADTlq3trDgVZZXHNKabeXZtpq3d3AbN/KGO82R87rdDz5/lYB024rtEf10/q0urNgsA==}
+    engines: {node: '>=18.0.0'}
+
+  '@azure/app-configuration@1.9.0':
+    resolution: {integrity: sha512-X0AVDQygL4AGLtplLYW+W0QakJpJ417sQldOacqwcBQ882tAPdUVs6V3mZ4jUjwVsgr+dV1v9zMmijvsp6XBxA==}
     engines: {node: '>=18.0.0'}
 
   '@azure/arm-appservice@16.0.0':
@@ -7395,8 +7402,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  typescript@6.0.0-dev.20250801:
-    resolution: {integrity: sha512-b/X5+OCIRwL/sCMYpynN/Lkwx3H8Jnt+ttDIZo5bKWpYK1TTeh76tXoKsrUSex2dn8Sd8qqUf7OHifvdGmeKhg==}
+  typescript@6.0.0-dev.20250806:
+    resolution: {integrity: sha512-inDvi8ujsZXA/dSgj8QiSjHSi7fYDnkRck9vvnd400VBY5RSzNl6G3zZXjFZTawwYfETOakld5vQ6a36JuNOBQ==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -8508,6 +8515,22 @@ snapshots:
   '@azure/abort-controller@2.1.2':
     dependencies:
       tslib: 2.8.1
+
+  '@azure/app-configuration@1.9.0':
+    dependencies:
+      '@azure/abort-controller': 2.1.2
+      '@azure/core-auth': 1.9.0
+      '@azure/core-client': 1.9.2
+      '@azure/core-http-compat': 2.3.0
+      '@azure/core-lro': 2.7.2
+      '@azure/core-paging': 1.6.2
+      '@azure/core-rest-pipeline': 1.20.0
+      '@azure/core-tracing': 1.2.0
+      '@azure/core-util': 1.11.0
+      '@azure/logger': 1.1.4
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
 
   '@azure/arm-appservice@16.0.0':
     dependencies:
@@ -10912,7 +10935,7 @@ snapshots:
     dependencies:
       semver: 7.6.3
       shelljs: 0.8.5
-      typescript: 6.0.0-dev.20250801
+      typescript: 6.0.0-dev.20250806
 
   dunder-proto@1.0.1:
     dependencies:
@@ -14375,7 +14398,7 @@ snapshots:
 
   typescript@5.7.3: {}
 
-  typescript@6.0.0-dev.20250801: {}
+  typescript@6.0.0-dev.20250806: {}
 
   unbox-primitive@1.1.0:
     dependencies:
