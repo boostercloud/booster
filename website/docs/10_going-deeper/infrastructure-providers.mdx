@@ -327,6 +327,96 @@ Azure Provider will generate a default `host.json` file if there is not a `host.
 
 If you want to use your own `host.json` file just add it to `config.assets` array and Booster will use yours.
 
+### Azure App Configuration Integration
+
+The Azure provider includes seamless integration with [Azure App Configuration service](https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview) for centralized configuration management, When enabled, Booster automatically provisions the necessary infrastructure and provides a unified configuration API.
+
+#### Enabling Azure App Configuration
+
+Add the following to your Azure environment configuration:
+
+```typescript
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-name'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  // Enable Azure App Configuration
+  config.enableAzureAppConfiguration()
+})
+```
+
+#### Infrastructure Provisioning
+
+When you deploy with Azure App Configuration enabled, the Azure provider automatically>
+
+- **Creates an Azure App Configuration resource** in your resource group
+- **Sets up authentication** using managed identity to and access keys
+- **Configures environment variables** in your Function App:
+  - `AZURE_APP_CONFIG_CONNECTION_STRING`: Connection string for the App Configuration resource
+  - `AZURE_APP_CONFIG_ENDPOINT`: Endpoint URL for the App Configuration resource
+- **Initializes the configuration provider** at runtime
+
+#### Using Configuration Values
+
+Once deployed, you can retrieve configuration avlues from any part of your application:
+
+```typescript
+import { resolveConfigurationValue, resolveConfigurationWithSource }  from '@boostercloud/framework-core'
+
+// Simple value resolution
+const appTimeout = await resolveConfigurationValue(Booster.config, 'API_TIMEOUT'
+
+// Resolution with source tracking (useful for debugging)
+const resolution = await resolveConfigurationWithSource(Booster.config, 'FEATURE_FLAG_X')
+console.log(`${resolution.key}: ${resolution.value} (from ${resolution.source})`)
+```
+
+The configuration system uses a 3-tier priority hierarchy:
+1. Azure App Configuration (highest priority)
+2. Booster config.env values
+3. System environment variables (lowest priority)
+
+#### Using Labels for Environment Isolation
+
+Configure different environments to use different label filters:
+
+```typescript
+// Development environment
+Booster.configure('development', (config: BoosterConfig): void => {
+  config.appName = 'my-app-dev'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  config.enableAzureAppConfiguration({
+    labelFilter: 'development', // Reads only keys with 'development' label
+  })
+})
+
+// Production environment
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-prod'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  config.enableAzureAppConfiguration({
+    labelFilter: 'production', // Reads only keys with 'production' label
+  })
+})
+```
+
+In Azure App Configuration, create the same keys with different labels:
+- `API_TIMEOUT` with label `development` set to `5000`
+- `API_TIMEOUT` with label `production` set to `30000`
+
+Your code stays the same - the environment determines which value is retrieved.
+
+#### Benefits
+
+- **No redeployment required** - Update configuration values in Azure portal and they're immediately available
+- **Environment isolation** - Use labels to manage different values per environment
+- **Feature flags** - Enable/disable features dynamically
+- **Secure configuration** - Integration with Azure Key Vault for sensitive values
+
+For detailed information about configuration management, see the [Configuration](/features/configuration) documentation.
+
 ## Local Provider
 
 All Booster projects come with a local development environment configured by default, so you can test your app before deploying it to the cloud.
