@@ -120,10 +120,6 @@ if (azureAppConfigConnectionString || azureAppConfigEndpoint) {
   } catch (error) {
     console.warn('[Azure Provider] Failed to initialize Azure App Configuration adapter:', error)
   }
-} else {
-  console.warn(
-    '[Azure Provider] No Azure App Configuration connection string or endpoint found. The configuration adapter will not be available.'
-  )
 }
 
 /* We load the infrastructure package dynamically here to avoid including it in the
