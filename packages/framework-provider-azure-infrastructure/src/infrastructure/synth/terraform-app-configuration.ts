@@ -15,7 +15,7 @@ export class TerraformAppConfiguration extends Construct {
     // Check if Azure App Configuration is enabled in the config
     const azureAppConfigOptions = (config as any)._azureAppConfigOptions
     if (!azureAppConfigOptions?.enabled) {
-      // If not eabled, create a placeholder without actual resources
+      // If not enabled, create a placeholder without actual resources
       this.appConfiguration = {} as appConfiguration.AppConfiguration
       return
     }

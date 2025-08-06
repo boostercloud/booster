@@ -347,10 +347,10 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
 #### Infrastructure Provisioning
 
-When you deploy with Azure App Configuration enabled, the Azure provider automatically>
+When you deploy with Azure App Configuration enabled, the Azure provider automatically:
 
 - **Creates an Azure App Configuration resource** in your resource group
-- **Sets up authentication** using managed identity to and access keys
+- **Sets up authentication** using managed identity and access keys
 - **Configures environment variables** in your Function App:
   - `AZURE_APP_CONFIG_CONNECTION_STRING`: Connection string for the App Configuration resource
   - `AZURE_APP_CONFIG_ENDPOINT`: Endpoint URL for the App Configuration resource
