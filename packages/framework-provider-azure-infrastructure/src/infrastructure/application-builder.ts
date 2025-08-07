@@ -28,6 +28,7 @@ export class ApplicationBuilder {
       webPubSubBaseFile = await FunctionZip.copyBaseZip(this.config)
     }
     const azureStack = await this.synthApplication(app, webPubSubBaseFile)
+    this.populateInfrastructureEnvironmentVariables(azureStack)
     const rocketBuilder = new RocketBuilder(this.config, azureStack.applicationStack, this.rockets)
     await rocketBuilder.synthRocket()
     // add rocket-related env vars to main function app settings
@@ -51,6 +52,18 @@ export class ApplicationBuilder {
       zipResource,
       consumerZipResource,
       rocketsZipResources,
+    }
+  }
+
+  private populateInfrastructureEnvironmentVariables(azureStack: AzureStack): void {
+    const appConfiguration = azureStack.applicationStack.appConfiguration
+    if (appConfiguration?.primaryWriteKey) {
+      this.config.env['AZURE_APP_CONFIG_CONNECTION_STRING'] = `Endpoint=${appConfiguration.name};Id=${
+        appConfiguration.primaryWriteKey.get(0).id
+      };Secret=${appConfiguration.primaryWriteKey.get(0).secret}`
+    }
+    if (appConfiguration?.endpoint) {
+      this.config.env['AZURE_APP_CONFIG_ENDPOINT'] = appConfiguration.endpoint
     }
   }
 
