@@ -58,9 +58,11 @@ export class ApplicationBuilder {
   private populateInfrastructureEnvironmentVariables(azureStack: AzureStack): void {
     const appConfiguration = azureStack.applicationStack.appConfiguration
     if (appConfiguration?.primaryWriteKey) {
-      this.config.env['AZURE_APP_CONFIG_CONNECTION_STRING'] = `Endpoint=${appConfiguration.name};Id=${
-        appConfiguration.primaryWriteKey.get(0).id
-      };Secret=${appConfiguration.primaryWriteKey.get(0).secret}`
+      this.config.env['AZURE_APP_CONFIG_CONNECTION_STRING'] = `Endpoint=https://${
+        appConfiguration.name
+      }.azconfig.io;Id=${appConfiguration.primaryWriteKey.get(0).id};Secret=${
+        appConfiguration.primaryWriteKey.get(0).secret
+      }`
     }
     if (appConfiguration?.endpoint) {
       this.config.env['AZURE_APP_CONFIG_ENDPOINT'] = appConfiguration.endpoint

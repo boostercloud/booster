@@ -115,8 +115,20 @@ if (azureAppConfigConnectionString || azureAppConfigEndpoint) {
   try {
     const config = require('@boostercloud/framework-core').Booster.config
 
-    const provider = ConfigurationAdapter.fromEnvironment()
-    config.addConfigurationProvider(provider)
+    const azureAppConfigOptions = (config as any)._azureAppConfigOptions
+
+    // Use user overrides if provided, otherwise fall back to environment variables
+    const connectionString = azureAppConfigOptions?.connectionString || azureAppConfigConnectionString
+    const endpoint = azureAppConfigOptions?.endpoint || azureAppConfigEndpoint
+    const labelFilter = azureAppConfigOptions?.labelFilter
+
+    // Initialize if we have either environment variables or user config with enabled=true
+    if (connectionString || endpoint || azureAppConfigOptions?.enabled) {
+      const provider = connectionString
+        ? ConfigurationAdapter.withConnectionString(connectionString, labelFilter)
+        : ConfigurationAdapter.withEndpoint(endpoint, labelFilter)
+      config.addConfigurationProvider(provider)
+    }
   } catch (error) {
     console.warn('[Azure Provider] Failed to initialize Azure App Configuration adapter:', error)
   }
