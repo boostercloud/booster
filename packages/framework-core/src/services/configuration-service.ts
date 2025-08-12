@@ -1,6 +1,8 @@
 import {
   BoosterConfig,
   BoosterConfigEnvProvider,
+  ConfigurationProvider,
+  ConfigurationResolution,
   ConfigurationResolver,
   DefaultConfigurationResolver,
   EnvironmentVariablesProvider,
@@ -55,14 +57,14 @@ export class ConfigurationService {
    * @param key The configuration key to resolve
    * @returns Promise resolving to the full configuration resolution result
    */
-  public async resolve(key: string) {
+  public async resolve(key: string): Promise<ConfigurationResolution> {
     return this.resolver.resolve(key)
   }
 
   /**
    * Get all registered providers
    */
-  public getProviders() {
+  public getProviders(): ConfigurationProvider[] {
     return this.resolver.getProviders()
   }
 }
@@ -79,7 +81,10 @@ export async function resolveConfigurationValue(config: BoosterConfig, key: stri
 /**
  * Utility function to resolve a configuration value with source tracking
  */
-export async function resolveConfigurationWithSource(config: BoosterConfig, key: string) {
+export async function resolveConfigurationWithSource(
+  config: BoosterConfig,
+  key: string
+): Promise<ConfigurationResolution> {
   const configService = ConfigurationService.getInstance(config)
   return configService.resolve(key)
 }

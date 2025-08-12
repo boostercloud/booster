@@ -30,11 +30,12 @@ export class TerraformFunctionAppSettings {
     const region = (process.env['REGION'] ?? '').toLowerCase().replace(/ /g, '')
 
     // Azure App Configuration settings
-    const appConfigConnectionString = appConfiguration?.primaryWriteKey
-      ? `Endpoint=https://${appConfiguration.name}.azconfig.io;Id=${
-          appConfiguration.primaryWriteKey.get(0).id
-        };Secret=${appConfiguration.primaryWriteKey.get(0).secret}`
-      : ''
+    const appConfigConnectionString =
+      appConfiguration?.primaryWriteKey && appConfiguration?.name
+        ? `Endpoint=https://${appConfiguration.name}.azconfig.io;Id=${
+            appConfiguration.primaryWriteKey.get(0).id
+          };Secret=${appConfiguration.primaryWriteKey.get(0).secret}`
+        : ''
     const appConfigEndpoint = appConfiguration?.endpoint || ''
 
     return {
