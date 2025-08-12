@@ -2,7 +2,7 @@ import { Construct } from 'constructs'
 import { appConfiguration } from '@cdktf/provider-azurerm'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
-import { toTerraformName } from '../helper/utils'
+import { buildAzureAppConfigConnectionString, toTerraformName } from '../helper/utils'
 
 export class TerraformAppConfiguration extends Construct {
   public readonly appConfiguration: appConfiguration.AppConfiguration
@@ -50,9 +50,10 @@ export class TerraformAppConfiguration extends Construct {
     if (!this.appConfiguration || !this.appConfiguration.primaryWriteKey) {
       return ''
     }
-    return `Endpoint=https://${this.appConfiguration.name}.azconfig.io;Id=${
-      this.appConfiguration.primaryWriteKey.get(0).id
-    };Secret=${this.appConfiguration.primaryWriteKey.get(0).secret}`
+    return buildAzureAppConfigConnectionString(this.appConfiguration.name, {
+      id: this.appConfiguration.primaryWriteKey.get(0).id,
+      secret: this.appConfiguration.primaryWriteKey.get(0).secret,
+    })
   }
 
   /**

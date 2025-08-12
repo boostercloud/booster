@@ -1,6 +1,6 @@
 import { environmentVarNames } from '@boostercloud/framework-provider-azure'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
-import { toTerraformName } from '../helper/utils'
+import { buildAzureAppConfigConnectionString, toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import { storageAccount } from '@cdktf/provider-azurerm'
 
@@ -17,7 +17,7 @@ export class TerraformFunctionAppSettings {
     }: ApplicationSynthStack,
     config: BoosterConfig,
     storageAccount: storageAccount.StorageAccount,
-    suffixName: string
+    suffixName: string,
   ): { [key: string]: string } {
     if (!cosmosdbDatabase) {
       throw new Error('Undefined cosmosdbDatabase resource')
@@ -32,9 +32,10 @@ export class TerraformFunctionAppSettings {
     // Azure App Configuration settings
     const appConfigConnectionString =
       appConfiguration?.primaryWriteKey && appConfiguration?.name
-        ? `Endpoint=https://${appConfiguration.name}.azconfig.io;Id=${
-            appConfiguration.primaryWriteKey.get(0).id
-          };Secret=${appConfiguration.primaryWriteKey.get(0).secret}`
+        ? buildAzureAppConfigConnectionString(appConfiguration.name, {
+          id: appConfiguration.primaryWriteKey.get(0).id,
+          secret: appConfiguration.primaryWriteKey.get(0).secret,
+        })
         : ''
     const appConfigEndpoint = appConfiguration?.endpoint || ''
 

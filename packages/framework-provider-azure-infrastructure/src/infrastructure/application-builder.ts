@@ -2,7 +2,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { AzureStack } from './azure-stack'
 import * as ckdtfTemplate from './templates/cdktf'
-import { renderToFile } from './helper/utils'
+import { buildAzureAppConfigConnectionString, renderToFile } from './helper/utils'
 import { getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { App } from 'cdktf'
 import { ZipResource } from './types/zip-resource'
@@ -17,7 +17,8 @@ export interface ApplicationBuild {
 }
 
 export class ApplicationBuilder {
-  constructor(readonly config: BoosterConfig, readonly rockets?: InfrastructureRocket[]) {}
+  constructor(readonly config: BoosterConfig, readonly rockets?: InfrastructureRocket[]) {
+  }
 
   public async buildApplication(): Promise<ApplicationBuild> {
     await this.generateSynthFiles()
@@ -42,7 +43,7 @@ export class ApplicationBuilder {
     if (this.config.eventStreamConfiguration.enabled) {
       consumerZipResource = await FunctionZip.copyZip(
         azureStack.applicationStack.consumerFunctionDefinitions!,
-        'consumerFunctionApp.zip'
+        'consumerFunctionApp.zip',
       )
     }
     const rocketsZipResources = await rocketBuilder.mountRocketsZipResources()
@@ -57,12 +58,14 @@ export class ApplicationBuilder {
 
   private populateInfrastructureEnvironmentVariables(azureStack: AzureStack): void {
     const appConfiguration = azureStack.applicationStack.appConfiguration
-    if (appConfiguration?.primaryWriteKey) {
-      this.config.env['AZURE_APP_CONFIG_CONNECTION_STRING'] = `Endpoint=https://${
-        appConfiguration.name
-      }.azconfig.io;Id=${appConfiguration.primaryWriteKey.get(0).id};Secret=${
-        appConfiguration.primaryWriteKey.get(0).secret
-      }`
+    if (appConfiguration?.primaryWriteKey && appConfiguration?.name) {
+      this.config.env['AZURE_APP_CONFIG_CONNECTION_STRING'] = buildAzureAppConfigConnectionString(
+        appConfiguration.name,
+        {
+          id: appConfiguration.primaryWriteKey.get(0).id,
+          secret: appConfiguration.primaryWriteKey.get(0).secret,
+        },
+      )
     }
     if (appConfiguration?.endpoint) {
       this.config.env['AZURE_APP_CONFIG_ENDPOINT'] = appConfiguration.endpoint

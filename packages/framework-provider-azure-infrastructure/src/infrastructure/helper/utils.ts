@@ -5,7 +5,7 @@ import * as Mustache from 'mustache'
 import { configuration } from './params'
 import { WebSiteManagementClient as WebSiteManagement } from '@azure/arm-appservice'
 import { ResourceManagementClient } from '@azure/arm-resources'
-import { TokenCredential, ClientSecretCredential } from '@azure/identity'
+import { ClientSecretCredential, TokenCredential } from '@azure/identity'
 
 const MAX_TERRAFORM_SIZE_NAME = 24
 const MAX_RESOURCE_GROUP_NAME_SIZE = 20
@@ -57,7 +57,7 @@ export function getDeployRegion(): string {
   const region = process.env['REGION']
   if (!region) {
     throw new Error(
-      "REGION was not properly loaded and is required to run the deploy process. Check that you've set it in REGION environment variable."
+      'REGION was not properly loaded and is required to run the deploy process. Check that you\'ve set it in REGION environment variable.',
     )
   }
   return region
@@ -85,12 +85,12 @@ export async function azureCredentials(): Promise<TokenCredential> {
   const applicationTokenCredentials = new ClientSecretCredential(
     configuration.tenantId,
     configuration.appId,
-    configuration.secret
+    configuration.secret,
   )
 
   if (!applicationTokenCredentials) {
     throw new Error(
-      'Unable to login with Service Principal. Please verified provided appId, secret and subscription ID in .env file are correct.'
+      'Unable to login with Service Principal. Please verified provided appId, secret and subscription ID in .env file are correct.',
     )
   }
 
@@ -113,6 +113,19 @@ export function createDomainNameLabel(resourceGroupName: string): string {
   return `${resourceGroupName}apis`
 }
 
+/**
+ * Builds Azure App Configuration connection string from primary write key details
+ * @param appConfigName The name of the Azure App Configuration resource
+ * @param primaryWriteKey The primary write key object containing id and secret
+ * @returns Formatted connection string for Azure App Configuration
+ */
+export function buildAzureAppConfigConnectionString(
+  appConfigName: string,
+  primaryWriteKey: { id: string; secret: string },
+): string {
+  return `Endpoint=https://${appConfigName}.azconfig.io;Id=${primaryWriteKey.id};Secret=${primaryWriteKey.secret}`
+}
+
 function loadUserProject(userProjectPath: string): UserApp {
   const projectIndexJSPath = path.resolve(path.join(userProjectPath, 'dist', 'index.js'))
   return require(projectIndexJSPath)
@@ -131,7 +144,7 @@ export async function waitForIt<TResult>(
   checkResult: (result: TResult) => boolean,
   errorMessage: string,
   timeoutMs = 180000,
-  tryEveryMs = 1000
+  tryEveryMs = 1000,
 ): Promise<TResult> {
   console.debug('[waitForIt] start')
   const start = Date.now()
