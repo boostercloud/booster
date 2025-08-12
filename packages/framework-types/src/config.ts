@@ -45,7 +45,7 @@ export interface ConfigurationProvider {
   isAvailable(): Promise<boolean>
 
   /**
-   * Priority of this configuration provider (higher number = higher priority
+   * Priority of this configuration provider (higher number = higher priority)
    */
   readonly priority: number
 

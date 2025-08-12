@@ -75,7 +75,9 @@ export class ConfigurationAdapter implements ConfigurationProvider {
 
   /**
    * Create a ConfigurationAdapter instance from environment variables
-   * this is the standard way to initialize the provider in Azure environments
+   * This if the standard way to initialize the provider in Azure Function App environments,
+   * where these environment variables are automatically injected. In other environments,
+   * you may need to set these variables manually.
    */
   static fromEnvironment(labelFilter?: string): ConfigurationAdapter {
     const connectionString = process.env['AZURE_APP_CONFIG_CONNECTION_STRING']

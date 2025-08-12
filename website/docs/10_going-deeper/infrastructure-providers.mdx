@@ -329,7 +329,7 @@ If you want to use your own `host.json` file just add it to `config.assets` arra
 
 ### Azure App Configuration Integration
 
-The Azure provider includes seamless integration with [Azure App Configuration service](https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview) for centralized configuration management, When enabled, Booster automatically provisions the necessary infrastructure and provides a unified configuration API.
+The Azure provider includes seamless integration with [Azure App Configuration service](https://learn.microsoft.com/en-us/azure/azure-app-configuration/overview) for centralized configuration management. When enabled, Booster automatically provisions the necessary infrastructure and provides a unified configuration API.
 
 #### Enabling Azure App Configuration
 
@@ -358,13 +358,13 @@ When you deploy with Azure App Configuration enabled, the Azure provider automat
 
 #### Using Configuration Values
 
-Once deployed, you can retrieve configuration avlues from any part of your application:
+Once deployed, you can retrieve configuration values from any part of your application:
 
 ```typescript
 import { resolveConfigurationValue, resolveConfigurationWithSource }  from '@boostercloud/framework-core'
 
 // Simple value resolution
-const appTimeout = await resolveConfigurationValue(Booster.config, 'API_TIMEOUT'
+const appTimeout = await resolveConfigurationValue(Booster.config, 'API_TIMEOUT')
 
 // Resolution with source tracking (useful for debugging)
 const resolution = await resolveConfigurationWithSource(Booster.config, 'FEATURE_FLAG_X')

@@ -83,7 +83,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
 You can customize the Azure App Configuration integration:
 
 ```typescript title="src/config/config.ts"
-Booster.configure('production', (config: BoosterConfig): void => {)
+Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-app'
   config.providerPackage = '@boostercloud/framework-provider-azure'
 
@@ -277,7 +277,7 @@ Register your custom provider in the configuration:
 ```typescript title="src/config/config.ts"
 import { CustomConfigurationProvider } from '../providers/custom-config-provider'
 
-Booster.configure('production', (config: BoosterConfig): void => {)
+Booster.configure('production', (config: BoosterConfig): void => {
   config.appName = 'my-app'
   config.providerPackage = '@boostercloud/framework-provider-azure'
 
