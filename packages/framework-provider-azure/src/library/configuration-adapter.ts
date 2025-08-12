@@ -75,7 +75,7 @@ export class ConfigurationAdapter implements ConfigurationProvider {
 
   /**
    * Create a ConfigurationAdapter instance from environment variables
-   * This if the standard way to initialize the provider in Azure Function App environments,
+   * This is the standard way to initialize the provider in Azure Function App environments,
    * where these environment variables are automatically injected. In other environments,
    * you may need to set these variables manually.
    */

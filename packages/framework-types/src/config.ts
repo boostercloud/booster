@@ -203,7 +203,7 @@ export class BoosterConfig {
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
 
-  /** Configuration providers for external configuration sources (Azure App Configuration, etc.) **/
+  /** Configuration providers for external configuration sources (Azure App Configuration, etc.) */
   public readonly configurationProviders: ConfigurationProvider[] = []
 
   /**

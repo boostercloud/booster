@@ -124,7 +124,7 @@ describe('ConfigurationAdapter', () => {
 
   describe('integration scenarios', () => {
     it('should work with label filters', async () => {
-      const adapter = new ConfigurationAdapter('mock-connection-string', undefined, 'producton')
+      const adapter = new ConfigurationAdapter('mock-connection-string', undefined, 'production')
 
       // Should create without throwing
       expect(adapter.name).to.equal('azure-app-configuration')
