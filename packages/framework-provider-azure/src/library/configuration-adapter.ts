@@ -44,7 +44,13 @@ export class ConfigurationAdapter implements ConfigurationProvider {
       this.isInitialized = true
       return true
     } catch (error) {
-      this.initializationError = error instanceof Error ? error : new Error(String(error))
+      // Preserve original error information by wrapping it
+      const originalError = error instanceof Error ? error : new Error(String(error))
+      this.initializationError = new Error(
+        `Failed to initialize Azure App Configuration client: ${originalError.message}`
+      )
+      // Preserve the original error as a property for debugging
+      ;(this.initializationError as any).originalError = originalError
       this.isInitialized = true // Mark as initialized to avoid retrying
       return false
     }
