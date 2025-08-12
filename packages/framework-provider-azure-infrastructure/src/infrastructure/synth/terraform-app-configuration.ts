@@ -26,7 +26,7 @@ export class TerraformAppConfiguration extends Construct {
       name,
       resourceGroupName: resourceGroup.name,
       location: resourceGroup.location,
-      sku: 'free', // Use free tier by default
+      sku: 'free', // Use free tier by default. For more information, see https://azure.microsoft.com/en-us/pricing/details/app-configuration/
       tags: {
         Application: config.appName,
         Environment: config.environmentName,
