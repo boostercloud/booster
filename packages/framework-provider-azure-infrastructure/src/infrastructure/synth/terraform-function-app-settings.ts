@@ -17,7 +17,7 @@ export class TerraformFunctionAppSettings {
     }: ApplicationSynthStack,
     config: BoosterConfig,
     storageAccount: storageAccount.StorageAccount,
-    suffixName: string,
+    suffixName: string
   ): { [key: string]: string } {
     if (!cosmosdbDatabase) {
       throw new Error('Undefined cosmosdbDatabase resource')
@@ -33,8 +33,8 @@ export class TerraformFunctionAppSettings {
     const appConfigConnectionString =
       appConfiguration?.primaryWriteKey && appConfiguration?.name
         ? buildAzureAppConfigConnectionString(appConfiguration.name, {
-          id: appConfiguration.primaryWriteKey.get(0).id,
-          secret: appConfiguration.primaryWriteKey.get(0).secret,
+            id: appConfiguration.primaryWriteKey.get(0).id,
+            secret: appConfiguration.primaryWriteKey.get(0).secret,
         })
         : ''
     const appConfigEndpoint = appConfiguration?.endpoint || ''

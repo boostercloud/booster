@@ -17,8 +17,7 @@ export interface ApplicationBuild {
 }
 
 export class ApplicationBuilder {
-  constructor(readonly config: BoosterConfig, readonly rockets?: InfrastructureRocket[]) {
-  }
+  constructor(readonly config: BoosterConfig, readonly rockets?: InfrastructureRocket[]) {}
 
   public async buildApplication(): Promise<ApplicationBuild> {
     await this.generateSynthFiles()
@@ -43,7 +42,7 @@ export class ApplicationBuilder {
     if (this.config.eventStreamConfiguration.enabled) {
       consumerZipResource = await FunctionZip.copyZip(
         azureStack.applicationStack.consumerFunctionDefinitions!,
-        'consumerFunctionApp.zip',
+        'consumerFunctionApp.zip'
       )
     }
     const rocketsZipResources = await rocketBuilder.mountRocketsZipResources()
@@ -64,7 +63,7 @@ export class ApplicationBuilder {
         {
           id: appConfiguration.primaryWriteKey.get(0).id,
           secret: appConfiguration.primaryWriteKey.get(0).secret,
-        },
+        }
       )
     }
     if (appConfiguration?.endpoint) {
