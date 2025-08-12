@@ -18,10 +18,11 @@ export class ConfigurationAdapter implements ConfigurationProvider {
 
   /**
    * Initialize the Azure App Configuration client
+   * @returns true if initialization was successful, false otherwise
    */
-  private async initialize(): Promise<void> {
+  private async initialize(): Promise<boolean> {
     if (this.isInitialized) {
-      return
+      return !this.initializationError
     }
 
     try {
@@ -33,23 +34,30 @@ export class ConfigurationAdapter implements ConfigurationProvider {
         const credential = new DefaultAzureCredential()
         this.client = new AppConfigurationClient(this.endpoint, credential)
       } else {
-        throw new Error('Azure App Configuration requires either a connection string or endpoint URL')
+        this.initializationError = new Error(
+          'Azure App Configuration requires either a connection string or endpoint URL'
+        )
+        this.isInitialized = true
+        return false
       }
+
+      this.isInitialized = true
+      return true
     } catch (error) {
       this.initializationError = error instanceof Error ? error : new Error(String(error))
       this.isInitialized = true // Mark as initialized to avoid retrying
-      throw this.initializationError
+      return false
     }
   }
 
   async getValue(key: string): Promise<string | undefined> {
+    const initialized = await this.initialize()
+
+    if (!initialized || !this.client) {
+      return undefined
+    }
+
     try {
-      await this.initialize()
-
-      if (!this.client) {
-        return undefined
-      }
-
       // Get the configuration setting with optional label filter
       const configurationSetting = await this.client.getConfigurationSetting({
         key,
@@ -65,12 +73,8 @@ export class ConfigurationAdapter implements ConfigurationProvider {
   }
 
   async isAvailable(): Promise<boolean> {
-    try {
-      await this.initialize()
-      return !!this.client && !this.initializationError
-    } catch (error) {
-      return false
-    }
+    const initialized = await this.initialize()
+    return initialized && !!this.client && !this.initializationError
   }
 
   /**
@@ -99,21 +103,4 @@ export class ConfigurationAdapter implements ConfigurationProvider {
   static withEndpoint(endpoint: string, labelFilter?: string): ConfigurationAdapter {
     return new ConfigurationAdapter(undefined, endpoint, labelFilter)
   }
-}
-
-/**
- * Configuration options for Azure App Configuration integration
- */
-export interface AzureAppConfigurationOptions {
-  /** Connection string for Azure App Configuration (alternative to endpoint + managed identity) */
-  connectionString?: string
-
-  /** Endpoint URL for Azure App Configuration (used with managed identity) */
-  endpoint?: string
-
-  /** Optional label filter to target specific configuration values */
-  labelFilter?: string
-
-  /** Whether to enable Azure App Configuration (default: false) */
-  enabled?: boolean
 }

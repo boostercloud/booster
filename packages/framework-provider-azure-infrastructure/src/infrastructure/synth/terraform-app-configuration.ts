@@ -13,7 +13,7 @@ export class TerraformAppConfiguration extends Construct {
     const { appPrefix, resourceGroup } = applicationStack
 
     // Check if Azure App Configuration is enabled in the config
-    const azureAppConfigOptions = (config as any)._azureAppConfigOptions
+    const azureAppConfigOptions = config.getAzureAppConfigOptions()
     if (!azureAppConfigOptions?.enabled) {
       // If not enabled, create a placeholder without actual resources
       this.appConfiguration = {} as appConfiguration.AppConfiguration
@@ -69,7 +69,7 @@ export class TerraformAppConfiguration extends Construct {
    * Check if App Configuration is enabled for this configuration
    */
   public static isEnabled(config: BoosterConfig): boolean {
-    const azureAppConfigOptions = (config as any)._azureAppConfigOptions
+    const azureAppConfigOptions = config.getAzureAppConfigOptions()
     return azureAppConfigOptions?.enabled === true
   }
 }

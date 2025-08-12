@@ -115,7 +115,7 @@ if (azureAppConfigConnectionString || azureAppConfigEndpoint) {
   try {
     const config = require('@boostercloud/framework-core').Booster.config
 
-    const azureAppConfigOptions = (config as any)._azureAppConfigOptions
+    const azureAppConfigOptions = config.getAzureAppConfigOptions()
 
     // Use user overrides if provided, otherwise fall back to environment variables
     const connectionString = azureAppConfigOptions?.connectionString || azureAppConfigConnectionString
