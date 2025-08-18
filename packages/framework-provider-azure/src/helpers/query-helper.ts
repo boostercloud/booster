@@ -1,4 +1,4 @@
-import { CosmosClient, ItemDefinition, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
+import { CosmosClient, FeedOptions, ItemDefinition, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
 import {
   BoosterConfig,
   FilterFor,
@@ -46,43 +46,90 @@ export async function search<TResult>(
   const queryDefinition = `SELECT ${projectionsExpression} FROM c ${
     filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression
   }`
-  const queryWithOrder = queryDefinition + buildOrderExpression(order)
-  let finalQuery = queryWithOrder
-  if (paginatedVersion && limit) {
-    finalQuery += ` OFFSET ${afterCursor?.id || 0} LIMIT ${limit} `
-  } else {
-    if (limit) {
-      finalQuery += ` OFFSET 0 LIMIT ${limit} `
-    }
-  }
+  const finalQuery = queryDefinition + buildOrderExpression(order)
+
   const querySpec: SqlQuerySpec = {
     query: finalQuery,
     parameters: buildExpressionAttributeValues(filters),
   }
 
   logger.debug('Running search with the following params: \n', JSON.stringify(querySpec))
-  let { resources } = await cosmosDb
-    .database(config.resourceNames.applicationStack)
-    .container(containerName)
-    .items.query(querySpec)
-    .fetchAll()
 
-  resources = nestProperties(resources)
-  resources = resources.map((resource) => ({
-    ...resource,
-    boosterMetadata: {
-      ...resource.boosterMetadata,
-      optimisticConcurrencyValue: resource._etag,
-    },
-  }))
+  const container = cosmosDb.database(config.resourceNames.applicationStack).container(containerName)
 
   if (paginatedVersion) {
+    // Use Cosmos DB's continuation token pagination
+    const feedOptions: FeedOptions = {}
+    if (limit) {
+      feedOptions.maxItemCount = limit
+    }
+    // Extract continuation token from the cursor (backward compatibility)
+    if (afterCursor?.continuationToken) {
+      feedOptions.continuationToken = afterCursor.continuationToken
+    } else if (afterCursor?.id && !isNaN(parseInt(afterCursor.id))) {
+      // Legacy cursor format - fallback to OFFSET for backward compatibility
+      const offset = parseInt(afterCursor.id)
+      let legacyQuery = `${finalQuery} OFFSET ${offset}`
+      if (limit) {
+        legacyQuery += ` LIMIT ${limit} `
+      }
+      const legacyQuerySpec = { ...querySpec, query: legacyQuery }
+      let { resources } = await container.items.query(legacyQuerySpec).fetchAll()
+
+      resources = nestProperties(resources)
+      resources = resources.map((resource) => ({
+        ...resource,
+        boosterMetadata: {
+          ...resource.boosterMetadata,
+          optimisticConcurrencyValue: resource._etag,
+        },
+      }))
+
+      return {
+        items: resources ?? [],
+        count: resources.length,
+        cursor: {
+          id: ((limit ? limit : 1) + offset).toString(),
+        },
+      }
+    }
+
+    const queryIterator = container.items.query(querySpec, feedOptions)
+    const { resources, continuationToken } = await queryIterator.fetchNext()
+
+    const processedResources = nestProperties(resources || [])
+    const finalResources = processedResources.map((resource: any) => ({
+      ...resource,
+      boosterMetadata: {
+        ...resource.boosterMetadata,
+        optimisticConcurrencyValue: resource._etag,
+      },
+    }))
+
     return {
-      items: resources ?? [],
-      count: resources.length,
-      cursor: { id: ((limit ? limit : 1) + (afterCursor?.id ? parseInt(afterCursor?.id) : 0)).toString() },
+      items: finalResources,
+      count: finalResources.length,
+      cursor: continuationToken ? { continuationToken, id: continuationToken } : undefined, // Use continuation token as id for backward compatibility
     }
   } else {
+    // Non-paginated version - apply limit but fetch all results
+    let finalQueryForNonPaginated = finalQuery
+    if (limit) {
+      finalQueryForNonPaginated += ` OFFSET 0 LIMIT ${limit} `
+    }
+
+    const nonPaginatedQuerySpec = { ...querySpec, query: finalQueryForNonPaginated }
+    let { resources } = await container.items.query(nonPaginatedQuerySpec).fetchAll()
+
+    resources = nestProperties(resources)
+    resources = resources.map((resource: any) => ({
+      ...resource,
+      boosterMetadata: {
+        ...resource.boosterMetadata,
+        optimisticConcurrencyValue: resource._etag,
+      },
+    }))
+
     return resources ?? []
   }
 }
