@@ -1694,14 +1694,15 @@ describe('Read models end-to-end tests', () => {
           },
         ])
         expect(cartShippingAddress.count).to.equal(1)
-        // Cursor format varies by provider - verify structure and expected behavior
-        expect(cartShippingAddress.cursor).to.exist
-        expect(cartShippingAddress.cursor.id).to.be.a('string')
-        expect(cartShippingAddress.cursor.id).to.not.be.empty
-        // For Azure/Local with legacy pagination, verify it's "1" for the first page
-        if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
-          if (/^\d+$/.test(cartShippingAddress.cursor.id)) {
-            expect(cartShippingAddress.cursor.id).to.equal('1')
+        // Cursor may be undefined when there are no more pages (continuation token approach)
+        if (cartShippingAddress.cursor) {
+          expect(cartShippingAddress.cursor.id).to.be.a('string')
+          expect(cartShippingAddress.cursor.id).to.not.be.empty
+          // For Azure/Local with legacy pagination, verify it's "1" for the first page
+          if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
+            if (/^\d+$/.test(cartShippingAddress.cursor.id)) {
+              expect(cartShippingAddress.cursor.id).to.equal('1')
+            }
           }
         }
       })
@@ -2029,14 +2030,15 @@ describe('Read models end-to-end tests', () => {
           },
         ])
         expect(cartMyAddress.count).to.equal(1)
-        // Cursor format varies by provider - verify structure and expected behavior
-        expect(cartMyAddress.cursor).to.exist
-        expect(cartMyAddress.cursor.id).to.be.a('string')
-        expect(cartMyAddress.cursor.id).to.not.be.empty
-        // For Azure/Local with legacy pagination, verify it's "1" for the first page
-        if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
-          if (/^\d+$/.test(cartMyAddress.cursor.id)) {
-            expect(cartMyAddress.cursor.id).to.equal('1')
+        // Cursor may be undefined when there are no more pages (continuation token approach)
+        if (cartMyAddress.cursor) {
+          expect(cartMyAddress.cursor.id).to.be.a('string')
+          expect(cartMyAddress.cursor.id).to.not.be.empty
+          // For Azure/Local with legacy pagination, verify it's "1" for the first page
+          if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
+            if (/^\d+$/.test(cartMyAddress.cursor.id)) {
+              expect(cartMyAddress.cursor.id).to.equal('1')
+            }
           }
         }
       })

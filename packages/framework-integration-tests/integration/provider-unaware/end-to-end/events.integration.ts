@@ -756,11 +756,13 @@ describe('Events end-to-end tests', () => {
           const prevCursor = cursor
           cursor = result.data.EntitiesIdsFinder.cursor
           count = result.data.EntitiesIdsFinder.count
+          console.log(`Page ${pages + 1} - Count: ${count} - Cursor: ${JSON.stringify(cursor)}`)
           if (count !== 0) {
             pages++
             const resultItems = result.data.EntitiesIdsFinder?.items || []
+            console.log(`Page ${pages} - Items: ${JSON.stringify(resultItems)}`)
             items.push(...resultItems)
-            console.log(`Pages ${pages}`)
+            // console.log(`Pages ${pages}`)
           }
 
           // Additional safety check; if the cursor hasn't changed and count is still > 0, break to prevent infinite loop
@@ -772,6 +774,10 @@ describe('Events end-to-end tests', () => {
         if (pages >= maxPages) {
           console.warn('Reached maximum page limit to prevent infinite loops')
         }
+        console.log(
+          `Final results: pages=${pages}, expected=${numberOfProvisionedEvents + 1}, totalItems=${items.length}`
+        )
+        console.log(`Final items: ${JSON.stringify(items)}`)
         expect(pages).to.be.eq(numberOfProvisionedEvents + 1)
 
         // counter with same id should be only 1
