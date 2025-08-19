@@ -11,6 +11,9 @@ import {
 import { applicationUnderTest } from './setup'
 import { unique } from '@boostercloud/framework-common-helpers'
 
+// Type for generic cursor that can hold any pagination-related data
+type GenericCursor = Record<string, unknown>
+
 describe('Events end-to-end tests', () => {
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
@@ -730,11 +733,13 @@ describe('Events end-to-end tests', () => {
       })
 
       it('Should return the exact number of pages', async () => {
-        let cursor: Record<'id', string> | undefined = undefined
+        let cursor: GenericCursor | undefined = undefined
         let count = 9999
         let pages = 0
         const items: any[] = []
-        while (count != 0) {
+        const maxPages = 20 // Safety limit to prevent infinite loops
+
+        while (count != 0 && pages < maxPages) {
           const result: any = await anonymousClient.mutate({
             variables: {
               entityName: 'AnotherCounter',
@@ -748,13 +753,24 @@ describe('Events end-to-end tests', () => {
             `,
           })
 
+          const prevCursor = cursor
           cursor = result.data.EntitiesIdsFinder.cursor
           count = result.data.EntitiesIdsFinder.count
           if (count !== 0) {
             pages++
-            items.push(...result.data.EntitiesIdsFinder?.items)
+            const resultItems = result.data.EntitiesIdsFinder?.items || []
+            items.push(...resultItems)
             console.log(`Pages ${pages}`)
           }
+
+          // Additional safety check; if the cursor hasn't changed and count is still > 0, break to prevent infinite loop
+          if (count > 0 && JSON.stringify(cursor) === JSON.stringify(prevCursor)) {
+            break
+          }
+        }
+
+        if (pages >= maxPages) {
+          console.warn('Reached maximum page limit to prevent infinite loops')
         }
         expect(pages).to.be.eq(numberOfProvisionedEvents + 1)
 
