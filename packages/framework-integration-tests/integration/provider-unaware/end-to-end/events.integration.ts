@@ -766,7 +766,7 @@ describe('Events end-to-end tests', () => {
           }
 
           // Additional safety check; if the cursor hasn't changed and count is still > 0, break to prevent infinite loop
-          if (count > 0 && JSON.stringify(cursor) === JSON.stringify(prevCursor)) {
+          if (count > 0 && prevCursor !== undefined && JSON.stringify(cursor) === JSON.stringify(prevCursor)) {
             break
           }
         }
