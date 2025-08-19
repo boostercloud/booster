@@ -766,8 +766,13 @@ describe('Events end-to-end tests', () => {
           }
 
           // Additional safety check; if the cursor hasn't changed and count is still > 0, break to prevent infinite loop
+          // Handle case where cursor is always undefined (DISTINCT queries with small results)
           if (count > 0 && prevCursor !== undefined && JSON.stringify(cursor) === JSON.stringify(prevCursor)) {
-            break
+            // If this is not hte first iteration (pages > 0), break to prevent infinite loop
+            if (pages > 0) {
+              console.log('Breaking due to unchanged cursor (pages > 0)')
+              break
+            }
           }
         }
 
