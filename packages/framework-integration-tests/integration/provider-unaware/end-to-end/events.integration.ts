@@ -753,6 +753,11 @@ describe('Events end-to-end tests', () => {
 
           cursor = result.data.EntitiesIdsFinder.cursor
           count = result.data.EntitiesIdsFinder.count
+
+          // Temporary debug messages. @TODO: remove them
+          console.log(`Count ${count}`)
+          console.log(`Cursor ${JSON.stringify(cursor)}`)
+
           if (count !== 0) {
             pages++
             items.push(...result.data.EntitiesIdsFinder?.items)

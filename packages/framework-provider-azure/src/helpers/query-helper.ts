@@ -61,12 +61,21 @@ export async function search<TResult>(
     const isDistinctQuery = /SELECT\s+DISTINCT\s+/i.test(finalQuery)
     const hasOrderBy = /\bORDER\s+BY\s+/i.test(finalQuery)
 
+    // Temporary debugging messages. @TODO: remove them
+    console.log('Final Query:', finalQuery)
+    console.log('isDistinctQuery:', isDistinctQuery)
+    console.log('hasOrderBy:', hasOrderBy)
+
     // Azure Cosmos DB continuation token compatibility rules:
     // - Regular queries: Always use continuation tokens
     // - DISTINCT queries: Can only use continuation tokens if they have ORDER BY
     // - Legacy cursors: Numeric cursor.id values must use OFFSET/LIMIT for backward compatibility
     const canUseContinuationToken = !isDistinctQuery || (isDistinctQuery && hasOrderBy)
     const hasLegacyCursor = afterCursor?.id && !isNaN(parseInt(afterCursor.id))
+
+    // Temporary debugging messages. @TODO: remove them
+    console.log('canUseContinuationToken:', canUseContinuationToken)
+    console.log('hasLegacyCursor:', hasLegacyCursor)
 
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
