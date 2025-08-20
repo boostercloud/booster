@@ -57,7 +57,7 @@ export async function searchEntitiesIds(
     limit,
     afterCursor,
     true,
-    undefined,
+    { entityId: 'ASC' },
     'DISTINCT c.entityID'
   )) as PaginatedEntitiesIdsResult
   logger.debug('Unique events search result', result)

@@ -209,7 +209,7 @@ describe('Events Searcher adapter', () => {
         1,
         { id: '1' },
         true,
-        undefined,
+        { entityId: 'ASC' },
         'DISTINCT c.entityID'
       )
     })
@@ -229,7 +229,7 @@ describe('Events Searcher adapter', () => {
         1,
         undefined,
         true,
-        undefined,
+        { entityId: 'ASC' },
         'DISTINCT c.entityID'
       )
     })

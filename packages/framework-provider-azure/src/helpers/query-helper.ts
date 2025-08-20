@@ -58,8 +58,15 @@ export async function search<TResult>(
   const container = cosmosDb.database(config.resourceNames.applicationStack).container(containerName)
 
   if (paginatedVersion) {
-    // Check if query contains DISTINCT clause which has issues with continuation tokens in Cosmos DB
-    const isDistinctQuery = finalQuery.toUpperCase().includes('SELECT DISTINCT')
+    const isDistinctQuery = /SELECT\s+DISTINCT\s+/i.test(finalQuery)
+    const hasOrderBy = /\bORDER\s+BY\s+/i.test(finalQuery)
+
+    // Azure Cosmos DB continuation token compatibility rules:
+    // - Regular queries: Always use continuation tokens
+    // - DISTINCT queries: Can only use continuation tokens if they have ORDER BY
+    // - Legacy cursors: Numeric cursor.id values must use OFFSET/LIMIT for backward compatibility
+    const canUseContinuationToken = !isDistinctQuery || (isDistinctQuery && hasOrderBy)
+    const hasLegacyCursor = afterCursor?.id && !isNaN(parseInt(afterCursor.id))
 
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
@@ -69,7 +76,7 @@ export async function search<TResult>(
     // Extract continuation token from the cursor (backward compatibility)
     if (afterCursor?.continuationToken) {
       feedOptions.continuationToken = afterCursor.continuationToken
-    } else if (isDistinctQuery || (afterCursor?.id && !isNaN(parseInt(afterCursor.id)))) {
+    } else if (!canUseContinuationToken || hasLegacyCursor) {
       // Legacy cursor format - fallback to OFFSET for backward compatibility
       const offset = afterCursor?.id ? parseInt(afterCursor.id) : 0
       let legacyQuery = `${finalQuery} OFFSET ${offset}`
@@ -77,20 +84,13 @@ export async function search<TResult>(
         legacyQuery += ` LIMIT ${limit} `
       }
       const legacyQuerySpec = { ...querySpec, query: legacyQuery }
-      let { resources } = await container.items.query(legacyQuerySpec).fetchAll()
+      const { resources } = await container.items.query(legacyQuerySpec).fetchAll()
 
-      resources = nestProperties(resources)
-      resources = resources.map((resource) => ({
-        ...resource,
-        boosterMetadata: {
-          ...resource.boosterMetadata,
-          optimisticConcurrencyValue: resource._etag,
-        },
-      }))
+      const processedResources = processResources(resources)
 
       return {
-        items: resources ?? [],
-        count: resources.length,
+        items: processedResources ?? [],
+        count: processedResources.length,
         cursor: {
           id: ((limit ? limit : 1) + offset).toString(),
         },
@@ -100,14 +100,7 @@ export async function search<TResult>(
     const queryIterator = container.items.query(querySpec, feedOptions)
     const { resources, continuationToken } = await queryIterator.fetchNext()
 
-    const processedResources = nestProperties(resources || [])
-    const finalResources = processedResources.map((resource: any) => ({
-      ...resource,
-      boosterMetadata: {
-        ...resource.boosterMetadata,
-        optimisticConcurrencyValue: resource._etag,
-      },
-    }))
+    const finalResources = processResources(resources || [])
 
     return {
       items: finalResources,
@@ -122,19 +115,28 @@ export async function search<TResult>(
     }
 
     const nonPaginatedQuerySpec = { ...querySpec, query: finalQueryForNonPaginated }
-    let { resources } = await container.items.query(nonPaginatedQuerySpec).fetchAll()
+    const { resources } = await container.items.query(nonPaginatedQuerySpec).fetchAll()
 
-    resources = nestProperties(resources)
-    resources = resources.map((resource: any) => ({
-      ...resource,
-      boosterMetadata: {
-        ...resource.boosterMetadata,
-        optimisticConcurrencyValue: resource._etag,
-      },
-    }))
+    const processedResources = processResources(resources)
 
-    return resources ?? []
+    return processedResources ?? []
   }
+}
+
+/**
+ * Processes raw Cosmos DB resources by nesting properties and adding Booster metadata
+ * @param resources - The raw resources to process
+ * @returns An array of processed resources with nested properties and Booster metadata
+ */
+function processResources(resources: any[]): any[] {
+  const nestedResources = nestProperties(resources)
+  return nestedResources.map((resource: any) => ({
+    ...resource,
+    boosterMetadata: {
+      ...resource.boosterMetadata,
+      optimisticConcurrencyValue: resource._etag,
+    },
+  }))
 }
 
 function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<string> = []): string {
