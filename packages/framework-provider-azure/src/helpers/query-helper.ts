@@ -59,18 +59,12 @@ export async function search<TResult>(
 
   if (paginatedVersion) {
     const isDistinctQuery = /SELECT\s+DISTINCT\s+/i.test(finalQuery)
-    const hasOrderBy = /\bORDER\s+BY\s+/i.test(finalQuery)
-
-    // Temporary debugging messages. @TODO: remove them
-    console.log('Final Query:', finalQuery)
-    console.log('isDistinctQuery:', isDistinctQuery)
-    console.log('hasOrderBy:', hasOrderBy)
 
     // Azure Cosmos DB continuation token compatibility rules:
     // - Regular queries: Always use continuation tokens
-    // - DISTINCT queries: Can only use continuation tokens if they have ORDER BY
+    // - DISTINCT queries: Always use OFFSET/LIMIT fallback (continuation tokens unreliable even with ORDER BY)
     // - Legacy cursors: Numeric cursor.id values must use OFFSET/LIMIT for backward compatibility
-    const canUseContinuationToken = !isDistinctQuery || (isDistinctQuery && hasOrderBy)
+    const canUseContinuationToken = !isDistinctQuery
     const hasLegacyCursor = afterCursor?.id && !isNaN(parseInt(afterCursor.id))
 
     // Temporary debugging messages. @TODO: remove them
@@ -111,10 +105,18 @@ export async function search<TResult>(
 
     const finalResources = processResources(resources || [])
 
+    let cursor: Record<string, string> | undefined
+    if (continuationToken) {
+      cursor = { continuationToken }
+    } else if (finalResources.length > 0) {
+      const currentOffset = afterCursor?.id && !isNaN(parseInt(afterCursor.id)) ? parseInt(afterCursor.id) : 0
+      cursor = { id: (currentOffset + (limit || 1)).toString() } // Use the length of the results to calculate the next id
+    }
+
     return {
       items: finalResources,
       count: finalResources.length,
-      cursor: continuationToken ? { continuationToken, id: continuationToken } : undefined, // Use continuation token as id for backward compatibility
+      cursor,
     }
   } else {
     // Non-paginated version - apply limit but fetch all results
