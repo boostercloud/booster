@@ -67,10 +67,6 @@ export async function search<TResult>(
     const canUseContinuationToken = !isDistinctQuery
     const hasLegacyCursor = afterCursor?.id && !isNaN(parseInt(afterCursor.id))
 
-    // Temporary debugging messages. @TODO: remove them
-    console.log('canUseContinuationToken:', canUseContinuationToken)
-    console.log('hasLegacyCursor:', hasLegacyCursor)
-
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
     if (limit) {
