@@ -737,9 +737,7 @@ describe('Events end-to-end tests', () => {
         let count = 9999
         let pages = 0
         const items: any[] = []
-        const maxPages = 20 // Safety limit to prevent infinite loops
-
-        while (count != 0 && pages < maxPages) {
+        while (count != 0) {
           const result: any = await anonymousClient.mutate({
             variables: {
               entityName: 'AnotherCounter',
@@ -753,36 +751,14 @@ describe('Events end-to-end tests', () => {
             `,
           })
 
-          const prevCursor = cursor
           cursor = result.data.EntitiesIdsFinder.cursor
           count = result.data.EntitiesIdsFinder.count
-          console.log(`Page ${pages + 1} - Count: ${count} - Cursor: ${JSON.stringify(cursor)}`)
           if (count !== 0) {
             pages++
-            const resultItems = result.data.EntitiesIdsFinder?.items || []
-            console.log(`Page ${pages} - Items: ${JSON.stringify(resultItems)}`)
-            items.push(...resultItems)
-            // console.log(`Pages ${pages}`)
-          }
-
-          // Additional safety check; if the cursor hasn't changed and count is still > 0, break to prevent infinite loop
-          // Handle case where cursor is always undefined (DISTINCT queries with small results)
-          if (count > 0 && JSON.stringify(cursor) === JSON.stringify(prevCursor)) {
-            // If this is not the first iteration (pages > 0), break to prevent infinite loop
-            if (pages > 0) {
-              console.log('Breaking due to unchanged cursor (pages > 0)')
-              break
-            }
+            items.push(...result.data.EntitiesIdsFinder?.items)
+            console.log(`Pages ${pages}`)
           }
         }
-
-        if (pages >= maxPages) {
-          console.warn('Reached maximum page limit to prevent infinite loops')
-        }
-        console.log(
-          `Final results: pages=${pages}, expected=${numberOfProvisionedEvents + 1}, totalItems=${items.length}`
-        )
-        console.log(`Final items: ${JSON.stringify(items)}`)
         expect(pages).to.be.eq(numberOfProvisionedEvents + 1)
 
         // counter with same id should be only 1

@@ -58,6 +58,9 @@ export async function search<TResult>(
   const container = cosmosDb.database(config.resourceNames.applicationStack).container(containerName)
 
   if (paginatedVersion) {
+    // Check if query contains DISTINCT clause which has issues with continuation tokens in Cosmos DB
+    const isDistinctQuery = finalQuery.toUpperCase().includes('SELECT DISTINCT')
+
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
     if (limit) {
@@ -66,9 +69,9 @@ export async function search<TResult>(
     // Extract continuation token from the cursor (backward compatibility)
     if (afterCursor?.continuationToken) {
       feedOptions.continuationToken = afterCursor.continuationToken
-    } else if (afterCursor?.id && !isNaN(parseInt(afterCursor.id))) {
+    } else if (isDistinctQuery || (afterCursor?.id && !isNaN(parseInt(afterCursor.id)))) {
       // Legacy cursor format - fallback to OFFSET for backward compatibility
-      const offset = parseInt(afterCursor.id)
+      const offset = afterCursor?.id ? parseInt(afterCursor.id) : 0
       let legacyQuery = `${finalQuery} OFFSET ${offset}`
       if (limit) {
         legacyQuery += ` LIMIT ${limit} `
