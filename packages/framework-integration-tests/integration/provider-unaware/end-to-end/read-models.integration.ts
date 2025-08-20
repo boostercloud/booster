@@ -1548,18 +1548,22 @@ describe('Read models end-to-end tests', () => {
 
           if (cursor) {
             if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
-              // With continuation token, cursor.id can be either the legacy format (i + 1).toString() or a continuation token
-              // For legacy format, verify it matches the expected sequence; for continuation token, just verify it's valid
-              expect(cursor.id).to.be.a('string')
-              expect(cursor.id).to.not.be.empty
-              // If it's a numeric string (legacy format), verify it matches the expected sequence
-              if (/^\d+$/.test(cursor.id)) {
-                expect(cursor.id).to.equal((i + 1).toString())
-              }
-              // If it has continuationToken property, it's the new format - verify it advances
+              // Cursor can be either continuation token format or legacy offset format
               if (cursor.continuationToken) {
+                // New continuation token format
                 expect(cursor.continuationToken).to.be.a('string')
                 expect(cursor.continuationToken).to.not.be.empty
+                expect(cursor.id).to.be.undefined
+              } else if (cursor.id) {
+                expect(cursor.id).to.be.a('string')
+                expect(cursor.id).to.not.be.empty
+                expect(cursor.continuationToken).to.be.undefined
+                // If it's a numeric string (legacy format), verify it matches the expected sequence
+                if (/^\d+$/.test(cursor.id)) {
+                  expect(cursor.id).to.equal((i + 1).toString())
+                }
+              } else {
+                throw new Error('Cursor must have either continuationToken or id field')
               }
             } else {
               expect(cursor.id).to.equal(currentPageCartData[0].id)
