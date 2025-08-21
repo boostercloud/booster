@@ -16,11 +16,15 @@ When you request a configuration value, Booster checks each source in order and 
 
 ```typescript
 import { Booster } from '@boostercloud/framework-core'
-import { resolveConfigurationWithSource } from '@boostercloud/framework-core'
+import { resolveConfigurationWithSource, resolveConfigurationValue } from '@boostercloud/framework-core'
 
 // Resolve a configuration value with source tracking
 const resolution = await resolveConfigurationWithSource(Booster.config, 'API_TIMEOUT')
 console.log(`Value: ${resolution.value}, Source: ${resolution.source}`)
+
+// Resolve a configuration value without source tracking
+const timeout = await resolveConfigurationValue(Booster.config, 'API_TIMEOUT')
+console.log(`Timeout: ${timeout}`)
 ```
 
 ## Built-in Configuration Providers
@@ -89,7 +93,7 @@ Booster.configure('production', (config: BoosterConfig): void => {
 
   // Advanced configuration
   config.enableAzureAppConfiguration({
-    // Optional: Override connection string (usually set by infrastructure
+    // Optional: Override connection string (usually set by infrastructure)
     connectionString: 'Endpoint=https://myappconfig.azconfig.io;Id=xxx;Secret=xxx',
 
     // Optional: Override endpoint (alternative to connection string)
@@ -154,6 +158,17 @@ In your Azure App Configuration resource, create the same keys with different la
 | `FEATURE_NEW_CHECKOUT` | `development` | `enabled` | Test new features |
 | `FEATURE_NEW_CHECKOUT` | `staging` | `enabled` | QA testing |
 | `FEATURE_NEW_CHECKOUT` | `production` | `disabled` | Stable prod version |
+
+:::important Label Filter Behavior
+When you configure a `labelFilter` (e.g., `labelFilter: 'production'`), Azure App Configuration will **only retrieve configuration values that have that specific label**. If you try to access a configuration key that exists in Azure App Configuration but doesn't have the matching label, it will **not be found** and the resolution will fall back to the next provider in the hierarchy (Booster config.env or environment variables).
+
+For example, if you have:
+- A key `API_KEY` with label `development`
+- A key `API_KEY` with no label (empty label)
+- Your config uses `labelFilter: 'production'`
+
+Then requesting `API_KEY` will return `undefined` from Azure App Configuration because neither the `development` labeled value nor the unlabeled value matches the `production` filter. The system will then check other configuration sources in the hierarchy.
+:::
 
 #### 3. Using Labeled Configuration in Your Code
 
@@ -397,5 +412,3 @@ providers.forEach((provider) => {
 Booster's configuration management system provides a powerful, flexible way to manage application settings across different environments and sources. By leveraging external providers like Azure App Configuration, you can achieve true configuration-driven applications that adapt without requiring code changes or redeployments.
 
 The hierarchical resolution system ensures predictable behavior while providing multiple layers of configuration sources for maximum flexibility and reliability.
-
-
