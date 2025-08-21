@@ -43,3 +43,14 @@ This way, you can have different configurations depending on your needs.
 Booster environments are extremely flexible. As shown in the first example, your 'fruit-store' app can have three team-wide environments: 'dev', 'stage', and 'prod', each of them with different app names or providers, that are deployed by your CI/CD processes. Developers, like "John" in the second example, can create their own private environments in separate config files to test their changes in realistic environments before committing them. Likewise, CI/CD processes could generate separate production-like environments to test different branches to perform QA in separate environments without interferences from other features under test.
 
 The only thing you need to do to deploy a whole new completely-independent copy of your application is to use a different name. Also, Booster uses the credentials available in the machine (`~/.aws/credentials` in AWS) that performs the deployment process, so developers can even work on separate accounts than production or staging environments.
+
+## Advanced Configuration Management
+
+For managing dynamic configuration values that can be updated without redeployment, Booster provides a comprehensive configuration management system with support for external configuration providers like Azure App Configuration.
+
+See the [Configuration Management](/features/configuration) documentation for detailed information about:
+- Multi-tier configuration resolutions
+- Azure App Configuration integration
+- Custom configuration providers
+- Feature flags and A/B testing
+- Dynamic configuration updates

@@ -1,0 +1,414 @@
+import TerminalWindow from '@site/src/components/TerminalWindow/TerminalWindow'
+
+# Configuration Management
+
+Booster provides a flexible configuration management system that allows you to retrieve configuration values from multiple sources with automatic fallback mechanisms. This enables you to manage application settings dynamically without code changes or redeployments.
+
+## Configuration Resolution Hierarchy
+
+Booster resolves configuration values using a 3-tier priority system (highest to lowest priority):
+
+1. **External Configuration Providers** - Azure App Configuration, custom providers (highest priority)
+2. **Booster config.env** - Configuration defined in your Booster config
+3. **System Environment Variables** - Standard process.env values (lowest priority)
+
+When you request a configuration value, Booster checks each source in order and returns the first value found.
+
+```typescript
+import { Booster } from '@boostercloud/framework-core'
+import { resolveConfigurationWithSource, resolveConfigurationValue } from '@boostercloud/framework-core'
+
+// Resolve a configuration value with source tracking
+const resolution = await resolveConfigurationWithSource(Booster.config, 'API_TIMEOUT')
+console.log(`Value: ${resolution.value}, Source: ${resolution.source}`)
+
+// Resolve a configuration value without source tracking
+const timeout = await resolveConfigurationValue(Booster.config, 'API_TIMEOUT')
+console.log(`Timeout: ${timeout}`)
+```
+
+## Built-in Configuration Providers
+
+### Environment Variables Provider
+
+Automatically reads values from `process.env`. This is always available and has the lowest priority.
+
+```typescript
+// Will read from process.env.DATABASE_URL
+const dbUrl = await resolveConfigurationValue(Booster.config, 'DATABASE_URL')
+```
+
+### Booster Config Environment Provider
+
+Reads values from the `config.env` object defined in your Booster configuration:
+
+```typescript title="src/config/config.ts"
+Booster.configure('production', (config: BoosterConfig): void =>{
+  config.appName = 'my-app'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  // Define configuration values
+  config.env = {
+    'API_TIMEOUT': '5000',
+    'MAX_RETRIES': '3',
+    'FEATURE_FLAG_X': 'enabled',
+  }
+})
+```
+
+## Azure App Configuration
+
+Azure App Configuration provides centralized configuration management for cloud applications. It allows you to:
+
+- **Update configuration without redeployment** - Change values in Azure portal and they're immediately available
+- **Feature flags and A/B testing** - Dynamic feature management
+- **Environment-specific configuration** - Different values per environment using labels
+- **Secure configuration storage** - Integration with Azure Key Vault for secrets
+
+### Enabling Azure App Configuration
+
+To enable Azure App Configuration for your Booster application:
+
+```typescript title="src/config/config.ts"
+import { Booster } from '@boostercloud/framework-core'
+import { BoosterConfig } from '@boostercloud/framework-types'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  // Enable Azure App Configuration
+  config.enableAzureAppConfiguration()
+})
+```
+
+### Advanced Azure App Configuration Options
+
+You can customize the Azure App Configuration integration:
+
+```typescript title="src/config/config.ts"
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  // Advanced configuration
+  config.enableAzureAppConfiguration({
+    // Optional: Override connection string (usually set by infrastructure)
+    connectionString: 'Endpoint=https://myappconfig.azconfig.io;Id=xxx;Secret=xxx',
+
+    // Optional: Override endpoint (alternative to connection string)
+    endpoint: 'https://myappconfig.azconfig.io',
+
+    // Optional: Filter by label (for environment-specific values)
+    labelFilter: 'production',
+  })
+})
+```
+
+### Using Labels for Environment Isolation
+
+Labels are a powerful feature of Azure App Configuration that allow you to maintain different configuration values for different environments while using the same keys. Here's how to set this up:
+
+#### 1. Configure Different Environments with Labels
+
+```typescript title="src/config/config.ts"
+// Development environment - uses 'development' label
+Booster.configure('development', (config: BoosterConfig): void => {
+  config.appName = 'my-app-dev'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  config.enableAzureAppConfiguration({
+    labelFilter: 'development', // Only reads keys with 'development' label
+  })
+})
+
+// Staging environment - uses 'staging' label
+Booster.configure('staging', (config: BoosterConfig): void => {
+  config.appName = 'my-app-staging'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  config.enableAzureAppConfiguration({
+    labelFilter: 'staging', // Only reads keys with 'staging' label
+  })
+})
+
+// Production environment - uses 'production' label
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app-prod'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  config.enableAzureAppConfiguration({
+    labelFilter: 'production', // Only reads keys with 'production' label
+  })
+})
+```
+
+#### 2. Azure App Configuration Setup with Labels
+
+In your Azure App Configuration resource, create the same keys with different labels:
+
+| Key | Label | Value | Use Case |
+|-----|-------|-------|----------|
+| `API_TIMEOUT` | `development` | `5000` | Fast timeout for dev |
+| `API_TIMEOUT` | `staging` | `15000` | Medium timeout for staging |
+| `API_TIMEOUT` | `production` | `30000` | Longer timeout for prod |
+| `DEBUG_MODE` | `development` | `enabled` | Debug logs in dev |
+| `DEBUG_MODE` | `staging` | `enabled` | Debug logs in staging |
+| `DEBUG_MODE` | `production` | `disabled` | No debug logs in prod |
+| `FEATURE_NEW_CHECKOUT` | `development` | `enabled` | Test new features |
+| `FEATURE_NEW_CHECKOUT` | `staging` | `enabled` | QA testing |
+| `FEATURE_NEW_CHECKOUT` | `production` | `disabled` | Stable prod version |
+
+:::important Label Filter Behavior
+When you configure a `labelFilter` (e.g., `labelFilter: 'production'`), Azure App Configuration will **only retrieve configuration values that have that specific label**. If you try to access a configuration key that exists in Azure App Configuration but doesn't have the matching label, it will **not be found** and the resolution will fall back to the next provider in the hierarchy (Booster config.env or environment variables).
+
+For example, if you have:
+- A key `API_KEY` with label `development`
+- A key `API_KEY` with no label (empty label)
+- Your config uses `labelFilter: 'production'`
+
+Then requesting `API_KEY` will return `undefined` from Azure App Configuration because neither the `development` labeled value nor the unlabeled value matches the `production` filter. The system will then check other configuration sources in the hierarchy.
+:::
+
+#### 3. Using Labeled Configuration in Your Code
+
+Your application code remains the same - the label filtering is handled automatically:
+
+```typescript title="src/commands/process-payment.ts"
+@Command({
+  authorize: 'all',
+})
+export class ProcessPayment {
+  public constructor(readonly amount: number) {}
+
+  public static async handle(command: ProcessPayment): Promise<string> {
+    // This will get different values based on the environment's label filter:
+    // - development: 5000ms
+    // - staging: 15000ms
+    // - production: 30000ms
+    const timeoutMs = await resolveConfigurationValue(Booster.config, 'API_TIMEOUT') || '10000'
+
+    // This will show debug info only in dev/staging, not production
+    const debugMode = await resolveConfigurationValue(Booster.config, 'DEBUG_MODE')
+
+    if (debugMode === 'enabled') {
+      console.log(`Processing payment of ${command.amount} with timeout ${timeoutMs}ms`)
+    }
+
+    // Your payment processing logic here...
+    return `Payment processed with ${timeoutMs}ms timeout`
+  }
+}
+```
+
+#### 4. Benefits of Label-Based Environment Isolation
+
+- **🔧 Same Codebase**: No code changes needed between environments
+- **🔁 Easy Promotion**: Promote the same code through dev → staging → prod
+- **🎯 Environment-Specific Tuning**: Different timeouts, feature flags, etc. per environment
+- **🛡️ Safety**: Production values are isolated from development changes
+- **📊 A/B Testing**: Use different labels for different user groups in the same environment
+
+#### 5. Advanced Label Usage Examples
+
+**Feature Flag Rollout by Environment:**
+```typescript
+// Gradually roll out new features
+const useNewPaymentFlow = await resolveConfigurationValue(Booster.config, 'NEW_PAYMENT_FLOW')
+// development: 'enabled' - test new flow
+// staging: 'enabled' - QA the new flow
+// production: 'disabled' - keep stable flow until ready
+```
+
+**Environment-Specific Integrations:**
+```typescript
+// Different API endpoints per environment
+const paymentUrl = await resolveConfigurationValue(Booster.config, 'PAYMENT_API_URL')
+// development: 'https://sandbox-payments.example.com'
+// staging: 'https://staging-payments.example.com'
+// production: 'https://api-payments.example.com'
+```
+
+:::note
+In most cases, you don't need to specify connection strings or endpoints manually. The Booster Azure provider automatically provisions the Azure App Configuration resource and injects the connection details as environment variables during deployment.
+:::
+
+### Infrastructure Provisioning
+
+When you enable Azure App Configuration, the Booster Azure provider automatically:
+
+1. **Creates the Azure App Configuration resource** using Terraform
+2. **Sets up authentication** with managed identity and access keys
+3. **Injects environment variables** into your Function App:
+  - `AZURE_APP_CONFIG_CONNECTION_STRING`
+  - `AZURE_APP_CONFIG_ENDPOINT`
+4. **Initializes the configuration provider** at runtime when environment variables are available
+
+## Creating Custom Configuration Providers
+
+You can implement custom configuration providers for other external systems:
+
+```typescript title="src/providers/custom-config-provider.ts"
+import { ConfigurationProvider } from '@boostercloud/framework-types'
+
+export class CustomConfigurationProvider implements ConfigurationProvider {
+  public readonly name = 'CustomProvider'
+  public readonly priority = 15 // Between Azure App Config (20) and Booster config.env (10)
+
+  constructor(private apiEndpoint: string, private apiKey: string) {}
+
+  async getValue(key: string): Promise<string | undefined> {
+    try {
+      // Implement your custom logic to fetch configuration
+      const response = await fetch(`${this.apiEndpoint}/config/${key}`, {
+        headers: { 'Authorization': `Bearer ${this.apiKey}` },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return data.value
+      }
+    } catch (error) {
+      console.warn(`Custom provider failed to get ${key}:`, error)
+    }
+
+    return undefined
+  }
+
+  async isAvailable(): Promise<boolean> {
+    // Check if the service is reachable
+    try {
+      const response = await fetch(`${this.apiEndpoint}/health`)
+      return response.ok
+    } catch {
+      return false
+    }
+  }
+}
+```
+
+Register your custom provider in the configuration:
+
+```typescript title="src/config/config.ts"
+import { CustomConfigurationProvider } from '../providers/custom-config-provider'
+
+Booster.configure('production', (config: BoosterConfig): void => {
+  config.appName = 'my-app'
+  config.providerPackage = '@boostercloud/framework-provider-azure'
+
+  // Add custom configuration provider
+  const customProvider = new CustomConfigurationProvider(
+    'https://api.myservice.com',
+    process.env.CUSTOM_API_KEY,
+  )
+  config.addConfigurationProvider(customProvider)
+})
+```
+
+## Best Practices
+
+### 1. Use Descriptive Configuration Keys
+
+```typescript
+// Good
+const timeout = await resolveConfigurationValue(Booster.config, 'PAYMENT_API_TIMEOUT_MS')
+
+// Avoid
+const timeout = await resolveConfigurationValue(Booster.config, 'TIMEOUT')
+```
+
+### 2. Provide Sensible Defaults
+
+```typescript
+const maxRetries = await resolveConfigurationValue(Booster.config, 'MAX_RETRIES') || '3'
+const timeoutMs = parseInt(
+  await resolveConfigurationValue(Booster.config, 'API_TIMEOUT_MS') || '30000'
+)
+```
+
+### 3. Use Source Tracking for Debugging
+
+```typescript
+const resolution = await resolveConfigurationWithSource(Booster.config, 'DEBUG_MODE')
+console.log(`Debug mode: ${resolution.value} (from ${resolution.source})`)
+```
+
+### 4. Handle Configuration Errors Gracefully
+
+```typescript
+try {
+  const apiKey = await resolveConfigurationValue(Booster.config, 'EXTERNAL_API_KEY')
+  if (!apiKey) {
+    throw new Error('EXTERNAL_API_KEY configuration is required')
+  }
+  // Use apiKey...
+} catch (error) {
+  console.error('Configuration error:', error)
+  // Provide fallback behavior or fail gracefully
+}
+```
+
+### 5. Cache Configuration Values for Performance
+
+```typescript
+class ConfigCache {
+  private cache = new Map<string, { value: string, expiry: number }>()
+  private readonly TTL = 5 * 60 * 1000 // 5 minutes
+
+  async get(key: string): Promise<string | undefined> {
+    const cached = this.cache.get(key)
+    if (cached && Date.now() < cached.expiry) {
+      return cached.value
+    }
+
+    const value = await resolveConfigurationValue(Booster.config, key)
+    if (value) {
+      this.cache.set(key, { value, expiry: Date.now() + this.TTL })
+    }
+    return value
+  }
+}
+```
+
+## Troubleshooting
+
+### Configuration Not Found
+
+If a configuration value is not found:
+
+```typescript
+const resolution = await resolveConfigurationWithSource(Booster.config, 'MISSING_KEY')
+console.log(resolution.source) // "none"
+console.log(resolution.value) // undefined
+```
+
+### Azure App Configuration Connection Issues
+
+Check your environment variables are properly set:
+
+<TerminalWindow>
+  ```shell
+  # In your deployed Function App, these should be automatically set:
+  echo $AZURE_APP_CONFIG_CONNECTION_STRING
+  echo $AZURE_APP_CONFIG_ENDPOINT
+  ```
+</TerminalWindow>
+
+### Provider Priority Conflicts
+
+List all registered providers to debug priority issues:
+
+```typescript
+const configService = ConfigurationService.getInstance()
+const providers = configService.getProviders()
+
+providers.forEach((provider) => {
+  console.log(`${provider.name}: priority ${provider.priority}`)
+})
+```
+
+## Conclusion
+
+Booster's configuration management system provides a powerful, flexible way to manage application settings across different environments and sources. By leveraging external providers like Azure App Configuration, you can achieve true configuration-driven applications that adapt without requiring code changes or redeployments.
+
+The hierarchical resolution system ensures predictable behavior while providing multiple layers of configuration sources for maximum flexibility and reliability.

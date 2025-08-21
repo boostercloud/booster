@@ -5,7 +5,7 @@ import * as Mustache from 'mustache'
 import { configuration } from './params'
 import { WebSiteManagementClient as WebSiteManagement } from '@azure/arm-appservice'
 import { ResourceManagementClient } from '@azure/arm-resources'
-import { TokenCredential, ClientSecretCredential } from '@azure/identity'
+import { ClientSecretCredential, TokenCredential } from '@azure/identity'
 
 const MAX_TERRAFORM_SIZE_NAME = 24
 const MAX_RESOURCE_GROUP_NAME_SIZE = 20
@@ -111,6 +111,19 @@ export function createStreamFunctionResourceGroupName(resourceGroupName: string)
 
 export function createDomainNameLabel(resourceGroupName: string): string {
   return `${resourceGroupName}apis`
+}
+
+/**
+ * Builds Azure App Configuration connection string from primary write key details
+ * @param appConfigName The name of the Azure App Configuration resource
+ * @param primaryWriteKey The primary write key object containing id and secret
+ * @returns Formatted connection string for Azure App Configuration
+ */
+export function buildAzureAppConfigConnectionString(
+  appConfigName: string,
+  primaryWriteKey: { id: string; secret: string }
+): string {
+  return `Endpoint=https://${appConfigName}.azconfig.io;Id=${primaryWriteKey.id};Secret=${primaryWriteKey.secret}`
 }
 
 function loadUserProject(userProjectPath: string): UserApp {

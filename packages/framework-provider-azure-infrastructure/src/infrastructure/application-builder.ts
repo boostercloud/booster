@@ -2,7 +2,7 @@ import { BoosterConfig } from '@boostercloud/framework-types'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { AzureStack } from './azure-stack'
 import * as ckdtfTemplate from './templates/cdktf'
-import { renderToFile } from './helper/utils'
+import { buildAzureAppConfigConnectionString, renderToFile } from './helper/utils'
 import { getLogger, Promises } from '@boostercloud/framework-common-helpers'
 import { App } from 'cdktf'
 import { ZipResource } from './types/zip-resource'
@@ -28,6 +28,7 @@ export class ApplicationBuilder {
       webPubSubBaseFile = await FunctionZip.copyBaseZip(this.config)
     }
     const azureStack = await this.synthApplication(app, webPubSubBaseFile)
+    this.populateInfrastructureEnvironmentVariables(azureStack)
     const rocketBuilder = new RocketBuilder(this.config, azureStack.applicationStack, this.rockets)
     await rocketBuilder.synthRocket()
     // add rocket-related env vars to main function app settings
@@ -51,6 +52,22 @@ export class ApplicationBuilder {
       zipResource,
       consumerZipResource,
       rocketsZipResources,
+    }
+  }
+
+  private populateInfrastructureEnvironmentVariables(azureStack: AzureStack): void {
+    const appConfiguration = azureStack.applicationStack.appConfiguration
+    if (appConfiguration?.primaryWriteKey && appConfiguration?.name) {
+      this.config.env['AZURE_APP_CONFIG_CONNECTION_STRING'] = buildAzureAppConfigConnectionString(
+        appConfiguration.name,
+        {
+          id: appConfiguration.primaryWriteKey.get(0).id,
+          secret: appConfiguration.primaryWriteKey.get(0).secret,
+        }
+      )
+    }
+    if (appConfiguration?.endpoint) {
+      this.config.env['AZURE_APP_CONFIG_ENDPOINT'] = appConfiguration.endpoint
     }
   }
 

@@ -53,7 +53,8 @@ const sidebars = {
         'features/event-stream',
         'features/schedule-actions',
         'features/logging',
-        'features/error-handling'
+        'features/error-handling',
+        'features/configuration',
       ],
     },
     {

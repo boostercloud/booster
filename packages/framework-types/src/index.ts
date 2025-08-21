@@ -1,6 +1,7 @@
 export * from './provider'
 export * from './envelope'
 export * from './config'
+export * from './configuration-resolver'
 export * from './concepts'
 export * from './typelevel'
 export * from './logger'

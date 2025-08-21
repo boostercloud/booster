@@ -49,6 +49,7 @@ import {
 } from './library/health-adapter'
 import { deleteEvent, deleteSnapshot, findDeletableEvent, findDeletableSnapshot } from './library/event-delete-adapter'
 import { storeEvents } from './library/events-store-adapter'
+import { ConfigurationAdapter } from './library/configuration-adapter'
 
 let cosmosClient: CosmosClient
 if (typeof process.env[environmentVarNames.cosmosDbConnectionString] === 'undefined') {
@@ -105,6 +106,32 @@ if (
       mode: mode,
     },
   })
+}
+
+const azureAppConfigConnectionString = process.env[environmentVarNames.appConfigurationConnectionString]
+const azureAppConfigEndpoint = process.env[environmentVarNames.appConfigurationEndpoint]
+
+if (azureAppConfigConnectionString || azureAppConfigEndpoint) {
+  try {
+    const config = require('@boostercloud/framework-core').Booster.config
+
+    const azureAppConfigOptions = config.getAzureAppConfigOptions()
+
+    // Use user overrides if provided, otherwise fall back to environment variables
+    const connectionString = azureAppConfigOptions?.connectionString || azureAppConfigConnectionString
+    const endpoint = azureAppConfigOptions?.endpoint || azureAppConfigEndpoint
+    const labelFilter = azureAppConfigOptions?.labelFilter
+
+    // Initialize if we have either environment variables or user config with enabled=true
+    if (connectionString || endpoint || azureAppConfigOptions?.enabled) {
+      const provider = connectionString
+        ? ConfigurationAdapter.withConnectionString(connectionString, labelFilter)
+        : ConfigurationAdapter.withEndpoint(endpoint, labelFilter)
+      config.addConfigurationProvider(provider)
+    }
+  } catch (error) {
+    console.warn('[Azure Provider] Failed to initialize Azure App Configuration adapter:', error)
+  }
 }
 
 /* We load the infrastructure package dynamically here to avoid including it in the
@@ -201,3 +228,4 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
 })
 
 export * from './constants'
+export * from './library/configuration-adapter'

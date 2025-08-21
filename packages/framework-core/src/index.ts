@@ -17,6 +17,7 @@ export { BoosterDataMigrationFinished } from './core-concepts/data-migration/eve
 export { BoosterDataMigrationEntity } from './core-concepts/data-migration/entities/booster-data-migration-entity'
 export { BoosterTouchEntityHandler } from './booster-touch-entity-handler'
 export * from './services/token-verifiers'
+export * from './services/configuration-service'
 export * from './instrumentation/index'
 export * from './decorators/health-sensor'
 export * as Injectable from './injectable'

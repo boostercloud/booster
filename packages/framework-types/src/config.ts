@@ -117,6 +117,17 @@ export class BoosterConfig {
   // TTL for events stored in dispatched events table. Default to 5 minutes (i.e., 300 seconds).
   public dispatchedEventsTtl = 300
 
+  /** Azure App Configuration options stored for provider access */
+  private _azureAppConfigOptions?: AzureAppConfigurationOptions
+
+  /**
+   * Get Azure App Configuration options (used by Azure provider package)
+   * @returns Azure App Configuration options if enabled, undefined otherwise
+   */
+  public getAzureAppConfigOptions(): AzureAppConfigurationOptions | undefined {
+    return this._azureAppConfigOptions
+  }
+
   public registerRocketFunction(id: string, func: RocketFunction): void {
     const currentFunction = this.rocketFunctionMap[id]
     if (currentFunction) {
@@ -142,6 +153,9 @@ export class BoosterConfig {
 
   /** Environment variables set at deployment time on the target lambda functions */
   public readonly env: Record<string, string> = {}
+
+  /** Configuration providers for external configuration sources (Azure App Configuration, etc.) */
+  public readonly configurationProviders: ConfigurationProvider[] = []
 
   /**
    * Add `TokenVerifier` implementations to this array to enable token verification.
@@ -199,6 +213,43 @@ export class BoosterConfig {
 
   public validate(): void {
     this.validateAllMigrations()
+  }
+
+  /**
+   * Register a configuration provider for external configuration sources
+   * @param provider The configuration provider to register
+   */
+  public addConfigurationProvider(provider: ConfigurationProvider): void {
+    // Remove any existing provider with the same name
+    const existingIndex = this.configurationProviders.findIndex((p) => p.name === provider.name)
+    if (existingIndex >= 0) {
+      this.configurationProviders.splice(existingIndex, 1)
+    }
+
+    // Add the new provider and sort by priority (highest first)
+    this.configurationProviders.push(provider)
+    this.configurationProviders.sort((a, b) => b.priority - a.priority)
+  }
+
+  /**
+   * Enable Azure App Configuration for this environment
+   * This is a convenience method that automatically configures the Azure App Configuration provider
+   * @param options Configuration options for Azure App Configuration
+   */
+  public enableAzureAppConfiguration(options?: {
+    connectionString?: string
+    endpoint?: string
+    labelFilter?: string
+  }): void {
+    // This method signature needs to remain in framework-types, but the actual implementation
+    // will be provided by the Azure provider package to avoid circular dependencies
+    // Store the options in a special property that the Azure provider can read
+    this._azureAppConfigOptions = {
+      connectionString: options?.connectionString,
+      endpoint: options?.endpoint,
+      labelFilter: options?.labelFilter,
+      enabled: true,
+    }
   }
 
   public get provider(): ProviderLibrary {
@@ -311,6 +362,84 @@ export interface RetryConfig {
 
   /** List of error class names that should be retried when retryAllErrors is false */
   retryableErrors?: Array<string>
+}
+
+/**
+ * Configuration options for Azure App Configuration integration
+ * Used to store configuration without circular dependencies
+ */
+export interface AzureAppConfigurationOptions {
+  /** Connection string for Azure App Configuration (alternative to endpoint + managed identity) */
+  connectionString?: string
+
+  /** Endpoint URL for Azure App Configuration (used with managed identity) */
+  endpoint?: string
+
+  /** Optional label filter to target specific configuration values */
+  labelFilter?: string
+
+  /** Whether to enable Azure App Configuration (default: false) */
+  enabled?: boolean
+}
+
+/**
+ * Configuration provider interface for external configuration sources
+ */
+export interface ConfigurationProvider {
+  /**
+   * Retrieve a configuration value by key
+   * @param key The configuration key to retrieve
+   * @returns Promise resolving to the configuration value or undefined if not found
+   */
+  getValue(key: string): Promise<string | undefined>
+
+  /**
+   * Check if the configuration provider is available and properly initialized
+   * @returns Promise resolving to a true if available, false otherwise
+   */
+  isAvailable(): Promise<boolean>
+
+  /**
+   * Priority of this configuration provider (higher number = higher priority)
+   */
+  readonly priority: number
+
+  /**
+   * Name identifier for this configuration provider
+   */
+  readonly name: string
+}
+
+/**
+ * Configuration resolution result with source tracking
+ */
+export interface ConfigurationResolution {
+  value: string | undefined
+  source: string
+  key: string
+}
+
+/**
+ * Configuration resolver that manages multiple providers with fallback
+ */
+export interface ConfigurationResolver {
+  /**
+   * Resolve a configuration value from all available providers
+   * @param key The configuration key to resolve
+   * @returns Promise resolving to the configuration resolution result
+   */
+  resolve(key: string): Promise<ConfigurationResolution>
+
+  /**
+   * Add a configuration provider
+   * @param provider The configuration provider to add
+   */
+  addProvider(provider: ConfigurationProvider): void
+
+  /**
+   * Get all registered providers sorted by priority
+   */
+  getProviders(): ConfigurationProvider[]
 }
 
 type EntityName = string
