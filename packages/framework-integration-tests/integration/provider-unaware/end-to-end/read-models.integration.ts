@@ -1574,6 +1574,59 @@ describe('Read models end-to-end tests', () => {
           expect(cursor).to.not.be.undefined
         }
       })
+
+      it('should handle legacy numeric cursors correctly (Azure/Local)', async () => {
+        if (process.env.TESTED_PROVIDER !== 'AZURE' && process.env.TESTED_PROVIDER !== 'LOCAL') {
+          console.log('Legacy cursor test only applies to Azure/Local provider. Skipping.')
+          return
+        }
+
+        const limit = 1
+        // We know we have cartsNumber (3) items, so we can manually test specific legacy cursor positions
+
+        // Test starting from position 1 (should skip first item and get the second)
+        const legacyCursor: PaginationCursor = { id: '1' }
+
+        const queryResult = await waitForIt(
+          () => {
+            return client.query({
+              variables: {
+                limit,
+                afterCursor: legacyCursor,
+              },
+              query: gql`
+                query ListCartReadModels($limit: Int, $afterCursor: JSON) {
+                  ListCartReadModels(limit: $limit, afterCursor: $afterCursor) {
+                    cursor
+                    items {
+                      id
+                    }
+                    count
+                  }
+                }
+              `,
+            })
+          },
+          (result) => result?.data?.ListCartReadModels?.items.length === 1
+        )
+
+        const result = queryResult.data.ListCartReadModels
+
+        // Verify we got exactly one item (the second cart)
+        expect(result.items).to.be.an('array')
+        expect(result.items.length).to.equal(1)
+        expect(result.count).to.equal(1)
+
+        // Verify the returned cursor is correctly calculated using our fixed logic
+        if (result.cursor) {
+          expect(result.cursor.id).to.be.a('string')
+          expect(result.cursor.id).to.not.be.empty
+          // Should be '2' (1 + 1 result returned) based on our fixed logic: currentOffset + finalResources.length
+          expect(result.cursor.id).to.equal('2')
+          // Legacy cursors don't have continuation tokens
+          expect(result.cursor.continuationToken).to.be.undefined
+        }
+      })
     })
 
     context('projecting fields', () => {
