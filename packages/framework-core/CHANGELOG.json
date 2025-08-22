@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.4.2",
+      "tag": "@boostercloud/framework-core_v3.4.2",
+      "date": "Fri, 22 Aug 2025 18:54:41 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fixes read model query pagination in the Azure provider",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "cbac6d6c302f37e2e7ec7adcd304a88d1198a1b0"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.4.1` to `3.4.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.4.1` to `3.4.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.4.1` to `3.4.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.4.1` to `3.4.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.1",
       "tag": "@boostercloud/framework-core_v3.4.1",
       "date": "Fri, 01 Aug 2025 17:44:35 GMT",

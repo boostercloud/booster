@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 01 Aug 2025 17:44:35 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Aug 2025 18:54:41 GMT and should not be manually modified.
+
+## 3.4.2
+Fri, 22 Aug 2025 18:54:41 GMT
+
+### Patches
+
+- Fixes read model query pagination in the Azure provider
 
 ## 3.4.1
 Fri, 01 Aug 2025 17:44:35 GMT
