@@ -65,7 +65,7 @@ export async function search<TResult>(
     // - DISTINCT queries: Always use OFFSET/LIMIT fallback (continuation tokens unreliable even with ORDER BY)
     // - Legacy cursors: Numeric cursor.id values must use OFFSET/LIMIT for backward compatibility
     const canUseContinuationToken = !isDistinctQuery
-    const hasLegacyCursor = afterCursor?.id && !isNaN(parseInt(afterCursor.id))
+    const hasLegacyCursor = typeof afterCursor?.id === 'string' && /^\d+$/.test(afterCursor.id)
 
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
@@ -91,7 +91,7 @@ export async function search<TResult>(
         items: processedResources ?? [],
         count: processedResources.length,
         cursor: {
-          id: ((limit ? limit : 1) + offset).toString(),
+          id: (offset + processedResources.length).toString(),
         },
       }
     }
@@ -106,7 +106,7 @@ export async function search<TResult>(
       cursor = { continuationToken }
     } else if (finalResources.length > 0) {
       const currentOffset = afterCursor?.id && !isNaN(parseInt(afterCursor.id)) ? parseInt(afterCursor.id) : 0
-      cursor = { id: (currentOffset + (limit || 1)).toString() } // Use the length of the results to calculate the next id
+      cursor = { id: (currentOffset + finalResources.length).toString() } // Use the length of the results to calculate the next id
     }
 
     return {
