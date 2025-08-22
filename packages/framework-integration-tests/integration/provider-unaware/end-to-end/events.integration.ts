@@ -11,6 +11,9 @@ import {
 import { applicationUnderTest } from './setup'
 import { unique } from '@boostercloud/framework-common-helpers'
 
+// Type for generic cursor that can hold any pagination-related data
+type GenericCursor = Record<string, unknown>
+
 describe('Events end-to-end tests', () => {
   let anonymousClient: ApolloClient<NormalizedCacheObject>
   let loggedClient: ApolloClient<NormalizedCacheObject>
@@ -730,7 +733,7 @@ describe('Events end-to-end tests', () => {
       })
 
       it('Should return the exact number of pages', async () => {
-        let cursor: Record<'id', string> | undefined = undefined
+        let cursor: GenericCursor | undefined = undefined
         let count = 9999
         let pages = 0
         const items: any[] = []
@@ -750,6 +753,7 @@ describe('Events end-to-end tests', () => {
 
           cursor = result.data.EntitiesIdsFinder.cursor
           count = result.data.EntitiesIdsFinder.count
+
           if (count !== 0) {
             pages++
             items.push(...result.data.EntitiesIdsFinder?.items)

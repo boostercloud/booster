@@ -1,4 +1,4 @@
-import { CosmosClient, ItemDefinition, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
+import { CosmosClient, FeedOptions, ItemDefinition, SqlParameter, SqlQuerySpec } from '@azure/cosmos'
 import {
   BoosterConfig,
   FilterFor,
@@ -46,45 +46,104 @@ export async function search<TResult>(
   const queryDefinition = `SELECT ${projectionsExpression} FROM c ${
     filterExpression !== '' ? `WHERE ${filterExpression}` : filterExpression
   }`
-  const queryWithOrder = queryDefinition + buildOrderExpression(order)
-  let finalQuery = queryWithOrder
-  if (paginatedVersion && limit) {
-    finalQuery += ` OFFSET ${afterCursor?.id || 0} LIMIT ${limit} `
-  } else {
-    if (limit) {
-      finalQuery += ` OFFSET 0 LIMIT ${limit} `
-    }
-  }
+  const finalQuery = queryDefinition + buildOrderExpression(order)
+
   const querySpec: SqlQuerySpec = {
     query: finalQuery,
     parameters: buildExpressionAttributeValues(filters),
   }
 
   logger.debug('Running search with the following params: \n', JSON.stringify(querySpec))
-  let { resources } = await cosmosDb
-    .database(config.resourceNames.applicationStack)
-    .container(containerName)
-    .items.query(querySpec)
-    .fetchAll()
 
-  resources = nestProperties(resources)
-  resources = resources.map((resource) => ({
+  const container = cosmosDb.database(config.resourceNames.applicationStack).container(containerName)
+
+  if (paginatedVersion) {
+    const isDistinctQuery = /SELECT\s+DISTINCT\s+/i.test(finalQuery)
+
+    // Azure Cosmos DB continuation token compatibility rules:
+    // - Regular queries: Always use continuation tokens
+    // - DISTINCT queries: Always use OFFSET/LIMIT fallback (continuation tokens unreliable even with ORDER BY)
+    // - Legacy cursors: Numeric cursor.id values must use OFFSET/LIMIT for backward compatibility
+    const canUseContinuationToken = !isDistinctQuery
+    const hasLegacyCursor = typeof afterCursor?.id === 'string' && /^\d+$/.test(afterCursor.id)
+
+    // Use Cosmos DB's continuation token pagination
+    const feedOptions: FeedOptions = {}
+    if (limit) {
+      feedOptions.maxItemCount = limit
+    }
+    // Extract continuation token from the cursor (backward compatibility)
+    if (afterCursor?.continuationToken) {
+      feedOptions.continuationToken = afterCursor.continuationToken
+    } else if (!canUseContinuationToken || hasLegacyCursor) {
+      // Legacy cursor format - fallback to OFFSET for backward compatibility
+      const offset = afterCursor?.id ? parseInt(afterCursor.id) : 0
+      let legacyQuery = `${finalQuery} OFFSET ${offset}`
+      if (limit) {
+        legacyQuery += ` LIMIT ${limit} `
+      }
+      const legacyQuerySpec = { ...querySpec, query: legacyQuery }
+      const { resources } = await container.items.query(legacyQuerySpec).fetchAll()
+
+      const processedResources = processResources(resources)
+
+      return {
+        items: processedResources ?? [],
+        count: processedResources.length,
+        cursor: {
+          id: (offset + processedResources.length).toString(),
+        },
+      }
+    }
+
+    const queryIterator = container.items.query(querySpec, feedOptions)
+    const { resources, continuationToken } = await queryIterator.fetchNext()
+
+    const finalResources = processResources(resources || [])
+
+    let cursor: Record<string, string> | undefined
+    if (continuationToken) {
+      cursor = { continuationToken }
+    } else if (finalResources.length > 0) {
+      const currentOffset = afterCursor?.id && !isNaN(parseInt(afterCursor.id)) ? parseInt(afterCursor.id) : 0
+      cursor = { id: (currentOffset + finalResources.length).toString() } // Use the length of the results to calculate the next id
+    }
+
+    return {
+      items: finalResources,
+      count: finalResources.length,
+      cursor,
+    }
+  } else {
+    // Non-paginated version - apply limit but fetch all results
+    let finalQueryForNonPaginated = finalQuery
+    if (limit) {
+      finalQueryForNonPaginated += ` OFFSET 0 LIMIT ${limit} `
+    }
+
+    const nonPaginatedQuerySpec = { ...querySpec, query: finalQueryForNonPaginated }
+    const { resources } = await container.items.query(nonPaginatedQuerySpec).fetchAll()
+
+    const processedResources = processResources(resources)
+
+    return processedResources ?? []
+  }
+}
+
+/**
+ * Processes raw Cosmos DB resources by nesting properties and adding Booster metadata
+ * @param resources - The raw resources to process
+ * @returns An array of processed resources with nested properties and Booster metadata
+ */
+function processResources(resources: any[]): any[] {
+  const nestedResources = nestProperties(resources)
+  return nestedResources.map((resource: any) => ({
     ...resource,
     boosterMetadata: {
       ...resource.boosterMetadata,
       optimisticConcurrencyValue: resource._etag,
     },
   }))
-
-  if (paginatedVersion) {
-    return {
-      items: resources ?? [],
-      count: resources.length,
-      cursor: { id: ((limit ? limit : 1) + (afterCursor?.id ? parseInt(afterCursor?.id) : 0)).toString() },
-    }
-  } else {
-    return resources ?? []
-  }
 }
 
 function buildFilterExpression(filters: FilterFor<any>, usedPlaceholders: Array<string> = []): string {
