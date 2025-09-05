@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 22 Aug 2025 18:54:41 GMT and should not be manually modified.
+This log was last generated on Fri, 05 Sep 2025 18:20:03 GMT and should not be manually modified.
+
+## 3.4.3
+Fri, 05 Sep 2025 18:20:03 GMT
+
+### Patches
+
+- Makes SortFor case-insensitive (allows lowercased 'asc' and 'desc')
 
 ## 3.4.2
 Fri, 22 Aug 2025 18:54:41 GMT

@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.4.3",
+      "tag": "@boostercloud/framework-core_v3.4.3",
+      "date": "Fri, 05 Sep 2025 18:20:03 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Makes SortFor case-insensitive (allows lowercased 'asc' and 'desc')",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "3aff3b847926affe86bcff4471df22aaeb7f63be"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.4.2` to `3.4.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.4.2` to `3.4.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.4.2` to `3.4.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.4.2` to `3.4.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.2",
       "tag": "@boostercloud/framework-core_v3.4.2",
       "date": "Fri, 22 Aug 2025 18:54:41 GMT",
