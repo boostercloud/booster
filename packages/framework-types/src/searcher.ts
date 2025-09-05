@@ -167,7 +167,7 @@ type DataProperties<T> = {
 }[keyof T]
 
 export type SortFor<TType> = {
-  [TProp in DataProperties<TType>]?: SortFor<TType[TProp]> | 'ASC' | 'DESC'
+  [TProp in DataProperties<TType>]?: SortFor<TType[TProp]> | 'ASC' | 'DESC' | 'asc' | 'desc'
 }
 
 export type FilterFor<TType> = {
