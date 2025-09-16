@@ -14,6 +14,8 @@ import {
   GraphQLType,
   GraphQLUnionType,
 } from 'graphql'
+import { defineFieldMap } from 'graphql/type/definition'
+
 import { GraphQLJSON } from 'graphql-scalars'
 import { ClassMetadata, ClassType, PropertyMetadata, TypeMetadata } from '@boostercloud/metadata-booster'
 import { DateScalar, isExternalType, nonExcludedFields } from './common'
@@ -153,20 +155,37 @@ export class GraphQLTypeInformer {
     inputType: boolean,
     excludeProps?: Array<string>
   ): GraphQLType {
-    const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
-    if (inputType) {
-      return new GraphQLInputObjectType({
-        name: classMetadata.name + 'Input',
-        fields: finalFields?.reduce((obj, prop) => {
-          this.logger.debug(`Get or create GraphQL input type for property ${prop.name}`)
-          return {
-            ...obj,
-            [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, inputType) },
-          }
-        }, {}),
-      })
+    const typeName = classMetadata.name + (inputType ? 'Input' : '')
+
+    // Create a placeholder to store type before defining fields (for circular refs)
+    if (!this.graphQLTypes[typeName]) {
+      this.graphQLTypes[typeName] = inputType
+        ? new GraphQLInputObjectType({ name: typeName, fields: {} })
+        : new GraphQLObjectType({ name: typeName, fields: {} })
     }
-    return this.createOutputObjectType(classMetadata, excludeProps)
+
+    const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
+
+    if (inputType) {
+      Object.assign(this.graphQLTypes[typeName], {
+        _fields: () =>
+          defineFieldMap({
+            name: typeName,
+            fields: () =>
+              finalFields.reduce((obj, prop) => {
+                this.logger.debug(`Get or create GraphQL input type for property ${prop.name}`)
+                return {
+                  ...obj,
+                  [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, inputType) },
+                }
+              }, {}),
+          }),
+      })
+    } else {
+      this.createOutputObjectType(classMetadata, excludeProps)
+    }
+
+    return this.graphQLTypes[typeName]
   }
 
   private getOrCreateObjectTypeForUnion(classMetadata: ClassMetadata, excludeProps?: Array<string>): GraphQLType {
@@ -178,16 +197,30 @@ export class GraphQLTypeInformer {
   }
 
   private createOutputObjectType(classMetadata: ClassMetadata, excludeProps?: Array<string>): GraphQLObjectType {
+    const typeName = classMetadata.name
+
+    // Placeholder for circular references
+    if (!this.graphQLTypes[typeName]) {
+      this.graphQLTypes[typeName] = new GraphQLObjectType({ name: typeName, fields: {} })
+    }
+
     const finalFields: Array<PropertyMetadata> = nonExcludedFields(classMetadata.fields, excludeProps)
-    return new GraphQLObjectType({
-      name: classMetadata.name,
-      fields: finalFields?.reduce((obj, prop) => {
-        this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
-        return {
-          ...obj,
-          [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, false) },
-        }
-      }, {}),
+
+    Object.assign(this.graphQLTypes[typeName], {
+      _fields: () =>
+        defineFieldMap({
+          name: typeName,
+          fields: () =>
+            finalFields.reduce((obj, prop) => {
+              this.logger.debug(`Get or create GraphQL output type for property ${prop.name}`)
+              return {
+                ...obj,
+                [prop.name]: { type: this.getOrCreateGraphQLType(prop.typeInfo, false) },
+              }
+            }, {}),
+        }),
     })
+
+    return this.graphQLTypes[typeName] as GraphQLObjectType
   }
 }
