@@ -133,7 +133,7 @@ export class Booster {
     entityID: UUID
   ): Promise<TEntity | undefined> {
     const eventStore = new EventStore(this.config)
-    const entitySnapshotEnvelope = await eventStore.fetchEntitySnapshot(entityClass.name, entityID)
+    const entitySnapshotEnvelope = await eventStore.fetchAndCacheEntitySnapshot(entityClass.name, entityID)
     return entitySnapshotEnvelope ? createInstance(entityClass, entitySnapshotEnvelope.value) : undefined
   }
 
