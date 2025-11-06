@@ -6,6 +6,6 @@ When you deploy a Booster application to AWS, an S3 bucket needs to be created t
 
 The solution is to **change your application name in the configuration file so that the bucket name is unique.**
 
- **2.- I tried following the video guide but the function `Booster.fetchEntitySnapshot` is not found in BoostApp.**
+ **2.- I tried following the video guide but the function `Booster.fetchAndCacheEntitySnapshot` is not found in BoostApp.**
   
-  The function `Booster.fetchEntitySnapshot` was renamed to `Booster.entity`, so please replace it when following old tutorials.
+  The function `Booster.fetchAndCacheEntitySnapshot` was renamed to `Booster.entity`, so please replace it when following old tutorials.
