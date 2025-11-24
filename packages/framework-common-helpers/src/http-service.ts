@@ -1,7 +1,7 @@
 import * as https from 'https'
 import { RequestOptions } from 'https'
 import * as http from 'http'
-import { IncomingMessage } from 'node:http'
+import { IncomingMessage, OutgoingHttpHeaders } from 'node:http'
 
 export interface PostConfiguration {
   contentType?: string
@@ -29,7 +29,7 @@ export async function request(
     timeout: timeout,
   }
   if (data) {
-    options.headers!['Content-Length'] = data.length
+    ;(options.headers as OutgoingHttpHeaders)['Content-Length'] = data.length
   }
 
   return new Promise((resolve, reject) => {
