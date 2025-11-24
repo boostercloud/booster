@@ -34,5 +34,15 @@ function readPackage(packageJson, context) {
   //  packageJson.dependencies['log4js'] = '0.6.38';
   // }
 
+  // Fix CVE-2025-64756: Force glob to 10.5.0+ to avoid command injection vulnerability
+  if (packageJson.dependencies && packageJson.dependencies.glob) {
+    const globVersion = packageJson.dependencies.glob;
+    // Check if glob version is in vulnerable range (10.2.0 - 10.4.x)
+    if (globVersion.match(/^\^?10\.[234]\./) || globVersion === '^10.3.7') {
+      context.log(`Overriding glob dependency for ${packageJson.name}: ${globVersion} -> 10.5.0`);
+      packageJson.dependencies.glob = '10.5.0';
+    }
+  }
+
   return packageJson;
 }
