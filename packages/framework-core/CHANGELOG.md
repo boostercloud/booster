@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Thu, 12 Jun 2025 17:47:56 GMT and should not be manually modified.
+This log was last generated on Tue, 25 Nov 2025 20:56:29 GMT and should not be manually modified.
+
+## 3.3.2
+Tue, 25 Nov 2025 20:56:29 GMT
+
+### Patches
+
+- Security patch: Update glob to 10.5.0 to fix CVE-2025-64756
 
 ## 3.3.1
 Thu, 12 Jun 2025 17:47:56 GMT

@@ -2,6 +2,32 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@boostercloud/framework-core_v3.3.2",
+      "date": "Tue, 25 Nov 2025 20:56:29 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Security patch: Update glob to 10.5.0 to fix CVE-2025-64756"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.3.1` to `3.3.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.3.1` to `3.3.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.3.1` to `3.3.2`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.3.1` to `3.3.2`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.1",
       "tag": "@boostercloud/framework-core_v3.3.1",
       "date": "Thu, 12 Jun 2025 17:47:56 GMT",
