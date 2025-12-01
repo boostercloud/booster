@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 25 Nov 2025 20:56:29 GMT and should not be manually modified.
+This log was last generated on Mon, 01 Dec 2025 15:14:32 GMT and should not be manually modified.
+
+## 3.3.3
+Mon, 01 Dec 2025 15:14:32 GMT
+
+### Patches
+
+- Add glob override to package.json to ensure users get the security fix
 
 ## 3.3.2
 Tue, 25 Nov 2025 20:56:29 GMT

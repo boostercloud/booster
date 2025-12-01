@@ -2,6 +2,32 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "3.3.3",
+      "tag": "@boostercloud/framework-core_v3.3.3",
+      "date": "Mon, 01 Dec 2025 15:14:32 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add glob override to package.json to ensure users get the security fix"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.3.2` to `3.3.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.3.2` to `3.3.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.3.2` to `3.3.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.3.2` to `3.3.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.2",
       "tag": "@boostercloud/framework-core_v3.3.2",
       "date": "Tue, 25 Nov 2025 20:56:29 GMT",

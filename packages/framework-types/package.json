@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-types",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "description": "Contains Booster types related to the information extracted from the user project",
   "keywords": [
     "framework-types"
@@ -54,8 +54,8 @@
     "ws": "8.18.0"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^3.3.2",
-    "@boostercloud/metadata-booster": "workspace:^3.3.2",
+    "@boostercloud/eslint-config": "workspace:^3.3.3",
+    "@boostercloud/metadata-booster": "workspace:^3.3.3",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/mocha": "10.0.10",
@@ -89,7 +89,8 @@
       "node-fetch@<2.6.7": ">=2.6.7",
       "ws@>=7.0.0 <7.4.6": ">=7.4.6",
       "nanoid@>=3.0.0 <3.1.31": ">=3.1.31",
-      "node-fetch@<2.6.1": ">=2.6.1"
+      "node-fetch@<2.6.1": ">=2.6.1",
+      "glob@>=10.2.0 <10.5.0": ">=10.5.0"
     }
   }
 }
