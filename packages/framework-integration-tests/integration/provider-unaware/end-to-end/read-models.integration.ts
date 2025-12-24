@@ -1550,10 +1550,13 @@ describe('Read models end-to-end tests', () => {
             if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
               // Cursor can be either continuation token format or legacy offset format
               if (cursor.continuationToken) {
-                // New continuation token format
+                // New continuation token format - includes both continuationToken and cumulative id
                 expect(cursor.continuationToken).to.be.a('string')
                 expect(cursor.continuationToken).to.not.be.empty
-                expect(cursor.id).to.be.undefined
+                expect(cursor.id).to.be.a('string')
+                expect(cursor.id).to.not.be.empty
+                // Verify cumulative id matches the expected sequence
+                expect(cursor.id).to.equal((i + 1).toString())
               } else if (cursor.id) {
                 expect(cursor.id).to.be.a('string')
                 expect(cursor.id).to.not.be.empty
