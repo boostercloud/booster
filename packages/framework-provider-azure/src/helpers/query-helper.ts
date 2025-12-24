@@ -67,14 +67,34 @@ export async function search<TResult>(
     const canUseContinuationToken = !isDistinctQuery
     const hasLegacyCursor = typeof afterCursor?.id === 'string' && /^\d+$/.test(afterCursor.id)
 
+    logger.debug('PAGINATION DEBUG - Initial analysis:', {
+      isDistinctQuery,
+      canUseContinuationToken,
+      hasLegacyCursor,
+      afterCursor,
+      limit,
+      finalQuery,
+    })
+
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
     if (limit) {
       feedOptions.maxItemCount = limit
     }
+
+    // Track cumulative offset for cursor.id calculation
+    let cumulativeOffset = 0
+
     // Extract continuation token from the cursor (backward compatibility)
     if (afterCursor?.continuationToken) {
       feedOptions.continuationToken = afterCursor.continuationToken
+      // Extract cumulative id from cursor for tracking position across pages
+      cumulativeOffset = afterCursor.id && !isNaN(parseInt(afterCursor.id)) ? parseInt(afterCursor.id) : 0
+      logger.debug('PAGINATION DEBUG - Using provided continuation token:', {
+        continuationToken: afterCursor.continuationToken,
+        cumulativeOffset,
+        feedOptions,
+      })
     } else if (!canUseContinuationToken || hasLegacyCursor) {
       // Legacy cursor format - fallback to OFFSET for backward compatibility
       const offset = afterCursor?.id ? parseInt(afterCursor.id) : 0
@@ -83,9 +103,21 @@ export async function search<TResult>(
         legacyQuery += ` LIMIT ${limit} `
       }
       const legacyQuerySpec = { ...querySpec, query: legacyQuery }
+      logger.debug('PAGINATION DEBUG - Using LEGACY OFFSET/LIMIT approach:', {
+        reason: !canUseContinuationToken ? 'DISTINCT query detected' : 'Legacy numeric cursor detected',
+        offset,
+        legacyQuery,
+        legacyQuerySpec,
+      })
       const { resources } = await container.items.query(legacyQuerySpec).fetchAll()
 
       const processedResources = processResources(resources)
+
+      logger.debug('PAGINATION DEBUG - Legacy query results:', {
+        resourcesCount: resources?.length || 0,
+        processedResourcesCount: processedResources.length,
+        nextCursor: { id: (offset + processedResources.length).toString() },
+      })
 
       return {
         items: processedResources ?? [],
@@ -96,18 +128,48 @@ export async function search<TResult>(
       }
     }
 
+    logger.debug('PAGINATION DEBUG - About to execute continuation token query with feedOptions:', feedOptions)
     const queryIterator = container.items.query(querySpec, feedOptions)
     const { resources, continuationToken } = await queryIterator.fetchNext()
+
+    logger.debug('PAGINATION DEBUG - Cosmos SDK response:', {
+      resourcesCount: resources?.length || 0,
+      continuationTokenReceived: !!continuationToken,
+      continuationTokenValue: continuationToken,
+      continuationTokenType: typeof continuationToken,
+      continuationTokenLength: continuationToken?.length,
+    })
 
     const finalResources = processResources(resources || [])
 
     let cursor: Record<string, string> | undefined
     if (continuationToken) {
-      cursor = { continuationToken }
+      // Store both continuation token AND cumulative id for proper position tracking
+      const newCumulativeId = cumulativeOffset + finalResources.length
+      cursor = { continuationToken, id: newCumulativeId.toString() }
+      logger.debug('PAGINATION DEBUG - Setting cursor with continuation token:', {
+        cursor,
+        previousOffset: cumulativeOffset,
+        currentPageSize: finalResources.length,
+        newCumulativeId,
+      })
     } else if (finalResources.length > 0) {
-      const currentOffset = afterCursor?.id && !isNaN(parseInt(afterCursor.id)) ? parseInt(afterCursor.id) : 0
-      cursor = { id: (currentOffset + finalResources.length).toString() } // Use the length of the results to calculate the next id
+      // Last page - use cumulative offset for final cursor position
+      cursor = { id: (cumulativeOffset + finalResources.length).toString() }
+      logger.debug('PAGINATION DEBUG - No continuation token, setting fallback cursor:', {
+        cursor,
+        previousOffset: cumulativeOffset,
+        currentPageSize: finalResources.length,
+      })
+    } else {
+      logger.debug('PAGINATION DEBUG - No continuation token and no resources, no cursor set')
     }
+
+    logger.debug('PAGINATION DEBUG - Final response:', {
+      itemsCount: finalResources.length,
+      cursor,
+      hasMoreResults: !!continuationToken,
+    })
 
     return {
       items: finalResources,
