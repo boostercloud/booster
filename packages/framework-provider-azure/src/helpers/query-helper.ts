@@ -78,9 +78,6 @@ export async function search<TResult>(
 
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
-    if (limit) {
-      feedOptions.maxItemCount = limit
-    }
 
     // Track cumulative offset for cursor.id calculation
     let cumulativeOffset = 0
@@ -95,17 +92,25 @@ export async function search<TResult>(
         cumulativeOffset,
         feedOptions,
       })
-    } else if (!canUseContinuationToken || hasLegacyCursor) {
+    }
+
+    // Azure Cosmos DB requires maxItemCount when using continuation tokens
+    // Always set maxItemCount when limit is provided or when using continuation token
+    if (limit || afterCursor?.continuationToken) {
+      feedOptions.maxItemCount = limit ?? 100
+    }
+
+    if (!afterCursor?.continuationToken && (!canUseContinuationToken || hasLegacyCursor)) {
       // Legacy cursor format - fallback to OFFSET for backward compatibility
       const offset = afterCursor?.id ? parseInt(afterCursor.id) : 0
-      let legacyQuery = `${finalQuery} OFFSET ${offset}`
-      if (limit) {
-        legacyQuery += ` LIMIT ${limit} `
-      }
+      // Azure Cosmos DB requires LIMIT when using OFFSET
+      const effectiveLimit = limit ?? 100
+      const legacyQuery = `${finalQuery} OFFSET ${offset} LIMIT ${effectiveLimit} `
       const legacyQuerySpec = { ...querySpec, query: legacyQuery }
       logger.debug('PAGINATION DEBUG - Using LEGACY OFFSET/LIMIT approach:', {
         reason: !canUseContinuationToken ? 'DISTINCT query detected' : 'Legacy numeric cursor detected',
         offset,
+        effectiveLimit,
         legacyQuery,
         legacyQuerySpec,
       })
