@@ -201,3 +201,4 @@ export const Provider = (rockets?: RocketDescriptor[]): ProviderLibrary => ({
 })
 
 export * from './constants'
+export * from './types/azure-func-types'
