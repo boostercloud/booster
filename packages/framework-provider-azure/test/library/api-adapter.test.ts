@@ -1,7 +1,7 @@
 import { expect } from '../expect'
 import {
-  InvalidVersionError,
   InvalidParameterError,
+  InvalidVersionError,
   NotAuthorizedError,
   NotFoundError,
 } from '@boostercloud/framework-types'
@@ -52,7 +52,8 @@ describe('API adapter', () => {
       it(`returns the proper body for error '${testCase.input.constructor.name}'`, async () => {
         const got = await requestFailed(testCase.input)
         expect(got.status).to.be.equal(testCase.expectedOutput.status)
-        const body = JSON.parse(got.body)
+        // In v4, jsonBody is already an object, not a JSON string
+        const body = got.jsonBody as { title: string }
         expect(body.title).to.be.equal(testCase.expectedOutput.title)
       })
     }

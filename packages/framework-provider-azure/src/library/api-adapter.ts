@@ -1,44 +1,88 @@
-import { Cookie } from '@azure/functions'
+import { HttpResponseInit } from '@azure/functions'
 import { httpStatusCodeFor, toClassTitle } from '@boostercloud/framework-types'
 
 /**
- * See https://docs.microsoft.com/es-es/azure/azure-functions/functions-reference-node#response-object
+ * Standard HTTP response type for Azure Functions v4.
+ * Uses HttpResponseInit from '@azure/functions' v4.
  */
-export interface ContextResponse {
-  body: string
-  headers: object
-  isRaw?: boolean
-  status: number
-  cookies?: Cookie[]
+export type AzureHttpResponse = HttpResponseInit
+
+/**
+ * Web PubSub response types for Azure Functions v4.
+ * These are returned directly from Web PubSub triggered functions.
+ */
+export interface WebPubsubConnectResponse {
+  subprotocol?: string
+  userId?: string
+  groups?: string[]
+  roles?: string[]
+}
+
+export interface WebPubSubMessageResponse {
+  data?: unknown
+  dataType?: 'json' | 'text' | 'binary'
 }
 
 const WEB_SOCKET_PROTOCOL_HEADER = 'Sec-WebSocket-Protocol'
+const WEB_SOCKET_MESSAGE_MARKET = 'X-Booster-WebSocket-Message'
 
 export async function requestSucceeded(
   body?: unknown,
   headers?: Record<string, number | string | ReadonlyArray<string>>
-): Promise<ContextResponse | void> {
+): Promise<AzureHttpResponse | WebPubsubConnectResponse | WebPubSubMessageResponse | void> {
+  // Check if this is a Web Pubsub CONNECT event (has the specific WebSocket header)
+  const isWebSocketConnect = headers && Object.keys(headers).includes(WEB_SOCKET_PROTOCOL_HEADER)
+
+  // Web PubSub CONNECT event - return subprotocol response format
+  if (isWebSocketConnect) {
+    const subprotocol = headers[WEB_SOCKET_PROTOCOL_HEADER]
+    return {
+      subprotocol: Array.isArray(subprotocol) ? subprotocol[0] : String(subprotocol),
+    } as WebPubsubConnectResponse
+  }
+
+  // Check if this is a Web Pubsub MESSAGE event (has the marker header from framework-core
+  const isWebSocketMessage = headers && headers[WEB_SOCKET_MESSAGE_MARKET] === 'true'
+
+  // Web PubSub MESSAGE event - return data response format
+  if (isWebSocketMessage) {
+    return {
+      data: body,
+      dataType: 'json',
+    } as WebPubSubMessageResponse
+  }
+
+  // No body and no meaningful headers - nothing to return (e.g., DISCONNECT)
   if (!body && (!headers || Object.keys(headers).length === 0)) {
     return
   }
-  const isWebSocket = headers && Object.keys(headers).includes(WEB_SOCKET_PROTOCOL_HEADER)
-  let extraParams: Record<string, unknown> = {}
-  if (isWebSocket) {
-    extraParams = { Subprotocol: headers[WEB_SOCKET_PROTOCOL_HEADER] }
+
+  // Standard HTTP response for everything else
+  const responseHeaders: Record<string, string> = {
+    'Access-Control-Allow-Origin': '*',
+    'Content-Type': 'application/json',
   }
-  return {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Content-Type': 'application/json',
-      ...headers,
-    },
+  if (headers) {
+    for (const [key, value] of Object.entries(headers)) {
+      // Don't include internal Booster headers in HTTP response
+      if (key.startsWith('X-Booster-')) continue
+      responseHeaders[key] = Array.isArray(value) ? value.join(',') : String(value)
+    }
+  }
+
+  const response: AzureHttpResponse = {
+    headers: responseHeaders,
     status: 200,
-    body: body ? JSON.stringify(body) : '',
-    ...extraParams,
   }
+
+  if (body) {
+    response.jsonBody = body
+  }
+
+  return response
 }
 
-export async function requestFailed(error: Error): Promise<ContextResponse> {
+export async function requestFailed(error: Error): Promise<AzureHttpResponse> {
   const status = httpStatusCodeFor(error)
   return {
     headers: {
@@ -46,21 +90,21 @@ export async function requestFailed(error: Error): Promise<ContextResponse> {
       'Content-Type': 'application/json',
     },
     status,
-    body: JSON.stringify({
+    jsonBody: {
       status,
       title: toClassTitle(error),
       reason: error.message,
-    }),
+    },
   }
 }
 
-export async function healthRequestResult(body: unknown, isHealthy: boolean): Promise<ContextResponse> {
+export async function healthRequestResult(body: unknown, isHealthy: boolean): Promise<AzureHttpResponse> {
   return {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Content-Type': 'application/json',
     },
     status: isHealthy ? 200 : 503,
-    body: JSON.stringify(body),
+    jsonBody: body,
   }
 }

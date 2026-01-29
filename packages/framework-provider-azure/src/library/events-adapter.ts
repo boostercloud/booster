@@ -9,12 +9,19 @@ import {
 import { getLogger } from '@boostercloud/framework-common-helpers'
 import { eventsStoreAttributes } from '../constants'
 import { partitionKeyForEvent, partitionKeyForSnapshot } from './partition-keys'
-import { Context } from '@azure/functions'
+import { AzureCosmosDBFunctionInput, isCosmosDBFunctionInput } from '../types/azure-func-types'
 
 const originOfTime = new Date(0).toISOString()
 
-export function rawEventsToEnvelopes(context: Context): Array<EventEnvelope> {
-  return context.bindings.rawEvent as Array<EventEnvelope>
+export function rawEventsToEnvelopes(rawInput: unknown): Array<EventEnvelope> {
+  if (isCosmosDBFunctionInput(rawInput)) {
+    return (rawInput as AzureCosmosDBFunctionInput).documents as Array<EventEnvelope>
+  }
+  // Fallback for direct array input (used in some test scenarios)
+  if (Array.isArray(rawInput)) {
+    return rawInput as Array<EventEnvelope>
+  }
+  throw new Error('Invalid input type for rawEventsToEnvelopes: expected AzureCosmosDBFunctioninput or Array')
 }
 
 export async function readEntityEventsSince(

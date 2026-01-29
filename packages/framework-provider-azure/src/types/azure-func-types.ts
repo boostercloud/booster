@@ -18,7 +18,7 @@ export interface AzureHttpFunctionInput {
 /**
  * Standard wrapper for CosmosDB-triggered Azure Function v4 inputs.
  */
-export interface AzureCosmosDBFunctioninput {
+export interface AzureCosmosDBFunctionInput {
   documents: unknown[]
   context: InvocationContext
 }
@@ -63,7 +63,7 @@ export interface WebPubSubConnectionContext {
 /**
  * Standard wrapper for Web PubSub-triggered Azure Function v4 inputs.
  * Note: connectionContext can be found in either request.connectionContext
- * or context.triggerMetadata.connectionContext depending in Azure Functions version.
+ * or context.triggerMetadata.connectionContext depending on Azure Functions version.
  */
 export interface AzureWebPubSubFunctionInput {
   request: {
@@ -84,14 +84,14 @@ export interface AzureWebPubSubFunctionInput {
  */
 export type AzureFunctionRawRequest =
   | AzureHttpFunctionInput
-  | AzureCosmosDBFunctioninput
+  | AzureCosmosDBFunctionInput
   | AzureEventHubFunctionInput
   | AzureTimerFunctionInput
   | AzureWebPubSubFunctionInput
 
 /**
  * Type guard to check if the input is an HTTP function input
- * @param input The input to check
+ * @param input - The input to check
  * @returns True if the input is an HTTP function input, false otherwise
  */
 export function isHttpFunctionInput(input: unknown): input is AzureHttpFunctionInput {
@@ -106,22 +106,22 @@ export function isHttpFunctionInput(input: unknown): input is AzureHttpFunctionI
 
 /**
  * Type guard to check if the input is a CosmosDB function input
- * @param input The input to check
+ * @param input - The input to check
  * @returns True if the input is a CosmosDB function input, false otherwise
  */
-export function isCosmosDBFunctionInput(input: unknown): input is AzureCosmosDBFunctioninput {
+export function isCosmosDBFunctionInput(input: unknown): input is AzureCosmosDBFunctionInput {
   return (
     typeof input === 'object' &&
     input !== null &&
     'documents' in input &&
     'context' in input &&
-    Array.isArray((input as AzureCosmosDBFunctioninput).documents)
+    Array.isArray((input as AzureCosmosDBFunctionInput).documents)
   )
 }
 
 /**
  * Type guard to check if the input is an EventHub function input
- * @param input The input to check
+ * @param input - The input to check
  * @returns True if the input is an EventHub function input, false otherwise
  */
 export function isEventHubFunctionInput(input: unknown): input is AzureEventHubFunctionInput {
@@ -136,7 +136,7 @@ export function isEventHubFunctionInput(input: unknown): input is AzureEventHubF
 
 /**
  * Type guard to check if the input is a Timer function input
- * @param input The input to check
+ * @param input - The input to check
  * @returns True if the input is a Timer function input, false otherwise
  */
 export function isTimerFunctionInput(input: unknown): input is AzureTimerFunctionInput {
@@ -153,7 +153,7 @@ export function isTimerFunctionInput(input: unknown): input is AzureTimerFunctio
  * Type guard to check if the input is a Web PubSub function input.
  * Checks for connectionContext in both request.connectionContext and context.triggerMetadata.connectionContext
  * as Azure Functions v4 may provide it in different locations.
- * @param input The input to check
+ * @param input - The input to check
  * @returns True if the input is a Web PubSub function input, false otherwise
  */
 export function isWebPubSubFunctionInput(input: unknown): input is AzureWebPubSubFunctionInput {
@@ -174,7 +174,7 @@ export function isWebPubSubFunctionInput(input: unknown): input is AzureWebPubSu
 
 /**
  * Helper to extract connectionContext from either location in Web PubSub input
- * @param input The Azure Web PubSub function input
+ * @param input - The Azure Web PubSub function input
  * @returns The connection context if present, undefined otherwise
  */
 export function getWebPubSubConnectionContext(
