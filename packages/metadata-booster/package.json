@@ -23,7 +23,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=20.0.0 <21.0.0"
+    "node": ">=22.0.0 <23.0.0"
   },
   "dependencies": {
     "reflect-metadata": "0.1.13",

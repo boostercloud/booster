@@ -55,11 +55,11 @@
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",
     "@apollo/client": "3.7.13",
-    "cdktf": "0.20.11",
-    "cdktf-cli": "0.20.11",
+    "cdktf": "0.21.0",
+    "cdktf-cli": "0.21.0",
     "ink": "^3.0.5",
     "react": "^17.0.0",
-    "constructs": "^10.0.0",
+    "constructs": "^10.4.2",
     "chai": "4.2.0",
     "chai-as-promised": "7.1.1",
     "cross-fetch": "3.1.5",
@@ -89,7 +89,7 @@
     "concurrently": "~8.2.2"
   },
   "engines": {
-    "node": ">=20.0.0 <21.0.0"
+    "node": ">=22.0.0 <23.0.0"
   },
   "license": "Apache-2.0",
   "main": "dist/index.js",
