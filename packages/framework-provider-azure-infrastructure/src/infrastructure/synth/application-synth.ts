@@ -22,7 +22,6 @@ import { ApplicationSynthStack, StackNames } from '../types/application-synth-st
 import { AzurermProvider, AzurermProviderFeatures } from '@cdktf/provider-azurerm/lib/provider'
 import { TerraformOutputs } from './terraform-outputs'
 import { TerraformWebPubsubHub } from './terraform-web-pubsub-hub'
-import { TerraformWebPubSubExtensionKey } from './terraform-web-pub-sub-extension-key'
 import { TerraformEventHubNamespace } from './terraform-event-hub-namespace'
 import { TerraformEventHub } from './terraform-event-hub'
 import { storageAccount, windowsFunctionApp } from '@cdktf/provider-azurerm'
@@ -162,8 +161,9 @@ export class ApplicationSynth {
   }
 
   private buildWebPubSubHub(stack: ApplicationSynthStack) {
-    if (stack.webPubSub) {
-      stack.dataFunctionAppHostKeys = TerraformWebPubSubExtensionKey.build(stack)
+    if (stack.webPubSub && stack.functionApp && stack.resourceGroup) {
+      // Create the hub with a placeholder key
+      // The actual key will be set after deployZip in index.ts
       stack.webPubSubHub = TerraformWebPubsubHub.build(stack)
     }
   }

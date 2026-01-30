@@ -84,7 +84,8 @@ export class RocketBuilder {
     const fileName = `rocket_${functionAppName}.zip`
     const rocketFeaturesDefinitions = this.mountFunction(rocket)
     logger.info(`Generating Rocket zip file ${fileName}`)
-    const rocketZipResource = await FunctionZip.copyZip(rocketFeaturesDefinitions, fileName)
+    // Rockets still use the legacy v3 function.json approach for backward compatibility
+    const rocketZipResource = await FunctionZip.copyZipLegacy(rocketFeaturesDefinitions, fileName)
     return [
       {
         functionAppName: rocketFunctionAppName,
@@ -101,7 +102,8 @@ export class RocketBuilder {
       const functionAppName = functionDefinition.functionAppName.replace(/(\W+)/gi, '_')
       const fileName = `rocket_${functionAppName}.zip`
       logger.info(`Generating Rocket zip file ${fileName} for function ${functionAppName}`)
-      const rocketZipResource = await FunctionZip.copyZip(
+      // Rockets still use the legacy v3 function.json approach for backward compatibility
+      const rocketZipResource = await FunctionZip.copyZipLegacy(
         functionDefinition.functionsDefinitions,
         fileName,
         functionDefinition.hostJsonPath
