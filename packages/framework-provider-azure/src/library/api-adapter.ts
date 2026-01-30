@@ -11,7 +11,7 @@ export type AzureHttpResponse = HttpResponseInit
  * Web PubSub response types for Azure Functions v4.
  * These are returned directly from Web PubSub triggered functions.
  */
-export interface WebPubsubConnectResponse {
+export interface WebPubSubConnectResponse {
   subprotocol?: string
   userId?: string
   groups?: string[]
@@ -29,7 +29,7 @@ const WEB_SOCKET_MESSAGE_MARKET = 'X-Booster-WebSocket-Message'
 export async function requestSucceeded(
   body?: unknown,
   headers?: Record<string, number | string | ReadonlyArray<string>>
-): Promise<AzureHttpResponse | WebPubsubConnectResponse | WebPubSubMessageResponse | void> {
+): Promise<AzureHttpResponse | WebPubSubConnectResponse | WebPubSubMessageResponse | void> {
   // Check if this is a Web Pubsub CONNECT event (has the specific WebSocket header)
   const isWebSocketConnect = headers && Object.keys(headers).includes(WEB_SOCKET_PROTOCOL_HEADER)
 
@@ -38,7 +38,7 @@ export async function requestSucceeded(
     const subprotocol = headers[WEB_SOCKET_PROTOCOL_HEADER]
     return {
       subprotocol: Array.isArray(subprotocol) ? subprotocol[0] : String(subprotocol),
-    } as WebPubsubConnectResponse
+    } as WebPubSubConnectResponse
   }
 
   // Check if this is a Web Pubsub MESSAGE event (has the marker header from framework-core
