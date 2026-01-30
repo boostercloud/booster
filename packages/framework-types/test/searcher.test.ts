@@ -4,11 +4,7 @@ import { expect } from './expect'
 
 describe('the `Searcher` class', () => {
   class SomeModel {
-    readonly someField: string
-
-    constructor(someField: string) {
-      this.someField = someField
-    }
+    constructor(readonly someField: string) {}
   }
 
   const searcherFunction = fake.resolves([{ hello: 'world' }])
