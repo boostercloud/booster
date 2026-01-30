@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Node 22 and Azure Functions v4 migration",
+      "type": "major"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
