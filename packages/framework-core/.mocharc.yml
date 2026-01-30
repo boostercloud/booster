@@ -1,4 +1,6 @@
 diff: true
+node-option:
+  - no-experimental-strip-types
 require:
   - 'ts-node/register'
   - 'ts-patch/compiler'
