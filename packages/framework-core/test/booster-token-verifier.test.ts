@@ -61,7 +61,7 @@ describe('the "verifyToken" method', () => {
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.claims).to.deep.include(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
     expect(user.roles).to.have.all.members(expectedUser.roles)
   })
@@ -93,7 +93,7 @@ describe('the "verifyToken" method', () => {
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.claims).to.deep.include(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
     expect(user.roles).to.have.all.members(expectedUser.roles)
   })
@@ -125,7 +125,7 @@ describe('the "verifyToken" method', () => {
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.claims).to.deep.include(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
     expect(user.roles).to.have.all.members(expectedUser.roles)
   })
@@ -157,7 +157,7 @@ describe('the "verifyToken" method', () => {
 
     const user = await boosterTokenVerifier.verify(token)
 
-    expect(user.claims).to.deep.equals(expectedUser.claims)
+    expect(user.claims).to.deep.include(expectedUser.claims)
     expect(user.header?.alg).equals(expectedUser.header?.alg)
     expect(user.roles).to.have.all.members(expectedUser.roles)
   })

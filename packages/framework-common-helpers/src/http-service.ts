@@ -21,15 +21,16 @@ export async function request(
   config: PostConfiguration = {}
 ): Promise<PostResult> {
   const { contentType = 'application/json', timeout = 10000, acceptedStatusCodes = [] } = config
-  const options: RequestOptions = {
-    method: method,
-    headers: {
-      'Content-Type': contentType,
-    },
-    timeout: timeout,
+  const headers: Record<string, string | number> = {
+    'Content-Type': contentType,
   }
   if (data) {
-    options.headers!['Content-Length'] = data.length
+    headers['Content-Length'] = data.length
+  }
+  const options: RequestOptions = {
+    method: method,
+    headers: headers,
+    timeout: timeout,
   }
 
   return new Promise((resolve, reject) => {
