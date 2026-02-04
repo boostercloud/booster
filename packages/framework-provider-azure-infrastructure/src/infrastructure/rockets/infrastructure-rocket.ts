@@ -1,5 +1,9 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { FunctionAppFunctionsDefinitions, FunctionDefinition } from '../types/functionDefinition'
+import {
+  FunctionAppFunctionsDefinitions,
+  FunctionAppV4Definitions,
+  FunctionDefinition,
+} from '../types/functionDefinition'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 import { RocketUtils } from './rocket-utils'
 
@@ -22,4 +26,9 @@ export interface InfrastructureRocket {
     applicationSynthStack: ApplicationSynthStack,
     utils: RocketUtils
   ) => Promise<FunctionAppFunctionsDefinitions>
+  mountFunctionsV4?: (
+    config: BoosterConfig,
+    applicationSynthStack: ApplicationSynthStack,
+    utils: RocketUtils
+  ) => Promise<FunctionAppV4Definitions>
 }
