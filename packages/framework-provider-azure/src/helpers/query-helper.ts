@@ -79,17 +79,11 @@ export async function search<TResult>(
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
 
-    // Track cumulative offset for cursor.id calculation
-    let cumulativeOffset = 0
-
     // Extract continuation token from the cursor (backward compatibility)
     if (afterCursor?.continuationToken) {
       feedOptions.continuationToken = afterCursor.continuationToken
-      // Extract cumulative id from cursor for tracking position across pages
-      cumulativeOffset = afterCursor.id && !isNaN(parseInt(afterCursor.id)) ? parseInt(afterCursor.id) : 0
       logger.debug('PAGINATION DEBUG - Using provided continuation token:', {
         continuationToken: afterCursor.continuationToken,
-        cumulativeOffset,
         feedOptions,
       })
     }
@@ -147,24 +141,25 @@ export async function search<TResult>(
 
     const finalResources = processResources(resources || [])
 
+    // cursor.id advances by the page size (limit) to maintain consistent page-based offsets
+    // that frontends rely on (e.g., limit=5 produces cursors 5, 10, 15, ...)
+    const previousOffset = afterCursor?.id ? parseInt(afterCursor.id) : 0
+    const effectiveLimit = limit ?? 100
+
     let cursor: Record<string, string> | undefined
     if (continuationToken) {
-      // Store both continuation token AND cumulative id for proper position tracking
-      const newCumulativeId = cumulativeOffset + finalResources.length
-      cursor = { continuationToken, id: newCumulativeId.toString() }
+      cursor = { continuationToken, id: (previousOffset + effectiveLimit).toString() }
       logger.debug('PAGINATION DEBUG - Setting cursor with continuation token:', {
         cursor,
-        previousOffset: cumulativeOffset,
-        currentPageSize: finalResources.length,
-        newCumulativeId,
+        previousOffset,
+        effectiveLimit,
       })
     } else if (finalResources.length > 0) {
-      // Last page - use cumulative offset for final cursor position
-      cursor = { id: (cumulativeOffset + finalResources.length).toString() }
+      cursor = { id: (previousOffset + effectiveLimit).toString() }
       logger.debug('PAGINATION DEBUG - No continuation token, setting fallback cursor:', {
         cursor,
-        previousOffset: cumulativeOffset,
-        currentPageSize: finalResources.length,
+        previousOffset,
+        effectiveLimit,
       })
     } else {
       logger.debug('PAGINATION DEBUG - No continuation token and no resources, no cursor set')

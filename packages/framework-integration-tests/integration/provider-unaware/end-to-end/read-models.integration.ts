@@ -1550,12 +1550,12 @@ describe('Read models end-to-end tests', () => {
             if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
               // Cursor can be either continuation token format or legacy offset format
               if (cursor.continuationToken) {
-                // New continuation token format - includes both continuationToken and cumulative id
+                // Continuation token format - includes both continuationToken and page-based id
                 expect(cursor.continuationToken).to.be.a('string')
                 expect(cursor.continuationToken).to.not.be.empty
                 expect(cursor.id).to.be.a('string')
                 expect(cursor.id).to.not.be.empty
-                // Verify cumulative id matches the expected sequence
+                // Verify page-based id matches the expected sequence (previousOffset + limit)
                 expect(cursor.id).to.equal((i + 1).toString())
               } else if (cursor.id) {
                 expect(cursor.id).to.be.a('string')
@@ -1620,11 +1620,11 @@ describe('Read models end-to-end tests', () => {
         expect(result.items.length).to.equal(1)
         expect(result.count).to.equal(1)
 
-        // Verify the returned cursor is correctly calculated using our fixed logic
+        // Verify the returned cursor is correctly calculated: previousOffset + limit
         if (result.cursor) {
           expect(result.cursor.id).to.be.a('string')
           expect(result.cursor.id).to.not.be.empty
-          // Should be '2' (1 + 1 result returned) based on our fixed logic: currentOffset + finalResources.length
+          // Should be '2' (offset 1 + limit 1) based on page-based cursor logic
           expect(result.cursor.id).to.equal('2')
           // Legacy cursors don't have continuation tokens
           expect(result.cursor.continuationToken).to.be.undefined
