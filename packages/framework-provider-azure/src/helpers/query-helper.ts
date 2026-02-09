@@ -67,25 +67,56 @@ export async function search<TResult>(
     const canUseContinuationToken = !isDistinctQuery
     const hasLegacyCursor = typeof afterCursor?.id === 'string' && /^\d+$/.test(afterCursor.id)
 
+    logger.debug('PAGINATION DEBUG - Initial analysis:', {
+      isDistinctQuery,
+      canUseContinuationToken,
+      hasLegacyCursor,
+      afterCursor,
+      limit,
+      finalQuery,
+    })
+
     // Use Cosmos DB's continuation token pagination
     const feedOptions: FeedOptions = {}
-    if (limit) {
-      feedOptions.maxItemCount = limit
-    }
+
     // Extract continuation token from the cursor (backward compatibility)
     if (afterCursor?.continuationToken) {
       feedOptions.continuationToken = afterCursor.continuationToken
-    } else if (!canUseContinuationToken || hasLegacyCursor) {
+      logger.debug('PAGINATION DEBUG - Using provided continuation token:', {
+        continuationToken: afterCursor.continuationToken,
+        feedOptions,
+      })
+    }
+
+    // Azure Cosmos DB requires maxItemCount when using continuation tokens
+    // Always set maxItemCount when limit is provided or when using continuation token
+    if (limit || afterCursor?.continuationToken) {
+      feedOptions.maxItemCount = limit ?? 100
+    }
+
+    if (!afterCursor?.continuationToken && (!canUseContinuationToken || hasLegacyCursor)) {
       // Legacy cursor format - fallback to OFFSET for backward compatibility
       const offset = afterCursor?.id ? parseInt(afterCursor.id) : 0
-      let legacyQuery = `${finalQuery} OFFSET ${offset}`
-      if (limit) {
-        legacyQuery += ` LIMIT ${limit} `
-      }
+      // Azure Cosmos DB requires LIMIT when using OFFSET
+      const effectiveLimit = limit ?? 100
+      const legacyQuery = `${finalQuery} OFFSET ${offset} LIMIT ${effectiveLimit} `
       const legacyQuerySpec = { ...querySpec, query: legacyQuery }
+      logger.debug('PAGINATION DEBUG - Using LEGACY OFFSET/LIMIT approach:', {
+        reason: !canUseContinuationToken ? 'DISTINCT query detected' : 'Legacy numeric cursor detected',
+        offset,
+        effectiveLimit,
+        legacyQuery,
+        legacyQuerySpec,
+      })
       const { resources } = await container.items.query(legacyQuerySpec).fetchAll()
 
       const processedResources = processResources(resources)
+
+      logger.debug('PAGINATION DEBUG - Legacy query results:', {
+        resourcesCount: resources?.length || 0,
+        processedResourcesCount: processedResources.length,
+        nextCursor: { id: (offset + processedResources.length).toString() },
+      })
 
       return {
         items: processedResources ?? [],
@@ -96,18 +127,49 @@ export async function search<TResult>(
       }
     }
 
+    logger.debug('PAGINATION DEBUG - About to execute continuation token query with feedOptions:', feedOptions)
     const queryIterator = container.items.query(querySpec, feedOptions)
     const { resources, continuationToken } = await queryIterator.fetchNext()
 
+    logger.debug('PAGINATION DEBUG - Cosmos SDK response:', {
+      resourcesCount: resources?.length || 0,
+      continuationTokenReceived: !!continuationToken,
+      continuationTokenValue: continuationToken,
+      continuationTokenType: typeof continuationToken,
+      continuationTokenLength: continuationToken?.length,
+    })
+
     const finalResources = processResources(resources || [])
+
+    // cursor.id advances by the page size (limit) to maintain consistent page-based offsets
+    // that frontends rely on (e.g., limit=5 produces cursors 5, 10, 15, ...)
+    const previousOffset = afterCursor?.id ? parseInt(afterCursor.id) : 0
+    const effectiveLimit = limit ?? 100
 
     let cursor: Record<string, string> | undefined
     if (continuationToken) {
-      cursor = { continuationToken }
+      cursor = { continuationToken, id: (previousOffset + effectiveLimit).toString() }
+      logger.debug('PAGINATION DEBUG - Setting cursor with continuation token:', {
+        cursor,
+        previousOffset,
+        effectiveLimit,
+      })
     } else if (finalResources.length > 0) {
-      const currentOffset = afterCursor?.id && !isNaN(parseInt(afterCursor.id)) ? parseInt(afterCursor.id) : 0
-      cursor = { id: (currentOffset + finalResources.length).toString() } // Use the length of the results to calculate the next id
+      cursor = { id: (previousOffset + effectiveLimit).toString() }
+      logger.debug('PAGINATION DEBUG - No continuation token, setting fallback cursor:', {
+        cursor,
+        previousOffset,
+        effectiveLimit,
+      })
+    } else {
+      logger.debug('PAGINATION DEBUG - No continuation token and no resources, no cursor set')
     }
+
+    logger.debug('PAGINATION DEBUG - Final response:', {
+      itemsCount: finalResources.length,
+      cursor,
+      hasMoreResults: !!continuationToken,
+    })
 
     return {
       items: finalResources,
