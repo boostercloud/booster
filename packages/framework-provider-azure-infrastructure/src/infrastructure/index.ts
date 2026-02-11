@@ -5,18 +5,16 @@ import {
   createResourceGroupName,
   createResourceManagementClient,
   createStreamFunctionResourceGroupName,
+  createWebPubSubManagementClient,
+  createWebSiteManagementClient,
 } from './helper/utils'
-import { runCommand, getLogger } from '@boostercloud/framework-common-helpers'
-
-const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+import { getLogger, runCommand } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'
 import { ApplicationBuilder } from './application-builder'
 import { RocketBuilder } from './rockets/rocket-builder'
 import { FunctionZip } from './helper/function-zip'
-import * as childProcess from 'child_process'
-import * as util from 'util'
 
-const exec = util.promisify(childProcess.exec)
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
 export const synth = (config: BoosterConfig, rockets?: InfrastructureRocket[]): Promise<void> =>
   synthApp(config, rockets)
@@ -69,6 +67,24 @@ async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]
 }
 
 /**
+ * Triggers a cold start on the function app by sending a lightweight GraphQL request.
+ * Errors are ignored since the function may not be ready yet.
+ * @param functionAppName - The name of the function app to trigger
+ */
+async function triggerColdStart(functionAppName: string): Promise<void> {
+  try {
+    await fetch(`https://${functionAppName}.azurewebsites.net/api/graphql`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: '{ __typename }' }),
+      signal: AbortSignal.timeout(10000),
+    })
+  } catch {
+    // Ignore errors - the function might not be ready yet
+  }
+}
+
+/**
  * Updates the Web PubSub hub with the correct webpubsub_extension key.
  * This must run after the full function ZIP is deployed, as that's when
  * the Azure Functions runtime discovers the WebPubSub triggers and creates the key.
@@ -83,15 +99,13 @@ async function updateWebPubSubHub(
   const logger = getLogger(config, 'index#updateWebPubSubHub')
   logger.info('Updating Web PubSub hub with function key...')
 
+  const credentials = await azureCredentials()
+  const websiteClient = await createWebSiteManagementClient(credentials)
+  const webPubSubClient = await createWebPubSubManagementClient(credentials)
+
   // First, trigger the function app to start by hitting an endpoint
   logger.info('Triggering function app cold start...')
-  try {
-    await exec(
-      `curl -s -o /dev/null "https://${functionAppName}.azurewebsites.net/api/graphql" -X POST -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'`
-    )
-  } catch {
-    // Ignore errors - the function might not be ready yet
-  }
+  await triggerColdStart(functionAppName)
 
   // Wait for the function host to initialize
   logger.info('Waiting for function host to initialize...')
@@ -104,12 +118,10 @@ async function updateWebPubSubHub(
 
   for (let i = 1; i <= maxRetries; i++) {
     try {
-      const result = await exec(
-        `az functionapp keys list --name "${functionAppName}" --resource-group "${resourceGroupName}" --query "systemKeys.webpubsub_extension" -o tsv`
-      )
-      const trimmedKey = result.stdout.trim()
-      if (trimmedKey && trimmedKey !== 'null' && trimmedKey !== '') {
-        key = trimmedKey
+      const hostKeys = await websiteClient.webApps.listHostKeys(resourceGroupName, functionAppName)
+      const extensionKey = hostKeys.systemKeys?.['webpubsub_extension']
+      if (extensionKey) {
+        key = extensionKey
         logger.info(`webpubsub_extension key found after ${i} attempts`)
         break
       }
@@ -120,13 +132,7 @@ async function updateWebPubSubHub(
     // Re-trigger function app every 5 attempts
     if (i % 5 === 0) {
       logger.info('Re-triggering function host...')
-      try {
-        await exec(
-          `curl -s -o /dev/null "https://${functionAppName}.azurewebsites.net/api/graphql" -X POST -H "Content-Type: application/json" -d '{"query":"{ __typename }"}'`
-        )
-      } catch {
-        // Ignore errors
-      }
+      await triggerColdStart(functionAppName)
     }
 
     logger.info(`Attempt ${i}/${maxRetries}: Key not available yet, waiting...`)
@@ -137,10 +143,8 @@ async function updateWebPubSubHub(
     logger.warn('webpubsub_extension key not found. Web PubSub subscriptions may not work.')
     logger.warn('You can manually update the hub by running:')
     logger.warn(
-      `  KEY=$(az functionapp keys list --name ${functionAppName} --resource-group ${resourceGroupName} --query 'systemKeys.webpubsub_extension' -o tsv)`
-    )
-    logger.warn(
-      `  az webpubsub hub update --name ${webPubSubName} --resource-group ${resourceGroupName} --hub-name ${hubName} --event-handler url-template="https://${functionAppName}.azurewebsites.net/runtime/webhooks/webpubsub?code=$KEY" user-event-pattern="*" system-event="connect" system-event="disconnected"`
+      'You can manually retrieve the key and update the hub from the Azure Portal: ' +
+        `Function App "${functionAppName}" > App keys > System keys > webpubsub_extension`
     )
     return
   }
@@ -148,10 +152,17 @@ async function updateWebPubSubHub(
   // Update the hub with the correct key
   logger.info('Updating Web PubSub hub...')
   try {
-    await exec(
-      `az webpubsub hub update --name "${webPubSubName}" --resource-group "${resourceGroupName}" --hub-name "${hubName}" --event-handler url-template="https://${functionAppName}.azurewebsites.net/runtime/webhooks/webpubsub?code=${key}" user-event-pattern="*" system-event="connect" system-event="disconnected"`
-    )
-    logger.info('Web PubSub hub updated successfully')
+    await webPubSubClient.webPubSubHubs.beginCreateOrUpdateAndWait(hubName, resourceGroupName, webPubSubName, {
+      properties: {
+        eventHandlers: [
+          {
+            urlTemplate: `https://${functionAppName}.azurewebsites.net/api/webpubsub/events?code=${key}`,
+            userEventPattern: '*',
+            systemEvents: ['connect', 'disconnected'],
+          },
+        ],
+      },
+    })
   } catch (error) {
     logger.error('Failed to update Web PubSub hub:', error)
     throw error

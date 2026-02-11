@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@azure/arm-appservice": "^16.0.0",
+    "@azure/arm-webpubsub": "^1.2.0",
     "@azure/cosmos": "^4.3.0",
     "@boostercloud/framework-common-helpers": "workspace:^3.4.3",
     "@boostercloud/framework-core": "workspace:^3.4.3",

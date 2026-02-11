@@ -5,7 +5,8 @@ import * as Mustache from 'mustache'
 import { configuration } from './params'
 import { WebSiteManagementClient as WebSiteManagement } from '@azure/arm-appservice'
 import { ResourceManagementClient } from '@azure/arm-resources'
-import { TokenCredential, ClientSecretCredential } from '@azure/identity'
+import { ClientSecretCredential, TokenCredential } from '@azure/identity'
+import { WebPubSubManagementClient } from '@azure/arm-webpubsub'
 
 const MAX_TERRAFORM_SIZE_NAME = 24
 const MAX_RESOURCE_GROUP_NAME_SIZE = 20
@@ -79,6 +80,12 @@ export async function createWebSiteManagementClient(credentials: TokenCredential
 
 export async function createResourceManagementClient(credentials: TokenCredential): Promise<ResourceManagementClient> {
   return new ResourceManagementClient(credentials, configuration.subscriptionId)
+}
+
+export async function createWebPubSubManagementClient(
+  credentials: TokenCredential
+): Promise<WebPubSubManagementClient> {
+  return new WebPubSubManagementClient(credentials, configuration.subscriptionId)
 }
 
 export async function azureCredentials(): Promise<TokenCredential> {
