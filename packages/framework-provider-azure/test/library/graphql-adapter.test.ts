@@ -53,7 +53,7 @@ function createMockInvocationContext(invocationId: string): InvocationContext {
 
 describe('GraphQL adapter', () => {
   describe('The "rawGraphQLRequestToEnvelope"', () => {
-    it('Generates an envelope correctly from an Azure HTTP request (v4', async () => {
+    it('Generates an envelope correctly from an Azure HTTP request', async () => {
       const config = new BoosterConfig('test')
       config.logger = console
       const expectedQuery = 'GraphQL query'

@@ -29,7 +29,7 @@ export interface SubscriptionNotifierInput {
 }
 
 /**
- * Type guard to check if the input is a v4 subcription notifier input
+ * Type guard to check if the input is a v4 subscription notifier input
  * @param input - The input to check
  * @returns True if the input is a SubscriptionNotifierInput, false otherwise
  */

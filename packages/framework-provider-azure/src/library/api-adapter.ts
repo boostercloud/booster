@@ -24,7 +24,7 @@ export interface WebPubSubMessageResponse {
 }
 
 const WEB_SOCKET_PROTOCOL_HEADER = 'Sec-WebSocket-Protocol'
-const WEB_SOCKET_MESSAGE_MARKET = 'X-Booster-WebSocket-Message'
+const WEB_SOCKET_MESSAGE_MARKER_HEADER = 'X-Booster-WebSocket-Message'
 
 export async function requestSucceeded(
   body?: unknown,
@@ -42,7 +42,7 @@ export async function requestSucceeded(
   }
 
   // Check if this is a Web Pubsub MESSAGE event (has the marker header from framework-core
-  const isWebSocketMessage = headers && headers[WEB_SOCKET_MESSAGE_MARKET] === 'true'
+  const isWebSocketMessage = headers && headers[WEB_SOCKET_MESSAGE_MARKER_HEADER] === 'true'
 
   // Web PubSub MESSAGE event - return data response format
   if (isWebSocketMessage) {
