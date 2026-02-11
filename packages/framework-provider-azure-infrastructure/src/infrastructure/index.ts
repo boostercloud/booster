@@ -141,7 +141,6 @@ async function updateWebPubSubHub(
 
   if (!key) {
     logger.warn('webpubsub_extension key not found. Web PubSub subscriptions may not work.')
-    logger.warn('You can manually update the hub by running:')
     logger.warn(
       'You can manually retrieve the key and update the hub from the Azure Portal: ' +
         `Function App "${functionAppName}" > App keys > System keys > webpubsub_extension`
@@ -156,7 +155,7 @@ async function updateWebPubSubHub(
       properties: {
         eventHandlers: [
           {
-            urlTemplate: `https://${functionAppName}.azurewebsites.net/api/webpubsub/events?code=${key}`,
+            urlTemplate: `https://${functionAppName}.azurewebsites.net/runtime/webhooks/webpubsub?code=${key}`,
             userEventPattern: '*',
             systemEvents: ['connect', 'disconnected'],
           },
