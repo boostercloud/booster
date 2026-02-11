@@ -1196,6 +1196,9 @@ importers:
       '@azure/arm-resources':
         specifier: ^5.0.1
         version: 5.2.0
+      '@azure/arm-webpubsub':
+        specifier: ^1.2.0
+        version: 1.2.0
       '@azure/cosmos':
         specifier: ^4.3.0
         version: 4.9.1
@@ -2715,6 +2718,10 @@ packages:
   '@azure/arm-resources@5.2.0':
     resolution: {integrity: sha512-wQyuhL8WQsLkW/KMdik8bLJIJCz3Z6mg/+AKm0KedgK73SKhicSqYP+ed3t+43tLlRFltcrmGKMcHLQ+Jhv/6A==}
     engines: {node: '>=14.0.0'}
+
+  '@azure/arm-webpubsub@1.2.0':
+    resolution: {integrity: sha512-FZMMUv6EFy5GTURJShQxMyZ/oH6qoD8uclv280qrR1d/NSXsgfOs6mnQ4pbG2iZJaG1hzM5dwwl/QTVEphpwvA==}
+    engines: {node: '>=18.0.0'}
 
   '@azure/core-amqp@3.3.0':
     resolution: {integrity: sha512-RYIyC8PtGpMzZRiSokADw0ezFgNq1eUkCPV8rd7tJ85dn8CAhYDEYapzMYxAwIBLWidshu14m9UWjQS7hKYDpA==}
@@ -8626,6 +8633,18 @@ snapshots:
       - supports-color
 
   '@azure/arm-resources@5.2.0':
+    dependencies:
+      '@azure/abort-controller': 1.1.0
+      '@azure/core-auth': 1.10.1
+      '@azure/core-client': 1.10.1
+      '@azure/core-lro': 2.7.2
+      '@azure/core-paging': 1.6.2
+      '@azure/core-rest-pipeline': 1.22.2
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@azure/arm-webpubsub@1.2.0':
     dependencies:
       '@azure/abort-controller': 1.1.0
       '@azure/core-auth': 1.10.1
