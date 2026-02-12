@@ -21,7 +21,7 @@ export function rawEventsToEnvelopes(rawInput: unknown): Array<EventEnvelope> {
   if (Array.isArray(rawInput)) {
     return rawInput as Array<EventEnvelope>
   }
-  throw new Error('Invalid input type for rawEventsToEnvelopes: expected AzureCosmosDBFunctioninput or Array')
+  throw new Error('Invalid input type for rawEventsToEnvelopes: expected AzureCosmosDBFunctionInput or Array')
 }
 
 export async function readEntityEventsSince(
