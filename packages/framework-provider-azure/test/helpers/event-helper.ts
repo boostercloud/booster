@@ -41,7 +41,7 @@ export function addMockSystemGeneratedProperties(eventEnvelopes: Array<EventEnve
 }
 
 /**
- * Wraps event envelopes in an AzureCosmosDBFunctioninput structure for v4 programming model
+ * Wraps event envelopes in an AzureCosmosDBFunctionInput structure for v4 programming model
  * @param eventEnvelopes
  */
 export function wrapEventEnvelopesForCosmosDB(eventEnvelopes: Array<EventEnvelope>): AzureCosmosDBFunctionInput {

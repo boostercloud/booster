@@ -8,7 +8,7 @@ import { HttpRequest, InvocationContext } from '@azure/functions'
 
 /**
  * Standard wrapper for HTTP-triggered Azure Function v4 inputs.
- * This replaces the v3 Context objetc for HTTP triggers.
+ * This replaces the v3 Context object for HTTP triggers.
  */
 export interface AzureHttpFunctionInput {
   request: HttpRequest
