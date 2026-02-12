@@ -186,12 +186,8 @@ app.generic('connect', {
   trigger: connectTrigger,
   handler: async (request, context) => {
     try {
-      context.log('WebPubSub CONNECT - request:', JSON.stringify(request, null, 2))
-      context.log('WebPubSub CONNECT - triggerMetadata:', JSON.stringify(context.triggerMetadata, null, 2))
       const input = { request, context }
-      const result = await boosterServeGraphQL(input)
-      context.log('WebPubSub CONNECT - result:', JSON.stringify(result, null, 2))
-      return result
+      return await boosterServeGraphQL(input)
     } catch (error) {
       context.error('WebPubSub CONNECT error:', error)
       // Return error response for connect event
