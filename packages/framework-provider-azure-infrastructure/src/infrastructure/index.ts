@@ -140,12 +140,12 @@ async function updateWebPubSubHub(
   }
 
   if (!key) {
-    logger.warn('webpubsub_extension key not found. Web PubSub subscriptions may not work.')
-    logger.warn(
-      'You can manually retrieve the key and update the hub from the Azure Portal: ' +
-        `Function App "${functionAppName}" > App keys > System keys > webpubsub_extension`
-    )
-    return
+    const errorMessage =
+      'webpubsub_extension key not found after waiting for function host initialization. ' +
+      'Web PubSub subscriptions will not work. ' +
+      `You can manually retrieve the key from: Azure Portal > Function App "${functionAppName}" > App keys > System keys > webpubsub_extension`
+    logger.error(errorMessage)
+    throw new Error(errorMessage)
   }
 
   // Update the hub with the correct key
