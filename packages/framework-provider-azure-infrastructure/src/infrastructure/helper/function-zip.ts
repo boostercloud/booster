@@ -1,24 +1,15 @@
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { GraphqlFunction } from '../functions/graphql-function'
-import { EventHandlerFunction } from '../functions/event-handler-function'
-import { ScheduledFunctions } from '../functions/scheduled-functions'
-import { SubscriptionsNotifierFunction } from '../functions/subscriptions-notifier-function'
-import { FunctionDefinition } from '../types/functionDefinition'
 import * as fs from 'fs'
 import * as path from 'path'
 import * as os from 'os'
 import { ZipResource } from '../types/zip-resource'
+import { FunctionDefinition } from '../types/functionDefinition'
 import * as archiver from 'archiver'
 import * as needle from 'needle'
 import { azureCredentials, createWebSiteManagementClient } from './utils'
 import { User } from '@azure/arm-appservice'
-import { WebsocketConnectFunction } from '../functions/websocket-connect-function'
-import { WebsocketDisconnectFunction } from '../functions/websocket-disconnect-function'
-import { WebsocketMessagesFunction } from '../functions/websocket-messages-function'
-import { SensorHealthFunction } from '../functions/sensor-health-function'
 import { getLogger } from '@boostercloud/framework-common-helpers'
-import { EventStreamConsumerFunction } from '../functions/event-stream-consumer-function'
-import { EventStreamProducerFunction } from '../functions/event-stream-producer-function'
+import { FunctionsCodeGenerator } from './functions-code-generator'
 
 export class FunctionZip {
   static async deployZip(
@@ -40,17 +31,125 @@ export class FunctionZip {
     return zipResource
   }
 
-  static async copyZip(
-    featuresDefinitions: Array<FunctionDefinition>,
-    fileName: string,
-    hostJsonPath?: string
-  ): Promise<ZipResource> {
-    const zipPath = await this.createZip(featuresDefinitions, fileName, hostJsonPath)
+  /**
+   * Creates a ZIP file with the v4 programming model structure.
+   * Instead of function.json files, we generate a functions.js file.
+   */
+  static async copyZip(config: BoosterConfig, fileName: string, hostJsonPath?: string): Promise<ZipResource> {
+    const zipPath = await this.createZipV4(config, fileName, hostJsonPath)
     const originFile = path.basename(zipPath)
     const destinationFile = path.join(process.cwd(), originFile)
     fs.copyFileSync(zipPath, destinationFile)
 
     return { name: 'functions', path: destinationFile, fileName: originFile }
+  }
+
+  /**
+   * Creates a ZIP file for consumer functions (Event Hub consumers).
+   */
+  static async copyConsumerZip(config: BoosterConfig, fileName: string, hostJsonPath?: string): Promise<ZipResource> {
+    const zipPath = await this.createConsumerZipV4(config, fileName, hostJsonPath)
+    const originFile = path.basename(zipPath)
+    const destinationFile = path.join(process.cwd(), originFile)
+    fs.copyFileSync(zipPath, destinationFile)
+
+    return { name: 'consumer-functions', path: destinationFile, fileName: originFile }
+  }
+
+  /**
+   * Creates a ZIP file for a rocket using the v4 programming model.
+   * The rocket provides its own functions.js content.
+   * @param config - Booster configuration
+   * @param functionCode - The functions.js content provided by the rocket
+   * @param fileName - The name of the ZIP file to create
+   * @param hostJsonPath - Optional path to a custom host.json file
+   * @returns A Promise that resolves to a ZipResource representing the created ZIP file
+   */
+  static async copyZipV4ForRocket(
+    config: BoosterConfig,
+    functionCode: string,
+    fileName: string,
+    hostJsonPath?: string
+  ): Promise<ZipResource> {
+    const zipPath = await this.createZipV4ForRocket(config, functionCode, fileName, hostJsonPath)
+    const originFile = path.basename(zipPath)
+    const destinationFile = path.join(process.cwd(), originFile)
+    fs.copyFileSync(zipPath, destinationFile)
+
+    return { name: 'functions', path: destinationFile, fileName: originFile }
+  }
+
+  /**
+   * Creates a ZIP file for a rocket using the v4 programming model.
+   * Instead of generating functions.js via FunctionsCodeGenerator, the rocket provides its own.
+   * @param config - Booster configuration
+   * @param functionCode - The functions.js content provided by the rocket
+   * @param fileName - The name of the ZIP file to create
+   * @param hostJsonPath - Optional path to a custom host.json file
+   * @private
+   * @returns A Promise that resolves to the path of the created ZIP file
+   */
+  private static async createZipV4ForRocket(
+    config: BoosterConfig,
+    functionCode: string,
+    fileName: string,
+    hostJsonPath?: string
+  ): Promise<string> {
+    const logger = getLogger(config, 'function-zip#createZipV4ForRocket')
+    logger.info('Creating Azure Functions v4 ZIP package for rocket')
+
+    const output = fs.createWriteStream(path.join(os.tmpdir(), fileName))
+
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+    })
+
+    archive.pipe(output)
+
+    // Include the compiled code from .deploy folder, excluding files we'll generate
+    archive.glob('**/*', {
+      cwd: '.deploy',
+      ignore: ['package.json', 'host.json', 'functions.js'],
+      dot: true,
+    })
+
+    // Append the rocket-provided functions.js
+    archive.append(functionCode, { name: 'functions.js' })
+
+    // Include host.json
+    if (hostJsonPath) {
+      this.appendCustomHostConfig(archive, hostJsonPath)
+    } else {
+      this.appendDefaultHostConfig(archive)
+    }
+
+    // Include package.json with the correct main entry point for v4
+    this.appendPackageJson(archive, config)
+
+    await archive.finalize()
+
+    return new Promise((resolve, reject) => {
+      output.on('close', () => {
+        logger.info('Azure Functions v4 ZIP package for rocket created')
+        resolve(output.path as string)
+      })
+
+      output.on('end', () => {
+        resolve(output.path as string)
+      })
+
+      archive.on('warning', (err: { code?: string }) => {
+        if (err.code === 'ENOENT') {
+          resolve(output.path as string)
+        } else {
+          reject(err)
+        }
+      })
+
+      archive.on('error', (err: Error) => {
+        reject(err)
+      })
+    })
   }
 
   static async copyBaseZip(config: BoosterConfig): Promise<string> {
@@ -76,7 +175,7 @@ export class FunctionZip {
     username: string,
     password: string,
     functionAppName: string
-  ): Promise<any> {
+  ): Promise<unknown> {
     needle.defaults({
       open_timeout: 0,
     })
@@ -87,125 +186,51 @@ export class FunctionZip {
     })
   }
 
-  static buildAzureFunctions(config: BoosterConfig): Array<FunctionDefinition> {
-    const logger = getLogger(config, 'function-zip#buildAzureFunctions')
-    logger.info('Generating Azure functions')
+  /**
+   * Creates a ZIP file using the v4 programming model.
+   * - Includes the compiled code from .deploy folder
+   * - Generates and includes functions.js for function registration
+   * - Includes host.json
+   */
+  private static async createZipV4(config: BoosterConfig, fileName: string, hostJsonPath?: string): Promise<string> {
+    const logger = getLogger(config, 'function-zip#createZipV4')
+    logger.info('Creating Azure Functions v4 ZIP package')
 
-    const graphqlFunctionDefinition = new GraphqlFunction(config).getFunctionDefinition()
-    const sensorHealthHandlerFunctionDefinition = new SensorHealthFunction(config).getFunctionDefinition()
-    let featuresDefinitions = [graphqlFunctionDefinition, sensorHealthHandlerFunctionDefinition]
-    if (config.eventStreamConfiguration.enabled) {
-      // If event stream then we build an EventHub event trigger
-      const eventStreamProducerFunctionDefinition = new EventStreamProducerFunction(config).getFunctionDefinition()
-      featuresDefinitions.push(eventStreamProducerFunctionDefinition)
-    } else {
-      // If no event stream then we build a CosmosDB event trigger
-      const eventHandlerFunctionDefinition = new EventHandlerFunction(config).getFunctionDefinition()
-      featuresDefinitions.push(eventHandlerFunctionDefinition)
-    }
-    if (config.enableSubscriptions) {
-      const messagesFunctionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
-      const disconnectFunctionDefinition = new WebsocketDisconnectFunction(config).getFunctionDefinition()
-      const connectFunctionDefinition = new WebsocketConnectFunction(config).getFunctionDefinition()
-      const subscriptionsNotifierFunctionDefinition = new SubscriptionsNotifierFunction(config).getFunctionDefinition()
-      const subscriptionsFeaturesDefinitions = [
-        connectFunctionDefinition,
-        disconnectFunctionDefinition,
-        messagesFunctionDefinition,
-      ]
-      featuresDefinitions.push(...subscriptionsFeaturesDefinitions, ...subscriptionsNotifierFunctionDefinition)
-    }
-    const scheduledFunctionsDefinition = new ScheduledFunctions(config).getFunctionDefinitions()
-    if (scheduledFunctionsDefinition) {
-      featuresDefinitions = featuresDefinitions.concat(scheduledFunctionsDefinition)
-    }
-    logger.info('Azure functions generated')
-    return featuresDefinitions
-  }
-
-  static buildAzureConsumerFunctions(config: BoosterConfig): Array<FunctionDefinition> {
-    const featuresDefinitions = []
-    if (!config.eventStreamConfiguration.enabled) {
-      return []
-    }
-    const logger = getLogger(config, 'function-zip#buildAzureConsumerFunctions')
-    logger.info('Generating Azure Consumer functions')
-    const eventStreamHandlerFunctionDefinition = new EventStreamConsumerFunction(config).getFunctionDefinition()
-    featuresDefinitions.push(eventStreamHandlerFunctionDefinition)
-    logger.info('Azure Consumer functions generated')
-    return featuresDefinitions
-  }
-
-  private static async createZip(
-    functionDefinitions: Array<FunctionDefinition>,
-    fileName: string,
-    hostJsonPath?: string
-  ): Promise<any> {
     const output = fs.createWriteStream(path.join(os.tmpdir(), fileName))
 
     const archive = archiver('zip', {
-      zlib: { level: 9 }, // Sets the compression level.
+      zlib: { level: 9 },
     })
 
     archive.pipe(output)
-    archive.directory('.deploy', false)
-    functionDefinitions.forEach((functionDefinition: FunctionDefinition) => {
-      archive.append(JSON.stringify(functionDefinition.config, null, 2), {
-        name: functionDefinition.name + '/function.json',
-      })
+
+    // Include the compiled code from .deploy folder, excluding files we'll generate
+    archive.glob('**/*', {
+      cwd: '.deploy',
+      ignore: ['package.json', 'host.json', 'functions.js'],
+      dot: true,
     })
+
+    // Generate and include the functions.js file
+    const codeGenerator = new FunctionsCodeGenerator(config)
+    const functionsCode = codeGenerator.generateFunctionsCode()
+    archive.append(functionsCode, { name: 'functions.js' })
+
+    // Include host.json
     if (hostJsonPath) {
       this.appendCustomHostConfig(archive, hostJsonPath)
     } else {
-      if (!fs.existsSync(path.join('.deploy', 'host.json'))) {
-        this.appendDefaultHostConfig(archive)
-      }
+      this.appendDefaultHostConfig(archive)
     }
+
+    // Include package.json with the correct main entry point for v4
+    this.appendPackageJson(archive, config)
+
     await archive.finalize()
 
     return new Promise((resolve, reject) => {
       output.on('close', () => {
-        resolve(output.path)
-      })
-
-      output.on('end', () => {
-        resolve(output.path)
-      })
-
-      archive.on('warning', (err: any) => {
-        if (err.code === 'ENOENT') {
-          resolve(output.path)
-        } else {
-          reject(err)
-        }
-      })
-
-      archive.on('error', (err: any) => {
-        reject(err)
-      })
-    })
-  }
-
-  private static getZipDeployUrl(functionAppName: string): string {
-    return `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy?isAsync=true`
-  }
-
-  private static async createBaseZipFile(config: BoosterConfig, name: string): Promise<string> {
-    const output = fs.createWriteStream(path.join(os.tmpdir(), `${name}.zip`))
-    const archive = archiver('zip', {
-      zlib: { level: 9 }, // Sets the compression level.
-    })
-
-    archive.pipe(output)
-    archive.directory('.deploy-base', false)
-
-    if (config.enableSubscriptions) {
-      this.appendBaseFunction(config, archive, name)
-    }
-    this.appendDefaultHostConfig(archive)
-    await archive.finalize()
-    return new Promise((resolve, reject) => {
-      output.on('close', () => {
+        logger.info('Azure Functions v4 ZIP package created')
         resolve(output.path as string)
       })
 
@@ -213,7 +238,7 @@ export class FunctionZip {
         resolve(output.path as string)
       })
 
-      archive.on('warning', (err: any) => {
+      archive.on('warning', (err: { code?: string }) => {
         if (err.code === 'ENOENT') {
           resolve(output.path as string)
         } else {
@@ -221,24 +246,159 @@ export class FunctionZip {
         }
       })
 
-      archive.on('error', (err: any) => {
+      archive.on('error', (err: Error) => {
         reject(err)
       })
     })
   }
 
-  private static appendBaseFunction(config: BoosterConfig, archive: archiver.Archiver, name: string): void {
-    const functionDefinition = new WebsocketMessagesFunction(config).getFunctionDefinition()
-    const content = JSON.stringify(
-      {
-        bindings: [...functionDefinition.config.bindings],
-      },
-      null,
-      2
-    )
-    archive.append(content, {
-      name: name + '/function.json',
+  /**
+   * Creates a ZIP file for consumer functions using the v4 programming model.
+   */
+  private static async createConsumerZipV4(
+    config: BoosterConfig,
+    fileName: string,
+    hostJsonPath?: string
+  ): Promise<string> {
+    const logger = getLogger(config, 'function-zip#createConsumerZipV4')
+    logger.info('Creating Azure Consumer Functions v4 ZIP package')
+
+    const output = fs.createWriteStream(path.join(os.tmpdir(), fileName))
+
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
     })
+
+    archive.pipe(output)
+
+    // Include the compiled code from .deploy folder, excluding files we'll generate
+    archive.glob('**/*', {
+      cwd: '.deploy',
+      ignore: ['package.json', 'host.json', 'functions.js'],
+      dot: true,
+    })
+
+    // Generate and include the consumer functions.js file
+    const codeGenerator = new FunctionsCodeGenerator(config)
+    const functionsCode = codeGenerator.generateConsumerFunctionsCode()
+    if (functionsCode) {
+      archive.append(functionsCode, { name: 'functions.js' })
+    }
+
+    // Include host.json
+    if (hostJsonPath) {
+      this.appendCustomHostConfig(archive, hostJsonPath)
+    } else {
+      this.appendDefaultHostConfig(archive)
+    }
+
+    // Include package.json with the correct main entry point for v4
+    this.appendPackageJson(archive, config)
+
+    await archive.finalize()
+
+    return new Promise((resolve, reject) => {
+      output.on('close', () => {
+        logger.info('Azure Consumer Functions v4 ZIP package created')
+        resolve(output.path as string)
+      })
+
+      output.on('end', () => {
+        resolve(output.path as string)
+      })
+
+      archive.on('warning', (err: { code?: string }) => {
+        if (err.code === 'ENOENT') {
+          resolve(output.path as string)
+        } else {
+          reject(err)
+        }
+      })
+
+      archive.on('error', (err: Error) => {
+        reject(err)
+      })
+    })
+  }
+
+  private static async createBaseZipFile(config: BoosterConfig, name: string): Promise<string> {
+    const output = fs.createWriteStream(path.join(os.tmpdir(), `${name}.zip`))
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+    })
+
+    archive.pipe(output)
+
+    // Include files from .deploy-base folder, excluding files we'll generate
+    archive.glob('**/*', {
+      cwd: '.deploy-base',
+      ignore: ['package.json', 'host.json', 'functions.js'],
+      dot: true,
+    })
+
+    if (config.enableSubscriptions) {
+      // For base zip, generate minimal Web PubSub binding function
+      const baseFunctionsCode = this.generateBaseWebPubSubFunction()
+      archive.append(baseFunctionsCode, { name: 'functions.js' })
+    }
+
+    // Include host.json
+    this.appendDefaultHostConfig(archive)
+
+    // Include package.json with the correct main entry point for v4
+    this.appendPackageJson(archive, config)
+
+    await archive.finalize()
+    return new Promise((resolve, reject) => {
+      output.on('close', () => {
+        resolve(output.path as string)
+      })
+
+      output.on('end', () => {
+        resolve(output.path as string)
+      })
+
+      archive.on('warning', (err: { code?: string }) => {
+        if (err.code === 'ENOENT') {
+          resolve(output.path as string)
+        } else {
+          reject(err)
+        }
+      })
+
+      archive.on('error', (err: Error) => {
+        reject(err)
+      })
+    })
+  }
+
+  private static generateBaseWebPubSubFunction(): string {
+    // IMPORTANT: The 'connection' property is required for the Azure Functions runtime
+    // to properly load the WebPubSub extension and create the webpubsub_extension system key.
+    // Without it, the extension doesn't initialize and the key is never created.
+    return `
+const { app, trigger } = require('@azure/functions')
+
+const messagesTrigger = trigger.generic({
+  type: 'webPubSubTrigger',
+  name: 'request',
+  hub: 'booster',
+  eventType: 'user',
+  eventName: 'message',
+  connection: 'WebPubSubConnectionString'
+})
+
+app.generic('baseWebPubSubBinding', {
+  trigger: messagesTrigger,
+  handler: async (request, context) => {
+    return { data: 'ok' }
+  }
+})
+`
+  }
+
+  private static getZipDeployUrl(functionAppName: string): string {
+    return `https://${functionAppName}.scm.azurewebsites.net/api/zipDeploy?isAsync=true`
   }
 
   private static appendDefaultHostConfig(archive: archiver.Archiver): void {
@@ -262,5 +422,107 @@ export class FunctionZip {
         name: 'host.json',
       })
     }
+  }
+
+  /**
+   * Generates a package.json for the deployed function app.
+   * In v4, the main field must point to the functions registration file.
+   */
+  private static appendPackageJson(archive: archiver.Archiver, config: BoosterConfig): void {
+    // Try to get the framework-core version from the project's package.json
+    let frameworkCoreVersion = '^3.0.0' // fallback version
+    try {
+      const projectPackageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'))
+      const version = projectPackageJson.dependencies?.['@boostercloud/framework-core']
+      if (version) {
+        frameworkCoreVersion = version
+      }
+    } catch {
+      // Ignore errors, use fallback version
+    }
+
+    const packageJson = {
+      name: config.appName,
+      version: '1.0.0',
+      main: 'functions.js',
+      dependencies: {
+        '@azure/functions': '^4.0.0',
+        '@boostercloud/framework-core': frameworkCoreVersion,
+      },
+    }
+    archive.append(JSON.stringify(packageJson, null, 2), {
+      name: 'package.json',
+    })
+  }
+
+  /**
+   * @deprecated This method uses the legacy v3 function.json approach.
+   * Use copyZip(config, fileName) for v4 programming model.
+   * This method is kept for backward compatibility with rockets.
+   */
+  static async copyZipLegacy(
+    functionDefinitions: Array<FunctionDefinition>,
+    fileName: string,
+    hostJsonPath?: string
+  ): Promise<ZipResource> {
+    const zipPath = await this.createZipLegacy(functionDefinitions, fileName, hostJsonPath)
+    const originFile = path.basename(zipPath)
+    const destinationFile = path.join(process.cwd(), originFile)
+    fs.copyFileSync(zipPath, destinationFile)
+
+    return { name: 'functions', path: destinationFile, fileName: originFile }
+  }
+
+  /**
+   * @deprecated Legacy v3 function.json approach for rockets
+   */
+  private static async createZipLegacy(
+    functionDefinitions: Array<FunctionDefinition>,
+    fileName: string,
+    hostJsonPath?: string
+  ): Promise<string> {
+    const output = fs.createWriteStream(path.join(os.tmpdir(), fileName))
+
+    const archive = archiver('zip', {
+      zlib: { level: 9 },
+    })
+
+    archive.pipe(output)
+    archive.directory('.deploy', false)
+    functionDefinitions.forEach((functionDefinition: FunctionDefinition) => {
+      archive.append(JSON.stringify(functionDefinition.config, null, 2), {
+        name: functionDefinition.name + '/function.json',
+      })
+    })
+    if (hostJsonPath) {
+      this.appendCustomHostConfig(archive, hostJsonPath)
+    } else {
+      if (!fs.existsSync(path.join('.deploy', 'host.json'))) {
+        this.appendDefaultHostConfig(archive)
+      }
+    }
+    await archive.finalize()
+
+    return new Promise((resolve, reject) => {
+      output.on('close', () => {
+        resolve(output.path as string)
+      })
+
+      output.on('end', () => {
+        resolve(output.path as string)
+      })
+
+      archive.on('warning', (err: { code?: string }) => {
+        if (err.code === 'ENOENT') {
+          resolve(output.path as string)
+        } else {
+          reject(err)
+        }
+      })
+
+      archive.on('error', (err: Error) => {
+        reject(err)
+      })
+    })
   }
 }

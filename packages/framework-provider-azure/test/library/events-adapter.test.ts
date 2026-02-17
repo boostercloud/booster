@@ -6,13 +6,13 @@ import { BoosterConfig, EventEnvelope, UUID } from '@boostercloud/framework-type
 import { CosmosClient } from '@azure/cosmos'
 import { eventsStoreAttributes } from '../../src/constants'
 import { partitionKeyForEvent, partitionKeyForSnapshot } from '../../src/library/partition-keys'
-import { Context } from '@azure/functions'
 import { random } from 'faker'
 import {
   addMockSystemGeneratedProperties,
   createMockEventEnvelopes,
   wrapEventEnvelopesForCosmosDB,
 } from '../helpers/event-helper'
+import { AzureCosmosDBFunctionInput } from '../../src'
 
 describe('Events adapter', () => {
   let mockConfig: BoosterConfig
@@ -49,7 +49,7 @@ describe('Events adapter', () => {
   describe('The "rawEventsToEnvelopes" method', () => {
     it('Generates envelopes correctly from a Cosmos DB event', async () => {
       const expectedEnvelopes = addMockSystemGeneratedProperties(mockEvents)
-      const cosmosDbMessage: Context = wrapEventEnvelopesForCosmosDB(expectedEnvelopes)
+      const cosmosDbMessage: AzureCosmosDBFunctionInput = wrapEventEnvelopesForCosmosDB(expectedEnvelopes)
 
       const gotEnvelopes = EventsAdapter.rawEventsToEnvelopes(cosmosDbMessage)
 

@@ -55,6 +55,10 @@ export class BoosterGraphQLDispatcher {
         return this.config.provider.graphQL.handleResult(null, graphQLWebsocketSubprotocolHeaders)
       case 'MESSAGE':
         const responseHeaders = { ...this.config.defaultResponseHeaders }
+        // Mark WebSocket MESSAGE requests so providers can return the appropriate format
+        if (envelopeOrError.connectionID) {
+          responseHeaders['X-Booster-WebSocket-Message'] = 'true'
+        }
         const result = await this.handleMessage(envelopeOrError, responseHeaders)
         return this.config.provider.graphQL.handleResult(result, responseHeaders)
       case 'DISCONNECT':

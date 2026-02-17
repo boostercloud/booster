@@ -20,6 +20,7 @@ import {
   webPubsubHub,
   windowsFunctionApp,
 } from '@cdktf/provider-azurerm'
+import { Resource } from '@cdktf/provider-null/lib/resource'
 import { TerraformResource, TerraformStack } from 'cdktf'
 import { FunctionDefinition } from './functionDefinition'
 import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
@@ -58,6 +59,7 @@ export interface ApplicationSynthStack extends StackNames {
   containers?: Array<cosmosdbSqlContainer.CosmosdbSqlContainer>
   webPubSub?: webPubsub.WebPubsub
   webPubSubHub?: webPubsubHub.WebPubsubHub
+  webPubSubHubUpdater?: Resource
   functionDefinitions?: Array<FunctionDefinition>
   consumerFunctionDefinitions?: Array<FunctionDefinition>
   eventHubNamespace?: eventhubNamespace.EventhubNamespace

@@ -42,7 +42,7 @@ export class TerraformFunctionApp {
       provider: azureProvider,
       siteConfig: {
         applicationStack: {
-          nodeVersion: '~20',
+          nodeVersion: '~22',
         },
       },
       functionsExtensionVersion: '~4',

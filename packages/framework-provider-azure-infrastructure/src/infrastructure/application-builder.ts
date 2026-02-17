@@ -34,15 +34,12 @@ export class ApplicationBuilder {
     azureStack.addAppSettingsToFunctionApp(this.rockets)
     app.synth()
 
-    azureStack.applicationStack.functionDefinitions = FunctionZip.buildAzureFunctions(this.config)
-    azureStack.applicationStack.consumerFunctionDefinitions = FunctionZip.buildAzureConsumerFunctions(this.config)
-    const zipResource = await FunctionZip.copyZip(azureStack.applicationStack.functionDefinitions!, 'functionApp.zip')
+    // In v4 programming model, functions are registered via code, not function.json
+    // The FunctionZip.copyZip method generates the functions.js file internally
+    const zipResource = await FunctionZip.copyZip(this.config, 'functionApp.zip')
     let consumerZipResource: ZipResource | undefined
     if (this.config.eventStreamConfiguration.enabled) {
-      consumerZipResource = await FunctionZip.copyZip(
-        azureStack.applicationStack.consumerFunctionDefinitions!,
-        'consumerFunctionApp.zip'
-      )
+      consumerZipResource = await FunctionZip.copyConsumerZip(this.config, 'consumerFunctionApp.zip')
     }
     const rocketsZipResources = await rocketBuilder.mountRocketsZipResources()
 

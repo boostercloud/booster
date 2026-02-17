@@ -14,23 +14,51 @@ describe('Query helper', () => {
 
     let mockCosmosDbClient: SinonStubbedInstance<CosmosClient>
     class Money {
-      constructor(public cents: number | null, public currency: string) {}
+      public cents: number | null
+      public currency: string
+
+      constructor(cents: number | null, currency: string) {
+        this.cents = cents
+        this.currency = currency
+      }
     }
 
     class Item {
-      constructor(public sku: string | null, public price: Money) {}
+      public sku: string | null
+      public price: Money
+
+      constructor(sku: string | null, price: Money) {
+        this.sku = sku
+        this.price = price
+      }
     }
 
     class Product {
+      readonly id: string
+      readonly stock: number
+      public mainItem: Item
+      public items: Array<Item>
+      public buyers: Array<string>
+      public days: Array<number>
+      public pairs: Array<Array<number>>
+
       constructor(
-        readonly id: string,
-        readonly stock: number,
-        public mainItem: Item,
-        public items: Array<Item>,
-        public buyers: Array<string>,
-        public days: Array<number>,
-        public pairs: Array<Array<number>>
-      ) {}
+        id: string,
+        stock: number,
+        mainItem: Item,
+        items: Array<Item>,
+        buyers: Array<string>,
+        days: Array<number>,
+        pairs: Array<Array<number>>
+      ) {
+        this.id = id
+        this.stock = stock
+        this.mainItem = mainItem
+        this.items = items
+        this.buyers = buyers
+        this.days = days
+        this.pairs = pairs
+      }
     }
 
     beforeEach(() => {

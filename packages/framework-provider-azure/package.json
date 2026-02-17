@@ -20,11 +20,11 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "engines": {
-    "node": ">=20.0.0 <21.0.0"
+    "node": ">=22.0.0 <23.0.0"
   },
   "dependencies": {
     "@azure/cosmos": "^4.3.0",
-    "@azure/functions": "^1.2.2",
+    "@azure/functions": "^4.0.0",
     "@azure/identity": "~4.7.0",
     "@azure/event-hubs": "5.11.1",
     "@boostercloud/framework-common-helpers": "workspace:^3.4.3",

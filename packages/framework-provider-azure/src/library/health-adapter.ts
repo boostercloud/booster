@@ -1,8 +1,8 @@
 import { BoosterConfig, HealthEnvelope } from '@boostercloud/framework-types'
 import { Container, CosmosClient } from '@azure/cosmos'
 import { environmentVarNames } from '../constants'
-import { Context } from '@azure/functions'
 import { request } from '@boostercloud/framework-common-helpers'
+import { AzureHttpFunctionInput, isHttpFunctionInput } from '../types/azure-func-types'
 
 export async function databaseUrl(cosmosDb: CosmosClient, config: BoosterConfig): Promise<Array<string>> {
   const database = cosmosDb.database(config.resourceNames.applicationStack)
@@ -123,25 +123,50 @@ export async function areRocketFunctionsUp(): Promise<{ [key: string]: boolean }
   return results.reduce((acc, result) => ({ ...acc, ...result }), {})
 }
 
-export function rawRequestToSensorHealthComponentPath(rawRequest: Context): string {
-  const parameters = rawRequest.req?.url.replace(/^.*sensor\/health\/?/, '')
-  return parameters ?? ''
+export function rawRequestToSensorHealthComponentPath(rawRequest: unknown): string {
+  if (isHttpFunctionInput(rawRequest)) {
+    const input = rawRequest as AzureHttpFunctionInput
+    const url = input.request.url
+    const parameters = url.replace(/^.*sensor\/health\/?/, '')
+    return parameters ?? ''
+  }
+  return ''
 }
 
-export function rawRequestToSensorHealth(context: Context): HealthEnvelope {
-  const componentPath = rawRequestToSensorHealthComponentPath(context)
-  const requestID = context.executionContext.invocationId
+/**
+ * Converts the raw HTTP request to a HealthEnvelope.
+ * Note: Body is not parsed synchronously in v4 - it will be undefined.
+ * The health endpoint typically doesn't need the request body.
+ * @param rawRequest - The raw HTTP request from the Azure Function
+ * @returns A HealthEnvelope object
+ */
+export function rawRequestToSensorHealth(rawRequest: unknown): HealthEnvelope {
+  if (!isHttpFunctionInput(rawRequest)) {
+    throw new Error('Invalid input type for rawRequestToSensorHealth: expected AzureHttpFunctionInput')
+  }
+
+  const input = rawRequest as AzureHttpFunctionInput
+  const { request, context } = input
+  const componentPath = rawRequestToSensorHealthComponentPath(rawRequest)
+  const requestID = context.invocationId
+
+  // Convert headers to a plain object
+  const headers: Record<string, string> = {}
+  request.headers.forEach((value, key) => {
+    headers[key] = value
+  })
+
   return {
     requestID: requestID,
     context: {
       request: {
-        headers: context.req?.headers,
-        body: context.req?.body,
+        headers,
+        body: undefined, // Body not parsed synchronously in v4
       },
-      rawContext: context,
+      rawContext: rawRequest,
     },
     componentPath: componentPath,
-    token: context.req?.headers?.authorization,
+    token: request.headers.get('authorization') ?? undefined,
   }
 }
 

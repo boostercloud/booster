@@ -85,3 +85,11 @@ export type EventStreamConsumerHandlerFunctionDefinition = FunctionDefinition<Ev
 export type SubscriptionsNotifierFunctionDefinition = FunctionDefinition<EventHandlerBinding | SubscriptionBinding>
 
 export type SocketsFunctionDefinition = FunctionDefinition<GraphQLBinding | SocketsBinding>
+
+export interface FunctionAppV4Definition {
+  functionAppName: string
+  functionsCode: string
+  hostJsonPath?: string
+}
+
+export type FunctionAppV4Definitions = Array<FunctionAppV4Definition>

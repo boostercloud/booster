@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { EventEnvelope } from '@boostercloud/framework-types'
 import { date, random } from 'faker'
-import { Context, ExecutionContext, Logger as AzureLogger, TraceContext } from '@azure/functions'
+import { InvocationContext } from '@azure/functions'
+import { AzureCosmosDBFunctionInput } from '../../src'
 
 export function createMockEventEnvelopes(numOfEvents = 1): Array<EventEnvelope> {
   return new Array(numOfEvents).fill(
@@ -21,7 +22,7 @@ export function createMockEventEnvelopes(numOfEvents = 1): Array<EventEnvelope> 
       id: random.uuid(),
     },
     0,
-    numOfEvents,
+    numOfEvents
   )
 }
 
@@ -39,16 +40,28 @@ export function addMockSystemGeneratedProperties(eventEnvelopes: Array<EventEnve
   })
 }
 
-export function wrapEventEnvelopesForCosmosDB(eventEnvelopes: Array<EventEnvelope>): Context {
+/**
+ * Wraps event envelopes in an AzureCosmosDBFunctionInput structure for v4 programming model
+ * @param eventEnvelopes
+ */
+export function wrapEventEnvelopesForCosmosDB(eventEnvelopes: Array<EventEnvelope>): AzureCosmosDBFunctionInput {
   return {
-    bindingData: {},
-    bindingDefinitions: [],
-    executionContext: {} as ExecutionContext,
-    invocationId: '',
-    log: {} as AzureLogger,
-    traceContext: {} as TraceContext,
-    done(err?: Error | string | null, result?: any): void {
-    },
-    bindings: { rawEvent: eventEnvelopes },
+    documents: eventEnvelopes,
+    context: {
+      invocationId: random.uuid(),
+      functionName: 'eventHandler',
+      extraInputs: { get: () => undefined },
+      extraOutputs: {
+        set: () => {},
+      },
+      log: () => {},
+      trace: () => {},
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+      options: {} as any,
+      triggerMetadata: {},
+    } as unknown as InvocationContext,
   }
 }
