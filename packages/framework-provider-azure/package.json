@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure",
-  "version": "3.4.3",
+  "version": "4.0.0",
   "description": "Handle Booster's integration with Azure",
   "keywords": [
     "framework-provider-azure"
@@ -27,14 +27,14 @@
     "@azure/functions": "^4.0.0",
     "@azure/identity": "~4.7.0",
     "@azure/event-hubs": "5.11.1",
-    "@boostercloud/framework-common-helpers": "workspace:^3.4.3",
-    "@boostercloud/framework-types": "workspace:^3.4.3",
+    "@boostercloud/framework-common-helpers": "workspace:^4.0.0",
+    "@boostercloud/framework-types": "workspace:^4.0.0",
     "tslib": "^2.4.0",
     "@effect-ts/core": "^0.60.4",
     "@azure/web-pubsub": "~1.1.0"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^3.4.3",
+    "@boostercloud/eslint-config": "workspace:^4.0.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/faker": "5.1.5",

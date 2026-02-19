@@ -1,6 +1,6 @@
 {
   "name": "@boostercloud/framework-provider-azure-infrastructure",
-  "version": "3.4.3",
+  "version": "4.0.0",
   "description": "Handle the Booster deployment process to Azure",
   "keywords": [
     "framework-provider-azure-infrastructure"
@@ -26,10 +26,10 @@
     "@azure/arm-appservice": "^16.0.0",
     "@azure/arm-webpubsub": "^1.2.0",
     "@azure/cosmos": "^4.3.0",
-    "@boostercloud/framework-common-helpers": "workspace:^3.4.3",
-    "@boostercloud/framework-core": "workspace:^3.4.3",
-    "@boostercloud/framework-provider-azure": "workspace:^3.4.3",
-    "@boostercloud/framework-types": "workspace:^3.4.3",
+    "@boostercloud/framework-common-helpers": "workspace:^4.0.0",
+    "@boostercloud/framework-core": "workspace:^4.0.0",
+    "@boostercloud/framework-provider-azure": "workspace:^4.0.0",
+    "@boostercloud/framework-types": "workspace:^4.0.0",
     "@cdktf/provider-azurerm": "14.23.1",
     "@cdktf/provider-null": "11.0.1",
     "@cdktf/provider-time": "11.0.1",
@@ -69,7 +69,7 @@
     "url": "https://github.com/boostercloud/booster/issues"
   },
   "devDependencies": {
-    "@boostercloud/eslint-config": "workspace:^3.4.3",
+    "@boostercloud/eslint-config": "workspace:^4.0.0",
     "@types/chai": "4.2.18",
     "@types/chai-as-promised": "7.1.4",
     "@types/faker": "5.1.5",

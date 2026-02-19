@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "4.0.0",
+      "tag": "@boostercloud/framework-core_v4.0.0",
+      "date": "Thu, 19 Feb 2026 18:55:10 GMT",
+      "comments": {
+        "major": [
+          {
+            "comment": "Node 22 and Azure Functions v4 migration",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "fcbae22ee66aa36e7a798c5102ca56e5342899e6"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^3.4.3` to `4.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^3.4.3` to `4.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^3.4.3` to `4.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^3.4.3` to `4.0.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.3",
       "tag": "@boostercloud/framework-core_v3.4.3",
       "date": "Fri, 05 Sep 2025 18:20:03 GMT",
