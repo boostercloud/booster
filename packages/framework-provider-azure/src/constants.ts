@@ -40,5 +40,6 @@ export const environmentVarNames = {
 } as const
 
 // Azure special error codes
+
 export const AZURE_CONFLICT_ERROR_CODE = 409
 export const AZURE_PRECONDITION_FAILED_ERROR = 412
