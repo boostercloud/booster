@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 05 Sep 2025 18:20:03 GMT and should not be manually modified.
+This log was last generated on Thu, 19 Feb 2026 19:11:36 GMT and should not be manually modified.
+
+## 4.0.0
+Thu, 19 Feb 2026 19:11:36 GMT
+
+### Breaking changes
+
+- Node 22 and Azure Functions v4 migration
 
 ## 3.4.3
 Fri, 05 Sep 2025 18:20:03 GMT
