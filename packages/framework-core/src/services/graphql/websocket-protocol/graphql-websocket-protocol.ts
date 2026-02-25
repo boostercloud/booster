@@ -67,7 +67,7 @@ export class GraphQLWebsocketHandler {
           return await this.handleTerminate(envelope.connectionID)
         default:
           // This branch should be impossible, but just in case
-          throw new Error(`Unknown message type. Message=${clientMessage}`)
+          throw new Error(`Unknown message type. Message=${JSON.stringify(clientMessage)}`)
       }
     } catch (e) {
       const error = e as Error
