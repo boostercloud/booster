@@ -1548,23 +1548,7 @@ describe('Read models end-to-end tests', () => {
 
           if (cursor) {
             if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
-              // Cursor can be either continuation token format or legacy offset format
-              if (cursor.continuationToken) {
-                // New continuation token format
-                expect(cursor.continuationToken).to.be.a('string')
-                expect(cursor.continuationToken).to.not.be.empty
-                expect(cursor.id).to.be.undefined
-              } else if (cursor.id) {
-                expect(cursor.id).to.be.a('string')
-                expect(cursor.id).to.not.be.empty
-                expect(cursor.continuationToken).to.be.undefined
-                // If it's a numeric string (legacy format), verify it matches the expected sequence
-                if (/^\d+$/.test(cursor.id)) {
-                  expect(cursor.id).to.equal((i + 1).toString())
-                }
-              } else {
-                throw new Error('Cursor must have either continuationToken or id field')
-              }
+              expect(cursor.id).to.equal((i + 1).toString())
             } else {
               expect(cursor.id).to.equal(currentPageCartData[0].id)
             }
@@ -1621,7 +1605,7 @@ describe('Read models end-to-end tests', () => {
         if (result.cursor) {
           expect(result.cursor.id).to.be.a('string')
           expect(result.cursor.id).to.not.be.empty
-          // Should be '2' (1 + 1 result returned) based on our fixed logic: currentOffset + finalResources.length
+          // Should be '2' (offset 1 + limit 1) based page-based offset logic: offset + effectiveLimit
           expect(result.cursor.id).to.equal('2')
           // Legacy cursors don't have continuation tokens
           expect(result.cursor.continuationToken).to.be.undefined
@@ -1751,16 +1735,8 @@ describe('Read models end-to-end tests', () => {
           },
         ])
         expect(cartShippingAddress.count).to.equal(1)
-        // Cursor may be undefined when there are no more pages (continuation token approach)
-        if (cartShippingAddress.cursor) {
-          expect(cartShippingAddress.cursor.id).to.be.a('string')
-          expect(cartShippingAddress.cursor.id).to.not.be.empty
-          // For Azure/Local with legacy pagination, verify it's "1" for the first page
-          if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
-            if (/^\d+$/.test(cartShippingAddress.cursor.id)) {
-              expect(cartShippingAddress.cursor.id).to.equal('1')
-            }
-          }
+        if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
+            expect(cartShippingAddress.cursor.id).to.equal('100')
         }
       })
 
@@ -1903,19 +1879,7 @@ describe('Read models end-to-end tests', () => {
 
           if (cursor) {
             if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
-              // With continuation token, cursor.id can be either the legacy format (i + 1).toString() or a continuation token
-              // For legacy format, verify it matches the expected sequence; for continuation token, just verify it's valid
-              expect(cursor.id).to.be.a('string')
-              expect(cursor.id).to.not.be.empty
-              // If it's a numeric string (legacy format), verify it matches the expected sequence
-              if (/^\d+$/.test(cursor.id)) {
-                expect(cursor.id).to.equal((i + 1).toString())
-              }
-              // If it has continuationToken property, it's the new format - verify it advances
-              if (cursor.continuationToken) {
-                expect(cursor.continuationToken).to.be.a('string')
-                expect(cursor.continuationToken).to.not.be.empty
-              }
+              expect(cursor.id).to.equal('100')
             } else {
               expect(cursor.id).to.equal(currentPageCartData[0].id)
             }
@@ -2087,16 +2051,8 @@ describe('Read models end-to-end tests', () => {
           },
         ])
         expect(cartMyAddress.count).to.equal(1)
-        // Cursor may be undefined when there are no more pages (continuation token approach)
-        if (cartMyAddress.cursor) {
-          expect(cartMyAddress.cursor.id).to.be.a('string')
-          expect(cartMyAddress.cursor.id).to.not.be.empty
-          // For Azure/Local with legacy pagination, verify it's "1" for the first page
-          if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
-            if (/^\d+$/.test(cartMyAddress.cursor.id)) {
-              expect(cartMyAddress.cursor.id).to.equal('1')
-            }
-          }
+        if (process.env.TESTED_PROVIDER === 'AZURE' || process.env.TESTED_PROVIDER === 'LOCAL') {
+          expect(cartMyAddress.cursor.id).to.equal('100')
         }
       })
     })
