@@ -76,14 +76,15 @@ export async function search<TResult>(
     }
 
     // Azure Cosmos DB requires maxItemCount when using continuation tokens
-    // Always set maxItemCount when limit is provided or when using continuation token
-    if (limit || afterCursor?.continuationToken) {
+    // Always set maxItemCount in the continuation token path to ensure consistent page sizes
+    if (limit || afterCursor?.continuationToken || canUseContinuationToken) {
       feedOptions.maxItemCount = limit ?? DEFAULT_PAGE_SIZE
     }
 
     if (!afterCursor?.continuationToken && (!canUseContinuationToken || hasLegacyCursor)) {
       // Legacy cursor format - fallback to OFFSET for backward compatibility
-      const offset = afterCursor?.id ? parseInt(afterCursor.id) : 0
+      const parsedLegacyId = afterCursor?.id ? parseInt(afterCursor.id, 10) : NaN
+      const offset = Number.isFinite(parsedLegacyId) ? parsedLegacyId : 0
       // Azure Cosmos DB requires LIMIT when using OFFSET
       const effectiveLimit = limit ?? DEFAULT_PAGE_SIZE
       const legacyQuery = `${finalQuery} OFFSET ${offset} LIMIT ${effectiveLimit} `
@@ -108,7 +109,8 @@ export async function search<TResult>(
 
     // cursor.id advances by the page size (limit) to maintain consistent page-based offsets
     // that frontends rely on (e.g., limit=5 produces cursors 5, 10 ,15, ...)
-    const previousOffset = afterCursor?.id ? parseInt(afterCursor.id) : 0
+    const parsedId = afterCursor?.id ? parseInt(afterCursor.id, 10) : NaN
+    const previousOffset = Number.isFinite(parsedId) ? parsedId : 0
     const effectiveLimit = limit ?? DEFAULT_PAGE_SIZE
 
     let cursor: Record<string, string> | undefined
