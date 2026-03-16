@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "4.0.1",
+      "tag": "@boostercloud/framework-core_v4.0.1",
+      "date": "Mon, 16 Mar 2026 18:49:45 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix pagination issues with Cosmos DB",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "296ce75de8216216d2b8bf191be2b3470feee833"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^4.0.0` to `4.0.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^4.0.0` to `4.0.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^4.0.0` to `4.0.1`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^4.0.0` to `4.0.1`"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.0.0",
       "tag": "@boostercloud/framework-core_v4.0.0",
       "date": "Thu, 19 Feb 2026 19:11:36 GMT",
