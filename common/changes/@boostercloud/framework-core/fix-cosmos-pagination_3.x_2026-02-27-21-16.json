@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@boostercloud/framework-core",
+      "comment": "Fix pagination issues with Cosmos DB",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core"
+}
