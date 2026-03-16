@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Fri, 05 Sep 2025 18:20:03 GMT and should not be manually modified.
+This log was last generated on Mon, 16 Mar 2026 21:39:38 GMT and should not be manually modified.
+
+## 3.4.4
+Mon, 16 Mar 2026 21:39:38 GMT
+
+### Patches
+
+- Fix pagination issues with Cosmos DB
 
 ## 3.4.3
 Fri, 05 Sep 2025 18:20:03 GMT
