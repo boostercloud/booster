@@ -16,5 +16,4 @@ export * from './super-kind'
 export * from './instrumentation/trace-types'
 export * from './sensor/health-indicator-configuration'
 export * from './internal-info'
-
 export * from './stream-types'
