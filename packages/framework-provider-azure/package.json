@@ -25,7 +25,7 @@
   "dependencies": {
     "@azure/cosmos": "^4.3.0",
     "@azure/functions": "^4.0.0",
-    "@azure/identity": "~4.7.0",
+    "@azure/identity": "~4.13.0",
     "@azure/event-hubs": "5.11.1",
     "@boostercloud/framework-common-helpers": "workspace:^4.0.1",
     "@boostercloud/framework-types": "workspace:^4.0.1",
