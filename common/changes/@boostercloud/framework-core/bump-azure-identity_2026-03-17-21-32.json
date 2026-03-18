@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Bump @azure/identity to ~4.13.0 to fix jws vulnerability",
+      "type": "patch",
+      "packageName": "@boostercloud/framework-core"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core",
+  "email": "mario@theagilemonkeys.com"
+}

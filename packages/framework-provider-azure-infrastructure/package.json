@@ -52,7 +52,7 @@
     "sinon-chai": "3.5.0",
     "tslib": "^2.4.0",
     "uuid": "11.0.5",
-    "@azure/identity": "~4.7.0",
+    "@azure/identity": "~4.13.0",
     "@effect-ts/core": "^0.60.4"
   },
   "scripts": {
