@@ -1,6 +1,19 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 16 Mar 2026 18:49:45 GMT and should not be manually modified.
+This log was last generated on Mon, 23 Mar 2026 19:16:09 GMT and should not be manually modified.
+
+## 4.0.2
+Mon, 23 Mar 2026 19:16:09 GMT
+
+### Patches
+
+- Bump @azure/identity to ~4.13.0 to fix jws vulnerability
+
+### Updates
+
+- Trigger CI build
+- Trigger CI build
+- Trigger CI publish
 
 ## 4.0.1
 Mon, 16 Mar 2026 18:49:45 GMT
