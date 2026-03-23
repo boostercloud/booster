@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Trigger CI publish",
+      "type": "none",
+      "packageName": "@boostercloud/framework-core"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core",
+  "email": "mario@theagilemonkeys.com"
+}
