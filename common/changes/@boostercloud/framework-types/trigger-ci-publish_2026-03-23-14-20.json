@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Trigger CI publish",
+      "type": "none",
+      "packageName": "@boostercloud/framework-types"
+    }
+  ],
+  "packageName": "@boostercloud/framework-types",
+  "email": "mario@theagilemonkeys.com"
+}
