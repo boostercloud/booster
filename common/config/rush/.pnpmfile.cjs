@@ -44,6 +44,7 @@ function readPackage(packageJson, context) {
     { pkg: 'qs',        major: '6', minSafe: '>=6.14.1 <7.0.0' },    // GHSA-6rw7-vpxm-498p (high)
     { pkg: 'jws',       major: '3', minSafe: '>=3.2.3 <4.0.0' },     // GHSA-869p-cjfg-cm3x (high)
     { pkg: 'jws',       major: '4', minSafe: '>=4.0.1 <5.0.0' },     // GHSA-869p-cjfg-cm3x (high)
+    { pkg: 'undici',    major: '7', minSafe: '>=7.24.0 <8.0.0' },    // GHSA-f269, GHSA-vrm6, GHSA-v9p9 (high)
   ];
 
   for (const { pkg, major, minSafe } of securityOverrides) {
