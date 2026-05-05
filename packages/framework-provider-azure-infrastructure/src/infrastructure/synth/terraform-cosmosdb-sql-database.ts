@@ -1,4 +1,4 @@
-import { cosmosdbSqlDatabase } from '@cdktf/provider-azurerm'
+import { cosmosdbSqlDatabase } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 

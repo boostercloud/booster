@@ -19,11 +19,11 @@ import {
   subnetNetworkSecurityGroupAssociation,
   webPubsubHub,
   windowsFunctionApp,
-} from '@cdktf/provider-azurerm'
-import { Resource } from '@cdktf/provider-null/lib/resource'
-import { TerraformResource, TerraformStack } from 'cdktf'
+} from '@cdktn/provider-azurerm'
+import { Resource } from '@cdktn/provider-null/lib/resource'
+import { TerraformResource, TerraformStack } from 'cdktn'
 import { FunctionDefinition } from './functionDefinition'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { AzurermProvider } from '@cdktn/provider-azurerm/lib/provider'
 
 export interface StackNames {
   appPrefix: string

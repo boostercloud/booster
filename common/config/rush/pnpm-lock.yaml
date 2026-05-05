@@ -16,7 +16,7 @@ importers:
         specifier: 3.7.13
         version: 3.7.13(graphql@16.12.0)(react@17.0.2)(subscriptions-transport-ws@0.11.0(graphql@16.12.0))
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -47,7 +47,7 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/jsonwebtoken':
         specifier: 9.0.8
@@ -104,10 +104,10 @@ importers:
   ../../packages/cli:
     dependencies:
       '@boostercloud/framework-core':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-core
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -150,10 +150,10 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/application-tester':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../application-tester
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@oclif/test':
         specifier: ^4.1.10
@@ -264,7 +264,7 @@ importers:
   ../../packages/framework-common-helpers:
     dependencies:
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -280,7 +280,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -370,10 +370,10 @@ importers:
   ../../packages/framework-core:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect/cli':
         specifier: 0.56.2
@@ -437,10 +437,10 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@boostercloud/metadata-booster':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../metadata-booster
       '@types/chai':
         specifier: 4.2.18
@@ -545,22 +545,22 @@ importers:
   ../../packages/framework-integration-tests:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-core':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-core
       '@boostercloud/framework-provider-aws':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-aws
       '@boostercloud/framework-provider-azure':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-azure
       '@boostercloud/framework-provider-local':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-local
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -618,25 +618,25 @@ importers:
         specifier: 3.7.13
         version: 3.7.13(graphql@16.12.0)(react@17.0.2)(subscriptions-transport-ws@0.11.0(graphql@16.12.0))
       '@boostercloud/application-tester':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../application-tester
       '@boostercloud/cli':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../cli
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@boostercloud/framework-provider-aws-infrastructure':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-aws-infrastructure
       '@boostercloud/framework-provider-azure-infrastructure':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-azure-infrastructure
       '@boostercloud/framework-provider-local-infrastructure':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-local-infrastructure
       '@boostercloud/metadata-booster':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../metadata-booster
       '@seald-io/nedb':
         specifier: 4.0.2
@@ -680,12 +680,12 @@ importers:
       '@typescript-eslint/parser':
         specifier: ^5.0.0
         version: 5.62.0(eslint@8.57.1)(typescript@5.7.3)
-      cdktf:
-        specifier: 0.21.0
-        version: 0.21.0(constructs@10.4.5)
-      cdktf-cli:
-        specifier: 0.21.0
-        version: 0.21.0(ink@3.2.0(react@17.0.2))(react@17.0.2)
+      cdktn:
+        specifier: 0.22.1
+        version: 0.22.1(constructs@10.4.5)
+      cdktn-cli:
+        specifier: 0.22.1
+        version: 0.22.1(ink@3.2.0(react@17.0.2))(react@17.0.2)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -777,10 +777,10 @@ importers:
   ../../packages/framework-provider-aws:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -790,7 +790,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/aws-lambda':
         specifier: 8.10.48
@@ -943,13 +943,13 @@ importers:
         specifier: ^1.170.0
         version: 1.204.0
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-provider-aws':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-aws
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -983,7 +983,7 @@ importers:
         version: 1.10.2
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/archiver':
         specifier: 5.1.0
@@ -1097,10 +1097,10 @@ importers:
         specifier: ~1.1.0
         version: 1.1.4
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1110,7 +1110,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1206,26 +1206,26 @@ importers:
         specifier: ~4.13.0
         version: 4.13.0
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-core':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-core
       '@boostercloud/framework-provider-azure':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-azure
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
-      '@cdktf/provider-azurerm':
-        specifier: 14.23.1
-        version: 14.23.1(cdktf@0.21.0(constructs@10.4.5))(constructs@10.4.5)
-      '@cdktf/provider-null':
-        specifier: 11.0.1
-        version: 11.0.1(cdktf@0.21.0(constructs@10.4.5))(constructs@10.4.5)
-      '@cdktf/provider-time':
-        specifier: 11.0.1
-        version: 11.0.1(cdktf@0.21.0(constructs@10.4.5))(constructs@10.4.5)
+      '@cdktn/provider-azurerm':
+        specifier: 15.11.0
+        version: 15.11.0(cdktn@0.22.1(constructs@10.4.5))(constructs@10.4.5)
+      '@cdktn/provider-null':
+        specifier: 12.0.0
+        version: 12.0.0(cdktn@0.22.1(constructs@10.4.5))(constructs@10.4.5)
+      '@cdktn/provider-time':
+        specifier: 12.0.0
+        version: 12.0.0(cdktn@0.22.1(constructs@10.4.5))(constructs@10.4.5)
       '@effect-ts/core':
         specifier: ^0.60.4
         version: 0.60.5
@@ -1238,12 +1238,12 @@ importers:
       archiver:
         specifier: 5.3.0
         version: 5.3.0
-      cdktf:
-        specifier: 0.21.0
-        version: 0.21.0(constructs@10.4.5)
-      cdktf-cli:
-        specifier: 0.21.0
-        version: 0.21.0(ink@3.2.0(react@17.0.2))(react@17.0.2)
+      cdktn:
+        specifier: 0.22.1
+        version: 0.22.1(constructs@10.4.5)
+      cdktn-cli:
+        specifier: 0.22.1
+        version: 0.22.1(ink@3.2.0(react@17.0.2))(react@17.0.2)
       chai:
         specifier: 4.2.0
         version: 4.2.0
@@ -1285,7 +1285,7 @@ importers:
         version: 11.0.5
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1366,10 +1366,10 @@ importers:
   ../../packages/framework-provider-local:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1385,7 +1385,7 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1481,13 +1481,13 @@ importers:
   ../../packages/framework-provider-local-infrastructure:
     dependencies:
       '@boostercloud/framework-common-helpers':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-common-helpers
       '@boostercloud/framework-provider-local':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-provider-local
       '@boostercloud/framework-types':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../framework-types
       '@effect-ts/core':
         specifier: ^0.60.4
@@ -1506,7 +1506,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/chai':
         specifier: 4.2.18
@@ -1642,10 +1642,10 @@ importers:
         version: 8.18.0
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@boostercloud/metadata-booster':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../metadata-booster
       '@types/chai':
         specifier: 4.2.18
@@ -1739,7 +1739,7 @@ importers:
         version: 2.8.1
     devDependencies:
       '@boostercloud/eslint-config':
-        specifier: workspace:^4.0.1
+        specifier: workspace:^4.0.2
         version: link:../../tools/eslint-config
       '@types/node':
         specifier: ^20.17.17
@@ -2819,12 +2819,12 @@ packages:
     resolution: {integrity: sha512-H3mcG6ZDLTlYfaSNi0iOKkigqMFvkTKlGUYlD8GW7nNOYRrevuA46iTypPyv+06V3fEmvvazfntkBU34L0azAw==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/generator@7.27.1':
-    resolution: {integrity: sha512-UnJfnIpc/+JO0/+KRVQNGU+y5taA5vCbwN8+azkX6beii/ZF+enZJSOKo11ZSzGJjlNfJHfQtmQT8H+9TXPG2w==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/generator@7.28.6':
     resolution: {integrity: sha512-lOoVRwADj8hjf7al89tvQ2a1lf53Z+7tiXMgpZJL3maQPDxh0DgLMN62B2MKUOFcoodBHLMbDM6WAbKgNy5Suw==}
+    engines: {node: '>=6.9.0'}
+
+  '@babel/generator@7.29.1':
+    resolution: {integrity: sha512-qsaF+9Qcm2Qv8SRIMMscAvG4O3lJ0F1GuMo5HR/Bp02LopNgnZBC/EkbevHFeGs4ls/oPz9v+Bsmzbkbe+0dUw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/helper-compilation-targets@7.28.6':
@@ -2866,12 +2866,13 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
+  '@babel/parser@7.29.3':
+    resolution: {integrity: sha512-b3ctpQwp+PROvU/cttc4OYl4MzfJUWy6FZg+PMXfzmt/+39iHVF0sDfqay8TQM3JA2EUOyKcFZt75jWriQijsA==}
+    engines: {node: '>=6.0.0'}
+    hasBin: true
+
   '@babel/runtime@7.28.6':
     resolution: {integrity: sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==}
-    engines: {node: '>=6.9.0'}
-
-  '@babel/template@7.27.2':
-    resolution: {integrity: sha512-LPDZ85aEJyYSd18/DkjNh4/y1ntkE5KwUHWTiqgRxruuZL2F1yuHligVHLvcHY2vMHXttKFpJn6LwfI7cw7ODw==}
     engines: {node: '>=6.9.0'}
 
   '@babel/template@7.28.6':
@@ -2882,60 +2883,57 @@ packages:
     resolution: {integrity: sha512-fgWX62k02qtjqdSNTAGxmKYY/7FSL9WAS1o2Hu5+I5m9T0yxZzr4cnrfXQ/MX0rIifthCSs6FKTlzYbJcPtMNg==}
     engines: {node: '>=6.9.0'}
 
-  '@babel/types@7.27.1':
-    resolution: {integrity: sha512-+EzkxvLNfiUeKMgy/3luqfsCWFRXLb7U6wNQTk60tovuckwB15B191tJWvpp4HjiQWdJkCxO3Wbvc6jlk3Xb2Q==}
-    engines: {node: '>=6.9.0'}
-
   '@babel/types@7.28.6':
     resolution: {integrity: sha512-0ZrskXVEHSWIqZM/sQZ4EV3jZJXRkio/WCxaqKZP1g//CEWEPSfeZFcms4XeKBCHU0ZKnIkdJeU/kF+eRp5lBg==}
     engines: {node: '>=6.9.0'}
 
-  '@cdktf/cli-core@0.21.0':
-    resolution: {integrity: sha512-yYZaRdEY0qdRTT/EkXSseiDKRgp+pECvOlJo+N3h8pQLiXrzmnSEljB9r/6Tfd0ciESoWFUY/eSpwE7CPgU1Dg==}
-
-  '@cdktf/commons@0.21.0':
-    resolution: {integrity: sha512-fgMbYNo46CovCjn6kYb/T5qFpVfZcnZQ9XhZzQi01WuO7MQ4fo2aBll6Lpfp6DREvbYbnhJvGSJP1xC+oIj1qg==}
-
-  '@cdktf/hcl-tools@0.21.0':
-    resolution: {integrity: sha512-V90J/2a0qKRDWBZ/pCUJI3P/iW3SG98F+qkBprGNLVZ5VuP4OSI1NYyv1qeeLC7tWyWHjj3v876lXMvXq1kVgw==}
-
-  '@cdktf/hcl2cdk@0.21.0':
-    resolution: {integrity: sha512-3TVgIUCmRA793O8tSXo+7ZfFhdkxs7PHuURoDblyE7DbbK2nXHCmwzqQ7oNH2P0oaYkCmZ0AcIfMdeLsRdRcwA==}
-
-  '@cdktf/hcl2json@0.21.0':
-    resolution: {integrity: sha512-cwX3i/mSJI/cRrtqwEPRfawB7pXgNioriSlkvou8LWiCrrcDe9ZtTbAbu8W1tEJQpe1pnX9VEgpzf/BbM7xF8Q==}
+  '@babel/types@7.29.0':
+    resolution: {integrity: sha512-LwdZHpScM4Qz8Xw2iKSzS+cfglZzJGvofQICy7W7v4caru4EaAmyUuO6BGrbyQ2mYV11W0U8j5mBhd14dd3B0A==}
+    engines: {node: '>=6.9.0'}
 
   '@cdktf/node-pty-prebuilt-multiarch@0.10.2':
     resolution: {integrity: sha512-Bpb0v9bzejJUAGmn8HfDFH6pYxFVHokiWV4mHvTao2XoYcEvETFVrniYIXlIg0e4yLlKB/U/z5WsC5PBsi3xEQ==}
 
-  '@cdktf/provider-azurerm@14.23.1':
-    resolution: {integrity: sha512-3H20Ozj7dOKmIj6mqorHZEjLNo5wO/MBEVHwu6k53fln/0EciGQa9sDLWBYSb0o40Ycpih9lFp/k6SGRbFlQVg==}
-    engines: {node: '>= 20.9.0'}
-    deprecated: See https://cdk.tf/imports for details on how to continue to use the azurerm provider in your CDK for Terraform (CDKTF) projects by generating the bindings locally.
+  '@cdktn/cli-core@0.22.1':
+    resolution: {integrity: sha512-Zns7OlLUG/iQoqV1o9FVhHpqVBwHJvBBXqY31eYqF667hrqhDfdxrIlvjNfxsIqFC7TbfZBvEB1Fxu+/XaC6Yg==}
+
+  '@cdktn/commons@0.22.1':
+    resolution: {integrity: sha512-pg6cSnNwcM2I5Nr81PeYYX819ZOwhS0rR1VmVS33BOkvdzKWrdA6MDYvKl6Gu1FxEVQ48gHFlizHzK/u/0pqaw==}
+
+  '@cdktn/hcl-tools@0.22.1':
+    resolution: {integrity: sha512-hiJPXGjmmhxpDUewAXuNA+MACM+5o6XOiFhQ21XUJUeLOMB4CM/lk3RvgYG7xW2zp4fI1N8lXec4hsgpkzZuHQ==}
+
+  '@cdktn/hcl2cdk@0.22.1':
+    resolution: {integrity: sha512-SMr0+D1AEAVQrlp8f/PP1a8UtUSUjElJLlRyrMrGrs4syYGnFNe1AbjcokIB+blvEPQqljj8ZdheX1mh66HSug==}
+
+  '@cdktn/hcl2json@0.22.1':
+    resolution: {integrity: sha512-NY2XiYyI9Y89vah6Ef/3hizig2PKPynPs69P9g9baTIr432vVYef0XKrxAi5NK/7sUH2YzqPyMj5l0HwlG6Vvw==}
+
+  '@cdktn/provider-azurerm@15.11.0':
+    resolution: {integrity: sha512-hAKM97/N6pIrkHD96b5J0ZOCXvgOSmJSuBFIa6hKjZ59pcpKmO5pwgka9CjD2Q5Oc72Q8kBSOVPwKc/XXbAIVQ==}
+    engines: {node: '>= 20.16.0'}
     peerDependencies:
-      cdktf: ^0.21.0
+      cdktn: ^0.22.0
       constructs: ^10.4.2
 
-  '@cdktf/provider-generator@0.21.0':
-    resolution: {integrity: sha512-N/IehJ6lZlVaNxP/0sxg0AeLJIhgcW3+Bk6m71UzoDAZFPBzW00k6nmSAlQiE0c5L92hHgLksfEL8VNbiPKmSw==}
+  '@cdktn/provider-generator@0.22.1':
+    resolution: {integrity: sha512-QVLqNxn2Od88E4fy2mmnkI2d4YZR9xrz2OvnjR9UrVRvvB3LzqGQNpj3GTxhEBFuDyF0XHbDWLaRkMDFHkN32Q==}
 
-  '@cdktf/provider-null@11.0.1':
-    resolution: {integrity: sha512-Ky4unO3BiquQkQnsiJSZZX9qJ/JuTt8bitr3GEFK7XX39bP5VHnKWZQA8hah4FnTEeu8AiONPjbN6vnN3u177g==}
-    engines: {node: '>= 20.9.0'}
-    deprecated: See https://cdk.tf/imports for details on how to continue to use the null provider in your CDK for Terraform (CDKTF) projects by generating the bindings locally.
+  '@cdktn/provider-null@12.0.0':
+    resolution: {integrity: sha512-zUzTpSC15euIwrhAZpaUu3fMFl9hgIH0DUoiBqF9SY0MAWdUcB6IlqUI+gJ+WZv74TxRmKlQ3Sxtbg4EYy5TRQ==}
+    engines: {node: '>= 20.16.0'}
     peerDependencies:
-      cdktf: ^0.21.0
+      cdktn: ^0.22.0
       constructs: ^10.4.2
 
-  '@cdktf/provider-schema@0.21.0':
-    resolution: {integrity: sha512-zVJmuE3wj4n48voZL9OMRyNe6rh4ST5qoXk96zTr+3WW8At29Y9WblrZI88R/dpk7l9VLvnraxxnP6JWoLhxWw==}
+  '@cdktn/provider-schema@0.22.1':
+    resolution: {integrity: sha512-VdYr961VVlU6XIEtl/AmHVnveQtlaZUNxD73XKalxbWBYw/W7vF/SEwmeNdGqcQHb65A9hfoOd4+0zaCOqivkQ==}
 
-  '@cdktf/provider-time@11.0.1':
-    resolution: {integrity: sha512-FI0xFIcfF7U0t+pk7NNNJujiCxIOw6wL0I61/LEgPC59WWcGVrRPdj5F7YvEEpgcWkse6YrYc9soumsTQa5WYg==}
-    engines: {node: '>= 20.9.0'}
-    deprecated: See https://cdk.tf/imports for details on how to continue to use the time provider in your CDK for Terraform (CDKTF) projects by generating the bindings locally.
+  '@cdktn/provider-time@12.0.0':
+    resolution: {integrity: sha512-g0Xq0moztxs0IYaiq7mLvA+xeENcVzvE4kZfzKMWl9MACsPDgegnZldmE9MN0J0KEUEuVoP5+gZiVYG3B/k6Og==}
+    engines: {node: '>= 20.16.0'}
     peerDependencies:
-      cdktf: ^0.21.0
+      cdktn: ^0.22.0
       constructs: ^10.4.2
 
   '@cspotcode/source-map-support@0.8.1':
@@ -3279,28 +3277,28 @@ packages:
   '@seald-io/nedb@4.0.2':
     resolution: {integrity: sha512-gJ91fT1sgh2cLXYVcTSh7khZ8LdemI8+SojCdpZ5wy+DUQ4fSrEwGqOwbdV49NDs2BBO6GeBpSb8CnhG2IW1rw==}
 
-  '@sentry-internal/tracing@7.120.3':
-    resolution: {integrity: sha512-Ausx+Jw1pAMbIBHStoQ6ZqDZR60PsCByvHdw/jdH9AqPrNE9xlBSf9EwcycvmrzwyKspSLaB52grlje2cRIUMg==}
+  '@sentry-internal/tracing@7.120.4':
+    resolution: {integrity: sha512-Fz5+4XCg3akeoFK+K7g+d7HqGMjmnLoY2eJlpONJmaeT9pXY7yfUyXKZMmMajdE2LxxKJgQ2YKvSCaGVamTjHw==}
     engines: {node: '>=8'}
 
-  '@sentry/core@7.120.3':
-    resolution: {integrity: sha512-vyy11fCGpkGK3qI5DSXOjgIboBZTriw0YDx/0KyX5CjIjDDNgp5AGgpgFkfZyiYiaU2Ww3iFuKo4wHmBusz1uA==}
+  '@sentry/core@7.120.4':
+    resolution: {integrity: sha512-TXu3Q5kKiq8db9OXGkWyXUbIxMMuttB5vJ031yolOl5T/B69JRyAoKuojLBjRv1XX583gS1rSSoX8YXX7ATFGA==}
     engines: {node: '>=8'}
 
-  '@sentry/integrations@7.120.3':
-    resolution: {integrity: sha512-6i/lYp0BubHPDTg91/uxHvNui427df9r17SsIEXa2eKDwQ9gW2qRx5IWgvnxs2GV/GfSbwcx4swUB3RfEWrXrQ==}
+  '@sentry/integrations@7.120.4':
+    resolution: {integrity: sha512-kkBTLk053XlhDCg7OkBQTIMF4puqFibeRO3E3YiVc4PGLnocXMaVpOSCkMqAc1k1kZ09UgGi8DxfQhnFEjUkpA==}
     engines: {node: '>=8'}
 
-  '@sentry/node@7.120.3':
-    resolution: {integrity: sha512-t+QtekZedEfiZjbkRAk1QWJPnJlFBH/ti96tQhEq7wmlk3VszDXraZvLWZA0P2vXyglKzbWRGkT31aD3/kX+5Q==}
+  '@sentry/node@7.120.4':
+    resolution: {integrity: sha512-qq3wZAXXj2SRWhqErnGCSJKUhPSlZ+RGnCZjhfjHpP49KNpcd9YdPTIUsFMgeyjdh6Ew6aVCv23g1hTP0CHpYw==}
     engines: {node: '>=8'}
 
-  '@sentry/types@7.120.3':
-    resolution: {integrity: sha512-C4z+3kGWNFJ303FC+FxAd4KkHvxpNFYAFN8iMIgBwJdpIl25KZ8Q/VdGn0MLLUEHNLvjob0+wvwlcRBBNLXOow==}
+  '@sentry/types@7.120.4':
+    resolution: {integrity: sha512-cUq2hSSe6/qrU6oZsEP4InMI5VVdD86aypE+ENrQ6eZEVLTCYm1w6XhW1NvIu3UuWh7gZec4a9J7AFpYxki88Q==}
     engines: {node: '>=8'}
 
-  '@sentry/utils@7.120.3':
-    resolution: {integrity: sha512-UDAOQJtJDxZHQ5Nm1olycBIsz2wdGX8SdzyGVHmD8EOQYAeDZQyIlQYohDe9nazdIOQLZCIc3fU0G9gqVLkaGQ==}
+  '@sentry/utils@7.120.4':
+    resolution: {integrity: sha512-zCKpyDIWKHwtervNK2ZlaK8mMV7gVUijAgFeJStH+CU/imcdquizV3pFLlSQYRswG+Lbyd6CT/LGRh3IbtkCFw==}
     engines: {node: '>=8'}
 
   '@serverless/dashboard-plugin@6.4.0':
@@ -3621,6 +3619,7 @@ packages:
   '@xmldom/xmldom@0.9.8':
     resolution: {integrity: sha512-p96FSY54r+WJ50FIOsCOjyj/wavs8921hG5+kVMmZgKcvIKxMXHTrjNJvRgWa/zuX3B6t2lijLNFaOyuxUH+2A==}
     engines: {node: '>=14.6'}
+    deprecated: this version has critical issues, please update to the latest version
 
   abort-controller@3.0.0:
     resolution: {integrity: sha512-h8lQ8tacZYnR3vNQTgibj+tODHI5/+l06Au2Pcriv/Gmet0eaj4TwWH41sO9wnHDiQsEj19q0drzdWdeAHtweg==}
@@ -4021,12 +4020,12 @@ packages:
     engines: {node: '>= 14.15.0'}
     hasBin: true
 
-  cdktf-cli@0.21.0:
-    resolution: {integrity: sha512-hQqNRw6Qs7QvJ4Yet/J1ZjBujCf6nsFqTjUDHfjgjGUg7tD7SeomqqGcAd8Y3yDOso4qr/BZ1/nTBc6MOgX0Uw==}
+  cdktn-cli@0.22.1:
+    resolution: {integrity: sha512-6xqsxe4DhM7nlaN/Z1Mpl1s6IAaUOF+PT52onh1CbpL0v7Ddo/VYOfMRbxi2+nWS79qB/UxPWHKP+cbE/5aLxg==}
     hasBin: true
 
-  cdktf@0.21.0:
-    resolution: {integrity: sha512-bdTOOyrFSXw0p5d7/3dye7ZWYzrUatyMjWEAAwTGoqghjygRj6Q55y1QZnSB021NRDzYZ3BhFGsOkpmIjQMzNQ==}
+  cdktn@0.22.1:
+    resolution: {integrity: sha512-okskIjjF2tnHTbIdcSzZJKwjGADiSI4OJDzZldYqrWZHZJTnodi6gDg03qzkiSP1S7+qD8vMxfj+HFw3G0Oc/A==}
     peerDependencies:
       constructs: ^10.4.2
     bundledDependencies:
@@ -5006,15 +5005,6 @@ packages:
       debug:
         optional: true
 
-  follow-redirects@1.15.9:
-    resolution: {integrity: sha512-gew4GsXizNgdoRyqmyfMHyAmXsZDk6mHkSxZFCzW9gwlbtOW44CDtYavM+y+72qD/Vq2l550kMF52DT8fOLJqQ==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
     engines: {node: '>= 0.4'}
@@ -5055,12 +5045,12 @@ packages:
     resolution: {integrity: sha512-oRXApq54ETRj4eMiFzGnHWGy+zo5raudjuxN0b8H7s/RU2oW0Wvsx9O0ACRN/kRq9E8Vu/ReskGB5o3ji+FzHQ==}
     engines: {node: '>=12'}
 
-  fs-extra@11.3.0:
-    resolution: {integrity: sha512-Z4XaCL6dUDHfP/jT25jJKMmtxvuwbkrD1vNSMFlo9lNLY2c5FHYSQgHPRZUjAB26TpDEoW9HCOgplrdbaPV/ew==}
-    engines: {node: '>=14.14'}
-
   fs-extra@11.3.3:
     resolution: {integrity: sha512-VWSRii4t0AFm6ixFFmLLx1t7wS1gh+ckoa84aOeapGum0h+EZd1EhEumSB+ZdDLnEPuucsVB9oB7cxJHap6Afg==}
+    engines: {node: '>=14.14'}
+
+  fs-extra@11.3.4:
+    resolution: {integrity: sha512-CTXd6rk/M3/ULNQj8FBqBWHYBVYybQ3VPBw0xGKFe3tuH7ytT6ACnvzpIQ3UZtB8yvUKC2cXn1a+x+5EVQLovA==}
     engines: {node: '>=14.14'}
 
   fs-extra@8.1.0:
@@ -6107,6 +6097,10 @@ packages:
     resolution: {integrity: sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==}
     engines: {node: '>=10'}
 
+  minimatch@5.1.9:
+    resolution: {integrity: sha512-7o1wEA2RyMP7Iu7GNba9vc0RWWGACJOCZBJX2GJWip0ikV+wcOsgVuY9uE8CPiyQhkGFSlhuSkZPavN7u1c2Fw==}
+    engines: {node: '>=10'}
+
   minimatch@9.0.5:
     resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
     engines: {node: '>=16 || 14 >=14.17'}
@@ -6607,6 +6601,7 @@ packages:
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
     engines: {node: '>=10'}
+    deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
     hasBin: true
 
   prelude-ls@1.1.2:
@@ -6957,13 +6952,13 @@ packages:
     resolution: {integrity: sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==}
     hasBin: true
 
-  semver@7.7.2:
-    resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
+  semver@7.7.3:
+    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.7.3:
-    resolution: {integrity: sha512-SdsKMrI9TdgjdweUSR9MweHA4EJ8YxHn8DFaDisvhVlUOe4BF1tLD7GAj0lIqWVl+dPb/rExr0Btby5loQm20Q==}
+  semver@7.7.4:
+    resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -7606,10 +7601,6 @@ packages:
   validate-npm-package-name@3.0.0:
     resolution: {integrity: sha512-M6w37eVCMMouJ9V/sdPGnC5H4uDr73/+xdq0FBLO3TFFX1+7wiUY6Es328NN+y43tmY+doUdN9g9J21vqB7iLw==}
 
-  validator@13.15.0:
-    resolution: {integrity: sha512-36B2ryl4+oL5QxZ3AzD0t5SsMNGvTtQHpjgFO5tbNxfXbMFkY822ktCDe1MnlqV3301QQI9SLHDNJokDI+Z9pA==}
-    engines: {node: '>= 0.10'}
-
   validator@13.15.26:
     resolution: {integrity: sha512-spH26xU080ydGggxRyR1Yhcbgx+j3y5jbNXk/8L+iRvdIEQ4uTRH2Sgf2dokud6Q4oAtsbNvJ1Ft+9xmm6IZcA==}
     engines: {node: '>= 0.10'}
@@ -7869,8 +7860,8 @@ packages:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
 
-  zod@3.24.4:
-    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
 
@@ -8909,18 +8900,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/generator@7.27.1':
-    dependencies:
-      '@babel/parser': 7.28.6
-      '@babel/types': 7.27.1
-      '@jridgewell/gen-mapping': 0.3.13
-      '@jridgewell/trace-mapping': 0.3.31
-      jsesc: 3.1.0
-
   '@babel/generator@7.28.6':
     dependencies:
       '@babel/parser': 7.28.6
       '@babel/types': 7.28.6
+      '@jridgewell/gen-mapping': 0.3.13
+      '@jridgewell/trace-mapping': 0.3.31
+      jsesc: 3.1.0
+
+  '@babel/generator@7.29.1':
+    dependencies:
+      '@babel/parser': 7.29.3
+      '@babel/types': 7.29.0
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/trace-mapping': 0.3.31
       jsesc: 3.1.0
@@ -8966,13 +8957,11 @@ snapshots:
     dependencies:
       '@babel/types': 7.28.6
 
-  '@babel/runtime@7.28.6': {}
-
-  '@babel/template@7.27.2':
+  '@babel/parser@7.29.3':
     dependencies:
-      '@babel/code-frame': 7.28.6
-      '@babel/parser': 7.28.6
-      '@babel/types': 7.27.1
+      '@babel/types': 7.29.0
+
+  '@babel/runtime@7.28.6': {}
 
   '@babel/template@7.28.6':
     dependencies:
@@ -8992,27 +8981,32 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/types@7.27.1':
-    dependencies:
-      '@babel/helper-string-parser': 7.27.1
-      '@babel/helper-validator-identifier': 7.28.5
-
   '@babel/types@7.28.6':
     dependencies:
       '@babel/helper-string-parser': 7.27.1
       '@babel/helper-validator-identifier': 7.28.5
 
-  '@cdktf/cli-core@0.21.0(react@17.0.2)':
+  '@babel/types@7.29.0':
     dependencies:
-      '@cdktf/commons': 0.21.0(constructs@10.4.2)
-      '@cdktf/hcl-tools': 0.21.0
-      '@cdktf/hcl2cdk': 0.21.0(constructs@10.4.2)
-      '@cdktf/hcl2json': 0.21.0
+      '@babel/helper-string-parser': 7.27.1
+      '@babel/helper-validator-identifier': 7.28.5
+
+  '@cdktf/node-pty-prebuilt-multiarch@0.10.2':
+    dependencies:
+      nan: 2.25.0
+      prebuild-install: 7.1.3
+
+  '@cdktn/cli-core@0.22.1(react@17.0.2)':
+    dependencies:
       '@cdktf/node-pty-prebuilt-multiarch': 0.10.2
-      '@cdktf/provider-schema': 0.21.0(constructs@10.4.2)
-      '@sentry/node': 7.120.3
+      '@cdktn/commons': 0.22.1(constructs@10.4.2)
+      '@cdktn/hcl-tools': 0.22.1
+      '@cdktn/hcl2cdk': 0.22.1(constructs@10.4.2)
+      '@cdktn/hcl2json': 0.22.1
+      '@cdktn/provider-schema': 0.22.1(constructs@10.4.2)
+      '@sentry/node': 7.120.4
       archiver: 7.0.1
-      cdktf: 0.21.0(constructs@10.4.2)
+      cdktn: 0.22.1(constructs@10.4.2)
       chalk: 4.1.2
       chokidar: 3.6.0
       cli-spinners: 2.9.2
@@ -9023,7 +9017,7 @@ snapshots:
       detect-port: 1.6.1
       execa: 5.1.1
       extract-zip: 2.0.1
-      follow-redirects: 1.15.9
+      follow-redirects: 1.15.11
       fs-extra: 8.1.0
       https-proxy-agent: 5.0.1(supports-color@8.1.1)
       indent-string: 4.0.0
@@ -9037,12 +9031,12 @@ snapshots:
       jsii-rosetta: 5.8.8
       lodash.isequal: 4.5.0
       log4js: 6.9.1
-      minimatch: 5.1.6
+      minimatch: 5.1.9
       node-fetch: 2.7.0
       open: 7.4.2
       parse-gitignore: 1.0.1
       pkg-up: 3.1.0
-      semver: 7.7.2
+      semver: 7.7.4
       sscaff: 1.2.274
       stream-buffers: 3.0.3
       strip-ansi: 6.0.1
@@ -9052,7 +9046,7 @@ snapshots:
       xstate: 4.38.3
       yargs: 17.7.2
       yoga-layout-prebuilt: 1.10.0
-      zod: 3.24.4
+      zod: 3.25.76
     transitivePeerDependencies:
       - '@types/react'
       - bare-abort-controller
@@ -9064,39 +9058,39 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@cdktf/commons@0.21.0(constructs@10.4.2)':
+  '@cdktn/commons@0.22.1(constructs@10.4.2)':
     dependencies:
-      '@sentry/node': 7.120.3
-      cdktf: 0.21.0(constructs@10.4.2)
+      '@sentry/node': 7.120.4
+      cdktn: 0.22.1(constructs@10.4.2)
       ci-info: 3.9.0
       codemaker: 1.112.0
       cross-spawn: 7.0.6
-      follow-redirects: 1.15.9
-      fs-extra: 11.3.0
+      follow-redirects: 1.15.11
+      fs-extra: 11.3.4
       log4js: 6.9.1
       strip-ansi: 6.0.1
       uuid: 9.0.1
-      validator: 13.15.0
+      validator: 13.15.26
     transitivePeerDependencies:
       - constructs
       - debug
       - supports-color
 
-  '@cdktf/hcl-tools@0.21.0':
+  '@cdktn/hcl-tools@0.22.1':
     dependencies:
       fs-extra: 11.3.3
 
-  '@cdktf/hcl2cdk@0.21.0(constructs@10.4.2)':
+  '@cdktn/hcl2cdk@0.22.1(constructs@10.4.2)':
     dependencies:
-      '@babel/generator': 7.27.1
-      '@babel/template': 7.27.2
-      '@babel/types': 7.27.1
-      '@cdktf/commons': 0.21.0(constructs@10.4.2)
-      '@cdktf/hcl2json': 0.21.0
-      '@cdktf/provider-generator': 0.21.0(constructs@10.4.2)
-      '@cdktf/provider-schema': 0.21.0(constructs@10.4.2)
+      '@babel/generator': 7.29.1
+      '@babel/template': 7.28.6
+      '@babel/types': 7.29.0
+      '@cdktn/commons': 0.22.1(constructs@10.4.2)
+      '@cdktn/hcl2json': 0.22.1
+      '@cdktn/provider-generator': 0.22.1(constructs@10.4.2)
+      '@cdktn/provider-schema': 0.22.1(constructs@10.4.2)
       camelcase: 6.3.0
-      cdktf: 0.21.0(constructs@10.4.2)
+      cdktn: 0.22.1(constructs@10.4.2)
       codemaker: 1.112.0
       deep-equal: 2.2.3
       glob: 10.5.0
@@ -9105,30 +9099,25 @@ snapshots:
       jsii-rosetta: 5.8.8
       prettier: 2.8.8
       reserved-words: 0.1.2
-      zod: 3.24.4
+      zod: 3.25.76
     transitivePeerDependencies:
       - constructs
       - debug
       - supports-color
 
-  '@cdktf/hcl2json@0.21.0':
+  '@cdktn/hcl2json@0.22.1':
     dependencies:
-      fs-extra: 11.3.0
+      fs-extra: 11.3.4
 
-  '@cdktf/node-pty-prebuilt-multiarch@0.10.2':
+  '@cdktn/provider-azurerm@15.11.0(cdktn@0.22.1(constructs@10.4.5))(constructs@10.4.5)':
     dependencies:
-      nan: 2.25.0
-      prebuild-install: 7.1.3
-
-  '@cdktf/provider-azurerm@14.23.1(cdktf@0.21.0(constructs@10.4.5))(constructs@10.4.5)':
-    dependencies:
-      cdktf: 0.21.0(constructs@10.4.5)
+      cdktn: 0.22.1(constructs@10.4.5)
       constructs: 10.4.5
 
-  '@cdktf/provider-generator@0.21.0(constructs@10.4.2)':
+  '@cdktn/provider-generator@0.22.1(constructs@10.4.2)':
     dependencies:
-      '@cdktf/commons': 0.21.0(constructs@10.4.2)
-      '@cdktf/provider-schema': 0.21.0(constructs@10.4.2)
+      '@cdktn/commons': 0.22.1(constructs@10.4.2)
+      '@cdktn/provider-schema': 0.22.1(constructs@10.4.2)
       '@types/node': 18.19.101
       codemaker: 1.112.0
       fs-extra: 8.1.0
@@ -9138,25 +9127,25 @@ snapshots:
       - debug
       - supports-color
 
-  '@cdktf/provider-null@11.0.1(cdktf@0.21.0(constructs@10.4.5))(constructs@10.4.5)':
+  '@cdktn/provider-null@12.0.0(cdktn@0.22.1(constructs@10.4.5))(constructs@10.4.5)':
     dependencies:
-      cdktf: 0.21.0(constructs@10.4.5)
+      cdktn: 0.22.1(constructs@10.4.5)
       constructs: 10.4.5
 
-  '@cdktf/provider-schema@0.21.0(constructs@10.4.2)':
+  '@cdktn/provider-schema@0.22.1(constructs@10.4.2)':
     dependencies:
-      '@cdktf/commons': 0.21.0(constructs@10.4.2)
-      '@cdktf/hcl2json': 0.21.0
+      '@cdktn/commons': 0.22.1(constructs@10.4.2)
+      '@cdktn/hcl2json': 0.22.1
       deepmerge: 4.3.1
-      fs-extra: 11.3.0
+      fs-extra: 11.3.4
     transitivePeerDependencies:
       - constructs
       - debug
       - supports-color
 
-  '@cdktf/provider-time@11.0.1(cdktf@0.21.0(constructs@10.4.5))(constructs@10.4.5)':
+  '@cdktn/provider-time@12.0.0(cdktn@0.22.1(constructs@10.4.5))(constructs@10.4.5)':
     dependencies:
-      cdktf: 0.21.0(constructs@10.4.5)
+      cdktn: 0.22.1(constructs@10.4.5)
       constructs: 10.4.5
 
   '@cspotcode/source-map-support@0.8.1':
@@ -9574,37 +9563,37 @@ snapshots:
       localforage: 1.10.0
       util: 0.12.5
 
-  '@sentry-internal/tracing@7.120.3':
+  '@sentry-internal/tracing@7.120.4':
     dependencies:
-      '@sentry/core': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry/core': 7.120.4
+      '@sentry/types': 7.120.4
+      '@sentry/utils': 7.120.4
 
-  '@sentry/core@7.120.3':
+  '@sentry/core@7.120.4':
     dependencies:
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry/types': 7.120.4
+      '@sentry/utils': 7.120.4
 
-  '@sentry/integrations@7.120.3':
+  '@sentry/integrations@7.120.4':
     dependencies:
-      '@sentry/core': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry/core': 7.120.4
+      '@sentry/types': 7.120.4
+      '@sentry/utils': 7.120.4
       localforage: 1.10.0
 
-  '@sentry/node@7.120.3':
+  '@sentry/node@7.120.4':
     dependencies:
-      '@sentry-internal/tracing': 7.120.3
-      '@sentry/core': 7.120.3
-      '@sentry/integrations': 7.120.3
-      '@sentry/types': 7.120.3
-      '@sentry/utils': 7.120.3
+      '@sentry-internal/tracing': 7.120.4
+      '@sentry/core': 7.120.4
+      '@sentry/integrations': 7.120.4
+      '@sentry/types': 7.120.4
+      '@sentry/utils': 7.120.4
 
-  '@sentry/types@7.120.3': {}
+  '@sentry/types@7.120.4': {}
 
-  '@sentry/utils@7.120.3':
+  '@sentry/utils@7.120.4':
     dependencies:
-      '@sentry/types': 7.120.3
+      '@sentry/types': 7.120.4
 
   '@serverless/dashboard-plugin@6.4.0(@types/node@20.19.30)(supports-color@8.1.1)':
     dependencies:
@@ -10525,16 +10514,16 @@ snapshots:
       mime: 2.6.0
       yargs: 16.2.0
 
-  cdktf-cli@0.21.0(ink@3.2.0(react@17.0.2))(react@17.0.2):
+  cdktn-cli@0.22.1(ink@3.2.0(react@17.0.2))(react@17.0.2):
     dependencies:
-      '@cdktf/cli-core': 0.21.0(react@17.0.2)
-      '@cdktf/commons': 0.21.0(constructs@10.4.2)
-      '@cdktf/hcl-tools': 0.21.0
-      '@cdktf/hcl2cdk': 0.21.0(constructs@10.4.2)
-      '@cdktf/hcl2json': 0.21.0
+      '@cdktn/cli-core': 0.22.1(react@17.0.2)
+      '@cdktn/commons': 0.22.1(constructs@10.4.2)
+      '@cdktn/hcl-tools': 0.22.1
+      '@cdktn/hcl2cdk': 0.22.1(constructs@10.4.2)
+      '@cdktn/hcl2json': 0.22.1
       '@inquirer/prompts': 2.3.1
-      '@sentry/node': 7.120.3
-      cdktf: 0.21.0(constructs@10.4.2)
+      '@sentry/node': 7.120.4
+      cdktn: 0.22.1(constructs@10.4.2)
       ci-info: 3.9.0
       codemaker: 1.112.0
       constructs: 10.4.2
@@ -10545,7 +10534,7 @@ snapshots:
       jsii: 5.8.9
       jsii-pacmak: 1.112.0(jsii-rosetta@5.8.8)
       jsii-rosetta: 5.8.8
-      minimatch: 5.1.6
+      minimatch: 5.1.9
       node-fetch: 2.7.0
       pidtree: 0.6.0
       pidusage: 3.0.2
@@ -10553,7 +10542,7 @@ snapshots:
       xml-js: 1.6.11
       yargs: 17.7.2
       yoga-layout-prebuilt: 1.10.0
-      zod: 3.24.4
+      zod: 3.25.76
     transitivePeerDependencies:
       - '@types/react'
       - bare-abort-controller
@@ -10566,11 +10555,11 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  cdktf@0.21.0(constructs@10.4.2):
+  cdktn@0.22.1(constructs@10.4.2):
     dependencies:
       constructs: 10.4.2
 
-  cdktf@0.21.0(constructs@10.4.5):
+  cdktn@0.22.1(constructs@10.4.5):
     dependencies:
       constructs: 10.4.5
 
@@ -11804,8 +11793,6 @@ snapshots:
 
   follow-redirects@1.15.11: {}
 
-  follow-redirects@1.15.9: {}
-
   for-each@0.3.5:
     dependencies:
       is-callable: 1.2.7
@@ -11851,13 +11838,13 @@ snapshots:
       jsonfile: 6.2.0
       universalify: 2.0.1
 
-  fs-extra@11.3.0:
+  fs-extra@11.3.3:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.2.0
       universalify: 2.0.1
 
-  fs-extra@11.3.3:
+  fs-extra@11.3.4:
     dependencies:
       graceful-fs: 4.2.11
       jsonfile: 6.2.0
@@ -12975,6 +12962,10 @@ snapshots:
     dependencies:
       brace-expansion: 2.0.2
 
+  minimatch@5.1.9:
+    dependencies:
+      brace-expansion: 2.0.2
+
   minimatch@9.0.5:
     dependencies:
       brace-expansion: 2.0.2
@@ -13125,7 +13116,7 @@ snapshots:
 
   node-abi@3.87.0:
     dependencies:
-      semver: 7.7.2
+      semver: 7.7.4
 
   node-addon-api@7.1.1: {}
 
@@ -13880,9 +13871,9 @@ snapshots:
 
   semver@6.3.1: {}
 
-  semver@7.7.2: {}
-
   semver@7.7.3: {}
+
+  semver@7.7.4: {}
 
   send@0.19.2:
     dependencies:
@@ -14716,8 +14707,6 @@ snapshots:
     dependencies:
       builtins: 1.0.3
 
-  validator@13.15.0: {}
-
   validator@13.15.26: {}
 
   vary@1.1.2: {}
@@ -15002,4 +14991,4 @@ snapshots:
       compress-commons: 6.0.2
       readable-stream: 4.7.0
 
-  zod@3.24.4: {}
+  zod@3.25.76: {}

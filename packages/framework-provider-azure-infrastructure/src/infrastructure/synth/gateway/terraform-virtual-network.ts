@@ -1,4 +1,4 @@
-import { virtualNetwork } from '@cdktf/provider-azurerm'
+import { virtualNetwork } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../../helper/utils'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
 

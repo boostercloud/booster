@@ -1,4 +1,4 @@
-import { TerraformOutput } from 'cdktf'
+import { TerraformOutput } from 'cdktn'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformOutputs {

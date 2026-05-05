@@ -1,4 +1,4 @@
-import { resourceGroup } from '@cdktf/provider-azurerm'
+import { resourceGroup } from '@cdktn/provider-azurerm'
 import { getDeployRegion, toTerraformName } from '../helper/utils'
 import { StackNames } from '../types/application-synth-stack'
 

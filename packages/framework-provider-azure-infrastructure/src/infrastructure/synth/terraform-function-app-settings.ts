@@ -2,7 +2,7 @@ import { environmentVarNames } from '@boostercloud/framework-provider-azure'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
-import { storageAccount } from '@cdktf/provider-azurerm'
+import { storageAccount } from '@cdktn/provider-azurerm'
 
 export class TerraformFunctionAppSettings {
   static build(

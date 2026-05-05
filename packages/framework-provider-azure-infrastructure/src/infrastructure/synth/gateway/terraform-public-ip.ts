@@ -1,4 +1,4 @@
-import { publicIp } from '@cdktf/provider-azurerm'
+import { publicIp } from '@cdktn/provider-azurerm'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
 
 export class TerraformPublicIp {

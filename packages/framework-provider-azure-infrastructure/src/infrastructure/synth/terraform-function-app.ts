@@ -1,7 +1,7 @@
-import { servicePlan, storageAccount, windowsFunctionApp } from '@cdktf/provider-azurerm'
+import { servicePlan, storageAccount, windowsFunctionApp } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
-import { WindowsFunctionAppConfig } from '@cdktf/provider-azurerm/lib/windows-function-app'
+import { WindowsFunctionAppConfig } from '@cdktn/provider-azurerm/lib/windows-function-app'
 
 export class TerraformFunctionApp {
   static build(

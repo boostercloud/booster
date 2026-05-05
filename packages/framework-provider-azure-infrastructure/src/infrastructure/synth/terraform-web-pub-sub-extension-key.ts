@@ -1,4 +1,4 @@
-import { dataAzurermFunctionAppHostKeys } from '@cdktf/provider-azurerm'
+import { dataAzurermFunctionAppHostKeys } from '@cdktn/provider-azurerm'
 import { TerraformFunctionAppData } from './web-pubsub-extension-key/terraform-function-app-data'
 import { TerraformSleep } from './web-pubsub-extension-key/terraform-sleep'
 import { ApplicationSynthStack } from '../types/application-synth-stack'

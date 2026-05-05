@@ -1,5 +1,5 @@
 import { toTerraformName } from '../helper/utils'
-import { webPubsubHub } from '@cdktf/provider-azurerm'
+import { webPubsubHub } from '@cdktn/provider-azurerm'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 
 export class TerraformWebPubsubHub {

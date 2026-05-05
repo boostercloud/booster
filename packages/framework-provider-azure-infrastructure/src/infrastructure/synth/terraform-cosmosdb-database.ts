@@ -1,4 +1,4 @@
-import { cosmosdbAccount } from '@cdktf/provider-azurerm'
+import { cosmosdbAccount } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 

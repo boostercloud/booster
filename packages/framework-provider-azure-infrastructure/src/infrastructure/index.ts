@@ -42,9 +42,9 @@ async function deployApp(config: BoosterConfig, rockets?: InfrastructureRocket[]
   const applicationBuild = await applicationBuilder.buildApplication()
 
   try {
-    await runCommand(process.cwd(), 'npx cdktf-cli deploy --auto-approve --ignore-missing-stack-dependencies')
+    await runCommand(process.cwd(), 'npx cdktn-cli deploy --auto-approve --ignore-missing-stack-dependencies')
   } catch (error) {
-    return Promise.reject(`Deployment of application ${config.appName} failed. Check cdktf logs. \n${error.message}}`)
+    return Promise.reject(`Deployment of application ${config.appName} failed. Check Terraform logs. \n${error.message}}`)
   }
 
   const resourceGroupName = createResourceGroupName(config.appName, config.environmentName)

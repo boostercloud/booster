@@ -1,4 +1,4 @@
-import { networkSecurityGroup } from '@cdktf/provider-azurerm'
+import { networkSecurityGroup } from '@cdktn/provider-azurerm'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
 
 export class TerraformNetworkSecurityGroup {
