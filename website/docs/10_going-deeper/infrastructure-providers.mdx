@@ -235,16 +235,16 @@ Now just let the magic happen, Booster will create everything for you and give y
 
 ### Azure synth command
 
-Azure provider implements the experimental **Booster** `synth` command. This command will generate [Terraform](https://www.terraform.io/) templates from your code. It will also generate needed files to deploy your Booster application using [cdktf](https://learn.hashicorp.com/tutorials/terraform/cdktf).
+Azure provider implements the experimental **Booster** `synth` command. This command will generate [Terraform](https://www.terraform.io/) templates from your code. It will also generate the configuration file needed to deploy your Booster application using [cdktn-cli](https://github.com/open-constructs/cdk-terrain).
 
 Running `synth` command, for example `boost synth -e production` will generate following files:
 
-* A file `cdktf.json`: A basic json file to deploy your application using `cdktf`
+* A file `cdktf.json`: A configuration file used by `cdktn-cli` to deploy your application.
 * A folder `cdktf.out`: with the Terraform templates.
 
 Booster deploy command for Azure will deploy your application using the generated templates.  You don't need to run the `synth` command for deploy your application, the `deploy` command will generate the templates before deploy for you.
 
-Once you have the new files and folders generates you could use `cdktf` to deploy your application if you want to.
+Once you have the new files and folders generated you could use `cdktn-cli` to deploy your application if you want to.
 
 ### Azure and CI/CD environments
 
