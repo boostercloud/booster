@@ -51,7 +51,7 @@
     "@effect/schema": "0.75.5",
     "@effect/typeclass": "0.32.12",
     "web-streams-polyfill": "~3.3.2",
-    "ws": "8.18.0"
+    "ws": "^8.20.1"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^4.0.2",

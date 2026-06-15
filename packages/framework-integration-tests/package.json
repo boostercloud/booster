@@ -30,7 +30,7 @@
     "@effect/printer-ansi": "0.41.12",
     "@effect/platform-node": "0.75.4",
     "fast-check": "^3.13.2",
-    "ws": "8.18.0",
+    "ws": "^8.20.1",
     "execa": "^2.0.3"
   },
   "devDependencies": {
