@@ -1,5 +1,5 @@
 import { Construct } from 'constructs'
-import { Fn, TerraformStack } from 'cdktf'
+import { Fn, TerraformStack } from 'cdktn'
 import { ApplicationSynth } from './synth/application-synth'
 import { ApplicationSynthStack } from './types/application-synth-stack'
 import { InfrastructureRocket } from './rockets/infrastructure-rocket'

@@ -1,4 +1,4 @@
-import { eventhub } from '@cdktf/provider-azurerm'
+import { eventhub } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 import { BoosterConfig } from '@boostercloud/framework-types'

@@ -1,6 +1,6 @@
 import { toTerraformName } from '../../helper/utils'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
-import { subnetNetworkSecurityGroupAssociation } from '@cdktf/provider-azurerm'
+import { subnetNetworkSecurityGroupAssociation } from '@cdktn/provider-azurerm'
 
 export class TerraformSubnetSecurity {
   static build({

@@ -1,5 +1,5 @@
-import { TerraformStack } from 'cdktf'
-import { cosmosdbAccount, cosmosdbSqlContainer, cosmosdbSqlDatabase } from '@cdktf/provider-azurerm'
+import { TerraformStack } from 'cdktn'
+import { cosmosdbAccount, cosmosdbSqlContainer, cosmosdbSqlDatabase } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { BoosterConfig } from '@boostercloud/framework-types'
 import {
@@ -8,7 +8,7 @@ import {
   eventsStoreAttributes,
   subscriptionsStoreAttributes,
 } from '@boostercloud/framework-provider-azure'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
+import { AzurermProvider } from '@cdktn/provider-azurerm/lib/provider'
 
 import { MAX_CONTAINER_THROUGHPUT } from '../constants'
 import { ApplicationSynthStack } from '../types/application-synth-stack'

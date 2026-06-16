@@ -1,8 +1,8 @@
-import { TerraformStack } from 'cdktf'
-import { dataAzurermFunctionAppHostKeys, resourceGroup, windowsFunctionApp } from '@cdktf/provider-azurerm'
+import { TerraformStack } from 'cdktn'
+import { dataAzurermFunctionAppHostKeys, resourceGroup, windowsFunctionApp } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../../helper/utils'
-import { AzurermProvider } from '@cdktf/provider-azurerm/lib/provider'
-import { sleep } from '@cdktf/provider-time'
+import { AzurermProvider } from '@cdktn/provider-azurerm/lib/provider'
+import { sleep } from '@cdktn/provider-time'
 
 export class TerraformFunctionAppData {
   static build(

@@ -1,4 +1,4 @@
-import { storageAccount } from '@cdktf/provider-azurerm'
+import { storageAccount } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../helper/utils'
 import { ApplicationSynthStack } from '../types/application-synth-stack'
 

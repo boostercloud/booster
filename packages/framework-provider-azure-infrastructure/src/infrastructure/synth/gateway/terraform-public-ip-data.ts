@@ -1,4 +1,4 @@
-import { dataAzurermPublicIp } from '@cdktf/provider-azurerm'
+import { dataAzurermPublicIp } from '@cdktn/provider-azurerm'
 import { toTerraformName } from '../../helper/utils'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
 

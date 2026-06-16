@@ -1,6 +1,6 @@
 import { toTerraformName } from '../../helper/utils'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
-import { subnet } from '@cdktf/provider-azurerm'
+import { subnet } from '@cdktn/provider-azurerm'
 
 export class TerraformSubnet {
   static build({

@@ -1,7 +1,7 @@
-import { applicationGateway } from '@cdktf/provider-azurerm'
+import { applicationGateway } from '@cdktn/provider-azurerm'
 import { ApplicationSynthStack } from '../../types/application-synth-stack'
 import { USE_WAF } from '../../constants'
-import { ApplicationGatewayConfig } from '@cdktf/provider-azurerm/lib/application-gateway'
+import { ApplicationGatewayConfig } from '@cdktn/provider-azurerm/lib/application-gateway'
 
 const STANDARD_V2 = 'Standard_v2'
 const WAF_V2 = 'WAF_v2'

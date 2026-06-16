@@ -4,7 +4,7 @@ import { AzureStack } from './azure-stack'
 import * as ckdtfTemplate from './templates/cdktf'
 import { renderToFile } from './helper/utils'
 import { getLogger, Promises } from '@boostercloud/framework-common-helpers'
-import { App } from 'cdktf'
+import { App } from 'cdktn'
 import { ZipResource } from './types/zip-resource'
 import { FunctionZip } from './helper/function-zip'
 import { RocketBuilder, RocketZipResource } from './rockets/rocket-builder'
@@ -59,7 +59,7 @@ export class ApplicationBuilder {
 
   private async generateSynthFiles(): Promise<void> {
     const logger = getLogger(this.config, 'ApplicationBuilder#generateSynthFiles')
-    logger.info('Generating cdktf files')
+    logger.info('Generating cdktn files')
     const filesToGenerate: Array<[Array<string>, string]> = [[['cdktf.json'], ckdtfTemplate.template]]
     await Promises.allSettledAndFulfilled(filesToGenerate.map(renderToFile(this.config)))
   }

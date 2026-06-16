@@ -40,18 +40,18 @@
   },
   "dependencies": {
     "tslib": "^2.4.0",
-    "uuid": "11.0.5",
+    "uuid": "11.1.1",
     "@effect-ts/core": "^0.60.4",
     "@effect-ts/node": "~0.39.0",
-    "effect": "3.13.2",
-    "@effect/cli": "0.56.2",
-    "@effect/platform": "0.77.2",
-    "@effect/printer": "0.41.2",
-    "@effect/printer-ansi": "0.41.2",
+    "effect": "3.21.3",
+    "@effect/cli": "0.58.4",
+    "@effect/platform": "0.79.4",
+    "@effect/printer": "0.41.12",
+    "@effect/printer-ansi": "0.41.12",
     "@effect/schema": "0.75.5",
-    "@effect/typeclass": "0.32.2",
+    "@effect/typeclass": "0.32.12",
     "web-streams-polyfill": "~3.3.2",
-    "ws": "8.18.0"
+    "ws": "^8.20.1"
   },
   "devDependencies": {
     "@boostercloud/eslint-config": "workspace:^4.0.2",

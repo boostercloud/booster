@@ -1,8 +1,8 @@
-import { TerraformStack } from 'cdktf'
+import { TerraformStack } from 'cdktn'
 import { toTerraformName } from '../../helper/utils'
-import { sleep } from '@cdktf/provider-time'
-import { TimeProvider } from '@cdktf/provider-time/lib/provider'
-import { ITerraformDependable } from 'cdktf/lib/terraform-dependable'
+import { sleep } from '@cdktn/provider-time'
+import { TimeProvider } from '@cdktn/provider-time/lib/provider'
+import { ITerraformDependable } from 'cdktn/lib/terraform-dependable'
 
 export class TerraformSleep {
   static build(
