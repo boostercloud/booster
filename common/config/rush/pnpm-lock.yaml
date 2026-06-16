@@ -43,7 +43,7 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       ws:
-        specifier: '>=8.20.1 <9.0.0'
+        specifier: ^8.20.1
         version: 8.21.0
     devDependencies:
       '@boostercloud/eslint-config':
@@ -433,7 +433,7 @@ importers:
         specifier: 13.15.26
         version: 13.15.26
       ws:
-        specifier: '>=8.20.1 <9.0.0'
+        specifier: ^8.20.1
         version: 8.21.0
     devDependencies:
       '@boostercloud/eslint-config':
@@ -611,7 +611,7 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       ws:
-        specifier: '>=8.20.1 <9.0.0'
+        specifier: ^8.20.1
         version: 8.21.0
     devDependencies:
       '@apollo/client':
@@ -979,7 +979,7 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       yaml:
-        specifier: '>=1.10.3 <2.0.0'
+        specifier: ^1.10.3
         version: 1.10.3
     devDependencies:
       '@boostercloud/eslint-config':
@@ -1381,7 +1381,7 @@ importers:
         specifier: ^2.4.0
         version: 2.8.1
       ws:
-        specifier: '>=8.20.1 <9.0.0'
+        specifier: ^8.20.1
         version: 8.21.0
     devDependencies:
       '@boostercloud/eslint-config':
@@ -1638,7 +1638,7 @@ importers:
         specifier: ~3.3.2
         version: 3.3.3
       ws:
-        specifier: '>=8.20.1 <9.0.0'
+        specifier: ^8.20.1
         version: 8.21.0
     devDependencies:
       '@boostercloud/eslint-config':
