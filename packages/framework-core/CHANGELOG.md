@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Mon, 23 Mar 2026 19:16:09 GMT and should not be manually modified.
+This log was last generated on Tue, 16 Jun 2026 12:59:47 GMT and should not be manually modified.
+
+## 4.0.3
+Tue, 16 Jun 2026 12:59:47 GMT
+
+### Patches
+
+- Migrates cdktf to cdktn and fixes effect peer deps
 
 ## 4.0.2
 Mon, 23 Mar 2026 19:16:09 GMT
