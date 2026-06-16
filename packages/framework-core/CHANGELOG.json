@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "4.0.3",
+      "tag": "@boostercloud/framework-core_v4.0.3",
+      "date": "Tue, 16 Jun 2026 17:25:19 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Migrates cdktf to cdktn and fixes effect peer deps",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "783b36986e892b266cef92740ef920638f54ec97"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^4.0.2` to `4.0.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^4.0.2` to `4.0.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^4.0.2` to `4.0.3`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^4.0.2` to `4.0.3`"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.0.2",
       "tag": "@boostercloud/framework-core_v4.0.2",
       "date": "Mon, 23 Mar 2026 19:16:09 GMT",
