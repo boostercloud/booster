@@ -25,6 +25,7 @@ describe('new', (): void => {
         expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/common`)
         expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/event-handlers`)
         expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/src/scheduled-commands`)
+        expect(fs.mkdirs).to.have.been.calledWithMatch(`${projectName}/.vscode`)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintignore`)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.eslintrc.js`)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.gitignore`)
@@ -35,6 +36,7 @@ describe('new', (): void => {
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/config/config.ts`)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/src/index.ts`)
         expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.mocharc.yml`)
+        expect(fs.outputFile).to.have.been.calledWithMatch(`${projectName}/.vscode/launch.json`)
       }
 
       const defaultProjectInitializerConfig = {
