@@ -325,8 +325,8 @@ describe('the `Booster` class', () => {
       const config = new BoosterConfig('test')
       config.provider = {} as ProviderLibrary
 
-      it('the `entity` function calls to the `fetchEntitySnapshot` method in the EventStore', async () => {
-        replace(EventStore.prototype, 'fetchEntitySnapshot', fake.returns({ value: { id: '42' } }))
+      it('the `entity` function calls to the `fetchAndCacheEntitySnapshot` method in the EventStore', async () => {
+        replace(EventStore.prototype, 'fetchAndCacheEntitySnapshot', fake.returns({ value: { id: '42' } }))
 
         class SomeEntity {
           public constructor(readonly id: UUID) {}
@@ -334,11 +334,11 @@ describe('the `Booster` class', () => {
         const snapshot = await Booster.entity(SomeEntity, '42')
 
         expect(snapshot).to.be.deep.equal({ id: '42' })
-        expect(EventStore.prototype.fetchEntitySnapshot).to.have.been.calledOnceWith('SomeEntity', '42')
+        expect(EventStore.prototype.fetchAndCacheEntitySnapshot).to.have.been.calledOnceWith('SomeEntity', '42')
       })
 
       it('the entity function has an instance method', async () => {
-        replace(EventStore.prototype, 'fetchEntitySnapshot', fake.returns({ id: '42' }))
+        replace(EventStore.prototype, 'fetchAndCacheEntitySnapshot', fake.returns({ id: '42' }))
 
         class SomeEntity {
           public constructor(readonly id: UUID) {}

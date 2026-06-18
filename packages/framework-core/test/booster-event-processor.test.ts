@@ -173,7 +173,7 @@ describe('BoosterEventProcessor', () => {
         const boosterEventProcessor = BoosterEventProcessor as any
         const eventStore = createStubInstance(EventStore)
         const readModelStore = createStubInstance(ReadModelStore)
-        eventStore.fetchEntitySnapshot = fake.resolves({}) as any
+        eventStore.fetchAndCacheEntitySnapshot = fake.resolves({}) as any
 
         await boosterEventProcessor.snapshotAndUpdateReadModels(
           config,
@@ -183,14 +183,14 @@ describe('BoosterEventProcessor', () => {
           readModelStore
         )
 
-        expect(eventStore.fetchEntitySnapshot).to.have.been.called
-        expect(eventStore.fetchEntitySnapshot).to.have.been.calledOnceWith(someEvent.entityTypeName, someEvent.entityID)
+        expect(eventStore.fetchAndCacheEntitySnapshot).to.have.been.called
+        expect(eventStore.fetchAndCacheEntitySnapshot).to.have.been.calledOnceWith(someEvent.entityTypeName, someEvent.entityID)
       })
 
       it('projects the entity state to the corresponding read models', async () => {
         const boosterEventProcessor = BoosterEventProcessor as any
         const eventStore = createStubInstance(EventStore)
-        eventStore.fetchEntitySnapshot = fake.resolves(someEntitySnapshot) as any
+        eventStore.fetchAndCacheEntitySnapshot = fake.resolves(someEntitySnapshot) as any
 
         const readModelStore = createStubInstance(ReadModelStore)
 
@@ -211,7 +211,7 @@ describe('BoosterEventProcessor', () => {
           const eventStore = createStubInstance(EventStore)
           const readModelStore = createStubInstance(ReadModelStore)
           const error = new Error('some error')
-          eventStore.fetchEntitySnapshot = fake.rejects(error) as any
+          eventStore.fetchAndCacheEntitySnapshot = fake.rejects(error) as any
 
           await expect(
             boosterEventProcessor.snapshotAndUpdateReadModels(

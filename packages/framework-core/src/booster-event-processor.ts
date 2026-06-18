@@ -76,7 +76,7 @@ export class BoosterEventProcessor {
     const logger = getLogger(config, 'BoosterEventDispatcher#snapshotAndUpdateReadModels')
     let entitySnapshot = undefined
     try {
-      entitySnapshot = await eventStore.fetchEntitySnapshot(entityName, entityID)
+      entitySnapshot = await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
     } catch (e) {
       logger.error('Error while fetching or reducing entity snapshot:', e)
     }

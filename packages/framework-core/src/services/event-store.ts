@@ -40,8 +40,8 @@ export class EventStore {
    * snapshot storing it at the end of the process.
    */
   @Trace(TraceActionTypes.FETCH_ENTITY_SNAPSHOT)
-  public async fetchEntitySnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
-    const logger = getLogger(this.config, 'EventStore#fetchEntitySnapshot')
+  public async fetchAndCacheEntitySnapshot(entityName: string, entityID: UUID): Promise<EntitySnapshotEnvelope | undefined> {
+    const logger = getLogger(this.config, 'EventStore#fetchAndCacheEntitySnapshot')
     logger.debug(`Fetching snapshot for entity ${entityName} with ID ${entityID}`)
     const latestSnapshotEnvelope = await this.loadLatestSnapshot(entityName, entityID)
 

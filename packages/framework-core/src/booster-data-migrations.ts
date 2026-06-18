@@ -33,7 +33,7 @@ export class BoosterDataMigrations {
     const sortedConfiguredMigrations = BoosterDataMigrations.sortConfiguredMigrations(configuredMigrations)
     const eventStore = new EventStore(config)
     for (const configuredMigration of Object.values(sortedConfiguredMigrations)) {
-      const migrationEntityForConfiguredMigration = await eventStore.fetchEntitySnapshot(
+      const migrationEntityForConfiguredMigration = await eventStore.fetchAndCacheEntitySnapshot(
         BoosterDataMigrationEntity.name,
         configuredMigration.class.name
       )
