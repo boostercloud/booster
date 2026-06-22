@@ -32,9 +32,7 @@ export default class Build extends BaseCommand {
       flags: { verbose },
     } = await this.parse(Build)
 
-    if (verbose) {
-      console.error(fullError.message)
-    }
+    console.error(fullError.message)
 
     return super.catch(fullError)
   }
