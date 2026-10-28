@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkwebsite||=[]).push([[8947],{6600(e){e.exports=JSON.parse('{"authors":[{"name":"Nick Tchayka","title":"Booster Core Team","url":"https://github.com/NickSeagull","imageURL":"https://github.com/NickSeagull.png","key":"NickSeagull","page":null,"count":8}]}')}}]);

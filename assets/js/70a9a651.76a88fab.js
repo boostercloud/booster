@@ -1,0 +1,1 @@
+"use strict";(globalThis.webpackChunkwebsite||=[]).push([[4343],{6680(e){e.exports=JSON.parse('{"categoryGeneratedIndex":{"title":"Features","slug":"/category/features","permalink":"/category/features","sidebar":"docs","navigation":{"previous":{"title":"Queries","permalink":"/architecture/queries"},"next":{"title":"The event stream","permalink":"/features/event-stream"}}}}')}}]);
