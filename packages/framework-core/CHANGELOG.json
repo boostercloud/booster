@@ -2,6 +2,34 @@
   "name": "@boostercloud/framework-core",
   "entries": [
     {
+      "version": "4.0.4",
+      "tag": "@boostercloud/framework-core_v4.0.4",
+      "date": "Wed, 28 Oct 2026 17:14:02 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Fix critical and high dependency vulnerabilities by raising transitive security floors in the Rush pnpmfile and regenerating the lockfile",
+            "author": "Mario Castro Squella <mario@theagilemonkeys.com>",
+            "commit": "cb909def605fa57b3c76c6a97689d4e6bda00f89"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-common-helpers\" from `^4.0.3` to `4.0.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/framework-types\" from `^4.0.3` to `4.0.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/metadata-booster\" from `^4.0.3` to `4.0.4`"
+          },
+          {
+            "comment": "Updating dependency \"@boostercloud/eslint-config\" from `^4.0.3` to `4.0.4`"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.0.3",
       "tag": "@boostercloud/framework-core_v4.0.3",
       "date": "Tue, 16 Jun 2026 17:34:30 GMT",
