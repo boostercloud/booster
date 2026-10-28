@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Tue, 16 Jun 2026 17:34:30 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Oct 2026 17:04:29 GMT and should not be manually modified.
+
+## 4.0.4
+Wed, 28 Oct 2026 17:04:29 GMT
+
+### Patches
+
+- Fix critical and high dependency vulnerabilities by raising transitive security floors in the Rush pnpmfile and regenerating the lockfile
 
 ## 4.0.3
 Tue, 16 Jun 2026 17:34:30 GMT
