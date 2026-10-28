@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix critical and high dependency vulnerabilities by raising transitive security floors in the Rush pnpmfile and regenerating the lockfile",
+      "type": "patch",
+      "packageName": "@boostercloud/framework-core"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core",
+  "email": "mario@theagilemonkeys.com"
+}
