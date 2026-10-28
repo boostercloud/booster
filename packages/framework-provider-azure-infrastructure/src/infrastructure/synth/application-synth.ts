@@ -54,6 +54,7 @@ export class ApplicationSynth {
     const azurermProvider = new AzurermProvider(terraformStack, 'azureFeature', {
       features: [{} as AzurermProviderFeatures],
       subscriptionId: configuration.subscriptionId,
+      resourceProviderRegistrations: 'legacy', // azurerm 5.x defaults to 'none', which breaks deploys to fresh subscriptions
     })
     const appPrefix = buildAppPrefix(this.config)
     const resourceGroupName = createResourceGroupName(this.config.appName, this.config.environmentName)

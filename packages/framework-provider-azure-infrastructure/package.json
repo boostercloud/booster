@@ -20,7 +20,7 @@
     "url": "git+https://github.com/boostercloud/booster.git"
   },
   "engines": {
-    "node": ">=22.0.0 <23.0.0"
+    "node": ">=22.23.4 <23.0.0"
   },
   "dependencies": {
     "@azure/arm-appservice": "^16.0.0",
