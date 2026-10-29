@@ -9,14 +9,7 @@ export class TerraformEventHub {
   private static readonly DEFAULT_MESSAGE_RETENTION = 1
 
   static build(
-    {
-      terraformStack,
-      azureProvider,
-      appPrefix,
-      resourceGroupName,
-      eventHubNamespace,
-      eventHubName,
-    }: ApplicationSynthStack,
+    { terraformStack, azureProvider, appPrefix, eventHubNamespace, eventHubName }: ApplicationSynthStack,
     config: BoosterConfig
   ): eventhub.Eventhub {
     if (!eventHubNamespace) {
@@ -25,9 +18,8 @@ export class TerraformEventHub {
     const idApiManagement = toTerraformName(appPrefix, 'eh')
     return new eventhub.Eventhub(terraformStack, idApiManagement, {
       name: eventHubName,
-      resourceGroupName: resourceGroupName,
       provider: azureProvider,
-      namespaceName: eventHubNamespace.name,
+      namespaceId: eventHubNamespace.id,
       partitionCount: config.eventStreamConfiguration.parameters?.partitionCount ?? this.DEFAULT_PARTITION_COUNT, // Cannot be changed unless Eventhub Namespace SKU is Premium
       messageRetention: config.eventStreamConfiguration.parameters?.messageRetention ?? this.DEFAULT_MESSAGE_RETENTION, // Specifies the number of days to retain the events for this Event Hub.
     })
