@@ -1,6 +1,13 @@
 # Change Log - @boostercloud/framework-core
 
-This log was last generated on Wed, 28 Oct 2026 17:14:02 GMT and should not be manually modified.
+This log was last generated on Thu, 29 Oct 2026 16:42:13 GMT and should not be manually modified.
+
+## 4.1.0
+Thu, 29 Oct 2026 16:42:13 GMT
+
+### Minor changes
+
+- Bump cdktn and cdktn-cli to 0.25.0 and the prebuilt providers to azurerm 19.0.0, null 16.0.0 and time 15.0.0, which moves Azure deployments to the Terraform azurerm 5.x provider and fixes the high severity advisories in the cdktn 0.23 toolchain for consumers
 
 ## 4.0.4
 Wed, 28 Oct 2026 17:14:02 GMT
