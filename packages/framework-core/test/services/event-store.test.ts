@@ -150,7 +150,7 @@ describe('EventStore', () => {
   }
 
   describe('public methods', () => {
-    describe('fetchEntitySnapshot', () => {
+    describe('fetchAndCacheEntitySnapshot', () => {
       it('properly binds `this` to the entityReducer', async () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const eventStore = new EventStore(config) as any
@@ -166,7 +166,7 @@ describe('EventStore', () => {
 
         const entityName = AnEntity.name
         const entityID = '42'
-        await expect(eventStore.fetchEntitySnapshot(entityName, entityID)).to.be.eventually.fulfilled
+        await expect(eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)).to.be.eventually.fulfilled
       })
 
       context('when there is a snapshot but no pending events', () => {
@@ -182,7 +182,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          const entity = await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(
@@ -237,7 +237,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          const entity = await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(
@@ -314,7 +314,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          const entity = await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(
@@ -381,7 +381,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          const entity = await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(entityName, entityID, originOfTime)
@@ -412,7 +412,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          const entity = await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(entityName, entityID, originOfTime)
@@ -474,7 +474,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          await eventStore.fetchEntitySnapshot(entityName, entityID)
+          await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
 
@@ -555,7 +555,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          await expect(eventStore.fetchEntitySnapshot(entityName, entityID)).to.eventually.be.rejectedWith(
+          await expect(eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)).to.eventually.be.rejectedWith(
             'Error on reducer'
           )
 
@@ -622,7 +622,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          const entity = await eventStore.fetchEntitySnapshot(entityName, entityID)
+          const entity = await eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
 
@@ -691,7 +691,7 @@ describe('EventStore', () => {
 
           const entityName = AnEntity.name
           const entityID = '42'
-          await expect(eventStore.fetchEntitySnapshot(entityName, entityID)).to.eventually.be.fulfilled
+          await expect(eventStore.fetchAndCacheEntitySnapshot(entityName, entityID)).to.eventually.be.fulfilled
 
           expect(eventStore.loadLatestSnapshot).to.have.been.calledOnceWith(entityName, entityID)
           expect(eventStore.loadEventStreamSince).to.have.been.calledOnceWith(entityName, entityID, originOfTime)
