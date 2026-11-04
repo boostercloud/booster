@@ -148,6 +148,28 @@ At commit `e22abc405232945f8e17598d1f6a815e6f95cb85`, the local foundation passe
 HTTP/GraphQL startup was exercised. These results apply only to that existing
 implementation and do not close the Azure, compatibility or rocket items above.
 
+## Concrete baseline contracts to preserve
+
+- Data-migration jobs have ordered execution, `RUNNING`/`FINISHED` state,
+  duration and lifecycle events. Returning from `start` does not itself mean
+  completion: preserve the explicit `BoosterDataMigrationFinished` mechanism.
+  Include `migrateEntity` with prior name/ID and replacement entity, and touch.
+- Match configured authentication claims, including the TypeScript default
+  `custom:role`; the foundation's fixed `roles` array alone is insufficient.
+- Azure Web PubSub uses hub `booster`, `system/connect`, `user/message` and
+  `system/disconnect`, with Cosmos-driven notifications and persisted TTL state.
+- Webhooks use `/webhook/<route>`, nested routes, GET/POST, `route` and legacy
+  `origin`, headers/query/params/rawBody/JSON/multipart, and text/JSON/binary
+  responses with headers. Preserve Booster authorization and Register events.
+- File uploads expose `presignedPut`, `presignedGet` and `list`, support multiple
+  configured stores/containers/directories and defaults, and use Azure identity
+  plus user-delegation SAS rather than embedding account credentials.
+  Verify SAS permissions/expiry, metadata, listing and actual transfers.
+  Blob triggers propagate `UploadedFileEvent` → `UploadedFileEntity` → projections,
+  respecting container/directory/glob selection and duplicate notifications.
+  Provision the required storage permissions, including the baseline's
+  `Storage Blob Data Contributor` responsibilities.
+
 ## Resume and blocker protocol
 
 1. Read this file, `COMPATIBILITY.md`, `VALIDATION.md`, current branch/status and
