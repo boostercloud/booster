@@ -27,7 +27,8 @@ public final class ProjectGenerator {
     write(main.resolve("Application.java"), application(packageName));
     write(main.resolve("CartDomain.java"), domain(packageName));
     write(tests.resolve("CartDomainTest.java"), test(packageName));
-    write(root.resolve(".gitignore"), "target/\n.booster-java/\n");
+    write(root.resolve(".gitignore"), "target/\n.booster-java/\n.booster-java-*.lock\n");
+    write(root.resolve("local.json"), "{\"applicationClass\":\"" + packageName + ".Application\",\"dataDirectory\":\".booster-java\",\"host\":\"127.0.0.1\",\"port\":3000}\n");
     write(root.resolve("README.md"), """
         # Booster Java application
 
@@ -39,11 +40,18 @@ public final class ProjectGenerator {
         mvn exec:java
         ```
 
-        The server binds to loopback on port 3000 and stores events under `.booster-java`.
-        Stop with Ctrl+C. Restarting replays the event journal and restores projections.
+        The complete local provider binds to loopback on port 3000 and stores events,
+        snapshots, read models and migration progress under `.booster-java`.
+        Stop with Ctrl+C. Restarting restores durable state and resumes event handlers.
         Configure `-Dbooster.port=3001` or `-Dbooster.data=/path/to/data` as needed.
 
-        POST GraphQL operations to `/graphql`; GET `/health` for health status.
+        POST GraphQL operations to `/graphql`; use the `graphql-ws` WebSocket protocol
+        on the same path for subscriptions. GET `/health` checks actual local services.
+        `local.json` also supports the Booster CLI lifecycle: local start, status,
+        stop, rebuild and explicit nuke (keep the application's classes on the classpath).
+        For example, `mvn exec:java -Dexec.mainClass=io.boostercloud.booster.cli.BoosterCli
+        -Dexec.args='local status --config local.json'` inspects a running application.
+        Register rockets in `Application.configure` and calendar jobs in `schedules()`.
         The sample intentionally permits anonymous access. Replace `publicAccess()`
         with appropriate access policies and configure verified authentication for
         your application.
@@ -66,7 +74,7 @@ public final class ProjectGenerator {
                  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
           <modelVersion>4.0.0</modelVersion>
           <groupId>%s</groupId><artifactId>my-booster-app</artifactId><version>1.0-SNAPSHOT</version>
-          <properties><maven.compiler.release>27</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding></properties>
+          <properties><maven.compiler.release>27</maven.compiler.release><project.build.sourceEncoding>UTF-8</project.build.sourceEncoding><exec.mainClass>%s.Application</exec.mainClass></properties>
           <dependencies>
             <dependency><groupId>io.boostercloud</groupId><artifactId>booster-java</artifactId><version>0.1.0-SNAPSHOT</version></dependency>
             <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>5.13.4</version><scope>test</scope></dependency>
@@ -74,7 +82,7 @@ public final class ProjectGenerator {
           <build><plugins>
             <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.0</version></plugin>
             <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version></plugin>
-            <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.5.1</version><configuration><mainClass>%s.Application</mainClass></configuration></plugin>
+            <plugin><groupId>org.codehaus.mojo</groupId><artifactId>exec-maven-plugin</artifactId><version>3.5.1</version><configuration><mainClass>${exec.mainClass}</mainClass></configuration></plugin>
           </plugins></build>
         </project>
         """.formatted(packageName, packageName);
@@ -85,28 +93,17 @@ public final class ProjectGenerator {
         package %s;
 
         import io.boostercloud.booster.core.Booster;
-        import io.boostercloud.booster.store.JdbcEventStore;
-        import io.boostercloud.booster.transport.BoosterHttpServer;
-        import java.nio.file.Files;
-        import java.nio.file.Path;
-        import java.util.concurrent.CountDownLatch;
+        import io.boostercloud.booster.local.*;
 
-        public final class Application {
+        public final class Application implements LocalApplication {
+          public Application() {}
+          @Override public Booster create(LocalProvider provider) {
+            return CartDomain.create(provider.eventStore(), provider.stateStore());
+          }
           public static void main(String[] args) throws Exception {
-            Path data = Path.of(System.getProperty("booster.data", ".booster-java"));
-            Files.createDirectories(data);
             int port = Integer.parseInt(System.getProperty("booster.port", "3000"));
-            Booster booster = CartDomain.create(new JdbcEventStore(data.resolve("events")));
-            BoosterHttpServer server = new BoosterHttpServer(booster, port);
-            server.start();
-            CountDownLatch stopped = new CountDownLatch(1);
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-              server.close();
-              booster.close();
-              stopped.countDown();
-            }));
-            System.out.println("Booster application listening on port " + server.port());
-            stopped.await();
+            LocalHost.run(new LocalConfiguration(Application.class.getName(),
+                System.getProperty("booster.data", ".booster-java"), "127.0.0.1", port), System.out);
           }
         }
         """.formatted(packageName);
@@ -128,7 +125,10 @@ public final class ProjectGenerator {
           public record Receipt(String id) {}
 
           public static Booster create(EventStore store) {
-            return Booster.builder(store)
+            return create(store, new io.boostercloud.booster.core.InMemoryStateStore());
+          }
+          public static Booster create(EventStore store, io.boostercloud.booster.core.StateStore state) {
+            return Booster.builder(store).stateStore(state)
                 .entity(Cart.class)
                 .event(ItemAdded.class, ItemAdded::cartId, Cart.class, (event, previous) -> {
                   int quantity = Math.addExact(previous == null ? 0 : previous.quantity(), event.quantity());

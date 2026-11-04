@@ -50,10 +50,34 @@ public final class InMemoryEventStore implements EventStore {
     checkOpen(); if (afterVersion < 0) throw new IllegalArgumentException("Negative stream version");
     return journal.stream().filter(e -> e.event().stream().equals(stream) && e.streamVersion() > afterVersion).toList();
   }
+  @Override public synchronized CommitResult commitAtPosition(String requestId, String fingerprint,
+      Map<StreamId,Long> expectedVersions, List<PendingEvent> events, JsonNode result, long expectedPosition) {
+    checkOpen();
+    if (expectedPosition < 0) throw new IllegalArgumentException("Negative expected journal position");
+    if (!receipts.containsKey(requestId) && journal.size() != expectedPosition)
+      throw new OptimisticConcurrencyException("Journal changed since validation");
+    return commit(requestId, fingerprint, expectedVersions, events, result);
+  }
   @Override public synchronized List<StoredEvent> readAll(long afterPosition, int limit) {
     checkOpen(); if (afterPosition < 0 || limit < 1) throw new IllegalArgumentException("Invalid journal window");
     return journal.stream().filter(e -> e.position() > afterPosition).limit(limit).toList();
   }
   @Override public synchronized long lastPosition() { checkOpen(); return journal.size(); }
+  @Override public synchronized boolean redactEventPayload(String eventId, java.time.Instant deletedAt) {
+    checkOpen(); Objects.requireNonNull(eventId); Objects.requireNonNull(deletedAt);
+    for (int index = 0; index < journal.size(); index++) {
+      var previous = journal.get(index);
+      if (!previous.event().id().equals(eventId)) continue;
+      if (previous.event().metadata().containsKey("deletedAt") && previous.event().payload().isObject() && previous.event().payload().isEmpty()) return true;
+      var original = previous.event(); var metadata = new HashMap<>(original.metadata()); metadata.put("deletedAt", deletedAt.toString());
+      var redacted = new StoredEvent(previous.position(), previous.streamVersion(), new PendingEvent(original.id(), original.stream(), original.type(),
+          original.schemaVersion(), Json.MAPPER.createObjectNode(), original.timestamp(), original.user(), metadata));
+      journal.set(index, redacted);
+      receipts.replaceAll((id, receipt) -> new CommandReceipt(receipt.requestId(), receipt.fingerprint(), receipt.result(),
+          receipt.events().stream().map(event -> event.event().id().equals(eventId) ? redacted : event).toList()));
+      return true;
+    }
+    return false;
+  }
   @Override public synchronized void close() { closed = true; }
 }

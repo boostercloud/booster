@@ -29,6 +29,17 @@ class FiltersTest {
       assertThrows(BoosterException.class, () -> ReadModelSearch.search(Map.of(), options), invalid);
     }
   }
+  @Test void typedObjectExistenceCanBeCombinedWithNestedFilters() {
+    assertTrue(Filters.matches(record, json("""
+        {"isDefined":true,"profile":{"isDefined":true,"city":{"eq":"London"}}}""")));
+    assertFalse(Filters.matches(record, json("""
+        {"profile":{"isDefined":false,"city":{"eq":"London"}}}""")));
+    assertTrue(Filters.matches(record, json("""
+        {"missing":{"isDefined":false,"not":{"city":{"eq":"London"}}}}""")));
+    assertThrows(BoosterException.class, () -> Filters.matches(record, json("""
+        {"profile":{"isDefined":true,"eq":"bad","city":{"eq":"London"}}}""")));
+    assertThrows(BoosterException.class, () -> Filters.matches(record, json("{\"isDefined\":1}")));
+  }
   @Test void regexHasLinearTimeBehaviorAndRejectsUnsupportedBackreferences() {
     JsonNode longValue = Json.MAPPER.valueToTree(Map.of("value", "a".repeat(100_000) + "!"));
     assertTimeoutPreemptively(Duration.ofSeconds(2), () -> assertFalse(Filters.matches(longValue, json("""

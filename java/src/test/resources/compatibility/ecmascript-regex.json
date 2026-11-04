@@ -1,0 +1,322 @@
+{
+  "oracle": "v24.22.1",
+  "expression": "new RegExp(pattern, ignoreCase ? 'i' : '').test(input)",
+  "fixtures": [
+    {
+      "name": "positive lookahead",
+      "pattern": "foo(?=bar)",
+      "input": "foobar",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "negative lookahead",
+      "pattern": "foo(?!bar)",
+      "input": "foobaz",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "positive lookbehind",
+      "pattern": "(?<=foo)bar",
+      "input": "foobar",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "variable lookbehind",
+      "pattern": "(?<=a+)b",
+      "input": "aaab",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "negative lookbehind",
+      "pattern": "(?<!foo)bar",
+      "input": "xxbar",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "backreference",
+      "pattern": "^(a+)\\1$",
+      "input": "aaaa",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "backreference failure",
+      "pattern": "^(a+)\\1$",
+      "input": "aaa",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "named group",
+      "pattern": "(?<word>\\w+)\\s+\\k<word>",
+      "input": "hello hello",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "unicode group name",
+      "pattern": "(?<ñ>a)\\k<ñ>",
+      "input": "aa",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "unmatched backreference",
+      "pattern": "^(a|(b))\\2$",
+      "input": "a",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "forward backreference",
+      "pattern": "^\\1(a)$",
+      "input": "a",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "capture reset",
+      "pattern": "(a|(b))+\\2c",
+      "input": "abc",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "decimal legacy escape",
+      "pattern": "\\8",
+      "input": "8",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "legacy octal",
+      "pattern": "\\141",
+      "input": "a",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "identity escape",
+      "pattern": "\\a",
+      "input": "a",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "escaped delimiter",
+      "pattern": "a/b",
+      "input": "a/b",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "control escape",
+      "pattern": "\\cA",
+      "input": "\u0001",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "legacy brace unicode",
+      "pattern": "\\u{61}",
+      "input": "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "legacy property escape",
+      "pattern": "\\p{Letter}",
+      "input": "p{Letter}",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "newline dot",
+      "pattern": "^.$",
+      "input": "\n",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "line separator dot",
+      "pattern": "^.$",
+      "input": " ",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "paragraph separator dot",
+      "pattern": "^.$",
+      "input": " ",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "end anchor newline",
+      "pattern": "x$",
+      "input": "x\n",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "astral single dot",
+      "pattern": "^.$",
+      "input": "😀",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "astral two dots",
+      "pattern": "^..$",
+      "input": "😀",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "lone surrogate",
+      "pattern": "^.$",
+      "input": "\ud800",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "ascii insensitive",
+      "pattern": "abc",
+      "input": "ABC",
+      "ignoreCase": true,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "unicode insensitive",
+      "pattern": "é",
+      "input": "É",
+      "ignoreCase": true,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "nonunicode long s",
+      "pattern": "s",
+      "input": "ſ",
+      "ignoreCase": true,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "nonunicode kelvin",
+      "pattern": "k",
+      "input": "K",
+      "ignoreCase": true,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "word class ascii",
+      "pattern": "^\\w+$",
+      "input": "mañana",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
+    },
+    {
+      "name": "word boundary",
+      "pattern": "\\bword\\b",
+      "input": "word!",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "whitespace BOM",
+      "pattern": "^\\s$",
+      "input": "﻿",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "empty regex",
+      "pattern": "",
+      "input": "anything",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "empty input",
+      "pattern": "^$",
+      "input": "",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "syntax unterminated class",
+      "pattern": "[",
+      "input": "x",
+      "ignoreCase": false,
+      "valid": false
+    },
+    {
+      "name": "syntax lookbehind",
+      "pattern": "(?<a",
+      "input": "x",
+      "ignoreCase": false,
+      "valid": false
+    },
+    {
+      "name": "syntax Java inline flag",
+      "pattern": "(?i:a)",
+      "input": "a",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "syntax possessive quantifier",
+      "pattern": "a++",
+      "input": "aaa",
+      "ignoreCase": false,
+      "valid": false
+    },
+    {
+      "name": "syntax unknown named ref",
+      "pattern": "(?<x>a)\\k<y>",
+      "input": "aa",
+      "ignoreCase": false,
+      "valid": false
+    }
+  ]
+}

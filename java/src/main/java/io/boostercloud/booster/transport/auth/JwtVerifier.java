@@ -21,13 +21,16 @@ import java.util.Set;
 /**
  * Verifies compact, signed JWTs using a configured RSA public key.
  *
- * <p>Only RS256 is accepted. Every token must have an issuer, audience, subject,
+ * <p>Only RS256 is accepted. By default every token must have an issuer, audience, subject,
  * and integral expiration time. Times use the supplied clock with no implicit
  * clock skew allowance. No key URL or other untrusted header triggers a network
- * request. Key distribution and rotation belong to the application configuration.
+ * request. The explicit {@link #boosterCompatible(RSAPublicKey, String)} profile follows
+ * Booster's issuer-only configuration: audience is not checked, subject and expiry are
+ * optional, present expiry/not-before dates are checked, and issued-at is informational.
  */
-public final class JwtVerifier {
+public final class JwtVerifier implements TokenVerifier {
     public static final int MAX_TOKEN_LENGTH = 8192;
+    public static final String DEFAULT_ROLES_CLAIM = "custom:role";
 
     private static final ObjectMapper JSON = new ObjectMapper(JsonFactory.builder()
             .enable(StreamReadFeature.STRICT_DUPLICATE_DETECTION)
@@ -41,19 +44,47 @@ public final class JwtVerifier {
     private final String issuer;
     private final String audience;
     private final Clock clock;
+    private final String rolesClaim;
+    private final boolean boosterCompatible;
 
     public JwtVerifier(RSAPublicKey publicKey, String issuer, String audience) {
         this(publicKey, issuer, audience, Clock.systemUTC());
     }
 
     public JwtVerifier(RSAPublicKey publicKey, String issuer, String audience, Clock clock) {
+        this(publicKey, issuer, audience, DEFAULT_ROLES_CLAIM, clock);
+    }
+
+    public JwtVerifier(RSAPublicKey publicKey, String issuer, String audience, String rolesClaim) {
+        this(publicKey, issuer, audience, rolesClaim, Clock.systemUTC());
+    }
+
+    public JwtVerifier(RSAPublicKey publicKey, String issuer, String audience, String rolesClaim, Clock clock) {
+        this(publicKey, issuer, audience, rolesClaim, clock, false);
+    }
+
+    /** Opt in to the TypeScript Booster issuer-only claim contract, retaining RSA signature validation. */
+    public static JwtVerifier boosterCompatible(RSAPublicKey publicKey, String issuer) {
+        return boosterCompatible(publicKey, issuer, DEFAULT_ROLES_CLAIM, Clock.systemUTC());
+    }
+    public static JwtVerifier boosterCompatible(RSAPublicKey publicKey, String issuer, String rolesClaim) {
+        return boosterCompatible(publicKey, issuer, rolesClaim, Clock.systemUTC());
+    }
+    public static JwtVerifier boosterCompatible(RSAPublicKey publicKey, String issuer, String rolesClaim, Clock clock) {
+        return new JwtVerifier(publicKey, issuer, null, rolesClaim, clock, true);
+    }
+
+    private JwtVerifier(RSAPublicKey publicKey, String issuer, String audience, String rolesClaim, Clock clock,
+                        boolean boosterCompatible) {
         this.publicKey = Objects.requireNonNull(publicKey, "publicKey");
         if (publicKey.getModulus().bitLength() < 2048) {
             throw new IllegalArgumentException("JWT RSA key must contain at least 2048 bits");
         }
         this.issuer = requiredConfiguration(issuer, "issuer");
-        this.audience = requiredConfiguration(audience, "audience");
+        this.audience = boosterCompatible ? null : requiredConfiguration(audience, "audience");
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.rolesClaim = requiredConfiguration(rolesClaim, "roles claim");
+        this.boosterCompatible = boosterCompatible;
     }
 
     /** Accepts the compact JWT itself, without the HTTP Bearer prefix. */
@@ -94,21 +125,22 @@ public final class JwtVerifier {
 
             JsonNode claims = JSON.readTree(BASE64.decode(parts[1]));
             if (!claims.isObject() || !issuer.equals(requiredText(claims, "iss"))
-                    || !validAudience(claims.get("aud"))) {
+                    || !boosterCompatible && !validAudience(claims.get("aud"))) {
                 throw new AuthenticationException();
             }
-            String subject = requiredText(claims, "sub");
+            String subject = boosterCompatible ? optionalSubject(claims) : requiredText(claims, "sub");
             long now = clock.instant().getEpochSecond();
-            if (now >= requiredTimestamp(claims, "exp")) {
-                throw new AuthenticationException();
+            if (boosterCompatible) {
+                if (claims.has("exp") && numericTimestamp(claims, "exp").compareTo(java.math.BigDecimal.valueOf(now)) <= 0)
+                    throw new AuthenticationException();
+                if (claims.has("nbf") && numericTimestamp(claims, "nbf").compareTo(java.math.BigDecimal.valueOf(now)) > 0)
+                    throw new AuthenticationException();
+            } else {
+                if (now >= requiredTimestamp(claims, "exp")) throw new AuthenticationException();
+                if (claims.has("nbf") && now < requiredTimestamp(claims, "nbf")) throw new AuthenticationException();
+                if (claims.has("iat") && now < requiredTimestamp(claims, "iat")) throw new AuthenticationException();
             }
-            if (claims.has("nbf") && now < requiredTimestamp(claims, "nbf")) {
-                throw new AuthenticationException();
-            }
-            if (claims.has("iat") && now < requiredTimestamp(claims, "iat")) {
-                throw new AuthenticationException();
-            }
-            return new VerifiedToken(subject, roles(claims.get("roles")), JSON.convertValue(claims, CLAIMS));
+            return new VerifiedToken(subject, roles(claims.get(rolesClaim)), JSON.convertValue(claims, CLAIMS), JSON.convertValue(header, CLAIMS));
         } catch (Exception failure) {
             // Never include token text, cryptographic details, or claim values in public errors.
             throw new AuthenticationException();
@@ -135,16 +167,22 @@ public final class JwtVerifier {
         return matched;
     }
 
-    private static Set<String> roles(JsonNode value) {
-        if (value == null) {
+    private Set<String> roles(JsonNode value) {
+        if (value == null || value.isNull()) {
             return Set.of();
         }
-        if (!value.isArray() || value.size() > 64) {
+        if (value.isTextual()) {
+            if (boosterCompatible && value.textValue().isEmpty()) return Set.of();
+            if (!boosterCompatible && (value.textValue().isBlank() || value.textValue().length() > 256)) throw new AuthenticationException();
+            return Set.of(value.textValue());
+        }
+        if (boosterCompatible && (value.isBoolean() && !value.booleanValue() || value.isNumber() && value.decimalValue().signum() == 0)) return Set.of();
+        if (!value.isArray() || !boosterCompatible && value.size() > 64) {
             throw new AuthenticationException();
         }
         var roles = new LinkedHashSet<String>();
         for (JsonNode entry : value) {
-            if (!entry.isTextual() || entry.textValue().isBlank() || entry.textValue().length() > 256) {
+            if (!entry.isTextual() || !boosterCompatible && (entry.textValue().isBlank() || entry.textValue().length() > 256)) {
                 throw new AuthenticationException();
             }
             roles.add(entry.textValue());
@@ -158,6 +196,18 @@ public final class JwtVerifier {
             throw new AuthenticationException();
         }
         return value.textValue();
+    }
+
+    private static String optionalSubject(JsonNode claims) {
+        JsonNode subject = claims.get("sub");
+        if (subject == null || subject.isNull()) return null;
+        if (!subject.isTextual()) throw new AuthenticationException();
+        return subject.textValue();
+    }
+    private static java.math.BigDecimal numericTimestamp(JsonNode claims, String name) {
+        JsonNode value = claims.get(name);
+        if (value == null || !value.isNumber() || !Double.isFinite(value.doubleValue())) throw new AuthenticationException();
+        return value.decimalValue();
     }
 
     private static long requiredTimestamp(JsonNode node, String name) {

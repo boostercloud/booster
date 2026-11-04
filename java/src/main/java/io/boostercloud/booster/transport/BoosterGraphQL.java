@@ -25,6 +25,7 @@ import java.util.function.Predicate;
 /** Generated GraphQL API for registered commands, queries and read models. */
 public final class BoosterGraphQL {
     private static final String CONTEXT = "booster.request";
+    private static final String EXTERNAL_CHANGE = "booster.subscriptionChange";
     private final GraphQL graphQL;
     private final GraphQLSchema schema;
 
@@ -46,8 +47,7 @@ public final class BoosterGraphQL {
             types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Mutation", operation.name()), (DataFetcher<Object>) env -> {
                 RequestContext original = context(env);
                 // Distinguish multiple top-level mutation fields while keeping retries idempotent.
-                RequestContext request = new RequestContext(original.requestId() + ":" + env.getExecutionStepInfo().getPath(),
-                        original.user(), original.metadata());
+                RequestContext request = original.withRequestId(original.requestId() + ":" + env.getExecutionStepInfo().getPath());
                 JsonNode result = booster.executeCommand(operation.name(), input(env), request);
                 return response(result, operation.outputType());
             });
@@ -64,47 +64,63 @@ public final class BoosterGraphQL {
             String listName = "List" + plural;
             unique(queryNames, name);
             unique(queryNames, listName);
+            unique(queryNames, plural);
             unique(subscriptionNames, name);
             unique(subscriptionNames, plural);
             GraphQLOutputType output = types.output(model.type());
-            query.field(GraphQLFieldDefinition.newFieldDefinition().name(name).type(output)
-                    .argument(GraphQLArgument.newArgument().name("id").type(GraphQLNonNull.nonNull(Scalars.GraphQLID))));
-            types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Query", name), (DataFetcher<Object>) env ->
-                    nativeValue(booster.getReadModel(name, env.getArgument("id"), context(env))));
+            var byId = GraphQLFieldDefinition.newFieldDefinition().name(name)
+                    .type(model.sequenceKey() == null ? output : GraphQLList.list(output))
+                    .argument(GraphQLArgument.newArgument().name("id").type(GraphQLNonNull.nonNull(Scalars.GraphQLID)));
+            if (model.sequenceKey() != null) byId.argument(GraphQLArgument.newArgument().name(model.sequenceKey()).type(Scalars.GraphQLID));
+            query.field(byId);
+            types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Query", name), (DataFetcher<Object>) env -> {
+                if (model.sequenceKey() == null) return nativeValue(booster.getReadModel(name, env.getArgument("id"), context(env)));
+                var filter = Json.MAPPER.createObjectNode(); filter.putObject("id").put("eq", (String) env.getArgument("id"));
+                Object sequence = sequence(model, env);
+                if (sequence != null) filter.putObject(model.sequenceKey()).set("eq", Json.MAPPER.valueToTree(sequence));
+                return allModels(booster, name, filter, context(env));
+            });
 
-            GraphQLObjectType page = GraphQLObjectType.newObject().name(name + "Page")
+            GraphQLObjectType page = GraphQLObjectType.newObject().name(name + "Connection")
                     .field(GraphQLFieldDefinition.newFieldDefinition().name("items")
                             .type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLNonNull.nonNull(output)))))
                     .field(GraphQLFieldDefinition.newFieldDefinition().name("count").type(GraphQLNonNull.nonNull(Scalars.GraphQLInt)))
-                    .field(GraphQLFieldDefinition.newFieldDefinition().name("cursor").type(Scalars.GraphQLString)).build();
-            query.field(GraphQLFieldDefinition.newFieldDefinition().name(listName).type(page)
-                    .argument(GraphQLArgument.newArgument().name("filter").type(types.json))
-                    .argument(GraphQLArgument.newArgument().name("sortBy").type(types.json))
+                    .field(GraphQLFieldDefinition.newFieldDefinition().name("cursor").type(types.json)).build();
+            query.field(GraphQLFieldDefinition.newFieldDefinition().name(listName).type(GraphQLNonNull.nonNull(page))
+                    .argument(GraphQLArgument.newArgument().name("filter").type(types.filter(model.type(), "List" + name + "Filter", false)))
+                    .argument(GraphQLArgument.newArgument().name("sortBy").type(types.sort(model.type(), name + "SortBy")))
                     .argument(GraphQLArgument.newArgument().name("limit").type(Scalars.GraphQLInt))
-                    .argument(GraphQLArgument.newArgument().name("afterCursor").type(Scalars.GraphQLString)));
+                    .argument(GraphQLArgument.newArgument().name("afterCursor").type(types.json)));
             types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Query", listName), (DataFetcher<Object>) env -> {
                 Page result = booster.listReadModels(name, new QueryOptions(Json.MAPPER.valueToTree(env.getArgument("filter")),
-                        sorts(env.getArgument("sortBy")), env.getArgumentOrDefault("limit", 100), env.getArgument("afterCursor")), context(env));
+                        sorts(env.getArgument("sortBy")), env.getArgumentOrDefault("limit", 100), cursor(env.getArgument("afterCursor"))), context(env));
                 Map<String, Object> value = new LinkedHashMap<>();
                 value.put("items", result.items().stream().map(BoosterGraphQL::nativeValue).toList());
-                value.put("count", result.count());
-                value.put("cursor", result.cursor());
+                value.put("count", result.items().size());
+                value.put("cursor", result.cursor() == null ? null : Map.of("token", result.cursor()));
                 return value;
             });
-            subscription.field(GraphQLFieldDefinition.newFieldDefinition().name(name).type(output)
-                    .argument(GraphQLArgument.newArgument().name("id").type(GraphQLNonNull.nonNull(Scalars.GraphQLID))));
+            query.field(GraphQLFieldDefinition.newFieldDefinition().name(plural)
+                    .type(GraphQLNonNull.nonNull(GraphQLList.list(GraphQLNonNull.nonNull(output))))
+                    .argument(GraphQLArgument.newArgument().name("filter").type(types.filter(model.type(), name + "Filter", true)))
+                    .deprecate("Method is deprecated. Use List* methods"));
+            types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Query", plural), (DataFetcher<Object>) env ->
+                    allModels(booster, name, Json.MAPPER.valueToTree(env.getArgument("filter")), context(env)));
+            var byIdSubscription = GraphQLFieldDefinition.newFieldDefinition().name(name).type(output)
+                    .argument(GraphQLArgument.newArgument().name("id").type(GraphQLNonNull.nonNull(Scalars.GraphQLID)));
+            if (model.sequenceKey() != null) byIdSubscription.argument(GraphQLArgument.newArgument().name(model.sequenceKey()).type(Scalars.GraphQLID));
+            subscription.field(byIdSubscription);
             types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Subscription", name), (DataFetcher<Object>) env ->
-                    publisher(booster.subscribe(name, env.getArgument("id"), context(env)), change -> true));
+                    publisher(subscriptionSource(booster, name, env.getArgument("id"), sequence(model, env), null, env), change -> true));
             subscription.field(GraphQLFieldDefinition.newFieldDefinition().name(plural).type(output)
-                    .argument(GraphQLArgument.newArgument().name("filter").type(types.json)));
+                    .argument(GraphQLArgument.newArgument().name("filter").type(types.filter(model.type(), name + "SubscriptionFilter", true))));
             types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Subscription", plural), (DataFetcher<Object>) env -> {
                 JsonNode filter = Json.MAPPER.valueToTree(env.getArgument("filter"));
-                Flow.Publisher<ReadModelChange> source = booster.subscribe(name, null, context(env));
-                Filters.matches(Json.MAPPER.createObjectNode(), filter); // Reject malformed filters before opening a stream.
-                return publisher(source, change ->
-                        change.value() != null && !change.value().isNull() && Filters.matches(change.value(), filter));
+                Flow.Publisher<ReadModelChange> source = subscriptionSource(booster, name, null, null, filter, env);
+                return publisher(source, change -> change.value() != null && !change.value().isNull());
             });
         }
+        addEventQueries(booster, query, types, queryNames);
         GraphQLSchema.Builder builder = GraphQLSchema.newSchema().query(query.build())
                 .additionalTypes(types.definitions()).codeRegistry(types.codeRegistry().build());
         if (!mutationNames.isEmpty()) builder.mutation(mutation.build());
@@ -124,9 +140,21 @@ public final class BoosterGraphQL {
                         case VALIDATION -> "Invalid request";
                         case INTERNAL -> "Operation failed";
                     };
+                    String clientCode = switch (code) {
+                        case FORBIDDEN -> "NotAuthorizedError";
+                        case NOT_FOUND -> "NotFoundError";
+                        case CONFLICT -> "OptimisticConcurrencyUnexpectedVersionError";
+                        case VALIDATION -> "InvalidParameterError";
+                        case INTERNAL -> "BoosterError";
+                    };
+                    Map<String, Object> extensions = new LinkedHashMap<>(); extensions.put("code", clientCode);
+                    if (error instanceof GraphQLClientException clientError) {
+                        message = clientError.getMessage(); extensions.put("code", clientError.clientCode());
+                        extensions.put("data", nativeValue(clientError.clientData()));
+                    }
                     return CompletableFuture.completedFuture(DataFetcherExceptionHandlerResult.newResult()
                             .error(GraphqlErrorBuilder.newError(parameters.getDataFetchingEnvironment())
-                                    .message(message).extensions(Map.of("code", code.name())).build()).build());
+                                    .message(message).extensions(extensions).build()).build());
                 }).build();
     }
 
@@ -141,9 +169,131 @@ public final class BoosterGraphQL {
         return graphQL.execute(input.build());
     }
 
+    /** Render a persisted provider notification through the same authorized subscription schema and selection set. */
+    public ExecutionResult executeSubscriptionChange(String query, Map<String, Object> variables, String operationName,
+                                                      RequestContext context, ReadModelChange change) {
+        Objects.requireNonNull(change, "change");
+        var document = graphql.parser.Parser.parse(query);
+        var operations = document.getDefinitionsOfType(graphql.language.OperationDefinition.class);
+        var selected = operations.stream().filter(op -> operationName == null || operationName.equals(op.getName())).toList();
+        if (selected.size() != 1 || selected.getFirst().getOperation() != graphql.language.OperationDefinition.Operation.SUBSCRIPTION)
+            throw new IllegalArgumentException("Exactly one selected subscription operation required");
+        var input = ExecutionInput.newExecutionInput().query(query).variables(variables == null ? Map.of() : variables)
+                .graphQLContext(Map.of(CONTEXT, context == null ? RequestContext.anonymous() : context, EXTERNAL_CHANGE, change));
+        if (operationName != null) input.operationName(operationName);
+        return graphQL.execute(input.build());
+    }
+
+    private static Flow.Publisher<ReadModelChange> subscriptionSource(Booster booster, String name, String id, Object sequence,
+                                                                        JsonNode filter, DataFetchingEnvironment env) {
+        ReadModelChange change = env.getGraphQlContext().get(EXTERNAL_CHANGE);
+        if (change == null) return booster.subscribe(name, id, sequence, filter, context(env));
+        Flow.Publisher<ReadModelChange> supplied = subscriber -> subscriber.onSubscribe(new Flow.Subscription() {
+            private boolean done;
+            @Override public synchronized void request(long count) {
+                if (done) return;
+                done = true;
+                if (count <= 0) { subscriber.onError(new IllegalArgumentException("Positive demand required")); return; }
+                subscriber.onNext(change); subscriber.onComplete();
+            }
+            @Override public synchronized void cancel() { done = true; }
+        });
+        // Core applies the same resource authorization and hook-transformed matching to both sources.
+        return booster.subscribe(name, id, sequence, filter, context(env), supplied);
+    }
+
+    private static Object sequence(ReadModel model, DataFetchingEnvironment env) {
+        if (model.sequenceKey() == null || !env.containsArgument(model.sequenceKey())) return null;
+        Object value = env.getArgument(model.sequenceKey());
+        if (value == null) return null;
+        if (model.type().isRecord()) for (var field : model.type().getRecordComponents())
+            if (field.getName().equals(model.sequenceKey())) return Json.MAPPER.convertValue(value, field.getType());
+        return value;
+    }
+
+    private static List<Object> allModels(Booster booster, String name, JsonNode filter, RequestContext context) {
+        List<Object> result = new ArrayList<>(); String cursor = null;
+        do {
+            Page page = booster.listReadModels(name, new QueryOptions(filter, List.of(), 1000, cursor), context);
+            page.items().forEach(item -> result.add(nativeValue(item)));
+            String next = page.cursor();
+            if (next != null && next.equals(cursor)) throw new IllegalStateException("Provider returned a nonadvancing cursor");
+            cursor = next;
+        } while (cursor != null);
+        return result;
+    }
+
+    private static String cursor(Object value) {
+        if (value == null) return null;
+        if (value instanceof String text) return text;
+        if (value instanceof Map<?, ?> map && map.size() == 1 && map.get("token") instanceof String token) return token;
+        throw new BoosterException(BoosterException.Code.VALIDATION, "Invalid opaque cursor");
+    }
+
+    private static void addEventQueries(Booster booster, GraphQLObjectType.Builder query, GraphQLTypes types, Set<String> names) {
+        if (booster.entityNames().isEmpty()) return;
+        var user = GraphQLObjectType.newObject().name("User")
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("id").type(Scalars.GraphQLString))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("username").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("roles").type(GraphQLList.list(GraphQLNonNull.nonNull(Scalars.GraphQLString)))).build();
+        var event = GraphQLObjectType.newObject().name("EventQueryResponse")
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("type").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("entity").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("entityID").type(GraphQLNonNull.nonNull(Scalars.GraphQLID)))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("requestID").type(GraphQLNonNull.nonNull(Scalars.GraphQLID)))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("user").type(user))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("createdAt").type(GraphQLNonNull.nonNull(Scalars.GraphQLString)))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("value").type(GraphQLNonNull.nonNull(types.json)))
+                .field(GraphQLFieldDefinition.newFieldDefinition().name("deletedAt").type(Scalars.GraphQLString)).build();
+        var entityNames = GraphQLEnumType.newEnum().name("EntityType"); booster.entityNames().forEach(entityNames::value);
+        unique(names, "eventsByEntity");
+        var byEntity = eventSearchField("eventsByEntity", event)
+                .argument(GraphQLArgument.newArgument().name("entity").type(GraphQLNonNull.nonNull(entityNames.build())))
+                .argument(GraphQLArgument.newArgument().name("entityID").type(Scalars.GraphQLID));
+        query.field(byEntity);
+        types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Query", "eventsByEntity"), (DataFetcher<Object>) env ->
+                booster.searchEvents(env.getArgument("entity"), null, env.getArgument("entityID"),
+                        eventTime(env.getArgument("from")), eventTime(env.getArgument("to")), env.getArgumentOrDefault("limit", 100), context(env))
+                        .stream().map(BoosterGraphQL::eventResponse).toList());
+        if (!booster.eventNames().isEmpty()) {
+            var eventNames = GraphQLEnumType.newEnum().name("EventType"); booster.eventNames().forEach(eventNames::value);
+            unique(names, "eventsByType");
+            query.field(eventSearchField("eventsByType", event)
+                    .argument(GraphQLArgument.newArgument().name("type").type(GraphQLNonNull.nonNull(eventNames.build()))));
+            types.codeRegistry().dataFetcher(FieldCoordinates.coordinates("Query", "eventsByType"), (DataFetcher<Object>) env ->
+                    booster.searchEvents(null, env.getArgument("type"), null, eventTime(env.getArgument("from")), eventTime(env.getArgument("to")),
+                            env.getArgumentOrDefault("limit", 100), context(env)).stream().map(BoosterGraphQL::eventResponse).toList());
+        }
+    }
+    private static GraphQLFieldDefinition.Builder eventSearchField(String name, GraphQLObjectType event) {
+        return GraphQLFieldDefinition.newFieldDefinition().name(name).type(GraphQLList.list(event))
+                .argument(GraphQLArgument.newArgument().name("from").type(Scalars.GraphQLString))
+                .argument(GraphQLArgument.newArgument().name("to").type(Scalars.GraphQLString))
+                .argument(GraphQLArgument.newArgument().name("limit").type(Scalars.GraphQLInt));
+    }
+    private static java.time.Instant eventTime(String value) {
+        if (value == null) return null;
+        try { return java.time.Instant.parse(value); }
+        catch (RuntimeException failure) { throw new BoosterException(BoosterException.Code.VALIDATION, "Expected ISO-8601 event time"); }
+    }
+    private static Map<String, Object> eventResponse(StoredEvent stored) {
+        PendingEvent event = stored.event(); Map<String,Object> result = new LinkedHashMap<>();
+        result.put("type", event.type()); result.put("entity", event.stream().entityType()); result.put("entityID", event.stream().entityId());
+        result.put("requestID", event.metadata().get("requestId")); result.put("createdAt", event.timestamp().toString());
+        result.put("value", nativeValue(event.payload())); result.put("deletedAt", event.metadata().get("deletedAt"));
+        UserContext user = event.user();
+        if (user.authenticated()) {
+            Object email = user.claims().get("email"), phone = user.claims().get("phone_number");
+            String username = email instanceof String text && !text.isBlank() ? text
+                    : phone instanceof String text && !text.isBlank() ? text : user.subject();
+            result.put("user", Map.of("id", user.subject(), "username", username, "roles", user.roles().stream().sorted().toList()));
+        } else result.put("user", null);
+        return result;
+    }
+
     private static GraphQLFieldDefinition operation(Operation operation, GraphQLTypes types) {
         GraphQLFieldDefinition.Builder builder = GraphQLFieldDefinition.newFieldDefinition().name(operation.name())
-                .type(types.output(operation.outputType()));
+                .type(types.output(operation.outputSchemaType()));
         if (operation.inputType() != Void.class && operation.inputType() != void.class
                 && !(operation.inputType().isRecord() && operation.inputType().getRecordComponents().length == 0)) {
             builder.argument(GraphQLArgument.newArgument().name("input")
@@ -172,16 +322,18 @@ public final class BoosterGraphQL {
         } else if (raw instanceof Map<?, ?> map) {
             if (map.containsKey("field")) result.add(new Sort(String.valueOf(map.get("field")),
                     Sort.Direction.valueOf(String.valueOf(map.containsKey("direction") ? map.get("direction") : "ASC"))));
-            else map.forEach((key, value) -> result.add(new Sort(String.valueOf(key), Sort.Direction.valueOf(String.valueOf(value)))));
+            else flattenSort(map, "", result);
         } else throw new BoosterException(BoosterException.Code.VALIDATION, "Invalid sortBy");
         return result;
     }
-    private static String plural(String name) {
-        if (name.endsWith("y") && name.length() > 1 && "aeiou".indexOf(Character.toLowerCase(name.charAt(name.length()-2))) < 0)
-            return name.substring(0, name.length()-1) + "ies";
-        if (name.endsWith("s") || name.endsWith("x") || name.endsWith("ch") || name.endsWith("sh")) return name + "es";
-        return name + "s";
+    private static void flattenSort(Map<?, ?> fields, String prefix, List<Sort> result) {
+        fields.forEach((key, value) -> {
+            String path = prefix.isEmpty() ? String.valueOf(key) : prefix + "." + key;
+            if (value instanceof Map<?, ?> nested) flattenSort(nested, path, result);
+            else result.add(new Sort(path, Sort.Direction.valueOf(String.valueOf(value))));
+        });
     }
+    private static String plural(String name) { return GraphQLNames.plural(name); }
     private static void unique(Set<String> names, String name) {
         if (!name.matches("[_A-Za-z][_0-9A-Za-z]*") || name.startsWith("__") || !names.add(name))
             throw new IllegalArgumentException("Invalid or duplicate GraphQL field: " + name);

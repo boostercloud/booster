@@ -42,23 +42,27 @@ final class GraphQLTypes {
                 }
             }).build();
 
-    private static final GraphQLScalarType LONG = GraphQLScalarType.newScalar().name("Long")
-            .description("A signed 64-bit integer.")
-            .coercing(new Coercing<Long, Long>() {
-                private Long checked(Object value) {
-                    try { return new BigDecimal(value.toString()).longValueExact(); }
-                    catch (RuntimeException exception) { throw new CoercingParseValueException("Expected a 64-bit integer"); }
+    private static final GraphQLScalarType DATE = GraphQLScalarType.newScalar().name("Date")
+            .description("ISO-8601 date-time, serialized with millisecond precision as in Booster TypeScript.")
+            .coercing(new Coercing<String, String>() {
+                private String checked(Object value) {
+                    try {
+                        java.time.Instant instant = value instanceof java.util.Date date ? date.toInstant()
+                                : value instanceof java.time.Instant time ? time : java.time.OffsetDateTime.parse(value.toString()).toInstant();
+                        return new java.time.format.DateTimeFormatterBuilder().appendInstant(3).toFormatter().format(instant);
+                    } catch (RuntimeException failure) { throw new CoercingParseValueException("Expected an ISO-8601 date-time"); }
                 }
-                @Override public Long serialize(Object value, GraphQLContext context, Locale locale) {
-                    try { return checked(value); }
-                    catch (RuntimeException exception) { throw new CoercingSerializeException("Expected a 64-bit integer"); }
+                @Override public String serialize(Object value, GraphQLContext context, Locale locale) {
+                    try { return checked(value); } catch (RuntimeException failure) { throw new CoercingSerializeException("Expected an ISO-8601 date-time"); }
                 }
-                @Override public Long parseValue(Object value, GraphQLContext context, Locale locale) { return checked(value); }
-                @Override public Long parseLiteral(Value<?> value, CoercedVariables variables,
-                                                   GraphQLContext context, Locale locale) {
-                    if (!(value instanceof IntValue number)) throw new CoercingParseLiteralException("Expected an integer");
-                    try { return number.getValue().longValueExact(); }
-                    catch (ArithmeticException exception) { throw new CoercingParseLiteralException("Integer outside 64-bit range"); }
+                @Override public String parseValue(Object value, GraphQLContext context, Locale locale) {
+                    if (!(value instanceof String)) throw new CoercingParseValueException("Expected an ISO-8601 date-time string");
+                    return checked(value);
+                }
+                @Override public String parseLiteral(Value<?> value, CoercedVariables variables, GraphQLContext context, Locale locale) {
+                    if (!(value instanceof StringValue text)) throw new CoercingParseLiteralException("Expected an ISO-8601 date-time string");
+                    try { return checked(text.getValue()); }
+                    catch (RuntimeException failure) { throw new CoercingParseLiteralException("Expected an ISO-8601 date-time string"); }
                 }
             }).build();
 
@@ -69,19 +73,20 @@ final class GraphQLTypes {
         if (type instanceof ParameterizedType parameterized) {
             if (parameterized.getRawType() == Optional.class) return input(parameterized.getActualTypeArguments()[0]);
             if (parameterized.getRawType() instanceof Class<?> raw && Collection.class.isAssignableFrom(raw))
-                return GraphQLList.list(input(parameterized.getActualTypeArguments()[0]));
+                return GraphQLList.list(listInputElement(parameterized.getActualTypeArguments()[0]));
             return json;
         }
         if (!(type instanceof Class<?> raw)) return json;
-        if (raw.isArray()) return GraphQLList.list(input(raw.getComponentType()));
+        if (raw.isArray()) return GraphQLList.list(GraphQLNonNull.nonNull(input(raw.getComponentType())));
         if (raw.isEnum()) return enumType(raw);
         if (!raw.isRecord() || raw.getRecordComponents().length == 0) return json;
         String name = name(raw) + "Input";
         inputs.put(type, GraphQLTypeReference.typeRef(name));
         GraphQLInputObjectType.Builder builder = GraphQLInputObjectType.newInputObject().name(name);
         for (RecordComponent field : raw.getRecordComponents()) {
+            if (field.isAnnotationPresent(GraphQLHidden.class)) continue;
             GraphQLInputType fieldType = input(field.getGenericType());
-            if (field.getType().isPrimitive()) fieldType = GraphQLNonNull.nonNull(fieldType);
+            if (!field.isAnnotationPresent(GraphQLNullable.class) && field.getType() != Optional.class) fieldType = GraphQLNonNull.nonNull(fieldType);
             builder.field(GraphQLInputObjectField.newInputObjectField().name(field.getName()).type(fieldType));
         }
         GraphQLInputObjectType result = builder.build();
@@ -97,19 +102,21 @@ final class GraphQLTypes {
         if (type instanceof ParameterizedType parameterized) {
             if (parameterized.getRawType() == Optional.class) return output(parameterized.getActualTypeArguments()[0]);
             if (parameterized.getRawType() instanceof Class<?> raw && Collection.class.isAssignableFrom(raw))
-                return GraphQLList.list(output(parameterized.getActualTypeArguments()[0]));
+                return GraphQLList.list(listOutputElement(parameterized.getActualTypeArguments()[0]));
             return json;
         }
         if (!(type instanceof Class<?> raw)) return json;
-        if (raw.isArray()) return GraphQLList.list(output(raw.getComponentType()));
+        if (raw.isArray()) return GraphQLList.list(GraphQLNonNull.nonNull(output(raw.getComponentType())));
         if (raw.isEnum()) return enumType(raw);
+        if (raw.isSealed() && Arrays.stream(raw.getPermittedSubclasses()).allMatch(Class::isRecord)) return union(raw);
         if (!raw.isRecord() || raw.getRecordComponents().length == 0) return json;
         String name = name(raw);
         outputs.put(type, GraphQLTypeReference.typeRef(name));
         GraphQLObjectType.Builder builder = GraphQLObjectType.newObject().name(name);
         for (RecordComponent field : raw.getRecordComponents()) {
+            if (field.isAnnotationPresent(GraphQLHidden.class)) continue;
             GraphQLOutputType fieldType = output(field.getGenericType());
-            if (field.getType().isPrimitive()) fieldType = GraphQLNonNull.nonNull(fieldType);
+            if (!field.isAnnotationPresent(GraphQLNullable.class) && field.getType() != Optional.class) fieldType = GraphQLNonNull.nonNull(fieldType);
             builder.field(GraphQLFieldDefinition.newFieldDefinition().name(field.getName()).type(fieldType));
             code.dataFetcher(FieldCoordinates.coordinates(name, field.getName()), (DataFetcher<Object>) environment -> {
                 Object source = environment.getSource();
@@ -127,17 +134,126 @@ final class GraphQLTypes {
         return result;
     }
 
+    private GraphQLOutputType union(Class<?> raw) {
+        String unionName = name(raw);
+        outputs.put(raw, GraphQLTypeReference.typeRef(unionName));
+        var builder = GraphQLUnionType.newUnionType().name(unionName);
+        Set<String> members = new HashSet<>();
+        for (Class<?> member : raw.getPermittedSubclasses()) {
+            GraphQLOutputType type = output(member); members.add(name(member));
+            if (type instanceof GraphQLObjectType object) builder.possibleType(object);
+            else if (type instanceof GraphQLTypeReference reference) builder.possibleType(reference);
+            else throw new IllegalArgumentException("GraphQL union member must have record fields");
+        }
+        code.typeResolver(unionName, environment -> {
+            Object source = environment.getObject(); String selected;
+            if (source instanceof Map<?,?> map) selected = Objects.toString(map.get("__typename"), "");
+            else if (source instanceof JsonNode node) selected = node.path("__typename").asText();
+            else selected = source == null ? "" : source.getClass().getSimpleName();
+            if (!members.contains(selected)) throw new IllegalArgumentException("Union values require a declared __typename discriminator");
+            return environment.getSchema().getObjectType(selected);
+        });
+        GraphQLUnionType result = builder.build(); definitions.put(unionName, result); outputs.put(raw, result); return result;
+    }
+
+    private GraphQLInputType listInputElement(Type type) {
+        GraphQLInputType element = input(type);
+        return type instanceof ParameterizedType parameterized && parameterized.getRawType() == Optional.class
+                ? element : GraphQLNonNull.nonNull(element);
+    }
+    private GraphQLOutputType listOutputElement(Type type) {
+        GraphQLOutputType element = output(type);
+        return type instanceof ParameterizedType parameterized && parameterized.getRawType() == Optional.class
+                ? element : GraphQLNonNull.nonNull(element);
+    }
+
+    GraphQLInputType filter(Class<?> type, String filterName, boolean defined) {
+        if (definitions.containsKey(filterName)) return GraphQLTypeReference.typeRef(filterName);
+        var builder = GraphQLInputObjectType.newInputObject().name(filterName);
+        // Put a reference first so recursive records terminate.
+        definitions.put(filterName, GraphQLTypeReference.typeRef(filterName));
+        if (type.isRecord()) for (RecordComponent field : type.getRecordComponents()) {
+            if (field.isAnnotationPresent(GraphQLHidden.class)) continue;
+            builder.field(GraphQLInputObjectField.newInputObjectField().name(field.getName()).type(propertyFilter(field.getGenericType())));
+        }
+        builder.field(GraphQLInputObjectField.newInputObjectField().name("and").type(GraphQLList.list(GraphQLTypeReference.typeRef(filterName))))
+                .field(GraphQLInputObjectField.newInputObjectField().name("or").type(GraphQLList.list(GraphQLTypeReference.typeRef(filterName))))
+                .field(GraphQLInputObjectField.newInputObjectField().name("not").type(GraphQLTypeReference.typeRef(filterName)));
+        if (defined) builder.field(GraphQLInputObjectField.newInputObjectField().name("isDefined").type(Scalars.GraphQLBoolean));
+        var result = builder.build(); definitions.put(filterName, result); return result;
+    }
+
+    private GraphQLInputType propertyFilter(Type type) {
+        if (type instanceof ParameterizedType parameterized) {
+            if (parameterized.getRawType() == Optional.class) return propertyFilter(parameterized.getActualTypeArguments()[0]);
+            if (parameterized.getRawType() instanceof Class<?> raw && Collection.class.isAssignableFrom(raw))
+                return arrayFilter(parameterized.getActualTypeArguments()[0]);
+            return json;
+        }
+        if (!(type instanceof Class<?> raw)) return json;
+        if (raw.isArray()) return arrayFilter(raw.getComponentType());
+        if (raw.isRecord()) return filter(raw, name(raw) + "PropertyFilter", true);
+        GraphQLInputType scalar = (GraphQLInputType) scalar(raw);
+        if (raw.isEnum()) scalar = enumType(raw);
+        if (scalar == null || scalar == json) return json;
+        String category = raw.isEnum() ? name(raw) : scalar == Scalars.GraphQLFloat ? "Number"
+                : scalar == Scalars.GraphQLBoolean ? "Boolean" : scalar == Scalars.GraphQLID ? "UUID" : scalar == DATE ? "Date" : "String";
+        String filterName = category + "PropertyFilter";
+        if (definitions.containsKey(filterName)) return GraphQLTypeReference.typeRef(filterName);
+        var builder = GraphQLInputObjectType.newInputObject().name(filterName);
+        for (String operator : List.of("eq", "ne")) builder.field(GraphQLInputObjectField.newInputObjectField().name(operator).type(scalar));
+        builder.field(GraphQLInputObjectField.newInputObjectField().name("isDefined").type(Scalars.GraphQLBoolean));
+        if (!raw.isEnum() && scalar != Scalars.GraphQLBoolean) {
+            builder.field(GraphQLInputObjectField.newInputObjectField().name("in").type(GraphQLList.list(scalar)));
+            if (scalar != Scalars.GraphQLID) for (String operator : List.of("lt", "lte", "gt", "gte"))
+                builder.field(GraphQLInputObjectField.newInputObjectField().name(operator).type(scalar));
+            if (scalar == Scalars.GraphQLString || scalar == Scalars.GraphQLID) for (String operator : List.of("beginsWith", "contains"))
+                builder.field(GraphQLInputObjectField.newInputObjectField().name(operator).type(Scalars.GraphQLString));
+            if (scalar == Scalars.GraphQLString) for (String operator : List.of("regex", "iRegex"))
+                builder.field(GraphQLInputObjectField.newInputObjectField().name(operator).type(Scalars.GraphQLString));
+        }
+        var result = builder.build(); definitions.put(filterName, result); return result;
+    }
+
+    private GraphQLInputType arrayFilter(Type item) {
+        GraphQLInputType scalar = item instanceof Class<?> raw ? (GraphQLInputType) scalar(raw) : json;
+        if (scalar == null) scalar = json;
+        String category = scalar == Scalars.GraphQLFloat ? "Number" : scalar == Scalars.GraphQLBoolean ? "Boolean"
+                : scalar == Scalars.GraphQLString ? "String" : scalar == Scalars.GraphQLID ? "UUID" : "JSON";
+        String filterName = category + "ArrayPropertyFilter";
+        if (definitions.containsKey(filterName)) return GraphQLTypeReference.typeRef(filterName);
+        var result = GraphQLInputObjectType.newInputObject().name(filterName)
+                .field(GraphQLInputObjectField.newInputObjectField().name("includes").type(scalar))
+                .field(GraphQLInputObjectField.newInputObjectField().name("isDefined").type(Scalars.GraphQLBoolean)).build();
+        definitions.put(filterName, result); return result;
+    }
+
+    GraphQLInputType sort(Class<?> type, String sortName) {
+        if (definitions.containsKey(sortName)) return GraphQLTypeReference.typeRef(sortName);
+        var order = GraphQLEnumType.newEnum().name("orderProperty").value("ASC").value("DESC").build();
+        definitions.putIfAbsent("orderProperty", order);
+        var builder = GraphQLInputObjectType.newInputObject().name(sortName);
+        definitions.put(sortName, GraphQLTypeReference.typeRef(sortName));
+        if (type.isRecord()) for (RecordComponent field : type.getRecordComponents()) {
+            if (field.isAnnotationPresent(GraphQLHidden.class)) continue;
+            Class<?> raw = field.getType();
+            GraphQLInputType nested = raw.isRecord() ? sort(raw, name(raw) + "PropertySortBy")
+                    : (GraphQLInputType) definitions.get("orderProperty");
+            builder.field(GraphQLInputObjectField.newInputObjectField().name(field.getName()).type(nested));
+        }
+        var result = builder.build(); definitions.put(sortName, result); return result;
+    }
+
     private GraphQLType scalar(Type type) {
         if (!(type instanceof Class<?> raw)) return null;
+        if (raw == java.time.Instant.class || raw == java.time.OffsetDateTime.class || raw == java.time.ZonedDateTime.class
+                || java.util.Date.class.isAssignableFrom(raw)) return DATE;
         if (raw == String.class || raw == char.class || raw == Character.class || TemporalAccessor.class.isAssignableFrom(raw))
             return Scalars.GraphQLString;
         if (raw == UUID.class) return Scalars.GraphQLID;
         if (raw == boolean.class || raw == Boolean.class) return Scalars.GraphQLBoolean;
-        if (raw == byte.class || raw == Byte.class || raw == short.class || raw == Short.class || raw == int.class || raw == Integer.class)
-            return Scalars.GraphQLInt;
-        if (raw == long.class || raw == Long.class || raw == BigInteger.class) return LONG;
-        if (raw == float.class || raw == Float.class || raw == double.class || raw == Double.class || raw == BigDecimal.class)
-            return Scalars.GraphQLFloat;
+        if (Number.class.isAssignableFrom(raw) || raw == byte.class || raw == short.class || raw == int.class
+                || raw == long.class || raw == float.class || raw == double.class) return Scalars.GraphQLFloat;
         if (raw == void.class || raw == Void.class) return Scalars.GraphQLBoolean;
         if (raw == Object.class || Map.class.isAssignableFrom(raw) || JsonNode.class.isAssignableFrom(raw)) return json;
         return null;

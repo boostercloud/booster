@@ -2,7 +2,7 @@ package io.boostercloud.booster.transport;
 
 import io.boostercloud.booster.core.UserContext;
 import io.boostercloud.booster.transport.auth.AuthenticationException;
-import io.boostercloud.booster.transport.auth.JwtVerifier;
+import io.boostercloud.booster.transport.auth.TokenVerifier;
 
 /** Authentication is separate from the core's per-resource authorization policies. */
 @FunctionalInterface
@@ -17,13 +17,13 @@ public interface AuthenticationProvider {
         };
     }
 
-    static AuthenticationProvider jwt(JwtVerifier verifier) {
+    static AuthenticationProvider jwt(TokenVerifier verifier) {
         return header -> {
             if (header == null) return UserContext.anonymous();
             if (!header.startsWith("Bearer ") || header.length() <= 7 || header.indexOf(' ', 7) >= 0)
                 throw new AuthenticationException();
             var token = verifier.verify(header.substring(7));
-            return new UserContext(token.subject(), token.roles(), token.claims());
+            return new UserContext(token.subject(), token.roles(), token.claims(), token.header(), true);
         };
     }
 }

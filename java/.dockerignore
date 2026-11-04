@@ -1,0 +1,6 @@
+**
+!Dockerfile
+!scripts/
+!scripts/install-jdk.sh
+!target/
+!target/booster-java-*-all.jar

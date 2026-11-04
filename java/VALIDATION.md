@@ -1,5 +1,36 @@
 # Validation record
 
+## Expanded implementation checkpoint (2026-11-04)
+
+The first combined `mvn verify` after adding the Azure adapters and full local
+provider passed **211 unit/contract tests plus 2 integration tests**, with no
+failures, errors or skips. It compiled and packaged the dependency-inclusive JAR.
+This is an intermediate checkpoint: subsequent concurrency/security regressions,
+the complete local rocket/JWT/WebSocket process test, multi-account infrastructure
+and lifecycle fixes are being added and need a final combined verification.
+
+This run covers real local HTTP/WebSocket/JWKS requests, persistent H2 reopen,
+CLI child processes, projection/schema/data migration behavior, both rockets,
+SDK request serialization and ARM lifecycle responses from a loopback contract
+server. Azure service tests use explicit doubles/controlled HTTP responses.
+**No real Azure deployment or tests were run.** The user explicitly deferred
+those on 2026-11-04 and made the full local provider/infrastructure mandatory.
+
+The Java 27 Docker image built successfully with checksum and TLS checks enabled.
+Its initial runtime check found unreadable JAR permissions for the non-root user;
+the Dockerfile now assigns the artifact readable permissions explicitly. The
+repeat check passed real container HTTP health, command execution and projection
+queries (two items at 125 cents produced quantity 2 and total 250), and reported
+Java 27.0.1.0.3. The test container was removed afterward; no image was published.
+
+An additional local Cosmos emulator check could not start: the official Microsoft
+image downloads redirect to `centralus.data.mcr.microsoft.com`, which the managed
+proxy rejected with HTTP 403. No emulator container was created, and no Azure
+service was contacted. Emulator validation remains unrun; the passing provider
+contract tests are not relabeled as emulator results.
+
+## Earlier local foundation
+
 These results validate the existing local foundation, not completion of the
 expanded Azure and compatibility goal in [GOAL.md](GOAL.md). Those required
 subsystems remain pending until their implementation and tests are recorded.

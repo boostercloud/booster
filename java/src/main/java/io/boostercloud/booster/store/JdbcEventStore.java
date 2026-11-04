@@ -92,6 +92,17 @@ public final class JdbcEventStore implements EventStore {
   @Override
   public CommitResult commit(String requestId, String fingerprint,
       Map<StreamId, Long> expectedVersions, List<PendingEvent> events, JsonNode result) {
+    return commitInternal(requestId, fingerprint, expectedVersions, events, result, null);
+  }
+
+  @Override public CommitResult commitAtPosition(String requestId, String fingerprint,
+      Map<StreamId,Long> expectedVersions, List<PendingEvent> events, JsonNode result, long expectedPosition) {
+    if (expectedPosition < 0) throw new IllegalArgumentException("Negative expected journal position");
+    return commitInternal(requestId, fingerprint, expectedVersions, events, result, expectedPosition);
+  }
+
+  private CommitResult commitInternal(String requestId, String fingerprint, Map<StreamId,Long> expectedVersions,
+      List<PendingEvent> events, JsonNode result, Long expectedPosition) {
     validateText(requestId, "Request ID", 512);
     validateText(fingerprint, "Fingerprint", 1024);
     Objects.requireNonNull(expectedVersions, "expectedVersions");
@@ -126,6 +137,7 @@ public final class JdbcEventStore implements EventStore {
           connection.commit();
           return new CommitResult(true, existing.get());
         }
+        if (expectedPosition != null && position != expectedPosition) throw new OptimisticConcurrencyException("Journal changed since validation");
         Map<StreamId, Long> versions = new HashMap<>();
         for (var entry : expected.entrySet()) {
           long actual = version(connection, entry.getKey());
@@ -213,6 +225,38 @@ public final class JdbcEventStore implements EventStore {
         query.setLong(1, afterPosition);
         query.setInt(2, limit);
         return readEvents(query);
+      }
+    });
+  }
+
+  @Override
+  public boolean redactEventPayload(String eventId, java.time.Instant deletedAt) {
+    validateText(eventId, "Event ID", 255); Objects.requireNonNull(deletedAt);
+    return withConnection(connection -> {
+      connection.setAutoCommit(false);
+      try {
+        lockJournal(connection);
+        try (var query = connection.prepareStatement("SELECT event_json FROM booster_events WHERE event_id=?")) {
+          query.setString(1, eventId);
+          try (var rows = query.executeQuery()) {
+            if (!rows.next()) { connection.commit(); return false; }
+            PendingEvent original;
+            try { original = Json.MAPPER.readValue(rows.getString(1), PendingEvent.class); }
+            catch (JsonProcessingException error) { throw storageFailure(error); }
+            if (original.metadata().containsKey("deletedAt") && original.payload().isObject() && original.payload().isEmpty()) { connection.commit(); return true; }
+            var metadata = new HashMap<>(original.metadata()); metadata.put("deletedAt", deletedAt.toString());
+            var redacted = new PendingEvent(original.id(), original.stream(), original.type(), original.schemaVersion(),
+                Json.MAPPER.createObjectNode(), original.timestamp(), original.user(), metadata);
+            try (var update = connection.prepareStatement("UPDATE booster_events SET event_json=? WHERE event_id=?")) {
+              update.setString(1, encode(redacted)); update.setString(2, eventId); update.executeUpdate();
+            }
+          }
+        }
+        // Receipts reference the journal position range, so reads immediately observe the redaction.
+        connection.commit(); return true;
+      } catch (SQLException | RuntimeException error) {
+        try { connection.rollback(); } catch (SQLException rollback) { error.addSuppressed(rollback); }
+        throw error;
       }
     });
   }

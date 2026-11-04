@@ -7,8 +7,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** An executable domain example. Prices use integral cents; historical events are immutable. */
-public final class ShoppingCartApplication {
-  private ShoppingCartApplication() {}
+public final class ShoppingCartApplication implements io.boostercloud.booster.local.LocalApplication {
+  public ShoppingCartApplication() {}
+  @Override public Booster create(io.boostercloud.booster.local.LocalProvider provider) {
+    return create(provider.eventStore(), provider.stateStore());
+  }
 
   public record Line(String sku, int quantity, long unitPriceCents) {}
   public record Cart(String id, List<Line> lines, boolean checkedOut) {
@@ -26,7 +29,10 @@ public final class ShoppingCartApplication {
   public record CartCheckedOut(String cartId) {}
 
   public static Booster create(EventStore store) {
-    return Booster.builder(store)
+    return create(store, new io.boostercloud.booster.core.InMemoryStateStore());
+  }
+  public static Booster create(EventStore store, io.boostercloud.booster.core.StateStore state) {
+    return Booster.builder(store).stateStore(state)
         .entity(Cart.class)
         .event(CartOpened.class, CartOpened::cartId, Cart.class, (event, old) -> {
           if (old != null) throw new IllegalArgumentException("Cart already exists");

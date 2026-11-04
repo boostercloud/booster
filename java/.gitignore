@@ -8,3 +8,4 @@
 *.lock.db
 .idea/
 *.iml
+.booster-java-*.lock

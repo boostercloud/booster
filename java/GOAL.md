@@ -16,13 +16,23 @@ Codex goal and does not create or guarantee background task execution.
 Deliver a Java implementation covering Booster's existing core behavior, the
 **Azure provider**, advanced projections, schema and data migrations,
 subscriptions, authentication, existing API contracts, and the **webhook** and
-**file-upload** rockets. A working local demo alone does not satisfy this goal.
+**file-upload** rockets. Include a complete **local provider and local
+infrastructure**, capable of running real applications and both rockets with
+persistent state, lifecycle commands and end-to-end tests. A bundled demo alone
+does not satisfy this goal.
 Do not reduce this scope or substitute interfaces, mocks or documentation for
 working implementations. Report blockers and continue independent work.
 
 **AWS is explicitly excluded.** Docker-deployment and static-site rockets are
 not requested. This does not prohibit using a Java container as an Azure runtime
 if that is necessary to support the selected Java release.
+
+**User scope update, 2026-11-04:** continue implementing Azure, but do not deploy
+or execute tests against real Azure resources because the user does not yet have
+access. Real Azure validation is deferred by explicit user instruction and does
+not block completing the currently authorized work. Preserve it as an unverified
+follow-up; do not claim Azure has been deployed or cloud-validated. Complete and
+exercise the local infrastructure/provider instead, alongside Azure contract tests.
 
 ## Source baselines
 
@@ -63,9 +73,24 @@ explicitly accepted by the user.
   subscription/connection records required by the existing Azure provider.
 - [ ] Verify service serialization, partition/concurrency semantics, retries,
   pagination, failures and restarts using contract tests and available emulators.
-- [ ] Run an isolated Azure deployment with real command/event/projection/query,
+- [ ] DEFERRED BY USER: Run an isolated Azure deployment with real command/event/projection/query,
   subscription and rocket checks, then verify cleanup of created resources.
-  Missing access leaves this item pending; mocks do not prove cloud readiness.
+  Do not run this until separately authorized when access becomes available.
+  This is a future validation follow-up, not a blocker for the updated scope;
+  mocks do not prove cloud readiness.
+
+### Local provider and infrastructure — required
+
+- [ ] Provide a reusable local provider with durable events, snapshots/read models,
+  migration state, scheduling, subscriptions, filesystem uploads and webhook routing.
+- [ ] Supply application configuration and infrastructure lifecycle commands to
+  synthesize, start/stop, inspect health, rebuild and intentionally clean up local
+  applications, beyond the bundled demo; retain data across ordinary restarts.
+- [ ] Make generated applications use the complete local provider and document
+  reproducible build/start/configuration/cleanup without a cloud account.
+- [ ] Test an actual local application in separate processes, including restart,
+  concurrent commands, projections/joins, migrations, authenticated WebSocket
+  subscriptions and both rockets with real HTTP and file transfers.
 
 ### Advanced projections and read models
 
@@ -129,8 +154,9 @@ explicitly accepted by the user.
 
 - [ ] Expand Java unit, provider-contract, security and integration tests to cover
   every required subsystem; add compatibility fixtures from the baseline.
-- [ ] Exercise end-to-end applications locally and on Azure, including both
+- [ ] Exercise end-to-end applications locally, including both
   rockets, advanced projections, migrations and subscription/authentication flows.
+  Azure end-to-end execution is deferred by the user's scope update above.
 - [ ] Keep `VALIDATION.md` current with executed commands and distinct passed,
   failed, skipped, blocked and unrun outcomes. Passing local tests are not evidence
   that unimplemented provider/API functionality works.
@@ -138,10 +164,19 @@ explicitly accepted by the user.
   instructions aligned with the implemented behavior.
 - [ ] Resolve relevant PR checks and keep all changes in PR #1607. Do not merge
   without a separate instruction. Keep the PR draft while required work remains.
-- [ ] Mark this goal complete only when every required item is implemented and
-  validated. Remaining external blockers must be reported, not relabeled as done.
+- [ ] Mark this goal complete only when every currently required item is implemented
+  and validated. Keep explicitly deferred Azure live validation separate and visible;
+  remaining implementation gaps must not be relabeled as done.
 
 ## Current verified baseline
+
+Current work adds real Java implementations for local lifecycle/storage, Azure
+SDK adapters/ARM, joined and sequence projections, schema/data migrations,
+legacy WebSocket/JWKS, calendar jobs, health sensors and both rockets. The first
+combined expanded build passed 211 unit/contract tests and 2 integration tests.
+Further cross-subsystem review and regression fixes are in progress; that
+checkpoint alone does not close the remaining acceptance checklist. See
+`VALIDATION.md` for the final-versus-intermediate evidence and deferred Azure work.
 
 At commit `e22abc405232945f8e17598d1f6a815e6f95cb85`, the local foundation passed
 73 framework tests plus one test in a separately generated application, whose

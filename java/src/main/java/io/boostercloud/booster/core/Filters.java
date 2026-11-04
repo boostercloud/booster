@@ -21,6 +21,10 @@ public final class Filters {
       var field = fields.next(); var argument = field.getValue();
       boolean matched;
       switch (field.getKey()) {
+        case "isDefined" -> {
+          if (!argument.isBoolean()) throw invalid("isDefined requires a boolean");
+          matched = (value != null && !value.isMissingNode()) == argument.booleanValue();
+        }
         case "and", "or" -> {
           if (!argument.isArray()) throw invalid("and/or filters require an array");
           matched = field.getKey().equals("and");
@@ -36,8 +40,16 @@ public final class Filters {
           boolean operators = false, nested = false;
           var names = argument.fieldNames();
           while (names.hasNext()) { if (OPERATORS.contains(names.next())) operators = true; else nested = true; }
-          if (operators && nested) throw invalid("Unknown or mixed filter operator");
-          matched = operators ? operators(actual, argument) : matches(actual, argument, depth + 1);
+          if (operators && nested) {
+            var nestedFilter = argument.deepCopy();
+            var defined = ((com.fasterxml.jackson.databind.node.ObjectNode) nestedFilter).remove("isDefined");
+            if (defined == null || !defined.isBoolean()) throw invalid("Unknown or mixed filter operator");
+            var remainingNames = nestedFilter.fieldNames();
+            while (remainingNames.hasNext()) if (OPERATORS.contains(remainingNames.next())) throw invalid("Unknown or mixed filter operator");
+            // Object existence can accompany its nested typed fields, as in the baseline schema.
+            boolean exists = !actual.isMissingNode() == defined.booleanValue();
+            matched = matches(actual, nestedFilter, depth + 1) && exists;
+          } else matched = operators ? operators(actual, argument) : matches(actual, argument, depth + 1);
         }
       }
       result &= matched;

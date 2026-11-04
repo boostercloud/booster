@@ -8,11 +8,12 @@ import java.util.Objects;
 import java.util.Set;
 
 /** Verified identity. Claims are immutable, including nested JSON objects and arrays. */
-public record VerifiedToken(String subject, Set<String> roles, Map<String, Object> claims) {
+public record VerifiedToken(String subject, Set<String> roles, Map<String, Object> claims, Map<String, Object> header) {
+    public VerifiedToken(String subject, Set<String> roles, Map<String, Object> claims) { this(subject, roles, claims, Map.of()); }
     public VerifiedToken {
-        Objects.requireNonNull(subject, "subject");
         roles = Set.copyOf(roles);
         claims = immutableMap(claims);
+        header = immutableMap(header);
     }
 
     private static Map<String, Object> immutableMap(Map<String, ?> source) {

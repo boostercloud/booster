@@ -1,0 +1,290 @@
+{
+  "source": "inflected@2.1.0, pinned in booster TypeScript 4.1.0 pnpm lockfile",
+  "capturedBy": "Node.js execution of upstream npm distribution; Java tests do not require Node.js",
+  "cases": [
+    {
+      "input": "CartView",
+      "expected": "CartViews"
+    },
+    {
+      "input": "Person",
+      "expected": "People"
+    },
+    {
+      "input": "person",
+      "expected": "people"
+    },
+    {
+      "input": "PERSON",
+      "expected": "People"
+    },
+    {
+      "input": "SalesPerson",
+      "expected": "SalesPeople"
+    },
+    {
+      "input": "People",
+      "expected": "People"
+    },
+    {
+      "input": "Child",
+      "expected": "Children"
+    },
+    {
+      "input": "Children",
+      "expected": "Children"
+    },
+    {
+      "input": "Man",
+      "expected": "Men"
+    },
+    {
+      "input": "Woman",
+      "expected": "Women"
+    },
+    {
+      "input": "Salesman",
+      "expected": "Salesmen"
+    },
+    {
+      "input": "Sex",
+      "expected": "Sexes"
+    },
+    {
+      "input": "Move",
+      "expected": "Moves"
+    },
+    {
+      "input": "Zombie",
+      "expected": "Zombies"
+    },
+    {
+      "input": "Mouse",
+      "expected": "Mice"
+    },
+    {
+      "input": "Louse",
+      "expected": "Lice"
+    },
+    {
+      "input": "House",
+      "expected": "Houses"
+    },
+    {
+      "input": "MouseView",
+      "expected": "MouseViews"
+    },
+    {
+      "input": "Ox",
+      "expected": "Oxen"
+    },
+    {
+      "input": "Oxen",
+      "expected": "Oxen"
+    },
+    {
+      "input": "Quiz",
+      "expected": "Quizzes"
+    },
+    {
+      "input": "Axis",
+      "expected": "Axes"
+    },
+    {
+      "input": "Testis",
+      "expected": "Testes"
+    },
+    {
+      "input": "Octopus",
+      "expected": "Octopi"
+    },
+    {
+      "input": "Virus",
+      "expected": "Viri"
+    },
+    {
+      "input": "Status",
+      "expected": "Statuses"
+    },
+    {
+      "input": "Alias",
+      "expected": "Aliases"
+    },
+    {
+      "input": "Bus",
+      "expected": "Buses"
+    },
+    {
+      "input": "Buffalo",
+      "expected": "Buffaloes"
+    },
+    {
+      "input": "Tomato",
+      "expected": "Tomatoes"
+    },
+    {
+      "input": "Datum",
+      "expected": "Data"
+    },
+    {
+      "input": "Medium",
+      "expected": "Media"
+    },
+    {
+      "input": "Analysis",
+      "expected": "Analyses"
+    },
+    {
+      "input": "Life",
+      "expected": "Lives"
+    },
+    {
+      "input": "Knife",
+      "expected": "Knives"
+    },
+    {
+      "input": "Wife",
+      "expected": "Wives"
+    },
+    {
+      "input": "Wolf",
+      "expected": "Wolves"
+    },
+    {
+      "input": "Calf",
+      "expected": "Calves"
+    },
+    {
+      "input": "Roof",
+      "expected": "Roofs"
+    },
+    {
+      "input": "Hive",
+      "expected": "Hives"
+    },
+    {
+      "input": "Category",
+      "expected": "Categories"
+    },
+    {
+      "input": "Query",
+      "expected": "Queries"
+    },
+    {
+      "input": "Day",
+      "expected": "Days"
+    },
+    {
+      "input": "Key",
+      "expected": "Keys"
+    },
+    {
+      "input": "Box",
+      "expected": "Boxes"
+    },
+    {
+      "input": "Church",
+      "expected": "Churches"
+    },
+    {
+      "input": "Class",
+      "expected": "Classes"
+    },
+    {
+      "input": "Dish",
+      "expected": "Dishes"
+    },
+    {
+      "input": "Matrix",
+      "expected": "Matrices"
+    },
+    {
+      "input": "Vertex",
+      "expected": "Vertices"
+    },
+    {
+      "input": "Index",
+      "expected": "Indices"
+    },
+    {
+      "input": "Fish",
+      "expected": "Fish"
+    },
+    {
+      "input": "Sheep",
+      "expected": "Sheep"
+    },
+    {
+      "input": "Equipment",
+      "expected": "Equipment"
+    },
+    {
+      "input": "Information",
+      "expected": "Information"
+    },
+    {
+      "input": "Money",
+      "expected": "Money"
+    },
+    {
+      "input": "Rice",
+      "expected": "Rice"
+    },
+    {
+      "input": "Species",
+      "expected": "Species"
+    },
+    {
+      "input": "Series",
+      "expected": "Series"
+    },
+    {
+      "input": "Jeans",
+      "expected": "Jeans"
+    },
+    {
+      "input": "Police",
+      "expected": "Police"
+    },
+    {
+      "input": "ReadModel",
+      "expected": "ReadModels"
+    },
+    {
+      "input": "Address",
+      "expected": "Addresses"
+    },
+    {
+      "input": "Business",
+      "expected": "Businesses"
+    },
+    {
+      "input": "News",
+      "expected": "News"
+    },
+    {
+      "input": "Database",
+      "expected": "Databases"
+    },
+    {
+      "input": "ID",
+      "expected": "IDs"
+    },
+    {
+      "input": "XYZ",
+      "expected": "XYZs"
+    },
+    {
+      "input": "Cart_Item",
+      "expected": "Cart_Items"
+    },
+    {
+      "input": "_Person",
+      "expected": "_People"
+    },
+    {
+      "input": "ReadModel2",
+      "expected": "ReadModel2s"
+    }
+  ]
+}

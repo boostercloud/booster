@@ -55,13 +55,13 @@ class BoosterTransportTest {
                 var result = api.execute(OPEN, Map.of("input", Map.of("cartId", id)), null, RequestContext.anonymous());
                 assertTrue(result.getErrors().isEmpty(), result.getErrors().toString());
             }
-            String query = "query Page($after:String) { ListCartViews(filter:{checkedOut:{eq:false}},sortBy:{id:ASC},limit:2,afterCursor:$after) { items {id} count cursor } }";
+            String query = "query Page($after:JSON) { ListCartViews(filter:{checkedOut:{eq:false}},sortBy:{id:ASC},limit:2,afterCursor:$after) { items {id} count cursor } }";
             JsonNode first = Json.MAPPER.valueToTree(api.execute(query, Map.of(), "Page", RequestContext.anonymous()).toSpecification());
             assertFalse(first.has("errors"), first.toString());
             assertEquals("a", first.at("/data/ListCartViews/items/0/id").asText());
             assertEquals("b", first.at("/data/ListCartViews/items/1/id").asText());
-            String cursor = first.at("/data/ListCartViews/cursor").asText();
-            assertFalse(cursor.isBlank());
+            Object cursor = Json.MAPPER.convertValue(first.at("/data/ListCartViews/cursor"), Object.class);
+            assertNotNull(cursor);
             JsonNode second = Json.MAPPER.valueToTree(api.execute(query, Map.of("after", cursor), "Page", RequestContext.anonymous()).toSpecification());
             assertEquals("c", second.at("/data/ListCartViews/items/0/id").asText());
         }
@@ -98,7 +98,7 @@ class BoosterTransportTest {
             String body = Json.MAPPER.writeValueAsString(Map.of("query", query));
             var spoofed = client.send(HttpRequest.newBuilder(uri(server, "/graphql")).header("Content-Type", "application/json")
                     .header("X-User-Roles", "admin").header("X-User", "alice").POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
-            assertEquals("FORBIDDEN", json(spoofed).at("/errors/0/extensions/code").asText());
+            assertEquals("NotAuthorizedError", json(spoofed).at("/errors/0/extensions/code").asText());
             var allowed = client.send(HttpRequest.newBuilder(uri(server, "/graphql")).header("Content-Type", "application/json")
                     .header("Authorization", "Bearer valid").POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
             assertEquals("allowed", json(allowed).at("/data/AdminCommand").asText());
@@ -235,6 +235,34 @@ class BoosterTransportTest {
         }
     }
     private static URI uri(BoosterHttpServer server, String path) { return URI.create("http://127.0.0.1:" + server.port() + path); }
+    @Test void requestAwareAuthorizationAndResponseHeadersPreserveEphemeralContextWithoutPersistingCredentials() throws Exception {
+        record HeaderEntity(String id, String value) {}
+        record HeaderEvent(String id, String value) {}
+        record HeaderCommand(String value) {}
+        try (var app = Booster.builder(new InMemoryEventStore())
+                .event(HeaderEvent.class, HeaderEvent::id, HeaderEntity.class, (event, previous) -> new HeaderEntity(event.id(), event.value()))
+                .command(HeaderCommand.class, String.class,
+                        AccessPolicy.request(context -> context.request().headers().getOrDefault("X-Tenant", List.of()).contains("tenant-a")),
+                        (command, register) -> {
+                            assertEquals("Bearer secret-fixture", register.context().request().headers().get("Authorization").getFirst());
+                            assertTrue(register.context().request().body().path("query").asText().contains("HeaderCommand"));
+                            assertNotNull(register.context().request().rawContext());
+                            register.responseHeader("X-Result", "accepted"); register.responseHeader("Content-Length", "0");
+                            register.emit(new HeaderEvent("record", command.value())); return command.value();
+                        }).build();
+             var server = new BoosterHttpServer(app, 0).authentication(header -> new UserContext("reader", Set.of(), Map.of()));
+             var client = HttpClient.newHttpClient()) {
+            server.start();
+            String body = Json.MAPPER.writeValueAsString(Map.of("query", "mutation {HeaderCommand(input:{value:\"ok\"})}"));
+            var response = client.send(HttpRequest.newBuilder(uri(server, "/graphql")).header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer secret-fixture").header("X-Tenant", "tenant-a")
+                    .POST(HttpRequest.BodyPublishers.ofString(body)).build(), HttpResponse.BodyHandlers.ofString());
+            assertEquals("ok", json(response).at("/data/HeaderCommand").asText());
+            assertEquals("accepted", response.headers().firstValue("X-Result").orElseThrow());
+            assertFalse(Json.MAPPER.writeValueAsString(app.eventStore().readAll(0, 100)).contains("secret-fixture"));
+        }
+    }
+
     private static HttpResponse<String> post(HttpClient client, BoosterHttpServer server, String query,
                                               Map<String, Object> variables, String key) throws Exception {
         var request = HttpRequest.newBuilder(uri(server, "/graphql")).timeout(Duration.ofSeconds(10))

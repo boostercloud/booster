@@ -38,10 +38,14 @@ class JwtVerifierTest {
     @Test
     void verifiesSignedClaimsAndRoles() throws Exception {
         var claims = claims();
-        claims.put("roles", List.of("writer", "reader", "writer"));
+        claims.put("custom:role", List.of("writer", "reader", "writer"));
         claims.put("profile", Map.of("name", "Test user", "nullable", List.of("ok")));
         VerifiedToken identity = verifier.verify(sign(claims));
         assertEquals("user-123", identity.subject());
+        assertEquals("RS256", identity.header().get("alg"));
+        assertThrows(UnsupportedOperationException.class, () -> identity.header().put("kid", "other"));
+        var user = io.boostercloud.booster.transport.AuthenticationProvider.jwt(verifier).authenticate("Bearer " + sign(claims));
+        assertEquals(identity.header(), user.header()); assertEquals("user-123", user.id()); assertEquals("user-123", user.username());
         assertEquals(Set.of("writer", "reader"), identity.roles());
         assertEquals("https://issuer.example", identity.claims().get("iss"));
         assertThrows(UnsupportedOperationException.class, () -> identity.claims().put("admin", true));
@@ -130,9 +134,9 @@ class JwtVerifierTest {
         reject(sign("{\"alg\":\"RS256\",\"alg\":\"RS256\"}", payload, keys));
         reject(sign("{\"alg\":\"RS256\"}", payload.replace("\"exp\":", "\"exp\":0,\"exp\":"), keys));
         reject(sign("{\"alg\":\"RS256\"}", payload + " {}", keys));
-        for (Object roles : List.of("administrator", List.of(123), List.of(""))) {
+        for (Object roles : List.of(123, List.of(123), List.of(""))) {
             var claims = claims();
-            claims.put("roles", roles);
+            claims.put("custom:role", roles);
             reject(sign(claims));
         }
     }
@@ -154,6 +158,43 @@ class JwtVerifierTest {
                 (RSAPublicKey) generator.generateKeyPair().getPublic(), "issuer", "audience"));
         assertThrows(IllegalArgumentException.class,
                 () -> new JwtVerifier((RSAPublicKey) keys.getPublic(), "", "audience"));
+    }
+
+    @Test
+    void explicitBoosterProfileAcceptsIssuerOnlyTokensAndPreservesVerifiedIdentityWithoutSubject() throws Exception {
+        var compatible = JwtVerifier.boosterCompatible((RSAPublicKey) keys.getPublic(), "https://issuer.example", "custom:role",
+                Clock.fixed(Instant.ofEpochSecond(NOW), ZoneOffset.UTC));
+        var minimal = new LinkedHashMap<String,Object>(); minimal.put("iss", "https://issuer.example");
+        minimal.put("iat", NOW + 500); minimal.put("email", "reader@example.test");
+        minimal.put("aud", "not-the-strict-audience"); minimal.put("custom:role", List.of("reader", ""));
+        String token = sign(minimal);
+        var user = io.boostercloud.booster.transport.AuthenticationProvider.jwt(compatible).authenticate("Bearer " + token);
+        assertNull(user.id()); assertTrue(user.authenticated()); assertTrue(user.verifiedIdentity());
+        assertEquals("reader@example.test", user.username()); assertEquals(Set.of("reader", ""), user.roles());
+        assertFalse(io.boostercloud.booster.core.UserContext.anonymous().authenticated());
+        assertEquals(user, io.boostercloud.booster.core.Json.MAPPER.readValue(
+                io.boostercloud.booster.core.Json.MAPPER.writeValueAsBytes(user), io.boostercloud.booster.core.UserContext.class));
+        assertTrue(io.boostercloud.booster.core.Json.MAPPER.readValue(
+                "{\"subject\":\"legacy\",\"roles\":[],\"claims\":{}}", io.boostercloud.booster.core.UserContext.class).authenticated());
+        reject(token); // Existing constructors retain the strict claim contract.
+    }
+
+    @Test
+    void boosterProfileEnforcesPresentNumericDatesIssuerAndSignature() throws Exception {
+        var compatible = JwtVerifier.boosterCompatible((RSAPublicKey) keys.getPublic(), "https://issuer.example", "custom:role",
+                Clock.fixed(Instant.ofEpochSecond(NOW), ZoneOffset.UTC));
+        for (Map<String,Object> additions : List.<Map<String,Object>>of(
+                Map.of("exp", NOW), Map.of("exp", "later"), Map.of("nbf", NOW + 0.5),
+                Map.of("nbf", false), Map.of("iss", "wrong"))) {
+            var payload = new LinkedHashMap<String,Object>(); payload.put("iss", "https://issuer.example"); payload.putAll(additions);
+            assertThrows(AuthenticationException.class, () -> compatible.verify(sign(payload)));
+        }
+        var valid = new LinkedHashMap<String,Object>(); valid.put("iss", "https://issuer.example");
+        valid.put("exp", NOW + 0.5); valid.put("nbf", NOW - 0.5); valid.put("iat", NOW + 100); valid.put("custom:role", false);
+        assertTrue(compatible.verify(sign(valid)).roles().isEmpty());
+        String token = sign(valid); String[] parts = token.split("\\.");
+        valid.put("custom:role", "administrator");
+        assertThrows(AuthenticationException.class, () -> compatible.verify(parts[0] + "." + encode(JSON.writeValueAsBytes(valid)) + "." + parts[2]));
     }
 
     private static Map<String, Object> claims() {
