@@ -59,10 +59,16 @@ class CliSmokeIT {
   }
 
   private com.fasterxml.jackson.databind.JsonNode graphql(HttpClient client, int port, String query) throws Exception {
-    var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/graphql"))
+    return graphql(client, port, query, null);
+  }
+
+  private com.fasterxml.jackson.databind.JsonNode graphql(HttpClient client, int port, String query,
+      String idempotencyKey) throws Exception {
+    var builder = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port + "/graphql"))
         .timeout(Duration.ofSeconds(10)).header("Content-Type", "application/json")
-        .POST(HttpRequest.BodyPublishers.ofString(Json.MAPPER.writeValueAsString(Map.of("query", query)))).build();
-    var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        .POST(HttpRequest.BodyPublishers.ofString(Json.MAPPER.writeValueAsString(Map.of("query", query))));
+    if (idempotencyKey != null) builder.header("Idempotency-Key", idempotencyKey);
+    var response = client.send(builder.build(), HttpResponse.BodyHandlers.ofString());
     assertEquals(200, response.statusCode(), response.body());
     var body = Json.MAPPER.readTree(response.body());
     assertFalse(body.has("errors"), response.body());
@@ -71,18 +77,21 @@ class CliSmokeIT {
 
   @Test @Timeout(60)
   void executableServesGraphqlAndRestoresTheJournalAfterProcessRestart() throws Exception {
+    String addItem = "mutation { AddItem(input: {cartId: \"process-cart\", sku: \"book\", quantity: 2, unitPriceCents: 1250}) { id } }";
     try (var client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build()) {
       try (var server = start("first.log")) {
         var health = client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + server.port() + "/health"))
             .timeout(Duration.ofSeconds(5)).GET().build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, health.statusCode());
         graphql(client, server.port(), "mutation { OpenCart(input: {cartId: \"process-cart\"}) { id } }");
-        graphql(client, server.port(), "mutation { AddItem(input: {cartId: \"process-cart\", sku: \"book\", quantity: 2, unitPriceCents: 1250}) { id } }");
+        graphql(client, server.port(), addItem, "cart-add-request");
+        graphql(client, server.port(), addItem, "cart-add-request");
         var cart = graphql(client, server.port(), "{ CartView(id: \"process-cart\") { id totalQuantity totalCents checkedOut } }").path("CartView");
         assertEquals(2500, cart.path("totalCents").asLong());
         assertEquals(2, cart.path("totalQuantity").asInt());
       }
       try (var server = start("second.log")) {
+        graphql(client, server.port(), addItem, "cart-add-request");
         var cart = graphql(client, server.port(), "{ CartView(id: \"process-cart\") { totalCents checkedOut } }").path("CartView");
         assertEquals(2500, cart.path("totalCents").asLong());
         graphql(client, server.port(), "mutation { CheckoutCart(input: {cartId: \"process-cart\"}) { id } }");

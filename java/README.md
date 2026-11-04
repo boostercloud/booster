@@ -18,6 +18,8 @@ See [the goal](GOAL.md), [compatibility](COMPATIBILITY.md), and
 cd java
 # Optional on Linux x86_64 if a JDK 27 is not already installed:
 ./scripts/install-jdk.sh
+export JAVA_HOME="$PWD/.tools/jdk-27.0.1.0.3"
+export PATH="$JAVA_HOME/bin:$PATH"
 ./mvnw verify
 ```
 
@@ -144,8 +146,17 @@ Persist only events and receipts; entities and projections are derived state.
 
 Command handlers buffer events. A failed handler does not append that buffer.
 Expected versions prevent two competing writes from silently losing updates.
-Treat `CONFLICT` as a signal to retry a command with fresh state. Do not perform
-irreversible external side effects inside a handler that may be retried.
+An optimistic version conflict can be retried after re-reading current state.
+An idempotency-key conflict means that key already identifies a different
+request: reconcile the original operation instead of automatically assigning a
+new key and potentially duplicating it. Do not perform irreversible external
+side effects inside a handler that may be retried.
+
+Reducers and projections must be pure: the runtime validates pending state
+before committing and evaluates it again during replay. Once a commit succeeds,
+later handler or hook failures do not roll it back. The runtime reports those
+errors through `onError` and can retry unfinished durable event handlers with
+`resumeHandlers()`.
 
 Local derived views are rebuilt from the journal and should fit in memory.
 The current provider is intended for local applications and embedded workloads,
@@ -168,6 +179,17 @@ verifier checks the signature, issuer, audience, subject, expiration and token
 time constraints using a configured RSA public key of at least 2048 bits. Raw
 identity headers do not establish authentication. Applications manage their
 trusted key configuration and rotation; automatic JWKS discovery is not provided.
+
+```java
+var verifier = new JwtVerifier(trustedRsaPublicKey, "https://issuer.example", "my-api");
+var server = new BoosterHttpServer(booster, 3000)
+    .authentication(AuthenticationProvider.jwt(verifier));
+server.start();
+```
+
+The verifier and authentication provider are in the `transport.auth` and
+`transport` packages respectively. Supply the trusted key from your application's
+configuration. The example CLI does not provision an identity provider.
 
 Subscriptions use GraphQL execution with a reactive publisher and the HTTP
 Server-Sent Events transport. This is not the TypeScript provider's WebSocket

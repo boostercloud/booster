@@ -197,4 +197,43 @@ class BoosterTest {
     assertEquals(0, runtime.position()); runtime.close(); runtime.close();
     assertThrows(IllegalStateException.class, runtime::position);
   }
+
+  @Test void nestedClaimsAreImmutableSnapshotsIncludingJsonNulls() {
+    Map<String,Object> nested = new HashMap<>(); nested.put("tenant", "first"); nested.put("optional", null);
+    List<Object> tags = new ArrayList<>(); tags.add("reader"); tags.add(null);
+    Map<String,Object> claims = new HashMap<>(); claims.put("profile", nested); claims.put("tags", tags);
+    var user = new UserContext("subject", Set.of(), claims);
+    nested.put("tenant", "changed"); tags.add("admin");
+    assertEquals("first", ((Map<?,?>) user.claims().get("profile")).get("tenant"));
+    assertEquals(2, ((List<?>) user.claims().get("tags")).size());
+    assertThrows(UnsupportedOperationException.class, () -> ((Map<?,?>) user.claims().get("profile")).clear());
+    assertThrows(UnsupportedOperationException.class, () -> ((List<?>) user.claims().get("tags")).clear());
+    assertNull(((Map<?,?>) user.claims().get("profile")).get("optional"));
+  }
+
+  @Test void idempotencyDistinguishesRoleSetsWithAmbiguousDisplayStrings() {
+    try (var runtime = base(new InMemoryEventStore()).build()) {
+      var first = new RequestContext("request", new UserContext("subject", Set.of("a, b"), Map.of()), Map.of());
+      var second = new RequestContext("request", new UserContext("subject", Set.of("a", "b"), Map.of()), Map.of());
+      runtime.executeCommand("Open", json(new Open("a", 1)), first);
+      assertEquals(BoosterException.Code.CONFLICT, assertThrows(BoosterException.class,
+          () -> runtime.executeCommand("Open", json(new Open("a", 1)), second)).code());
+    }
+  }
+
+  @Test void restartRecoversUnfinishedNamedEventHandlersWithoutAnotherCommand() {
+    var store = new InMemoryEventStore();
+    var invoked = new AtomicInteger();
+    try (var original = base(store).eventHandler("bonus", Opened.class, (event, register) -> { throw new IllegalStateException("Temporary outage"); }).build()) {
+      original.executeCommand("Open", json(new Open("a", 10)), request("first"));
+      assertEquals(1, store.lastPosition());
+      try (var restarted = base(store).eventHandler("bonus", Opened.class, (event, register) -> {
+        invoked.incrementAndGet(); register.emit(new Adjusted(event.id(), 2));
+      }).build()) {
+        assertEquals(2, store.lastPosition());
+        assertEquals(12, restarted.getReadModel("AccountView", "a", request("read")).path("balance").asInt());
+        restarted.resumeHandlers(); assertEquals(1, invoked.get());
+      }
+    }
+  }
 }

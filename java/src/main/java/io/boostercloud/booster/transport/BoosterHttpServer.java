@@ -120,7 +120,7 @@ public final class BoosterHttpServer implements AutoCloseable {
             Object data = result.getData();
             if (data instanceof Publisher<?> publisher) {
                 if (!streaming) { error(exchange, 400, "Subscriptions require POST /graphql/stream"); return; }
-                stream(exchange, publisher);
+                stream(exchange, publisher, user);
             } else {
                 respond(exchange, 200, result.toSpecification());
             }
@@ -137,7 +137,7 @@ public final class BoosterHttpServer implements AutoCloseable {
     }
 
     @SuppressWarnings("unchecked")
-    private void stream(HttpExchange exchange, Publisher<?> publisher) throws IOException {
+    private void stream(HttpExchange exchange, Publisher<?> publisher, UserContext authorizedUser) throws IOException {
         if (!streamPermits.tryAcquire()) { error(exchange, 503, "Subscription capacity reached"); return; }
         BlockingQueue<Object> queue = new ArrayBlockingQueue<>(2);
         AtomicReference<Subscription> subscription = new AtomicReference<>();
@@ -172,7 +172,10 @@ public final class BoosterHttpServer implements AutoCloseable {
                 try { next = queue.poll(15, TimeUnit.SECONDS); }
                 catch (InterruptedException exception) { Thread.currentThread().interrupt(); break; }
                 // Revalidate expiration and any provider policy before every delivery/heartbeat.
-                try { authentication.authenticate(exchange.getRequestHeaders().getFirst("Authorization")); }
+                try {
+                    UserContext currentUser = authentication.authenticate(exchange.getRequestHeaders().getFirst("Authorization"));
+                    if (!authorizedUser.equals(currentUser)) throw new AuthenticationException();
+                }
                 catch (AuthenticationException exception) {
                     output.write("event: error\ndata: {\"errors\":[{\"message\":\"Authentication expired\"}]}\n\n".getBytes(StandardCharsets.UTF_8));
                     output.flush(); break;

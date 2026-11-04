@@ -64,23 +64,32 @@ returns its recorded result only for the matching request fingerprint; a
 different fingerprint conflicts. A conflicting concurrent write does not
 automatically rerun arbitrary application code.
 
+Reducers and projections are evaluated against staged state before a command's
+commit, so a failure in that validation also leaves the buffer uncommitted.
+This evaluates deterministic application functions more than once; those
+functions must not perform external side effects.
+
 The fingerprint covers the operation, canonical input, subject, roles, claims,
 and request metadata. Changing any of those while reusing a request ID conflicts;
 this includes changed claims after a token refresh. Internal handler receipt IDs
 use a reserved namespace which public command requests cannot claim.
 
-Projection processing, event handlers, and after-command hooks happen after the
-journal commit. Their failure cannot undo committed events. Retrying with the
-same request ID or explicitly resuming handlers must preserve that distinction;
-applications should not retry a committed command with a fresh identifier just
-because post-commit processing failed. Reducers, projections, and upcasters must
-be deterministic so that replay reconstructs the same state.
+Applying committed projections, event handlers, and after-command hooks happens
+after the journal commit. Failures are reported to the error callback without
+turning a successful durable commit into a failed command response. Queries and
+rebuilds surface unresolved projection failures, and `resumeHandlers()` retries
+unfinished handlers. Applications should not retry a committed command with a
+fresh identifier just because post-commit processing failed. Reducers,
+projections, and upcasters must be deterministic so that replay reconstructs the
+same state.
 
 Handler receipts cover buffered events and completion records, not arbitrary
 network calls made by application handlers. An external effect can happen before
 a handler receipt is committed, so external systems must use their own
 idempotency keys. Rebuilding read models does not itself repeat those external
-effects. Use explicit stable names for durable event handlers. The shorthand
+effects. Runtime startup attempts to resume unfinished handlers; failures are
+reported and can be retried explicitly with `resumeHandlers()`. Use explicit
+stable names for durable event handlers. The shorthand
 assigns names from event type and registration order; reordering handlers of the
 same type changes their identity. After-command hooks are not durable jobs and
 are not replayed on an idempotent command retry.
@@ -123,13 +132,15 @@ process-local notifications with bounded buffers, not a durable replay log.
   public key. It requires issuer, audience, subject, and expiration, uses no
   implicit clock-skew allowance, and reads roles from an array named `roles`.
   Subscriptions recheck authentication before delivery and at heartbeat intervals.
+  A changed authenticated identity or claims ends the existing subscription;
+  the client must reconnect and pass authorization again.
 - Entity and event-history access inside trusted Java handlers is not a
   separately exposed or separately authorized GraphQL resource. A custom query
   exposing it must enforce the application's access rules.
 
 ## Compatibility boundaries
 
-- Java classes and annotations replace TypeScript classes and decorators. There
+- Java records and explicit registration replace TypeScript classes and decorators. There
   is no automatic TypeScript-to-Java source converter.
 - The storage format is a Java-provider contract. Existing DynamoDB, Cosmos DB,
   or local TypeScript provider data requires an explicit migration tool; merely

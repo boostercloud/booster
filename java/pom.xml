@@ -36,11 +36,16 @@
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version><configuration><parameters>true</parameters></configuration></plugin>
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version><configuration><failIfNoTests>true</failIfNoTests></configuration></plugin>
       <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-failsafe-plugin</artifactId><version>3.5.4</version><executions><execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution></executions></plugin>
-      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.6.1</version>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.6.2</version>
         <executions><execution><phase>package</phase><goals><goal>shade</goal></goals><configuration>
           <shadedArtifactAttached>true</shadedArtifactAttached><shadedClassifierName>all</shadedClassifierName><createDependencyReducedPom>false</createDependencyReducedPom>
           <filters><filter><artifact>*:*</artifact><excludes><exclude>META-INF/*.SF</exclude><exclude>META-INF/*.DSA</exclude><exclude>META-INF/*.RSA</exclude><exclude>module-info.class</exclude><exclude>META-INF/versions/*/module-info.class</exclude></excludes></filter></filters>
-          <transformers><transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/><transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"><mainClass>io.boostercloud.booster.cli.BoosterCli</mainClass></transformer></transformers>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer"><resource>META-INF/LICENSE</resource></transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer"><resource>META-INF/NOTICE</resource></transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"><mainClass>io.boostercloud.booster.cli.BoosterCli</mainClass></transformer>
+          </transformers>
         </configuration></execution></executions>
       </plugin>
     </plugins>

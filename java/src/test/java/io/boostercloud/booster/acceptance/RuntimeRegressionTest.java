@@ -67,6 +67,21 @@ class RuntimeRegressionTest {
   }
 
   @Test
+  void idempotencyFingerprintDistinguishesRoleArraysFromCommaContainingRoles() {
+    try (var app = Booster.builder(new InMemoryEventStore())
+        .command(IdentityResult.class, String.class, AccessPolicy.authenticated(),
+            (command, register) -> register.context().user().roles().contains("admin") ? "admin-result" : "ordinary")
+        .build()) {
+      var privileged = new RequestContext("same-request", new UserContext("subject", Set.of("admin", "user"), Map.of()), Map.of());
+      var different = new RequestContext("same-request", new UserContext("subject", Set.of("admin, user"), Map.of()), Map.of());
+      assertEquals("admin-result", app.executeCommand("IdentityResult", json(new IdentityResult()), privileged).textValue());
+      var conflict = assertThrows(BoosterException.class,
+          () -> app.executeCommand("IdentityResult", json(new IdentityResult()), different));
+      assertEquals(BoosterException.Code.CONFLICT, conflict.code());
+    }
+  }
+
+  @Test
   void failedProjectionDoesNotCommitAPoisonEventOrPublishPartialBatchState() {
     var store = new InMemoryEventStore();
     try (var app = Booster.builder(store)
@@ -158,6 +173,28 @@ class RuntimeRegressionTest {
       assertEquals(1, first.getReadModel("AccountView", "account", context("read-c")).path("balance").intValue());
     } finally {
       proceed.countDown();
+    }
+  }
+
+  @Test
+  @Timeout(20)
+  void concurrentRetryReturnsWinningReceiptInsteadOfAStalePreflightConflict() throws Exception {
+    Path file = directory.resolve("same-request-runtime");
+    var loaded = new CountDownLatch(1);
+    var release = new CountDownLatch(1);
+    try (var delayed = accountRuntime(new JdbcEventStore(file), loaded, release);
+         var winner = accountRuntime(new JdbcEventStore(file), new CountDownLatch(0), new CountDownLatch(0));
+         var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      var delayedResult = executor.submit(() ->
+          delayed.executeCommand("Deposit", json(new Deposit("account", 1)), context("same-request")));
+      assertTrue(loaded.await(5, TimeUnit.SECONDS));
+      JsonNode winningResult = winner.executeCommand("Deposit", json(new Deposit("account", 1)), context("same-request"));
+      release.countDown();
+      assertEquals(winningResult, delayedResult.get(5, TimeUnit.SECONDS));
+      assertEquals(1, winner.eventStore().lastPosition());
+      assertEquals(1, delayed.getReadModel("AccountView", "account", context("read")).path("balance").intValue());
+    } finally {
+      release.countDown();
     }
   }
 

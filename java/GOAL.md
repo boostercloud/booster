@@ -42,5 +42,6 @@ the deployment lifecycle must be described honestly in the compatibility matrix.
 
 ## Delivery evidence
 
-The final test results, runtime checks, and pull request are recorded in
-`VALIDATION.md`. Do not mark an unexecuted or unsupported feature as verified.
+The final test results and runtime checks are recorded in `VALIDATION.md`;
+the pull request links the implementation and those results. Do not mark an
+unexecuted or unsupported feature as verified.

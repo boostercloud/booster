@@ -12,11 +12,16 @@ class FiltersTest {
       {"id":"a","name":"Alice","age":30,"tags":["admin","reader"],"profile":{"city":"London"},"enabled":true,"nil":null}
       """);
   @Test void scalarCollectionNestedAndBooleanOperators() {
-    assertTrue(Filters.matches(record, json("""{"name":{"beginsWith":"Al","contains":"lic","regex":"^A","iRegex":"alice"},"age":{"gte":30,"lte":30,"in":[20,30]},"tags":{"includes":"admin"},"profile.city":{"eq":"London"},"enabled":{"ne":false}}""")));
-    assertTrue(Filters.matches(record, json("""{"and":[{"age":{"gt":20}},{"age":{"lt":40}}],"or":[{"name":{"eq":"Bob"}},{"profile":{"city":{"eq":"London"}}}],"not":{"age":{"eq":10}}}""")));
-    assertFalse(Filters.matches(record, json("""{"age":{"gt":30}}""")));
-    assertTrue(Filters.matches(record, json("""{"missing":{"isDefined":false},"nil":{"isDefined":true}}""")));
-    assertTrue(Filters.matches(record, json("""{"age":{"eq":30.0}}""")));
+    assertTrue(Filters.matches(record, json("""
+        {"name":{"beginsWith":"Al","contains":"lic","regex":"^A","iRegex":"alice"},"age":{"gte":30,"lte":30,"in":[20,30]},"tags":{"includes":"admin"},"profile.city":{"eq":"London"},"enabled":{"ne":false}}""")));
+    assertTrue(Filters.matches(record, json("""
+        {"and":[{"age":{"gt":20}},{"age":{"lt":40}}],"or":[{"name":{"eq":"Bob"}},{"profile":{"city":{"eq":"London"}}}],"not":{"age":{"eq":10}}}""")));
+    assertFalse(Filters.matches(record, json("""
+        {"age":{"gt":30}}""")));
+    assertTrue(Filters.matches(record, json("""
+        {"missing":{"isDefined":false},"nil":{"isDefined":true}}""")));
+    assertTrue(Filters.matches(record, json("""
+        {"age":{"eq":30.0}}""")));
   }
   @Test void invalidOperatorsAreRejectedEvenForEmptyData() {
     for (String invalid : List.of("[]", "{\"or\":true}", "{\"age\":5}", "{\"age\":{\"in\":3}}", "{\"name\":{\"regex\":\"[\"}}", "{\"age\":{\"eq\":1,\"typo\":2}}")) {
@@ -26,8 +31,10 @@ class FiltersTest {
   }
   @Test void regexHasLinearTimeBehaviorAndRejectsUnsupportedBackreferences() {
     JsonNode longValue = Json.MAPPER.valueToTree(Map.of("value", "a".repeat(100_000) + "!"));
-    assertTimeoutPreemptively(Duration.ofSeconds(2), () -> assertFalse(Filters.matches(longValue, json("""{"value":{"regex":"^(a+)+$"}}"""))));
-    assertThrows(BoosterException.class, () -> Filters.matches(record, json("""{"name":{"regex":"(a)\\\\1"}}""")));
+    assertTimeoutPreemptively(Duration.ofSeconds(2), () -> assertFalse(Filters.matches(longValue, json("""
+        {"value":{"regex":"^(a+)+$"}}"""))));
+    assertThrows(BoosterException.class, () -> Filters.matches(record, json("""
+        {"name":{"regex":"(a)\\\\1"}}""")));
   }
   @Test void keysetPaginationKeepsStableTiesAndSurvivesDeletedCursorRow() {
     Map<String,JsonNode> models = new HashMap<>();

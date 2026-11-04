@@ -202,6 +202,38 @@ class BoosterTransportTest {
         }
         throw new AssertionError("Stream ended before " + expected);
     }
+
+    @Test @org.junit.jupiter.api.Timeout(20)
+    void subscriptionEndsWhenAuthenticatorRevokesItsAuthorizedRole() throws Exception {
+        var identity = new java.util.concurrent.atomic.AtomicReference<>(
+                new UserContext("alice", Set.of("reader"), Map.of()));
+        try (var app = Booster.builder(JdbcEventStore.inMemory()).entity(Life.class)
+                .event(LifeChanged.class, LifeChanged::id, Life.class,
+                        (event, previous) -> event.present() ? new Life(event.id()) : null)
+                .command(ChangeLife.class, Void.class, AccessPolicy.publicAccess(), (command, register) -> {
+                    register.emit(new LifeChanged(command.id(), command.present())); return null;
+                })
+                .readModel(LiveView.class, Life.class, AccessPolicy.roles("reader"),
+                        (state, previous) -> state == null ? null : new LiveView(state.id()))
+                .build();
+             var server = new BoosterHttpServer(app, 0).authentication(header -> identity.get());
+             var client = HttpClient.newHttpClient(); var readers = Executors.newVirtualThreadPerTaskExecutor()) {
+            server.start();
+            app.executeCommand("ChangeLife", Json.MAPPER.valueToTree(new ChangeLife("one", true)), RequestContext.anonymous());
+            String payload = Json.MAPPER.writeValueAsString(Map.of("query", "subscription { LiveView(id:\"one\") { id } }"));
+            var response = client.send(HttpRequest.newBuilder(uri(server, "/graphql/stream"))
+                    .header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString(payload)).build(),
+                    HttpResponse.BodyHandlers.ofInputStream());
+            assertEquals(200, response.statusCode());
+            try (var body = response.body(); var reader = new BufferedReader(new InputStreamReader(body))) {
+                assertEquals(": connected", reader.readLine());
+                Future<String> rejected = readers.submit(() -> readEvent(reader, "event: error"));
+                identity.set(new UserContext("alice", Set.of(), Map.of()));
+                app.executeCommand("ChangeLife", Json.MAPPER.valueToTree(new ChangeLife("one", false)), RequestContext.anonymous());
+                assertTrue(rejected.get(10, TimeUnit.SECONDS).contains("Authentication expired"));
+            }
+        }
+    }
     private static URI uri(BoosterHttpServer server, String path) { return URI.create("http://127.0.0.1:" + server.port() + path); }
     private static HttpResponse<String> post(HttpClient client, BoosterHttpServer server, String query,
                                               Map<String, Object> variables, String key) throws Exception {

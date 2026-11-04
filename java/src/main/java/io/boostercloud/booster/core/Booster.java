@@ -34,6 +34,8 @@ public final class Booster implements AutoCloseable {
   private final Map<StreamId, Snapshot> snapshots = new HashMap<>();
   private final Map<String, Map<String, JsonNode>> models = new HashMap<>();
   private final Map<String, SubmissionPublisher<ReadModelChange>> publishers = new HashMap<>();
+  private static final class RequestLock { private int users; }
+  private final ConcurrentHashMap<String, RequestLock> requestLocks = new ConcurrentHashMap<>();
   private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(
       Thread.ofPlatform().daemon().name("booster-scheduler").factory());
   private long checkpoint;
@@ -53,6 +55,9 @@ public final class Booster implements AutoCloseable {
       publishers.put(name, new SubmissionPublisher<>(ForkJoinPool.commonPool(), 256));
     });
     try { catchUp(false); } catch (RuntimeException error) { scheduler.shutdownNow(); publishers.values().forEach(SubmissionPublisher::close); throw error; }
+    // Recover unfinished handlers after restart without changing the success of the
+    // original command. Failures remain observable through the configured error hook.
+    completeCommittedWork();
   }
   public static Builder builder(EventStore store) { return new Builder(store); }
   public List<Operation> commands() { return commands.values().stream().map(CommandRegistration::operation).sorted(Comparator.comparing(Operation::name)).toList(); }
@@ -64,6 +69,15 @@ public final class Booster implements AutoCloseable {
 
   public JsonNode executeCommand(String name, JsonNode input, RequestContext context) {
     Objects.requireNonNull(context, "Request context is required");
+    var lock = requestLocks.compute(context.requestId(), (key, existing) -> {
+      var value = existing == null ? new RequestLock() : existing;
+      value.users++; return value;
+    });
+    try { synchronized (lock) { return executeCommandOnce(name, input, context); } }
+    finally { requestLocks.compute(context.requestId(), (key, existing) -> --existing.users == 0 ? null : existing); }
+  }
+
+  private JsonNode executeCommandOnce(String name, JsonNode input, RequestContext context) {
     if (context.requestId().startsWith("__booster_")) throw new BoosterException(BoosterException.Code.VALIDATION, "Request ID uses a reserved namespace");
     var registration = commands.get(name);
     if (registration == null) throw new BoosterException(BoosterException.Code.NOT_FOUND, "Unknown command: " + name);
@@ -90,8 +104,23 @@ public final class Booster implements AutoCloseable {
         try { hook.accept(name, committed.receipt().result().deepCopy()); } catch (Exception error) { report(error); }
       }
       return committed.receipt().result().deepCopy();
-    } catch (BoosterException error) { report(error); throw error; }
-    catch (Exception error) { report(error); throw new BoosterException(BoosterException.Code.INTERNAL, "Command failed: " + name, error); }
+    } catch (BoosterException error) {
+      var completed = recoverConcurrentCommit(context, fingerprint);
+      if (completed.isPresent()) return completed.get();
+      report(error); throw error;
+    } catch (Exception error) {
+      var completed = recoverConcurrentCommit(context, fingerprint);
+      if (completed.isPresent()) return completed.get();
+      report(error); throw new BoosterException(BoosterException.Code.INTERNAL, "Command failed: " + name, error);
+    }
+  }
+
+  private Optional<JsonNode> recoverConcurrentCommit(RequestContext context, String fingerprint) {
+    var receipt = store.findCommand(context.requestId());
+    if (receipt.isEmpty()) return Optional.empty();
+    verifyFingerprint(receipt.get(), fingerprint);
+    completeCommittedWork();
+    return Optional.of(receipt.get().result());
   }
 
   private void completeCommittedWork() {
@@ -189,13 +218,16 @@ public final class Booster implements AutoCloseable {
       JsonNode previous = stagedStates.containsKey(envelope.stream()) ? stagedStates.get(envelope.stream())
           : snapshots.getOrDefault(envelope.stream(), new Snapshot(0, NullNode.instance)).state();
       JsonNode next = reduce(definition, decode(envelope), previous);
+      validateIdentity(next, envelope.stream().entityId(), "Entity");
       for (var projection : projections.values()) {
         if (!projection.source().equals(definition.entityType())) continue;
         var staged = stagedModels.computeIfAbsent(projection.model().name(), unused -> new HashMap<>());
         JsonNode before = staged.containsKey(envelope.stream().entityId()) ? staged.get(envelope.stream().entityId())
             : models.get(projection.model().name()).get(envelope.stream().entityId());
         Object projected = projection.projection().apply(convert(next, definition.entityType()), convert(before, projection.model().type()));
-        staged.put(envelope.stream().entityId(), Json.MAPPER.valueToTree(projected));
+        JsonNode value = Json.MAPPER.valueToTree(projected);
+        validateIdentity(value, envelope.stream().entityId(), "Read model");
+        staged.put(envelope.stream().entityId(), value);
       }
       stagedStates.put(envelope.stream(), next);
     }
@@ -238,7 +270,15 @@ public final class Booster implements AutoCloseable {
   JsonNode reduce(EventDefinition definition, Object event, JsonNode previous) {
     Object entity = convert(previous, definition.entityType());
     Object state = definition.reducer().apply(event, entity);
-    return Json.MAPPER.valueToTree(state);
+    JsonNode result = Json.MAPPER.valueToTree(state);
+    validateIdentity(result, definition.entityId().apply(event), "Entity");
+    return result;
+  }
+  private static void validateIdentity(JsonNode state, String id, String kind) {
+    if (state == null || state.isNull() || !state.has("id")) return;
+    JsonNode identity = state.get("id");
+    if (identity.isNull() || !identity.isValueNode() || !identity.asText().equals(id))
+      throw new BoosterException(BoosterException.Code.VALIDATION, kind + " id must match its event stream ID");
   }
   <T> T convert(JsonNode node, Class<T> type) {
     if (node == null || node.isNull()) return null;
@@ -279,6 +319,7 @@ public final class Booster implements AutoCloseable {
           JsonNode before = models.get(name).get(envelope.stream().entityId());
           Object projected = projection.projection().apply(convert(next, definition.entityType()), convert(before, projection.model().type()));
           JsonNode value = Json.MAPPER.valueToTree(projected);
+          validateIdentity(value, envelope.stream().entityId(), "Read model");
           if (!Objects.equals(before == null ? NullNode.instance : before, value)) updates.put(name, value);
         }
         snapshots.put(envelope.stream(), new Snapshot(stored.streamVersion(), next));
@@ -301,8 +342,11 @@ public final class Booster implements AutoCloseable {
   }
   private static String fingerprint(String name, JsonNode input, RequestContext context) {
     var user = context.user();
-    return hash(name + "\n" + canonical(input) + "\n" + Objects.toString(user.subject(), "") + "\n" + new TreeSet<>(user.roles())
-        + "\n" + canonical(Json.MAPPER.valueToTree(user.claims())) + "\n" + canonical(Json.MAPPER.valueToTree(context.metadata())));
+    var identity = Json.MAPPER.createObjectNode();
+    identity.put("operation", name); identity.set("input", input == null ? NullNode.instance : input);
+    identity.put("subject", user.subject()); identity.set("roles", Json.MAPPER.valueToTree(new TreeSet<>(user.roles())));
+    identity.set("claims", Json.MAPPER.valueToTree(user.claims())); identity.set("metadata", Json.MAPPER.valueToTree(context.metadata()));
+    return hash(canonical(identity));
   }
   static String canonical(JsonNode value) {
     if (value == null) return "null";
