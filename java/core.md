@@ -76,12 +76,34 @@ command before dispatch; `migrateSchema` exposes the same validated mechanism.
 
 Startup automatically migrates persisted entity/read-model cache documents
 using their recorded schema version while retaining their source position.
+Before updating a cache document, it commits an idempotent schema-boundary
+record containing the migrated JSON and its source position to the journal.
+Replay applies that recorded value at the original boundary, so entity reads,
+read-model reads, subsequent events and a manual rebuild all observe the
+migration. A crash between the journal write and cache update can be resumed.
 Future versions, migration gaps, entity-ID changes and sequence-key changes are
 rejected. Renaming identities requires the explicit data-migration operations,
 not a schema upcaster. A shared schema registry rejects an older application
 instance after a newer schema has been published, including an instance that
 was already running; old workers cannot overwrite upgraded cache documents.
 The event journal remains authoritative after cache migration.
+
+Historical deletion invalidates affected schema boundaries, just as the
+TypeScript deletion path discards affected snapshots. An entity boundary is
+invalidated when a later deletion marker removes an event at or before its
+source position in the same stream. A read-model boundary is invalidated when
+such a deletion belongs to one of its projection source entity types. Artifacts
+rebuilt after the deletion can be migrated again; that prior deletion does not
+invalidate their new boundaries. Those affected artifacts are reconstructed
+using the current reducers/projections; an old-shape snapshot upcaster is not
+run against an already-current Java object. Unrelated entity streams and models
+with independent source types retain their boundaries. This prevents a stored
+migration snapshot from restoring values contributed by deleted history.
+Invalidated boundary payloads and their owning receipt copies are also redacted;
+only the replay descriptor remains, without its stored state. This is logical
+redaction of active records, not physical erasure of database backups or logs.
+Explicit `migrateEntity` control events remain domain state transformations,
+distinct from schema evolution of derived artifacts.
 
 See [migrations.md](migrations.md) for ordered, leased, resumable data jobs and
 explicit lifecycle completion. `Register.migrateEntity(oldType, oldId, entity)`,
@@ -98,6 +120,15 @@ requires a request ID beginning with `__booster_`. Ordinary commands and actions
 reject that namespace, preventing clients from preclaiming scheduler or migration
 receipts. Actions do not run command-only hooks or command error suppression;
 system job failures must remain visible to their orchestrator.
+
+Named raw provider functions use `.function(name, policy, RocketFunction)` and
+`executeFunction(name, rawRequest, context)`. The function receives the Booster
+runtime, the original provider object and request context, and can return a raw
+provider response or binary value. It is not automatically serialized into a
+command receipt; functions invoke `executeAction` explicitly when their work
+requires a Register. Names are unique, missing functions fail, and the shorthand
+registration denies access unless an explicit policy is supplied. HTTP adapters
+can dispatch the registered function through their normal route mounting API.
 
 `.notification(Type.class)` registers an event without an entity reducer. It
 uses topic `defaultTopic` and the notification's textual `partitionId`, or
@@ -151,6 +182,15 @@ command/handler failure permits its buffered events to commit, matching the
 baseline's explicit policy. A reducer cannot invent a valid next state from a
 suppressed error and still fails. The existing `onError(Consumer<Throwable>)`
 remains an observation callback and cannot change commit success.
+
+The `EVENT` boundary handles an unregistered historical event type: the default
+is failure, replacement errors are preserved, and explicit suppression skips the
+invalid event without breaking stream positions or invoking handlers with an
+untyped object. Schema gaps and future versions remain invalid. Scheduled
+handlers use `executeScheduledAction` and their separate `SCHEDULE` boundary.
+Framework lease/commit guards run outside that suppressible boundary, before
+the handler and before each commit attempt, including explicit flushes. An
+application's error policy cannot convert a lost lease into a successful receipt.
 
 ## History and event administration
 

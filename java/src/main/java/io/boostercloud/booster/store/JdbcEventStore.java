@@ -244,9 +244,7 @@ public final class JdbcEventStore implements EventStore {
             try { original = Json.MAPPER.readValue(rows.getString(1), PendingEvent.class); }
             catch (JsonProcessingException error) { throw storageFailure(error); }
             if (original.metadata().containsKey("deletedAt") && original.payload().isObject() && original.payload().isEmpty()) { connection.commit(); return true; }
-            var metadata = new HashMap<>(original.metadata()); metadata.put("deletedAt", deletedAt.toString());
-            var redacted = new PendingEvent(original.id(), original.stream(), original.type(), original.schemaVersion(),
-                Json.MAPPER.createObjectNode(), original.timestamp(), original.user(), metadata);
+            var redacted = original.redacted(deletedAt);
             try (var update = connection.prepareStatement("UPDATE booster_events SET event_json=? WHERE event_id=?")) {
               update.setString(1, encode(redacted)); update.setString(2, eventId); update.executeUpdate();
             }

@@ -31,12 +31,47 @@ class GraphQLCompatibilityTest {
                 .query(SearchOne.class, new com.fasterxml.jackson.core.type.TypeReference<Optional<FoundPerson>>() {}, AccessPolicy.publicAccess(),
                         (query, context) -> Optional.empty()).build()) {
             var api = new BoosterGraphQL(app);
-            assertEquals("[SearchResult!]", GraphQLTypeUtil.simplePrint(api.schema().getQueryType().getFieldDefinition("SearchAll").getType()));
+            assertEquals("[SearchResult!]!", GraphQLTypeUtil.simplePrint(api.schema().getQueryType().getFieldDefinition("SearchAll").getType()));
             var result = api.execute("{SearchAll {__typename ... on FoundPerson {id displayName} ... on FoundOrder {id amount}} SearchOne {id}}", Map.of(), null, RequestContext.anonymous());
             assertTrue(result.getErrors().isEmpty(), result.getErrors().toString());
             var json = Json.MAPPER.valueToTree(result.toSpecification());
             assertEquals("FoundPerson", json.at("/data/SearchAll/0/__typename").asText());
             assertEquals(42, json.at("/data/SearchAll/1/amount").asInt()); assertTrue(json.at("/data/SearchOne").isNull());
+        }
+    }
+
+    @Test void operationResultsAreRequiredUnlessTheirDeclaredReturnTypeIsOptional() {
+        record RequiredScalar() {} record NullableScalar() {} record RequiredList() {} record NullableList() {}
+        record InvalidRequired() {} record VoidCommand() {} record NullableCommand() {}
+        try (var app = Booster.builder(new InMemoryEventStore())
+                .query(RequiredScalar.class, String.class, AccessPolicy.publicAccess(), (query, context) -> "present")
+                .query(NullableScalar.class, new com.fasterxml.jackson.core.type.TypeReference<Optional<String>>() {}, AccessPolicy.publicAccess(),
+                        (query, context) -> Optional.empty())
+                .query(RequiredList.class, new com.fasterxml.jackson.core.type.TypeReference<List<Optional<String>>>() {}, AccessPolicy.publicAccess(),
+                        (query, context) -> List.of(Optional.of("present"), Optional.empty()))
+                .query(NullableList.class, new com.fasterxml.jackson.core.type.TypeReference<Optional<List<String>>>() {}, AccessPolicy.publicAccess(),
+                        (query, context) -> Optional.empty())
+                .query(InvalidRequired.class, String.class, AccessPolicy.publicAccess(), (query, context) -> null)
+                .command(VoidCommand.class, Void.class, AccessPolicy.publicAccess(), (command, register) -> null)
+                .command(NullableCommand.class, new com.fasterxml.jackson.core.type.TypeReference<Optional<String>>() {}, AccessPolicy.publicAccess(),
+                        (command, register) -> Optional.empty()).build()) {
+            var api = new BoosterGraphQL(app);
+            for (var entry : Map.of("RequiredScalar", "String!", "NullableScalar", "String", "RequiredList", "[String]!", "NullableList", "[String!]").entrySet())
+                assertEquals(entry.getValue(), GraphQLTypeUtil.simplePrint(api.schema().getQueryType().getFieldDefinition(entry.getKey()).getType()));
+            assertEquals("Boolean!", GraphQLTypeUtil.simplePrint(api.schema().getMutationType().getFieldDefinition("VoidCommand").getType()));
+            assertEquals("String", GraphQLTypeUtil.simplePrint(api.schema().getMutationType().getFieldDefinition("NullableCommand").getType()));
+            var result = api.execute("{RequiredScalar NullableScalar RequiredList NullableList}", Map.of(), null, RequestContext.anonymous());
+            assertTrue(result.getErrors().isEmpty(), result.getErrors().toString());
+            var data = Json.MAPPER.valueToTree(result.toSpecification()).path("data");
+            assertEquals("present", data.path("RequiredScalar").asText()); assertTrue(data.path("NullableScalar").isNull());
+            assertEquals("present", data.at("/RequiredList/0").asText()); assertTrue(data.at("/RequiredList/1").isNull());
+            assertTrue(data.path("NullableList").isNull());
+            var invalid = api.execute("{RequiredScalar InvalidRequired}", Map.of(), null, RequestContext.anonymous());
+            assertNull(invalid.getData()); assertEquals(List.of("InvalidRequired"), invalid.getErrors().getFirst().getPath());
+            var command = api.execute("mutation{VoidCommand NullableCommand}", Map.of(), null, RequestContext.anonymous());
+            assertTrue(command.getErrors().isEmpty(), command.getErrors().toString());
+            assertTrue(Json.MAPPER.valueToTree(command.toSpecification()).at("/data/VoidCommand").asBoolean());
+            assertTrue(Json.MAPPER.valueToTree(command.toSpecification()).at("/data/NullableCommand").isNull());
         }
     }
 
@@ -77,7 +112,7 @@ class GraphQLCompatibilityTest {
     }
 
     @Test void schemaUsesBaselineNumericIdAndNullableFieldsAndIrregularPluralNames() {
-        record Person(String id, UUID uuid, int age, @GraphQLNullable String nickname) {}
+        record Person(@GraphQLId String id, UUID uuid, int age, @GraphQLNullable String nickname) {}
         record PersonState(String id) {}
         try (var app = Booster.builder(JdbcEventStore.inMemory()).entity(PersonState.class)
                 .readModel(Person.class, PersonState.class, AccessPolicy.publicAccess(), (s,p) -> new Person(s.id(), UUID.randomUUID(), 1, null)).build()) {
@@ -85,7 +120,28 @@ class GraphQLCompatibilityTest {
             assertNotNull(schema.getQueryType().getFieldDefinition("ListPeople"));
             assertEquals("Float!", GraphQLTypeUtil.simplePrint(schema.getObjectType("Person").getFieldDefinition("age").getType()));
             assertEquals("ID!", GraphQLTypeUtil.simplePrint(schema.getObjectType("Person").getFieldDefinition("uuid").getType()));
+            assertEquals("ID!", GraphQLTypeUtil.simplePrint(schema.getObjectType("Person").getFieldDefinition("id").getType()));
+            assertEquals("UUIDPropertyFilter", GraphQLTypeUtil.simplePrint(((GraphQLInputObjectType) schema.getType("ListPersonFilter")).getFieldDefinition("id").getType()));
             assertEquals("String", GraphQLTypeUtil.simplePrint(schema.getObjectType("Person").getFieldDefinition("nickname").getType()));
+        }
+    }
+
+    @Test void explicitIdentifierMetadataPreservesArbitraryStringIdsInputsListsAndFilters() {
+        record EchoIdentifiers(@GraphQLId String id, @GraphQLId Optional<String> parent, @GraphQLId List<String> references) {}
+        try (var app = Booster.builder(new InMemoryEventStore())
+                .command(EchoIdentifiers.class, EchoIdentifiers.class, AccessPolicy.publicAccess(), (command, register) -> command).build()) {
+            var api = new BoosterGraphQL(app);
+            assertEquals("EchoIdentifiers!", GraphQLTypeUtil.simplePrint(api.schema().getMutationType().getFieldDefinition("EchoIdentifiers").getType()));
+            var input = (GraphQLInputObjectType) api.schema().getType("EchoIdentifiersInput");
+            assertEquals("ID!", GraphQLTypeUtil.simplePrint(input.getFieldDefinition("id").getType()));
+            assertEquals("ID", GraphQLTypeUtil.simplePrint(input.getFieldDefinition("parent").getType()));
+            assertEquals("[ID!]!", GraphQLTypeUtil.simplePrint(input.getFieldDefinition("references").getType()));
+            var result = api.execute("mutation{EchoIdentifiers(input:{id:\"cart-1\",parent:123,references:[\"order-a\",456]}){id parent references}}",
+                    Map.of(), null, RequestContext.anonymous());
+            assertTrue(result.getErrors().isEmpty(), result.getErrors().toString());
+            var payload = Json.MAPPER.valueToTree(result.toSpecification()).at("/data/EchoIdentifiers");
+            assertEquals("cart-1", payload.path("id").asText()); assertEquals("123", payload.path("parent").asText());
+            assertEquals("456", payload.at("/references/1").asText());
         }
     }
 
@@ -176,6 +232,37 @@ class GraphQLCompatibilityTest {
                 assertFalse(api.execute("{eventsByType(type:Changed){type}}", Map.of(), null, RequestContext.anonymous()).getErrors().isEmpty());
                 assertTrue(api.execute("{eventsByType(type:Changed){type}}", Map.of(), null, context).getErrors().isEmpty());
             }
+        }
+    }
+
+    @Test void eventHistoryPreservesVerifiedIssuerOnlyIdentitiesWithoutSubject() throws Exception {
+        record HistoryEntity(String id) {} record HistoryCreated(String id) {} record CreateHistory(String id) {}
+        var generator = java.security.KeyPairGenerator.getInstance("RSA"); generator.initialize(2048); var pair = generator.generateKeyPair();
+        var verifier = io.boostercloud.booster.transport.auth.JwtVerifier.boosterCompatible(
+                (java.security.interfaces.RSAPublicKey) pair.getPublic(), "https://issuer.example");
+        var encoder = Base64.getUrlEncoder().withoutPadding();
+        String unsigned = encoder.encodeToString(Json.MAPPER.writeValueAsBytes(Map.of("alg", "RS256"))) + "."
+                + encoder.encodeToString(Json.MAPPER.writeValueAsBytes(Map.of("iss", "https://issuer.example", "email", "auditor@example.test", "custom:role", "auditor")));
+        var signature = java.security.Signature.getInstance("SHA256withRSA"); signature.initSign(pair.getPrivate());
+        signature.update(unsigned.getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+        var identity = AuthenticationProvider.jwt(verifier).authenticate("Bearer " + unsigned + "." + encoder.encodeToString(signature.sign()));
+        assertTrue(identity.authenticated()); assertNull(identity.subject());
+        try (var app = Booster.builder(new InMemoryEventStore())
+                .event(HistoryCreated.class, HistoryCreated::id, HistoryEntity.class, (event, previous) -> new HistoryEntity(event.id()))
+                .command(CreateHistory.class, Void.class, AccessPolicy.authenticated(), (command, register) -> {
+                    register.emit(new HistoryCreated(command.id())); return null;
+                }).eventHistoryAccess(HistoryEntity.class, AccessPolicy.roles("auditor")).build()) {
+            var api = new BoosterGraphQL(app);
+            var created = api.execute("mutation{CreateHistory(input:{id:\"created\"})}", Map.of(), null,
+                    new RequestContext("issuer-only-command", identity, Map.of()));
+            assertTrue(created.getErrors().isEmpty(), created.getErrors().toString());
+            var history = api.execute("{eventsByEntity(entity:HistoryEntity){entityID user{id username roles}}}", Map.of(), null,
+                    new RequestContext("issuer-only-history", identity, Map.of()));
+            assertTrue(history.getErrors().isEmpty(), history.getErrors().toString());
+            var event = Json.MAPPER.valueToTree(history.toSpecification()).at("/data/eventsByEntity/0");
+            assertEquals("created", event.path("entityID").asText()); assertTrue(event.at("/user/id").isNull());
+            assertEquals("auditor@example.test", event.at("/user/username").asText()); assertEquals("auditor", event.at("/user/roles/0").asText());
+            assertTrue(app.eventStore().readAll(0, 10).getFirst().event().user().verifiedIdentity());
         }
     }
 

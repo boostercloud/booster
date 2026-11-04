@@ -12,10 +12,15 @@ public final class Register extends QueryContext {
   private final Map<StreamId,Booster.Snapshot> startingStates = new LinkedHashMap<>();
   private final Set<StreamId> liveStreams = new HashSet<>();
   final String operationFingerprint;
+  final Runnable commitGuard;
   int flushIndex;
   long validatedPosition;
   Register(Booster runtime, RequestContext context, String operationFingerprint) {
+    this(runtime, context, operationFingerprint, () -> {});
+  }
+  Register(Booster runtime, RequestContext context, String operationFingerprint, Runnable commitGuard) {
     super(runtime, context); this.operationFingerprint = Objects.requireNonNull(operationFingerprint);
+    this.commitGuard = Objects.requireNonNull(commitGuard);
     runtime.restoreFlushedPrefix(this);
   }
   /** Persist the current buffer. Later failures cannot undo successfully flushed events. */

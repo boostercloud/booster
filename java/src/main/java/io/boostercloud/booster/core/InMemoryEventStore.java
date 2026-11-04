@@ -69,9 +69,8 @@ public final class InMemoryEventStore implements EventStore {
       var previous = journal.get(index);
       if (!previous.event().id().equals(eventId)) continue;
       if (previous.event().metadata().containsKey("deletedAt") && previous.event().payload().isObject() && previous.event().payload().isEmpty()) return true;
-      var original = previous.event(); var metadata = new HashMap<>(original.metadata()); metadata.put("deletedAt", deletedAt.toString());
-      var redacted = new StoredEvent(previous.position(), previous.streamVersion(), new PendingEvent(original.id(), original.stream(), original.type(),
-          original.schemaVersion(), Json.MAPPER.createObjectNode(), original.timestamp(), original.user(), metadata));
+      var original = previous.event();
+      var redacted = new StoredEvent(previous.position(), previous.streamVersion(), original.redacted(deletedAt));
       journal.set(index, redacted);
       receipts.replaceAll((id, receipt) -> new CommandReceipt(receipt.requestId(), receipt.fingerprint(), receipt.result(),
           receipt.events().stream().map(event -> event.event().id().equals(eventId) ? redacted : event).toList()));

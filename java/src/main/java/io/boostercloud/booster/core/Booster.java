@@ -47,6 +47,12 @@ public final class Booster implements AutoCloseable {
   private final Set<String> redactedEvents = new HashSet<>();
   private long indexedPosition;
   private boolean deletionsDirty;
+  private record SchemaAnchor(String eventId, String namespace, String key, int version, long sourcePosition, JsonNode state, Set<String> sourceTypes) {}
+  private final Map<Long,List<SchemaAnchor>> schemaAnchors = new TreeMap<>();
+  private record Deletion(StreamId stream, long eventPosition, long markerPosition, java.time.Instant timestamp) {}
+  private final Map<String,Deletion> deletions = new HashMap<>();
+  private final Set<String> redactedSchemaEvents = new HashSet<>();
+  private boolean schemasDirty;
   private final Map<StreamId, Snapshot> snapshots = new HashMap<>();
   private final Map<String, Map<String, JsonNode>> models = new HashMap<>();
   private final Map<String, SubmissionPublisher<ReadModelChange>> publishers = new HashMap<>();
@@ -191,15 +197,21 @@ public final class Booster implements AutoCloseable {
 
   /** Scheduled handlers have their own explicitly configurable error boundary. */
   public JsonNode executeScheduledAction(String name, JsonNode input, RequestContext context, AccessPolicy policy, CommandHandler<JsonNode> handler) {
-    Objects.requireNonNull(context); Objects.requireNonNull(policy); Objects.requireNonNull(handler);
+    return executeScheduledAction(name, input, context, policy, handler, () -> {});
+  }
+  /** Orchestration guards are outside suppressible application errors, including explicit register flushes. */
+  public JsonNode executeScheduledAction(String name, JsonNode input, RequestContext context, AccessPolicy policy,
+      CommandHandler<JsonNode> handler, Runnable commitGuard) {
+    Objects.requireNonNull(context); Objects.requireNonNull(policy); Objects.requireNonNull(handler); Objects.requireNonNull(commitGuard);
     if (name == null || name.isBlank() || !context.requestId().startsWith("__booster_")) throw new IllegalArgumentException("Scheduled actions require a reserved request ID and name");
     var registration = new CommandRegistration(new Operation(name, JsonNode.class, JsonNode.class), policy,
         (value, register) -> handler.handle((JsonNode)value, register));
-    return executeRegistered(name, "system:" + name, registration, input, context, true, FrameworkError.Stage.SCHEDULE);
+    return executeRegistered(name, "system:" + name, registration, input, context, true, FrameworkError.Stage.SCHEDULE, commitGuard);
   }
 
   public List<String> functions() { return functions.keySet().stream().sorted().toList(); }
   public Object executeFunction(String name, Object request, RequestContext context) {
+    if (name == null || name.isBlank()) throw new BoosterException(BoosterException.Code.VALIDATION, "Rocket function name is required");
     var function = functions.get(name);
     if (function == null) throw new BoosterException(BoosterException.Code.NOT_FOUND, "Unknown rocket function: " + name);
     authorize(function.policy(), context, request instanceof JsonNode json ? json : null);
@@ -213,17 +225,22 @@ public final class Booster implements AutoCloseable {
     return executeRegistered(name, identity, registration, input, context, trusted, null);
   }
   private JsonNode executeRegistered(String name, String identity, CommandRegistration registration, JsonNode input, RequestContext context, boolean trusted, FrameworkError.Stage boundary) {
+    return executeRegistered(name, identity, registration, input, context, trusted, boundary, () -> {});
+  }
+  private JsonNode executeRegistered(String name, String identity, CommandRegistration registration, JsonNode input, RequestContext context,
+      boolean trusted, FrameworkError.Stage boundary, Runnable commitGuard) {
     Objects.requireNonNull(context, "Request context is required");
     if (!trusted && context.requestId().startsWith("__booster_")) throw new BoosterException(BoosterException.Code.VALIDATION, "Request ID uses a reserved namespace");
     var lock = requestLocks.compute(context.requestId(), (key, existing) -> {
       var value = existing == null ? new RequestLock() : existing;
       value.users++; return value;
     });
-    try { synchronized (lock) { return executeCommandOnce(name, identity, registration, input, context, boundary); } }
+    try { synchronized (lock) { return executeCommandOnce(name, identity, registration, input, context, boundary, commitGuard); } }
     finally { requestLocks.compute(context.requestId(), (key, existing) -> --existing.users == 0 ? null : existing); }
   }
 
-  private JsonNode executeCommandOnce(String name, String identity, CommandRegistration registration, JsonNode input, RequestContext context, FrameworkError.Stage boundary) {
+  private JsonNode executeCommandOnce(String name, String identity, CommandRegistration registration, JsonNode input, RequestContext context,
+      FrameworkError.Stage boundary, Runnable commitGuard) {
     authorize(registration.policy(), context, input);
     String fingerprint = fingerprint(identity, input, context);
     try {
@@ -234,9 +251,10 @@ public final class Booster implements AutoCloseable {
         completeCommittedWork();
         return cached.get().result().deepCopy();
       }
-      var register = new Register(this, context, fingerprint);
+      var register = new Register(this, context, fingerprint, commitGuard);
       boolean commandOperation = !identity.startsWith("action:") && !identity.startsWith("system:");
       Object result = null;
+      commitGuard.run();
       try {
         Object command = convert(commandOperation ? applyHooks("command", name, input, context) : input, registration.operation().inputType());
         if (command == null) throw new BoosterException(BoosterException.Code.VALIDATION, "Command input is required");
@@ -433,12 +451,14 @@ public final class Booster implements AutoCloseable {
 
   private CommitResult commitRegister(String requestId, String fingerprint, Register register, JsonNode result) {
     for (int attempt = 0; attempt < 32; attempt++) {
+      register.commitGuard.run();
       try { validatePending(register); }
       catch (OptimisticConcurrencyException conflict) {
         var existing = store.findCommand(requestId);
         if (existing.isPresent()) { verifyFingerprint(existing.get(), fingerprint); return new CommitResult(true, existing.get()); }
         throw conflict;
       }
+      register.commitGuard.run();
       try { return store.commitAtPosition(requestId, fingerprint, register.expectedVersions, register.pending, result, register.validatedPosition); }
       catch (OptimisticConcurrencyException conflict) {
         // Re-evaluate only deterministic reducers/projections against the newly committed journal.
@@ -567,7 +587,7 @@ public final class Booster implements AutoCloseable {
     JsonNode next;
     switch (envelope.type()) {
       case "__booster_entity_delete" -> next = NullNode.instance;
-      case "__booster_entity_touch", "__booster_event_deleted" -> next = previous.deepCopy();
+      case "__booster_entity_touch", "__booster_event_deleted", "__booster_schema_upgraded" -> next = previous.deepCopy();
       case "__booster_entity_replace" -> {
         var type = entityClass(envelope.stream().entityType());
         if (type == null) throw new BoosterException(BoosterException.Code.INTERNAL, "Migrated entity type is not registered");
@@ -696,7 +716,7 @@ public final class Booster implements AutoCloseable {
   }
   private void catchUp(boolean notify) {
     assertSchemaCompatibility(); indexDeletions();
-    boolean rebuilding = deletionsDirty;
+    boolean rebuilding = deletionsDirty || schemasDirty;
     Map<String,Map<String,JsonNode>> beforeRebuild = rebuilding ? copyModels() : null;
     if (rebuilding) { snapshots.clear(); models.values().forEach(Map::clear); checkpoint = 0; }
     while (true) {
@@ -710,7 +730,11 @@ public final class Booster implements AutoCloseable {
         boolean deleted = deletedEvents.containsKey(envelope.id()) || envelope.type().equals("__booster_event_deleted");
         JsonNode next = deleted ? previous.state().deepCopy() : reduceStored(envelope, previous.state());
         var projected = copyModels();
-        if (!deleted && (internalEvent(envelope) || eventsByName.containsKey(envelope.type()))) project(envelope.stream(), previous.state(), next, projected);
+        var stagedSnapshots = new HashMap<>(snapshots);
+        stagedSnapshots.put(envelope.stream(), new Snapshot(stored.streamVersion(), next));
+        var transitions = new LinkedHashMap<StreamId,JsonNode>();
+        if (!deleted && (internalEvent(envelope) || eventsByName.containsKey(envelope.type()))) transitions.put(envelope.stream(), next);
+        applyProjectionsAndSchemas(stored.position(), snapshots, stagedSnapshots, projected, transitions, deletions.values());
         var updates = new ArrayList<ReadModelChange>();
         projected.forEach((name, values) -> {
           var keys = new TreeSet<String>(); keys.addAll(models.get(name).keySet()); keys.addAll(values.keySet());
@@ -725,9 +749,12 @@ public final class Booster implements AutoCloseable {
             }
           }
         });
-        if (entityClass(envelope.stream().entityType()) != null) persistDerived("snapshots:" + envelope.stream().entityType(), envelope.stream().entityId(), stored.position(),
-            schemaVersion(entityClass(envelope.stream().entityType())), next);
-        snapshots.put(envelope.stream(), new Snapshot(stored.streamVersion(), next));
+        var changedStreams = new HashSet<>(transitions.keySet()); changedStreams.add(envelope.stream());
+        for (var stream : changedStreams) {
+          if (entityClass(stream.entityType()) != null) persistDerived("snapshots:" + stream.entityType(), stream.entityId(), stored.position(),
+              schemaVersion(entityClass(stream.entityType())), stagedSnapshots.get(stream).state());
+        }
+        snapshots.clear(); snapshots.putAll(stagedSnapshots);
         models.clear(); models.putAll(projected);
         checkpoint = stored.position();
         if (notify && !rebuilding) for (var update : updates) publishers.get(update.readModel()).offer(update,
@@ -737,7 +764,7 @@ public final class Booster implements AutoCloseable {
     if (rebuilding) {
       refreshDerivedAfterDeletion();
       if (notify) publishDifference(beforeRebuild, models);
-      deletionsDirty = false;
+      deletionsDirty = false; schemasDirty = false;
     }
   }
 
@@ -749,6 +776,21 @@ public final class Booster implements AutoCloseable {
           String id = stored.event().payload().path("eventId").asText();
           if (id.isBlank()) throw new BoosterException(BoosterException.Code.INTERNAL, "Invalid deletion marker");
           if (deletedEvents.putIfAbsent(id, stored.event().timestamp()) == null) deletionsDirty = true;
+          var target = findStoredEvent(id).orElseThrow(() -> new BoosterException(BoosterException.Code.INTERNAL, "Deletion references an absent event"));
+          deletions.putIfAbsent(id, new Deletion(target.event().stream(), target.position(), stored.position(), stored.event().timestamp()));
+        } else if (stored.event().type().equals("__booster_schema_upgraded")) {
+          if (stored.event().payload().isObject() && stored.event().payload().isEmpty()
+              && stored.event().metadata().containsKey("deletedAt") && stored.event().metadata().containsKey("__booster_schemaDescriptor")) {
+            redactedSchemaEvents.add(stored.event().id()); indexedPosition = stored.position(); continue;
+          }
+          JsonNode value = stored.event().payload();
+          String namespace = value.path("namespace").asText(), key = value.path("key").asText();
+          long source = value.path("sourcePosition").asLong(-1); int version = value.path("schemaVersion").asInt(0);
+          if ((!namespace.startsWith("snapshots:") && !namespace.startsWith("readModels:")) || key.isBlank() || source < 1 || source >= stored.position() || version < 1 || !value.has("state"))
+            throw new BoosterException(BoosterException.Code.INTERNAL, "Invalid schema boundary record");
+          var sources = new TreeSet<String>(); value.path("sourceTypes").forEach(type -> sources.add(type.asText()));
+          schemaAnchors.computeIfAbsent(source, ignored -> new ArrayList<>()).add(new SchemaAnchor(stored.event().id(), namespace, key, version, source, value.get("state"), Set.copyOf(sources)));
+          schemasDirty = true;
         }
         indexedPosition = stored.position();
       }
@@ -758,7 +800,76 @@ public final class Booster implements AutoCloseable {
         throw new BoosterException(BoosterException.Code.INTERNAL, "Deletion references an absent event");
       redactedEvents.add(deleted.getKey());
     }
+    for (var anchors : schemaAnchors.values()) for (var anchor : anchors) {
+      if (validAnchor(anchor) || redactedSchemaEvents.contains(anchor.eventId())) continue;
+      var invalidatedAt = deletions.values().stream().filter(deletion -> invalidates(anchor, deletion))
+          .map(Deletion::timestamp).min(java.time.Instant::compareTo).orElseThrow();
+      if (!store.redactEventPayload(anchor.eventId(), invalidatedAt)) throw new BoosterException(BoosterException.Code.INTERNAL, "Schema boundary is absent");
+      redactedSchemaEvents.add(anchor.eventId());
+    }
   }
+  private void applyProjectionsAndSchemas(long position, Map<StreamId,Snapshot> beforeSnapshots,
+      Map<StreamId,Snapshot> stagedSnapshots, Map<String,Map<String,JsonNode>> projected,
+      Map<StreamId,JsonNode> transitions, Collection<Deletion> effectiveDeletions) {
+    for (var anchor : schemaAnchors.getOrDefault(position, List.of())) {
+      if (!anchor.namespace().startsWith("snapshots:") || !validAnchor(anchor, effectiveDeletions)) continue;
+      String typeName = anchor.namespace().substring("snapshots:".length());
+      Class<?> type = entityClass(typeName); if (type == null) continue;
+      var stream = new StreamId(typeName, anchor.key());
+      JsonNode upgraded = anchor.state().isNull() ? NullNode.instance : migrateSchema(type, anchor.version(), anchor.state());
+      validateIdentity(upgraded, anchor.key(), "Migrated entity");
+      long version = stagedSnapshots.getOrDefault(stream, new Snapshot(0, NullNode.instance)).version();
+      stagedSnapshots.put(stream, new Snapshot(version, upgraded)); transitions.put(stream, upgraded);
+    }
+    transitions.forEach((stream, value) -> project(stream, beforeSnapshots.getOrDefault(stream, new Snapshot(0, NullNode.instance)).state(), value, projected));
+    for (var anchor : schemaAnchors.getOrDefault(position, List.of())) {
+      if (!anchor.namespace().startsWith("readModels:") || !validAnchor(anchor, effectiveDeletions)) continue;
+      String name = anchor.namespace().substring("readModels:".length()); var registration = projections.get(name); if (registration == null) continue;
+      JsonNode upgraded = anchor.state().isNull() ? NullNode.instance : migrateSchema(registration.model().type(), anchor.version(), anchor.state());
+      if (upgraded.isNull()) projected.get(name).remove(anchor.key()); else projected.get(name).put(anchor.key(), upgraded);
+    }
+  }
+
+  private boolean validAnchor(SchemaAnchor anchor) {
+    return validAnchor(anchor, deletions.values());
+  }
+  private boolean validAnchor(SchemaAnchor anchor, Collection<Deletion> effectiveDeletions) {
+    return effectiveDeletions.stream().noneMatch(deletion -> invalidates(anchor, deletion));
+  }
+  private boolean invalidates(SchemaAnchor anchor, Deletion deletion) {
+    // An artifact rebuilt at or after the marker already excludes the deleted event.
+    if (deletion.eventPosition() > anchor.sourcePosition() || deletion.markerPosition() <= anchor.sourcePosition()) return false;
+    if (anchor.namespace().startsWith("snapshots:"))
+      return deletion.stream().equals(new StreamId(anchor.namespace().substring("snapshots:".length()), anchor.key()));
+    return anchor.sourceTypes().contains(deletion.stream().entityType());
+  }
+  private Set<String> anchorSources(String namespace) {
+    if (namespace.startsWith("snapshots:")) return Set.of(namespace.substring("snapshots:".length()));
+    var registration = projections.get(namespace.substring("readModels:".length()));
+    var result = new TreeSet<String>();
+    if (registration != null) registration.bindings().forEach(binding -> result.add(entities.get(binding.source())));
+    return Set.copyOf(result);
+  }
+  private void appendSchemaAnchor(String namespace, String key, int sourceVersion, int targetVersion, long position, JsonNode value) {
+    if (position < 1 || position > store.lastPosition()) throw new BoosterException(BoosterException.Code.VALIDATION, "Persisted state references an absent journal position");
+    var payload = Json.MAPPER.createObjectNode().put("namespace", namespace).put("key", key)
+        .put("sourceVersion", sourceVersion).put("schemaVersion", targetVersion).put("sourcePosition", position);
+    payload.set("state", value); payload.set("sourceTypes", Json.MAPPER.valueToTree(anchorSources(namespace)));
+    String identity = namespace + ":" + key + ":" + sourceVersion + ":" + targetVersion + ":" + position;
+    String requestId = "__booster_schema:" + hash(identity), fingerprint = hash(canonical(payload));
+    var stream = new StreamId("__booster_schema", hash(namespace + ":" + key));
+    for (int attempt = 0; attempt < 32; attempt++) {
+      var existing = store.findCommand(requestId);
+      if (existing.isPresent()) { verifyFingerprint(existing.get(), fingerprint); return; }
+      long head = store.lastPosition();
+      var history = store.readStream(stream, 0); long expected = history.isEmpty() ? 0 : history.getLast().streamVersion();
+      var event = new PendingEvent(UUID.randomUUID().toString(), stream, "__booster_schema_upgraded", 1, payload,
+          java.time.Instant.now(), UserContext.anonymous(), Map.of("requestId", requestId));
+      try { store.commitAtPosition(requestId, fingerprint, Map.of(stream, expected), List.of(event), NullNode.instance, head); return; }
+      catch (OptimisticConcurrencyException conflict) { if (attempt == 31) throw conflict; }
+    }
+  }
+
   private void refreshDerivedAfterDeletion() {
     for (var projection : projections.values()) {
       String name = projection.model().name(), namespace = "readModels:" + name;
@@ -798,20 +909,34 @@ public final class Booster implements AutoCloseable {
   boolean eventDeleted(String id) { synchronized (this) { catchUp(true); return deletedEvents.containsKey(id); } }
   private void validateDeletionReplay(List<PendingEvent> pending, Set<String> removing, long untilPosition) {
     var omitted = new HashSet<>(deletedEvents.keySet()); omitted.addAll(removing);
-    var staged = new HashMap<StreamId,JsonNode>(); var projected = new LinkedHashMap<String,Map<String,JsonNode>>();
-    projections.keySet().forEach(name -> projected.put(name, new TreeMap<>()));
-    var all = new ArrayList<PendingEvent>(); long cursor = 0;
+    var effectiveDeletions = new HashMap<>(deletions);
+    record ReplayEntry(long position, PendingEvent event) {}
+    var all = new ArrayList<ReplayEntry>(); long cursor = 0;
     while (true) {
       var page = store.readAll(cursor, 256); if (page.isEmpty()) break;
-      for (var stored : page) { if (stored.position() <= untilPosition) all.add(stored.event()); cursor = stored.position(); }
+      for (var stored : page) {
+        if (stored.position() <= untilPosition) {
+          all.add(new ReplayEntry(stored.position(), stored.event()));
+          if (removing.contains(stored.event().id())) effectiveDeletions.putIfAbsent(stored.event().id(),
+              new Deletion(stored.event().stream(), stored.position(), untilPosition + 1, java.time.Instant.EPOCH));
+        }
+        cursor = stored.position();
+      }
       if (cursor >= untilPosition) break;
     }
-    all.addAll(pending);
-    for (var event : all) {
-      if (omitted.contains(event.id()) || event.type().equals("__booster_event_deleted")) continue;
-      JsonNode previous = staged.getOrDefault(event.stream(), NullNode.instance), next = reduceStored(event, previous);
-      if (internalEvent(event) || eventsByName.containsKey(event.type())) project(event.stream(), previous, next, projected);
-      staged.put(event.stream(), next);
+    long position = untilPosition;
+    for (var event : pending) all.add(new ReplayEntry(++position, event));
+    var states = new HashMap<StreamId,Snapshot>(); var projected = new LinkedHashMap<String,Map<String,JsonNode>>();
+    projections.keySet().forEach(name -> projected.put(name, new TreeMap<>()));
+    for (var item : all) {
+      var event = item.event(); var previous = states.getOrDefault(event.stream(), new Snapshot(0, NullNode.instance));
+      boolean deleted = omitted.contains(event.id()) || event.type().equals("__booster_event_deleted");
+      JsonNode next = deleted ? previous.state() : reduceStored(event, previous.state());
+      var staged = new HashMap<>(states); staged.put(event.stream(), new Snapshot(previous.version() + 1, next));
+      var transitions = new LinkedHashMap<StreamId,JsonNode>();
+      if (!deleted && (internalEvent(event) || eventsByName.containsKey(event.type()))) transitions.put(event.stream(), next);
+      applyProjectionsAndSchemas(item.position(), states, staged, projected, transitions, effectiveDeletions.values());
+      states = staged;
     }
   }
   public boolean deleteEvent(String entityType, String entityId, java.time.Instant createdAt, RequestContext context) {
@@ -860,7 +985,7 @@ public final class Booster implements AutoCloseable {
   }
 
   private void migrateDerivedSchemas() {
-    publishSchemaRegistry();
+    indexDeletions(); publishSchemaRegistry();
     var types = new LinkedHashMap<String,Class<?>>();
     entities.forEach((type, name) -> types.put("snapshots:" + name, type));
     projections.forEach((name, registration) -> types.put("readModels:" + name, registration.model().type()));
@@ -878,6 +1003,8 @@ public final class Booster implements AutoCloseable {
             int from = document.path("schemaVersion").asInt(1), target = schemaVersion(entry.getValue());
             if (from < 1 || from > target) throw new BoosterException(BoosterException.Code.VALIDATION, "Invalid or future persisted schema for " + entry.getKey());
             if (from == target) break;
+            var proposed = new SchemaAnchor("", current.namespace(), current.key(), target, document.path("position").asLong(-1), document.path("state"), anchorSources(current.namespace()));
+            if (!validAnchor(proposed)) { deletionsDirty = true; break; }
             JsonNode previousState = document.path("state");
             JsonNode migrated = previousState.isNull() ? NullNode.instance : migrateSchema(entry.getValue(), from, previousState);
             if (previousState.hasNonNull("id")) validateIdentity(migrated, previousState.path("id").asText(), "Migrated state");
@@ -887,6 +1014,7 @@ public final class Booster implements AutoCloseable {
               if (model.sequenceKey() != null && !sameSequence(sequenceOf(previousState, model.sequenceKey()), sequenceOf(migrated, model.sequenceKey())))
                 throw new BoosterException(BoosterException.Code.VALIDATION, "Schema migration changed a read-model sequence key");
             }
+            appendSchemaAnchor(current.namespace(), current.key(), from, target, document.path("position").asLong(-1), migrated);
             var next = (com.fasterxml.jackson.databind.node.ObjectNode) document.deepCopy();
             next.put("schemaVersion", target); next.set("state", migrated);
             try { stateStore.put(current.namespace(), current.key(), current.version(), next); break; }
@@ -960,6 +1088,7 @@ public final class Booster implements AutoCloseable {
     var identity = Json.MAPPER.createObjectNode();
     identity.put("operation", name); identity.set("input", input == null ? NullNode.instance : input);
     identity.put("subject", user.subject()); identity.set("roles", Json.MAPPER.valueToTree(new TreeSet<>(user.roles())));
+    if ((user.subject() == null || user.subject().isBlank()) && user.authenticated()) identity.put("authenticated", true);
     identity.set("claims", Json.MAPPER.valueToTree(user.claims())); identity.set("metadata", Json.MAPPER.valueToTree(context.metadata()));
     var ignoredHeaders = Set.of("authorization", "proxy-authorization", "host", "content-length", "connection", "transfer-encoding", "user-agent", "accept-encoding", "idempotency-key", "x-request-id", "traceparent", "tracestate", "date");
     var headers = new TreeMap<String,List<String>>();

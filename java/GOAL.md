@@ -1,6 +1,6 @@
 # Goal: complete Booster Java with Azure and the requested rockets
 
-**Status: IN PROGRESS — the local foundation is not the completed goal.**
+**Status: IMPLEMENTED AND LOCALLY VERIFIED — final PR delivery checks are in progress.**
 
 Continue implementation in the existing [pull request #1607](https://github.com/boostercloud/booster/pull/1607),
 branch `feat/booster-java`. All implementation, tests and documentation belong
@@ -52,27 +52,28 @@ explicitly accepted by the user.
 
 - [x] Establish a typed Java local foundation: commands, events, reducers,
   simple projections, queries, transactional journal, CLI and real GraphQL.
-- [ ] Complete the remaining core/provider behavior used by the TypeScript
+- [x] Complete the remaining core/provider behavior used by the TypeScript
   baseline, including contextual registration/flush, event handling, notifications,
   hooks, errors, health and extension functions; inventory each item explicitly.
-- [ ] Preserve ordering, optimistic concurrency, idempotency, authorization,
+- [x] Preserve ordering, optimistic concurrency, idempotency, authorization,
   correlation propagation and recovery across provider implementations.
 
 ### Azure provider — required, AWS excluded
 
-- [ ] Implement actual Azure runtime adapters for events, snapshots, read models,
+- [x] Implement actual Azure runtime adapters for events, snapshots, read models,
   searching, dispatch/deduplication, subscriptions/connections, scheduling and
   the provider's event-stream interfaces.
-- [ ] Implement Azure infrastructure and CLI lifecycle: configuration,
+- [x] Implement Azure infrastructure and CLI lifecycle: configuration,
   synthesis, deployment/update, startup/health and intentional teardown.
-- [ ] Cover the baseline's Cosmos DB, Azure Functions/hosting, Event Hubs,
+- [x] Cover the baseline's Cosmos DB, Azure Functions/hosting, Event Hubs,
   Web PubSub, Storage, managed identity and role-assignment responsibilities.
   Select and document a hosting option that really supports Java 27.
-- [ ] Preserve Cosmos change-feed/lease processing, Event Hubs producer/consumer
+- [x] Preserve Cosmos change-feed/lease processing, Event Hubs producer/consumer
   flow, HTTP/timer/change-feed triggers, the Web PubSub `booster` hub and durable
   subscription/connection records required by the existing Azure provider.
-- [ ] Verify service serialization, partition/concurrency semantics, retries,
-  pagination, failures and restarts using contract tests and available emulators.
+- [x] Verify service serialization, partition/concurrency semantics, retries,
+  pagination, failures and restarts using contract tests. The optional Cosmos emulator could not be downloaded
+  because the managed proxy blocks its official CDN; emulator results are unverified.
 - [ ] DEFERRED BY USER: Run an isolated Azure deployment with real command/event/projection/query,
   subscription and rocket checks, then verify cleanup of created resources.
   Do not run this until separately authorized when access becomes available.
@@ -81,86 +82,86 @@ explicitly accepted by the user.
 
 ### Local provider and infrastructure — required
 
-- [ ] Provide a reusable local provider with durable events, snapshots/read models,
+- [x] Provide a reusable local provider with durable events, snapshots/read models,
   migration state, scheduling, subscriptions, filesystem uploads and webhook routing.
-- [ ] Supply application configuration and infrastructure lifecycle commands to
+- [x] Supply application configuration and infrastructure lifecycle commands to
   synthesize, start/stop, inspect health, rebuild and intentionally clean up local
   applications, beyond the bundled demo; retain data across ordinary restarts.
-- [ ] Make generated applications use the complete local provider and document
+- [x] Make generated applications use the complete local provider and document
   reproducible build/start/configuration/cleanup without a cloud account.
-- [ ] Test an actual local application in separate processes, including restart,
+- [x] Test an actual local application in separate processes, including restart,
   concurrent commands, projections/joins, migrations, authenticated WebSocket
   subscriptions and both rockets with real HTTP and file transfers.
 
 ### Advanced projections and read models
 
-- [ ] Implement joined projections across entities, join keys and filter joins,
+- [x] Implement joined projections across entities, join keys and filter joins,
   fan-out, unprojection, deletion and no-change outcomes.
-- [ ] Implement persisted read-model versions, concurrency handling/retries,
+- [x] Implement persisted read-model versions, concurrency handling/retries,
   sequence/composite-key behavior and deterministic rebuild/reprojection.
-- [ ] Test duplicate/out-of-order delivery, concurrent updates, joins changing
+- [x] Test duplicate/out-of-order delivery, concurrent updates, joins changing
   membership, deletion, pagination and restart consistency.
 
 ### Schema and data migrations
 
-- [ ] Complete schema migrations for commands, events, entities/snapshots and
+- [x] Complete schema migrations for commands, events, entities/snapshots and
   read models, with consecutive versions, invalid-gap/future-version rejection
   and preserved historical data.
-- [ ] Implement the data-migration mechanism: named jobs, durable progress,
+- [x] Implement the data-migration mechanism: named jobs, durable progress,
   completion/failure records, resumability and idempotency.
-- [ ] Support baseline entity rename/ID migration, touch/reprojection and
+- [x] Support baseline entity rename/ID migration, touch/reprojection and
   migration parameters through real provider operations.
-- [ ] Test interrupted and retried migrations against populated persistent data,
+- [x] Test interrupted and retried migrations against populated persistent data,
   ensuring no event loss or duplicate side effects.
 
 ### Existing APIs, authentication and subscriptions
 
-- [ ] Inventory and implement the existing GraphQL operation names, generated
+- [x] Inventory and implement the existing GraphQL operation names, generated
   input/output/filter/sort types, nullability, selection behavior, cursor/list
   semantics, schema versions and error behavior.
-- [ ] Implement the baseline WebSocket subscription protocol and lifecycle,
+- [x] Implement the baseline WebSocket subscription protocol and lifecycle,
   including connection initialization, authentication, start/stop, cleanup,
   expiration, by-ID and filtered subscriptions, and Azure delivery.
   The current POST SSE transport alone is insufficient.
-- [ ] Verify the baseline legacy `graphql-ws` message contract:
+- [x] Verify the baseline legacy `graphql-ws` message contract:
   `connection_init`, `start`, `stop`, `connection_terminate`, acknowledgements,
   data, errors and completion. Do not substitute a different protocol merely
   because its name is similar.
-- [ ] Complete JWT/public-key/JWKS verification, key rotation, issuer/audience,
+- [x] Complete JWT/public-key/JWKS verification, key rotation, issuer/audience,
   token timing, configured role claims and baseline authorizer/hook behavior.
-- [ ] Verify compatibility with representative existing clients and recorded
+- [x] Verify compatibility with representative existing clients and recorded
   TypeScript contract fixtures, including rejection and authorization cases.
 
 ### Webhook rocket — Java local and Azure
 
-- [ ] Port the rocket's configuration, routes, methods, request metadata/body,
+- [x] Port the rocket's configuration, routes, methods, request metadata/body,
   authentication/authorization, handler/event dispatch and response behavior.
-- [ ] Implement the baseline JSON, text, binary and multipart behavior and
+- [x] Implement the baseline JSON, text, binary and multipart behavior and
   request/response bounds without forwarding work to Node.js.
-- [ ] Integrate real local and Azure routing/infrastructure; test valid requests,
+- [x] Integrate real local and Azure routing/infrastructure; test valid requests,
   malformed/unauthorized input, duplicate delivery and handler failures.
 
 ### File-upload rocket — Java local and Azure
 
-- [ ] Port upload/download URL generation, authorization, file listing,
+- [x] Port upload/download URL generation, authorization, file listing,
   metadata/key handling and the rocket's public command/query contracts.
-- [ ] Implement real local file storage and Azure Blob Storage/SAS behavior,
+- [x] Implement real local file storage and Azure Blob Storage/SAS behavior,
   upload notifications, configured handlers and file/entity/event propagation.
-- [ ] Provide corresponding Azure infrastructure, storage and role permissions.
-- [ ] Test upload, download, listing, expiration, access rejection, unsafe paths,
+- [x] Provide corresponding Azure infrastructure, storage and role permissions.
+- [x] Test upload, download, listing, expiration, access rejection, unsafe paths,
   duplicate notifications, handler failures and persistence across restart.
 
 ### Validation and delivery
 
-- [ ] Expand Java unit, provider-contract, security and integration tests to cover
+- [x] Expand Java unit, provider-contract, security and integration tests to cover
   every required subsystem; add compatibility fixtures from the baseline.
-- [ ] Exercise end-to-end applications locally, including both
+- [x] Exercise end-to-end applications locally, including both
   rockets, advanced projections, migrations and subscription/authentication flows.
   Azure end-to-end execution is deferred by the user's scope update above.
-- [ ] Keep `VALIDATION.md` current with executed commands and distinct passed,
+- [x] Keep `VALIDATION.md` current with executed commands and distinct passed,
   failed, skipped, blocked and unrun outcomes. Passing local tests are not evidence
   that unimplemented provider/API functionality works.
-- [ ] Keep README, compatibility inventory and reproducible build/start/deploy
+- [x] Keep README, compatibility inventory and reproducible build/start/deploy
   instructions aligned with the implemented behavior.
 - [ ] Resolve relevant PR checks and keep all changes in PR #1607. Do not merge
   without a separate instruction. Keep the PR draft while required work remains.
@@ -168,20 +169,22 @@ explicitly accepted by the user.
   and validated. Keep explicitly deferred Azure live validation separate and visible;
   remaining implementation gaps must not be relabeled as done.
 
-## Current verified baseline
+## Implementation and verification record
 
-Current work adds real Java implementations for local lifecycle/storage, Azure
-SDK adapters/ARM, joined and sequence projections, schema/data migrations,
-legacy WebSocket/JWKS, calendar jobs, health sensors and both rockets. The first
-combined expanded build passed 211 unit/contract tests and 2 integration tests.
-Further cross-subsystem review and regression fixes are in progress; that
-checkpoint alone does not close the remaining acceptance checklist. See
-`VALIDATION.md` for the final-versus-intermediate evidence and deferred Azure work.
+The required Java core, full local provider/infrastructure, Azure SDK adapters
+and ARM lifecycle, advanced projections, schema/data migrations, APIs,
+authentication/subscriptions and both rockets are implemented. The compatibility
+inventory records the exact contracts and operational limits.
 
-At commit `e22abc405232945f8e17598d1f6a815e6f95cb85`, the local foundation passed
-73 framework tests plus one test in a separately generated application, whose
-HTTP/GraphQL startup was exercised. These results apply only to that existing
-implementation and do not close the Azure, compatibility or rocket items above.
+The final combined clean Maven install passed 277 unit/contract tests and four
+separate-process integration tests (281 total), with no failures, errors or skips.
+This includes the final schema deletion/recovery and GraphQL compatibility fixes. A separately generated
+Maven application also passed its test and real HTTP/GraphQL requests, including
+ECMAScript regular-expression filtering.
+
+Evidence and follow-ups are maintained in [VALIDATION.md](VALIDATION.md).
+Real Azure deployment is deferred by the user's explicit instruction; no live
+Azure success is claimed. Only `java/` belongs to this implementation.
 
 ## Concrete baseline contracts to preserve
 

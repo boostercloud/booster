@@ -97,4 +97,19 @@ class CosmosEventStoreTest {
     store.commitAtPosition("second", "fp", Map.of(b, 0L), List.of(event("b1", b)), Json.MAPPER.nullNode(), 1);
     assertEquals(2, store.lastPosition());
   }
+  @Test void redactingSchemaAnchorRetainsOnlyDescriptorWithoutSnapshotState() throws Exception {
+    var store = new CosmosEventStore(new TestCosmosDocuments()); var stream = new StreamId("Account", "a");
+    var payload = Json.MAPPER.createObjectNode().put("fromVersion", 1).put("toVersion", 2).put("sourcePosition", 10);
+    payload.set("state", Json.MAPPER.createObjectNode().put("id", "a").put("privateValue", "must-be-redacted"));
+    var anchor = new PendingEvent("anchor", stream, "__booster_schema_upgraded", 1, payload,
+        Instant.parse("2026-01-01T00:00:00Z"), UserContext.anonymous(), Map.of());
+    store.commit("anchor-command", "fp", Map.of(stream, 0L), List.of(anchor), Json.MAPPER.nullNode());
+    store.redactEventPayload("anchor", Instant.parse("2026-02-01T00:00:00Z"));
+    var event = store.readAll(0, 10).getFirst().event();
+    assertTrue(event.payload().isEmpty());
+    var descriptor = Json.MAPPER.readTree(event.metadata().get("__booster_schemaDescriptor"));
+    assertFalse(descriptor.has("state")); assertEquals(2, descriptor.path("toVersion").asInt());
+    assertFalse(Json.MAPPER.writeValueAsString(event).contains("must-be-redacted"));
+    assertEquals(event, store.findCommand("anchor-command").orElseThrow().events().getFirst().event());
+  }
 }

@@ -21,6 +21,8 @@ public final class AzureHost {
     var config = AzureProvider.Config.fromEnvironment();
     int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "8080"));
     if (port < 1 || port > 65535) throw new IllegalArgumentException("Invalid PORT");
+    var shutdownComplete = new CountDownLatch(1);
+    var tasks = List.copyOf(application.schedules());
     try (var provider = AzureProvider.open(config); var runtime = application.create(provider);
          AutoCloseable workerShutdown = provider::stopWorkers;
          var server = new BoosterHttpServer(runtime, new InetSocketAddress("0.0.0.0", port));
@@ -28,7 +30,7 @@ public final class AzureHost {
              () -> "/graphql", List.of(config.cosmosEndpoint()), application.rocketHealthChecks(runtime, provider))
              .configureAll(true, false, true)
              .authorize(io.boostercloud.booster.health.HealthAuthorizer.policy(io.boostercloud.booster.core.AccessPolicy.publicAccess())).build();
-         var scheduler = new PersistentScheduler(runtime, application.schedules())) {
+         var scheduler = new PersistentScheduler(runtime, tasks)) {
       var authentication = application.authentication();
       server.authentication(authentication);
       server.health(new io.boostercloud.booster.health.HealthHttpHandler(health, authentication));
@@ -63,13 +65,17 @@ public final class AzureHost {
       String worker = config.application() + ":" + UUID.randomUUID();
       provider.startEventPipeline(runtime, worker);
       provider.startSubscriptionNotifications(events, worker);
-      if (!application.schedules().isEmpty()) scheduler.start(Duration.ofSeconds(1), 100);
+      if (!tasks.isEmpty()) scheduler.start(Duration.ofSeconds(1), 100);
       var stopped = new CountDownLatch(1);
-      var shutdown = new Thread(stopped::countDown, "booster-azure-shutdown");
+      var shutdown = new Thread(() -> {
+        stopped.countDown();
+        try { shutdownComplete.await(55, java.util.concurrent.TimeUnit.SECONDS); }
+        catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); }
+      }, "booster-azure-shutdown");
       Runtime.getRuntime().addShutdownHook(shutdown);
       try {
         server.start(); System.out.println("Booster Azure host listening on port " + port); stopped.await();
       } finally { try { Runtime.getRuntime().removeShutdownHook(shutdown); } catch (IllegalStateException ignored) { } }
-    }
+    } finally { shutdownComplete.countDown(); }
   }
 }

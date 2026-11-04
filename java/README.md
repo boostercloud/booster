@@ -1,12 +1,12 @@
 # Booster Java
 
-**Work in progress in PR #1607.** The implementation includes persistent local
+**Java implementation in PR #1607.** The implementation includes persistent local
 infrastructure, Azure SDK adapters and ARM infrastructure, joined/sequence
 projections, schema and data migrations, JWT/JWKS, legacy WebSocket subscriptions,
 calendar scheduling, health sensors, and Java webhook/file-upload rockets.
 AWS is excluded. Real Azure deployment and tests are explicitly deferred by the
 user; local and SDK contract tests do not prove cloud readiness. Track the exact
-requirements and remaining gaps in [GOAL.md](GOAL.md).
+requirements and deferred validation in [GOAL.md](GOAL.md).
 
 An independent Java edition of Booster: commands produce durable events, pure
 reducers reconstruct entities, and projections build queryable read models.
@@ -220,7 +220,8 @@ role claim is `custom:role`; alternatives can be configured explicitly.
 The default verifier is strict. Explicit `JwtVerifier.boosterCompatible` and
 `JwksVerifier.boosterCompatible` profiles preserve the baseline issuer-only
 configuration and optional subject/expiration semantics while still verifying
-signatures and the timing claims that are present. Choose the profile matching
+signatures and present expiration/not-before claims; issued-at is informational.
+Choose the profile matching
 the application's existing token contract.
 
 ```java

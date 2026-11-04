@@ -47,6 +47,31 @@ class LocalInfrastructureTest {
     assertTrue(FailingSetupApplication.workerClosedBeforeRuntime.get());
     try (var reopened = new LocalProvider(configuration.directory())) { assertEquals(0, reopened.eventStore().lastPosition()); }
   }
+  @Test void detachedLaunchPreservesApplicationContextClasspath() throws Exception {
+    Path classes = Files.createDirectory(root.resolve("application-classes"));
+    Path source = root.resolve("ExternalApplication.java");
+    Files.writeString(source, """
+        package external;
+        public final class ExternalApplication implements io.boostercloud.booster.local.LocalApplication {
+          public ExternalApplication() {}
+          public io.boostercloud.booster.core.Booster create(io.boostercloud.booster.local.LocalProvider provider) {
+            return new io.boostercloud.booster.example.ShoppingCartApplication().create(provider);
+          }
+        }
+        """);
+    int result = javax.tools.ToolProvider.getSystemJavaCompiler().run(null, null, null, "--release", "27", "-proc:none",
+        "-classpath", System.getProperty("java.class.path"), "-d", classes.toString(), source.toString());
+    assertEquals(0, result);
+    var configuration = new LocalConfiguration("external.ExternalApplication", root.resolve("external-data").toString(), "127.0.0.1", 0);
+    Path file = LocalInfrastructure.synth(configuration, root.resolve("external.json"));
+    ClassLoader original = Thread.currentThread().getContextClassLoader();
+    try (var loader = new java.net.URLClassLoader(new java.net.URL[]{classes.toUri().toURL()}, original)) {
+      Thread.currentThread().setContextClassLoader(loader);
+      long pid = LocalInfrastructure.startDetached(file);
+      try { assertEquals(pid, LocalInfrastructure.status(configuration).path("pid").asLong()); }
+      finally { LocalInfrastructure.stop(configuration); }
+    } finally { Thread.currentThread().setContextClassLoader(original); }
+  }
   @Test void eventsAndProjectionVersionsSurviveProviderRestart() throws Exception {
     Path data = root.resolve("data");
     try (var provider = new LocalProvider(data); var app = new ShoppingCartApplication().create(provider)) {

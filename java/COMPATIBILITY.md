@@ -22,7 +22,7 @@ were explicitly deferred by the user; they remain unverified.
 | Authentication | Static RSA and pinned JWKS RS256 verification, bounded cache/rotation, strict or explicit Booster issuer-only claim validation, configurable scalar/array role claim defaulting to `custom:role`. | Verified user exposes subject/id, username, roles, claims and signed token header; signed issuer-only tokens can authenticate without a subject. |
 | Events and snapshots | Per-entity and global ordered journals, notifications, entity reduction, schema versions, durable snapshot documents and optimistic concurrency. | Runtime state is reconstructed by replay. Persisted snapshots do not currently eliminate full startup replay. |
 | Projections | Multiple entity sources, key/function/filter joins, fan-out, old/new membership, explicit unprojection, store/delete/no-change outcomes, sequence keys, collision-free composite keys and persisted model versions. | Deterministic reducers/projections may run more than once. State-store CAS and event positions protect derived writes from older workers. |
-| Read-model queries | By-ID reads, sequence-key queries, nested filters, sorting and keyset pages. | GraphQL selection sets are honored; runtime search currently scans the worker's replayed model cache rather than pushing arbitrary filters into Cosmos SQL. |
+| Read-model queries | By-ID reads, sequence-key queries, nested filters, ECMAScript regular expressions, sorting and keyset pages. | GraphQL selection sets are honored; runtime search currently scans the worker's replayed model cache rather than pushing arbitrary filters into Cosmos SQL. |
 | Schema migrations | Consecutive versions and upcasters for commands, events, entities/snapshots and read models. | Missing steps, future versions and invalid identity changes are rejected. This migrates Java envelopes, not a pre-existing TypeScript database format. |
 | Data migrations | Durable ordered catalog, parameters, RUNNING/FAILED/FINISHED lifecycle, explicit completion, resumable checkpoints, atomic step receipts, renewable lease, entity rename/ID migration and touch. | See [migrations.md](migrations.md). Returning from `start` does not complete a job; `BoosterDataMigrationFinished` remains explicit. |
 | Event administration | Authorized event search, entity-ID paging, entity deletion and event-payload redaction with replay/reprojection. | Redaction preserves journal positions and stream versions. It does not erase independently returned command results, application exports or arbitrary external copies. |
@@ -88,7 +88,9 @@ planning or a future journal design change.
 - Operation names derive from registered Java classes. Command/query records
   produce `<Name>Input`; commands with fields receive `input: <Name>Input!`.
   Generic return types are retained with the builder's Jackson `TypeReference`
-  overloads rather than erased to an untyped list.
+  overloads rather than erased to an untyped list. Command/custom-query results
+  default to non-null, including the Boolean acknowledgement for void commands;
+  `TypeReference<Optional<T>>` explicitly declares a nullable operation result.
 - Record fields default to non-null. `@GraphQLNullable` and `Optional<T>` express
   optional fields. List elements default to non-null; optional elements can use
   `Optional<T>`. `@GraphQLHidden` removes a field from inputs, outputs, filters
@@ -97,7 +99,11 @@ planning or a future journal design change.
 - Numeric domain fields use GraphQL `Float`, matching TypeScript `Number`.
   Integral Java fields still reject fractional or out-of-range values. GraphQL
   `Float` has IEEE-754 precision limits; do not use it to exchange arbitrary
-  64-bit identifiers. `UUID` maps to `ID`, while `String` maps to `String`.
+  64-bit identifiers. `UUID` maps to `ID`, while ordinary `String` maps to
+  `String`. `@GraphQLId String` maps arbitrary identifiers such as `cart-1` to
+  `ID` without Java UUID syntax validation, matching the baseline string-backed
+  UUID class. The annotation also supports optional values and identifier
+  arrays/collections, and selects UUID property/array filters.
 - Java instant/offset date-time values use the `Date` scalar and normalized
   millisecond ISO strings. Non-record external values remain JSON scalars.
   A sealed interface whose permitted implementations are records can form an
@@ -153,6 +159,17 @@ connection so authorization must run again. Slow local subscribers can exceed
 the bounded core publisher buffer; that is not a durable subscription replay
 mechanism.
 
+Read-model `regex`/`iRegex` filters use a Java TRegex/Truffle bridge with
+ECMAScript `RegExp.test` semantics, including lookaround, backreferences, named
+groups, legacy escapes, UTF-16 matching and JavaScript case folding. Recorded
+Node.js oracle fixtures cover these behaviors; the Java application neither
+runs Node.js nor evaluates JavaScript programs. Patterns are limited to 512
+UTF-16 code units, inputs to 1,048,576, concurrent workers to four, and each
+worker's cache to 64 patterns. After trusted engine initialization, compilation
+and matching share a 250 ms budget. Timeout cancels the Truffle context and
+reports a validation error; matching work does not continue in an abandoned
+Java regex thread.
+
 ## Authentication and contextual data
 
 JWT verification accepts only RS256 with an RSA key of at least 2048 bits. JWKS
@@ -188,6 +205,7 @@ observe identity-provider revocation automatically. Reconnect with refreshed
 credentials to update claims; application policies may consult their own
 revocation state. This differs from local authentication-provider rechecks and
 must not be described as automatic cross-provider claim refresh.
+
 
 ## Provider and rocket boundaries
 
@@ -238,17 +256,13 @@ the evidence. They do not add requirements to the agreed goal:
    demonstrated against an Azure subscription. They remain future validation
    follow-up, outside the currently required acceptance checks. Local SDK and
    transport fixtures must not be presented as successful live deployment.
-2. **Regular-expression compatibility is being completed.** Current expressions use RE2/J; JavaScript
-   lookaround/backreferences and other unsupported ECMAScript regex behavior are
-   rejected. Representative baseline regex patterns work; arbitrary JavaScript
-   regex support is under implementation and is not yet marked complete here.
-3. **Application migration should compare its own wire contracts.** The
+2. **Application migration should compare its own wire contracts.** The
    included tests cover concrete baseline contracts and captured dependency
    behavior of the required framework features. Each application port should
    additionally compare its own schema, custom scalar, nullability, hook and
    authorizer contracts. That application-specific work is migration guidance,
    not an additional framework implementation requirement.
-4. **Storage/deployment interoperability is not automatic.** Data migrations
+3. **Storage/deployment interoperability is not automatic.** Data migrations
    operate on Java envelopes. Importing existing TypeScript journals, local
    files, provider cursors or infrastructure state needs a deliberate conversion
    path with identity/order/schema validation. An automatic TypeScript database

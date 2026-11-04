@@ -62,7 +62,7 @@ public final class LocalInfrastructure {
     for (String property : List.of("javax.net.ssl.trustStore", "javax.net.ssl.trustStoreType")) {
       String value = System.getProperty(property); if (value != null) command.add("-D" + property + "=" + value);
     }
-    command.addAll(List.of("-cp", System.getProperty("java.class.path"), "io.boostercloud.booster.cli.BoosterCli",
+    command.addAll(List.of("-cp", runtimeClasspath(), "io.boostercloud.booster.cli.BoosterCli",
         "local", "start", "--config", configFile.toString()));
     Process process = new ProcessBuilder(command).redirectErrorStream(true)
         .redirectOutput(ProcessBuilder.Redirect.appendTo(config.directory().resolve("runtime.log").toFile())).start();
@@ -125,6 +125,20 @@ public final class LocalInfrastructure {
     int port = metadata.path("port").asInt(-1); if (port < 1 || port > 65535) throw new IOException("Invalid local runtime port"); return port;
   }
   private static HttpClient http() { return HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(3)).followRedirects(HttpClient.Redirect.NEVER).build(); }
+  /** Maven exec and application launchers can place domain classes in a context URLClassLoader. */
+  private static String runtimeClasspath() {
+    var entries = new LinkedHashSet<String>();
+    for (ClassLoader loader = Thread.currentThread().getContextClassLoader(); loader != null; loader = loader.getParent()) {
+      if (loader instanceof java.net.URLClassLoader urls) for (var url : urls.getURLs()) {
+        if (url.getProtocol().equals("file")) {
+          try { entries.add(Path.of(url.toURI()).toString()); }
+          catch (java.net.URISyntaxException invalid) { throw new IllegalStateException("Invalid application classpath", invalid); }
+        }
+      }
+    }
+    entries.addAll(Arrays.asList(System.getProperty("java.class.path").split(java.util.regex.Pattern.quote(File.pathSeparator))));
+    return String.join(File.pathSeparator, entries);
+  }
   private static boolean unlocked(Path directory) throws IOException {
     try (var channel = FileChannel.open(LocalProvider.lifecycleLockPath(directory), StandardOpenOption.WRITE, LinkOption.NOFOLLOW_LINKS)) {
       try (var lock = channel.tryLock()) { return lock != null; }

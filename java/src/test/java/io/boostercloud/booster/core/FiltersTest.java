@@ -40,12 +40,14 @@ class FiltersTest {
         {"profile":{"isDefined":true,"eq":"bad","city":{"eq":"London"}}}""")));
     assertThrows(BoosterException.class, () -> Filters.matches(record, json("{\"isDefined\":1}")));
   }
-  @Test void regexHasLinearTimeBehaviorAndRejectsUnsupportedBackreferences() {
+  @Test void regexUsesBoundedEcmascriptMatchingIncludingBackreferences() {
     JsonNode longValue = Json.MAPPER.valueToTree(Map.of("value", "a".repeat(100_000) + "!"));
     assertTimeoutPreemptively(Duration.ofSeconds(2), () -> assertFalse(Filters.matches(longValue, json("""
         {"value":{"regex":"^(a+)+$"}}"""))));
-    assertThrows(BoosterException.class, () -> Filters.matches(record, json("""
+    assertFalse(Filters.matches(record, json("""
         {"name":{"regex":"(a)\\\\1"}}""")));
+    assertTrue(Filters.matches(Json.MAPPER.valueToTree(Map.of("name", "aabb")), json("""
+        {"name":{"regex":"^(a)\\\\1(?=bb)"}}""")));
   }
   @Test void keysetPaginationKeepsStableTiesAndSurvivesDeletedCursorRow() {
     Map<String,JsonNode> models = new HashMap<>();

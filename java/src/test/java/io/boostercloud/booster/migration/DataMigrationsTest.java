@@ -56,12 +56,13 @@ class DataMigrationsTest {
         (ignored, register) -> { register.emit(new Credited(id, amount)); return null; });
   }
 
-  @Test void completionRequiresExplicitEventAndOrderingWaitsForIt() {
+  @Test void explicitCompletionBarrierWaitsBeforeStartingDependentMigrations() {
     var calls = new ArrayList<String>();
     var first = new DataMigration("first", 1, context -> calls.add("first"));
     var second = new DataMigration("second", 2, context -> { calls.add("second"); context.finish(); });
     try (var booster = memory()) {
-      var migrations = engine(booster, second, first);
+      var migrations = new DataMigrations(booster, List.of(second, first), IDENTITY,
+          DataMigrations.Ordering.COMPLETION_ORDER);
       assertTrue(migrations.run());
       assertEquals(List.of("first"), calls);
       assertEquals(DataMigrationStatus.RUNNING, migrations.status("first").orElseThrow().lifecycle().status());
@@ -76,6 +77,55 @@ class DataMigrationsTest {
       assertEquals(List.of("first", "second"), calls);
       assertFalse(migrations.run());
       assertEquals(2, migrations.statuses().size());
+    }
+  }
+
+  @Test void baselineStartsLaterMigrationsWhileEarlierJobAwaitsExplicitCompletion() {
+    var calls = new ArrayList<String>();
+    var first = new DataMigration("first", 1, context -> calls.add("first"));
+    var second = new DataMigration("second", 2, context -> { calls.add("second"); context.finish(); });
+    try (var booster = persistent()) {
+      var migrations = engine(booster, second, first);
+      assertTrue(migrations.run());
+      assertEquals(List.of("first", "second"), calls);
+      assertEquals(DataMigrationStatus.RUNNING, migrations.status("first").orElseThrow().lifecycle().status());
+      assertEquals(DataMigrationStatus.FINISHED, migrations.status("second").orElseThrow().lifecycle().status());
+    }
+    try (var booster = persistent()) {
+      var third = new DataMigration("third", 3, context -> { calls.add("third"); context.finish(); });
+      var migrations = engine(booster, first, second, third);
+      assertTrue(migrations.run(), "An earlier RUNNING job does not prevent a new later job from starting");
+      assertEquals(List.of("first", "second", "third"), calls);
+      assertTrue(migrations.run());
+      migrations.finish("first");
+      long completedPosition = booster.position();
+      migrations.finish("first");
+      assertEquals(completedPosition, booster.position());
+      assertFalse(migrations.run());
+    }
+  }
+
+  @Test void baselinePreservesDeclarationOrderForEqualPrioritiesAndResumesEveryUnfinishedJob() {
+    var calls = new ArrayList<String>();
+    var z = new DataMigration("z", 1, context -> calls.add("z"));
+    var a = new DataMigration("a", 1, context -> calls.add("a"));
+    try (var booster = memory()) {
+      var migrations = engine(booster, z, a);
+      assertTrue(migrations.run());
+      assertEquals(List.of("z", "a"), calls);
+      assertTrue(migrations.resume());
+      assertEquals(List.of("z", "a", "z", "a"), calls);
+      assertEquals(2, migrations.status("z").orElseThrow().lifecycle().attempts());
+      assertEquals(2, migrations.status("a").orElseThrow().lifecycle().attempts());
+    }
+  }
+
+  @Test void workersCannotSilentlyChangeADurableCompletionDependencyPolicy() {
+    try (var booster = memory()) {
+      var definition = new DataMigration("dependent", 1, context -> {});
+      new DataMigrations(booster, List.of(definition), IDENTITY, DataMigrations.Ordering.COMPLETION_ORDER);
+      assertEquals(BoosterException.Code.CONFLICT,
+          assertThrows(BoosterException.class, () -> engine(booster, definition)).code());
     }
   }
 
@@ -332,6 +382,50 @@ class DataMigrationsTest {
       assertEquals(1, other.entity(Account.class, "flushed-1").balance(), "Previously flushed effects remain durable");
       assertEquals(1, other.entity(Account.class, "attempt-2").balance());
       assertEquals(DataMigrationStatus.FINISHED, second.status("fenced").orElseThrow().lifecycle().status());
+    }
+  }
+
+  @Test void expiredWorkerCannotOverwriteANewerAttemptsCheckpointAfterCasConflict() throws Exception {
+    var clock = new MutableClock(Instant.parse("2026-11-04T00:00:00Z"));
+    var beforeWrite = new CountDownLatch(1);
+    var releaseWrite = new CountDownLatch(1);
+    var blocked = new AtomicBoolean();
+    var attempts = new AtomicInteger();
+    var backing = new JdbcStateStore(directory.resolve("state"));
+    StateStore gated = new StateStore() {
+      public java.util.Optional<StateDocument> get(String namespace, String key) { return backing.get(namespace, key); }
+      public List<StateDocument> scan(String namespace, String afterKey, int limit) { return backing.scan(namespace, afterKey, limit); }
+      public StateDocument put(String namespace, String key, long version, JsonNode value) {
+        if (key.startsWith("job:") && value.path("checkpoint").path("cursor").asText().equals("stale")
+            && blocked.compareAndSet(false, true)) {
+          beforeWrite.countDown();
+          try { assertTrue(releaseWrite.await(10, TimeUnit.SECONDS)); }
+          catch (InterruptedException error) { Thread.currentThread().interrupt(); throw new IllegalStateException(error); }
+        }
+        return backing.put(namespace, key, version, value);
+      }
+      public void close() { backing.close(); }
+    };
+    var definition = new DataMigration("progress-fence", 1, context -> {
+      boolean stale = attempts.incrementAndGet() == 1;
+      context.checkpoint(json(Map.of("cursor", stale ? "stale" : "current")));
+      context.finish();
+    });
+    try (var booster = application(new JdbcEventStore(directory.resolve("journal")), gated).build();
+         var other = persistent(); var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+      var first = new DataMigrations(booster, List.of(definition), IDENTITY, clock, Duration.ofMinutes(1));
+      var second = new DataMigrations(other, List.of(definition), IDENTITY, clock, Duration.ofMinutes(1));
+      var running = executor.submit(first::run);
+      try {
+        assertTrue(beforeWrite.await(5, TimeUnit.SECONDS));
+        clock.advance(Duration.ofMinutes(2));
+        assertTrue(second.resume());
+      } finally { releaseWrite.countDown(); }
+      assertThrows(java.util.concurrent.ExecutionException.class, () -> running.get(5, TimeUnit.SECONDS));
+      var status = second.status("progress-fence").orElseThrow();
+      assertEquals("current", status.checkpoint().path("cursor").asText());
+      assertEquals(2, status.lifecycle().attempts());
+      assertEquals(DataMigrationStatus.FINISHED, status.lifecycle().status());
     }
   }
 

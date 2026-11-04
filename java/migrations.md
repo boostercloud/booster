@@ -31,15 +31,24 @@ execution identity, never an identity copied from unverified HTTP headers.
 
 ## Lifecycle and ordering
 
-The engine sorts definitions by order, then name. A later migration starts only
-after every earlier migration has finished. Names, parameters and ordering are
-recorded in a durable catalog; existing definitions cannot be changed or removed.
-Add a new migration after the existing catalog to change data again.
+The engine sorts definitions by order, preserving declaration order when priorities
+are equal. As in the TypeScript baseline, the default orders callback starts:
+later jobs can start after an earlier callback returns while its job remains
+RUNNING. Names, parameters and ordering are recorded in a durable catalog;
+existing definitions cannot be changed or removed. Add a new migration after the
+existing catalog to change data again.
+
+Applications with dependent jobs can opt into a completion barrier by constructing
+the engine with `DataMigrations.Ordering.COMPLETION_ORDER` as its fourth argument.
+In that mode, a later migration starts only after all earlier jobs have explicitly
+finished. The selected policy is durable and must match on every worker.
 
 `run()` starts new work, leaves existing RUNNING or FAILED jobs untouched, and
 returns true if it started work or found unfinished work. It returns false when
-every configured job was already finished. `resume()` explicitly retries the
-first unfinished job and continues in order as jobs finish.
+every configured job was already finished. `resume()` explicitly retries each
+unfinished job in start order; the optional completion-order policy stops at the
+first callback that returns without finishing. Handler failures stop the current
+run and record FAILED status, retaining successful earlier steps.
 
 `BoosterDataMigrationStarted` records RUNNING status. Returning from a handler
 does **not** mark it complete. `context.finish()` buffers a
@@ -82,7 +91,9 @@ do not repeat a completed rename or touch.
 
 A renewable compare-and-set execution lease excludes concurrent migration
 runners. A lost or expired lease prevents further context operations and final
-buffered completion. A new runner can recover after lease expiry and must use
+buffered completion. Checkpoint writes also check the captured execution attempt
+on every compare-and-set retry, preventing an expired worker from overwriting a
+new worker's progress. A new runner can recover after lease expiry and must use
 `resume()` for existing incomplete jobs. The lease coordinates execution; it does
 not make arbitrary user code or external calls exactly-once. Keep steps
 idempotent and keep the same migration definitions on every worker.

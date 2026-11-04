@@ -16,10 +16,11 @@ public final class MigrationContext {
   private final DataMigration migration;
   private final DataMigrations.Lease lease;
   private final Register register;
+  private final long attempt;
   private boolean finished;
 
-  MigrationContext(DataMigrations engine, DataMigration migration, DataMigrations.Lease lease, Register register) {
-    this.engine = engine; this.migration = migration; this.lease = lease; this.register = register;
+  MigrationContext(DataMigrations engine, DataMigration migration, DataMigrations.Lease lease, Register register, long attempt) {
+    this.engine = engine; this.migration = migration; this.lease = lease; this.register = register; this.attempt = attempt;
   }
   public String name() { return migration.name(); }
   public JsonNode parameters() { return migration.parameters(); }
@@ -28,14 +29,14 @@ public final class MigrationContext {
 
   /** Persist progress only after its corresponding durable work has succeeded. */
   public void checkpoint(JsonNode value) {
-    lease.assertOwned(); engine.checkpoint(migration.name(), Objects.requireNonNull(value), null);
+    lease.assertOwned(); engine.checkpoint(migration.name(), lease, attempt, Objects.requireNonNull(value), null);
   }
 
   /** Events and the step result commit atomically; repeats with identical input replay the result. */
   public JsonNode step(String key, JsonNode input, CommandHandler<JsonNode> work) {
     lease.assertOwned();
     if (finished) throw new IllegalStateException("A finished migration cannot perform another step");
-    return engine.step(migration, lease, key, input, work);
+    return engine.step(migration, lease, attempt, key, input, work);
   }
 
   public void migrateEntity(String stepKey, String priorEntityName, String priorId, Object replacement) {

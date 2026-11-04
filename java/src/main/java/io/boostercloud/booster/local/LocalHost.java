@@ -19,18 +19,20 @@ public final class LocalHost {
   public static void run(LocalConfiguration config, PrintStream output) throws Exception {
     var application = config.instantiate();
     var shutdownComplete = new CountDownLatch(1);
+    var authentication = application.authentication();
+    var tasks = List.copyOf(application.schedules());
     try (var provider = new LocalProvider(config.directory()); var runtime = application.create(provider);
          AutoCloseable workerShutdown = provider::stopWorkers;
          var server = new BoosterHttpServer(runtime, new InetSocketAddress(config.host(), config.port()))) {
-      server.authentication(application.authentication());
+      server.authentication(authentication);
       var health = provider.own(io.boostercloud.booster.health.ProviderHealth.defaults(runtime, () -> true,
           () -> "http://127.0.0.1:" + server.port() + "/graphql", List.of(provider.directory().toString()), application.rocketHealthChecks(runtime, provider))
           .configureAll(true, false, true)
           .authorize(io.boostercloud.booster.health.HealthAuthorizer.policy(io.boostercloud.booster.core.AccessPolicy.publicAccess())).build());
-      server.health(new io.boostercloud.booster.health.HealthHttpHandler(health, application.authentication()));
+      server.health(new io.boostercloud.booster.health.HealthHttpHandler(health, authentication));
       application.configure(runtime, server, provider);
-      if (!application.schedules().isEmpty()) {
-        provider.own(new io.boostercloud.booster.scheduling.PersistentScheduler(runtime, application.schedules()))
+      if (!tasks.isEmpty()) {
+        provider.own(new io.boostercloud.booster.scheduling.PersistentScheduler(runtime, tasks))
             .start(java.time.Duration.ofSeconds(1), 100);
       }
       var stopped = new CountDownLatch(1);

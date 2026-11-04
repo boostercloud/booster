@@ -204,15 +204,17 @@ public final class PersistentScheduler implements AutoCloseable {
     var metadata = new HashMap<>(Map.of("transport", "calendar", "schedule", task.name(), "scheduledAt", scheduledAt.toString()));
     if (!lease.generation.equals("legacy")) metadata.put("generation", lease.generation);
     try {
+      lease.assertOwned();
       CommandHandler<JsonNode> handler = (ignored, register) -> {
-            lease.assertOwned();
             task.handler().handle(new ScheduledTask.Occurrence(task.name(), lease.generation, scheduledAt, task.input()), register);
-            lease.assertOwned(); return null;
+            return null;
           };
       if (lease.generation.equals("legacy"))
-        booster.executeAction("scheduled-task:" + task.name(), input, new RequestContext(requestId, task.user(), metadata), AccessPolicy.publicAccess(), handler);
+        booster.executeAction("scheduled-task:" + task.name(), input, new RequestContext(requestId, task.user(), metadata), AccessPolicy.publicAccess(),
+            (value, register) -> { lease.assertOwned(); Object result = handler.handle(value, register); lease.assertOwned(); return result; });
       else
-        booster.executeSystemAction("scheduled-task:" + task.name(), input, new RequestContext(requestId, task.user(), metadata), AccessPolicy.publicAccess(), handler);
+        booster.executeScheduledAction("scheduled-task:" + task.name(), input, new RequestContext(requestId, task.user(), metadata),
+            AccessPolicy.publicAccess(), handler, lease::assertOwned);
     } catch (RuntimeException error) {
       try {
         String reason = error.getClass().getSimpleName() + ": " + Objects.toString(error.getMessage(), "Execution failed");

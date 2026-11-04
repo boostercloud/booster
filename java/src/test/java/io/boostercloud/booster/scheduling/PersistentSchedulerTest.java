@@ -377,6 +377,23 @@ class PersistentSchedulerTest {
     }
   }
 
+  @Test void explicitFlushCannotPersistEventsAfterTheScheduleLeaseExpires() {
+    var clock = new MutableClock("2026-11-04T12:00:30Z");
+    var tick = task("tick", (occurrence, register) -> {
+      register.emit(new Tick("late-flush", occurrence.scheduledAt().toString()));
+      clock.set("2026-11-04T12:01:20Z"); register.flush();
+    });
+    try (var booster = Booster.builder(new InMemoryEventStore()).stateStore(new InMemoryStateStore())
+        .entity(Counter.class).event(Tick.class, Tick::id, Counter.class,
+            (event, previous) -> new Counter(event.id(), previous == null ? 1 : previous.count() + 1, event.nominal()))
+        .onError(FrameworkError.Stage.SCHEDULE, error -> null).build();
+         var scheduler = scheduler(booster, List.of(tick), clock)) {
+      clock.set("2026-11-04T12:01:00Z");
+      assertEquals(1, scheduler.runDue(1).failures().size());
+      assertEquals(0, booster.position()); assertNull(booster.entity(Counter.class, "late-flush"));
+    }
+  }
+
   private static final class MutableClock extends Clock {
     private final AtomicReference<Instant> value;
     MutableClock(String initial) { value = new AtomicReference<>(Instant.parse(initial)); }

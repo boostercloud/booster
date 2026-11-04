@@ -1,107 +1,124 @@
 # Validation record
 
-## Expanded implementation checkpoint (2026-11-04)
-
-The first combined `mvn verify` after adding the Azure adapters and full local
-provider passed **211 unit/contract tests plus 2 integration tests**, with no
-failures, errors or skips. It compiled and packaged the dependency-inclusive JAR.
-This is an intermediate checkpoint: subsequent concurrency/security regressions,
-the complete local rocket/JWT/WebSocket process test, multi-account infrastructure
-and lifecycle fixes are being added and need a final combined verification.
-
-This run covers real local HTTP/WebSocket/JWKS requests, persistent H2 reopen,
-CLI child processes, projection/schema/data migration behavior, both rockets,
-SDK request serialization and ARM lifecycle responses from a loopback contract
-server. Azure service tests use explicit doubles/controlled HTTP responses.
-**No real Azure deployment or tests were run.** The user explicitly deferred
-those on 2026-11-04 and made the full local provider/infrastructure mandatory.
-
-The Java 27 Docker image built successfully with checksum and TLS checks enabled.
-Its initial runtime check found unreadable JAR permissions for the non-root user;
-the Dockerfile now assigns the artifact readable permissions explicitly. The
-repeat check passed real container HTTP health, command execution and projection
-queries (two items at 125 cents produced quantity 2 and total 250), and reported
-Java 27.0.1.0.3. The test container was removed afterward; no image was published.
-
-An additional local Cosmos emulator check could not start: the official Microsoft
-image downloads redirect to `centralus.data.mcr.microsoft.com`, which the managed
-proxy rejected with HTTP 403. No emulator container was created, and no Azure
-service was contacted. Emulator validation remains unrun; the passing provider
-contract tests are not relabeled as emulator results.
-
-## Earlier local foundation
-
-These results validate the existing local foundation, not completion of the
-expanded Azure and compatibility goal in [GOAL.md](GOAL.md). Those required
-subsystems remain pending until their implementation and tests are recorded.
-
 Validated on 2026-11-04 with Oracle JDK **27.0.1.0.3** and Maven **3.10.0**.
-The Java and Maven official archive checksums were verified. The committed JDK
-bootstrap and Maven launcher were independently exercised with fresh tool caches.
-TLS and Maven strict checksum verification remained enabled.
+Official archive checksums, TLS verification and Maven strict checksums remained
+enabled. Only `java/` changes relative to the TypeScript baseline.
 
-## Complete framework build
+## Combined framework build
 
-Executed the Maven `verify` and then `install` lifecycles in `java/`. The final
-`install` run includes compilation, unit/acceptance tests, executable JAR
-packaging, separate-process integration tests, and local artifact installation.
-Result: **73 tests passed; 0 failures, 0 errors, 0 skipped**.
+The latest combined `clean install` passed **277 unit/contract tests and four
+integration tests (281 total), with zero failures, errors or skips**. This includes
+the final GraphQL nullability and issuer-only JWT history regressions.
+The lifecycle compiles all sources, packages normal and executable JARs, runs
+separate-process integration tests and installs the artifacts locally.
 
-| Suite | Tests |
-| --- | ---: |
-| Transactional JDBC journal | 12 |
-| Core commands, events, projections, auth, migration, scheduling and recovery | 14 |
-| Structured filtering and cursor pagination | 5 |
-| Runtime concurrency, identity and transaction regressions | 10 |
-| HTTP/GraphQL and subscription security | 8 |
-| JWT signature and claims validation | 10 |
-| CLI and project generation | 9 |
-| Shopping-cart domain and persistence | 4 |
-| Executable JAR in separate JVMs | 1 |
+Reproduce with JDK 27:
 
-The executable test starts the shaded JAR, makes real health and GraphQL
-requests, repeats a mutation with the same idempotency key, terminates the JVM,
-starts another JVM on the same H2 file, repeats the request again, checks the
-restored projection and checks out the cart. Successful HTTP responses and the
-expected persisted state are asserted; an open port alone is not the check.
+```sh
+cd java
+./mvnw -B -C clean install
+```
 
-The regression suite covers identity-scoped idempotency (including distinct
-role sets with ambiguous display strings), denial before receipt replay,
-projection failure without journal poisoning, stream/read-model identity
-invariants, internal handler namespaces, concurrent runtimes, concurrent
-identical requests and durable handler retry.
+This managed environment used the same Maven lifecycle with its proxy settings
+and CA truststore supplied outside the repository:
 
-Subscription checks include nullable deletion events, authentication expiry and
-termination when a custom authenticator removes the previously authorized role.
-The JWT suite verifies valid signatures, wrong keys/algorithms, tampering,
-issuer/audience, time constraints, malformed JSON and duplicate claims.
+```sh
+source /workspace/.java-tools/activate.sh
+mvn -s /workspace/.java-tools/settings.xml -B -C clean install
+```
 
-## Independently generated project
+JUnit XML evidence is under `target/surefire-reports` and
+`target/failsafe-reports`. The environment build log is
+`/workspace/.java-tools/goal-final-install.log`.
 
-The final executable generated a fresh `dev.booster.sample` application outside
-the framework checkout. Maven `verify` compiled its own application and ran its
-domain test: **1 passed; 0 failures, errors or skipped**. It resolved the
-framework from the locally installed Maven artifact, without workspace source
-links or a dependency on the TypeScript implementation.
+Coverage includes:
 
-The generated project's documented `mvn exec:java` startup was also exercised
-with an ephemeral port. Its health response and a real GraphQL mutation/query
-were checked: adding three items at 500 cents produced a projection with
-quantity 3 and total 1500 cents. The process was stopped after validation.
+- Atomic in-memory/JDBC/Cosmos provider contracts, optimistic concurrency,
+  identity-scoped receipts, durable partial flush, recovery and deletion.
+- Joined, filtered, fan-out and sequence projections; persisted versions,
+  schema upcasters, rebuild/restart and logical deletion of copied state.
+- Ordered durable data migrations, checkpoints, explicit completion, lease
+  fencing and interrupted recovery; health component authorization and bounds.
+- Real local HTTP, legacy `graphql-ws` and JWKS servers; typed GraphQL schemas,
+  filters/cursors/history, JWT issuer/role/timing/key rotation and expiry.
+- Persistent calendar schedules, duplicate dispatch, competing owners,
+  generation changes, retries, restart and shutdown races.
+- Real webhook JSON/text/binary/multipart requests and durable response receipts;
+  real signed local file PUT/GET/list, unsafe-path rejection, duplicate upload
+  notifications, handler failures and restart persistence.
+- Azure SDK request serialization, transactions, CAS, pagination, retries,
+  subscription identity/TTL, callback validation, Blob SAS and ARM synthesis/
+  lifecycle against controlled local responses. These are contract tests.
+- CLI generation and lifecycle ownership, real child-process start/stop,
+  failed-start cleanup, classloader handling, rebuild and intentional nuke.
+- Recorded baseline dependency fixtures: 70 pluralization cases, 100 directory
+  patterns and 45 ECMAScript regular-expression cases. Runtime/tests execute Java;
+  Node.js was used only to capture baseline oracle data.
 
-## Scope and reproducibility
+The four integration suites exercise the executable JAR across process restarts,
+the packaged ECMAScript engine in a separate JVM, persistent projection/migration
+recovery, and a complete application in two successive JVMs. That full local
+application uses signed JWTs, WebSocket subscriptions, multi-entity joins,
+webhooks, signed file transfers, interrupted migrations and verified cleanup.
 
-Only `java/` changes relative to the TypeScript baseline. No original package,
-source, lockfile, Rush setting or environment repository selection was changed.
-All checks ran in the active environment after transferring the preserved
-post-publication edits; earlier isolated-agent checks are not the final evidence.
+## Independently generated application
 
-The standard local command is `./mvnw install` with JDK 27. This managed
-environment additionally supplied its Maven proxy settings and Java CA
-truststore through options outside the checkout. Maven XML test reports are
-generated under `target/surefire-reports` and `target/failsafe-reports`.
+A fresh `dev.booster.verified` project outside the framework checkout resolved
+the installed normal Maven artifact, compiled and passed its own test:
+**one passed, zero failures/errors/skips**. Its documented `mvn exec:java`
+startup was exercised on an ephemeral local port with health and GraphQL requests.
+Adding three items at 500 cents produced quantity three and total 1500. A
+lookbehind regular-expression filter selected that row, exercising the engine
+through the application's Maven classloader. Authenticated shutdown completed
+and the Maven process exited successfully.
 
-This validates the documented Java local edition. It does not establish AWS or
-Azure deployment, TypeScript storage compatibility, distributed delivery,
-WebSocket protocol compatibility or automatic JWKS rotation. See
-[COMPATIBILITY.md](COMPATIBILITY.md) for the precise contract and boundaries.
+The first manual request mistakenly used the bundled demo's `OpenCart` operation,
+which the generated sample does not declare. GraphQL correctly rejected it.
+Validation then used the generated project's actual `AddItem` contract and passed.
+No framework change was needed for that request error.
+
+## Container execution
+
+The Java 27 Docker image built with checksum/TLS verification and ran as UID
+10001. The initial check found unreadable JAR permissions for that user; the
+Dockerfile now explicitly sets artifact ownership and mode. The final rebuilt image
+passed real local health, commands, projection queries and an ECMAScript
+lookbehind filter using the final shaded JAR. It reported Java 27.0.1.0.3, ran as
+UID 10001 and stopped via SIGTERM (exit 143); the test container was then removed.
+No image was published. The final local image digest is
+`sha256:20ea8805cf64334f4ad4896a0978d7f4bde351ddcfbbab98147b9c5f10358f1a`;
+evidence is retained in `/workspace/.java-tools/final-docker-evidence.json`.
+
+## Deferred and blocked checks
+
+**Real Azure deployment and tests were not run**, by the user's explicit
+2026-11-04 instruction. ARM acceptance, managed-identity/RBAC propagation, real
+Cosmos/Event Hubs/Web PubSub behavior, SAS transfers, cloud restart and resource
+cleanup remain a future exercise when access is available. Passing SDK fixtures
+are not evidence of deployed-cloud readiness.
+
+An additional local Cosmos emulator check could not start. The official image
+`mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-latest` redirects
+layer downloads to `centralus.data.mcr.microsoft.com`; the managed proxy returned
+HTTP 403 because that destination is outside its network policy. No emulator
+container was created and no emulator test passed. Evidence is retained in
+`/workspace/.java-tools/cosmos-emulator-attempt.json`. This optional check remains
+unrun; the complete local provider tests use actual H2 and filesystem storage.
+
+AWS is excluded from the requested implementation. No merge, environment
+publication, repository-selection change or deployment is part of this work.
+
+## Interpretation and reproducibility
+
+Earlier intermediate runs exposed and led to fixes for pluralization, SDK query
+encoding/proxy handling, scheduler polling, union serialization, migration
+replay/deletion and lifecycle races. Those earlier failures are superseded by
+the passing combined build; they are not omitted tests. Maven Shade reports
+upstream duplicate license/Netty metadata resources; packaged service loading
+and runtime execution are covered by the JAR/container checks.
+
+The normal library and executable use an independent Java storage format and
+source API. This validation does not demonstrate automatic conversion of an
+existing TypeScript database or application. Operational limits, source/API
+mapping and explicit compatibility profiles are documented in
+[COMPATIBILITY.md](COMPATIBILITY.md), [local.md](local.md) and [azure.md](azure.md).

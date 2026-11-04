@@ -283,17 +283,18 @@ public final class BoosterGraphQL {
         result.put("value", nativeValue(event.payload())); result.put("deletedAt", event.metadata().get("deletedAt"));
         UserContext user = event.user();
         if (user.authenticated()) {
-            Object email = user.claims().get("email"), phone = user.claims().get("phone_number");
-            String username = email instanceof String text && !text.isBlank() ? text
-                    : phone instanceof String text && !text.isBlank() ? text : user.subject();
-            result.put("user", Map.of("id", user.subject(), "username", username, "roles", user.roles().stream().sorted().toList()));
+            var identity = new LinkedHashMap<String, Object>();
+            identity.put("id", user.id()); identity.put("username", user.username());
+            identity.put("roles", user.roles().stream().sorted().toList()); result.put("user", identity);
         } else result.put("user", null);
         return result;
     }
 
     private static GraphQLFieldDefinition operation(Operation operation, GraphQLTypes types) {
+        GraphQLOutputType output = types.output(operation.outputSchemaType());
+        if (operation.outputType() != Optional.class) output = GraphQLNonNull.nonNull(output);
         GraphQLFieldDefinition.Builder builder = GraphQLFieldDefinition.newFieldDefinition().name(operation.name())
-                .type(types.output(operation.outputSchemaType()));
+                .type(output);
         if (operation.inputType() != Void.class && operation.inputType() != void.class
                 && !(operation.inputType().isRecord() && operation.inputType().getRecordComponents().length == 0)) {
             builder.argument(GraphQLArgument.newArgument().name("input")

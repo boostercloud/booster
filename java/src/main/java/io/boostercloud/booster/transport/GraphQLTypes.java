@@ -85,7 +85,7 @@ final class GraphQLTypes {
         GraphQLInputObjectType.Builder builder = GraphQLInputObjectType.newInputObject().name(name);
         for (RecordComponent field : raw.getRecordComponents()) {
             if (field.isAnnotationPresent(GraphQLHidden.class)) continue;
-            GraphQLInputType fieldType = input(field.getGenericType());
+            GraphQLInputType fieldType = input(fieldType(field));
             if (!field.isAnnotationPresent(GraphQLNullable.class) && field.getType() != Optional.class) fieldType = GraphQLNonNull.nonNull(fieldType);
             builder.field(GraphQLInputObjectField.newInputObjectField().name(field.getName()).type(fieldType));
         }
@@ -115,7 +115,7 @@ final class GraphQLTypes {
         GraphQLObjectType.Builder builder = GraphQLObjectType.newObject().name(name);
         for (RecordComponent field : raw.getRecordComponents()) {
             if (field.isAnnotationPresent(GraphQLHidden.class)) continue;
-            GraphQLOutputType fieldType = output(field.getGenericType());
+            GraphQLOutputType fieldType = output(fieldType(field));
             if (!field.isAnnotationPresent(GraphQLNullable.class) && field.getType() != Optional.class) fieldType = GraphQLNonNull.nonNull(fieldType);
             builder.field(GraphQLFieldDefinition.newFieldDefinition().name(field.getName()).type(fieldType));
             code.dataFetcher(FieldCoordinates.coordinates(name, field.getName()), (DataFetcher<Object>) environment -> {
@@ -161,6 +161,24 @@ final class GraphQLTypes {
         return type instanceof ParameterizedType parameterized && parameterized.getRawType() == Optional.class
                 ? element : GraphQLNonNull.nonNull(element);
     }
+
+    private static Type fieldType(RecordComponent field) {
+        return field.isAnnotationPresent(GraphQLId.class) ? identifierType(field.getGenericType()) : field.getGenericType();
+    }
+    private static Type identifierType(Type type) {
+        if (type == String.class || type == UUID.class) return UUID.class;
+        if (type == String[].class || type == UUID[].class) return UUID[].class;
+        if (type instanceof ParameterizedType parameterized && parameterized.getRawType() instanceof Class<?> raw
+                && (raw == Optional.class || Collection.class.isAssignableFrom(raw))) {
+            Type element = identifierType(parameterized.getActualTypeArguments()[0]);
+            return new ParameterizedType() {
+                @Override public Type[] getActualTypeArguments() { return new Type[]{element}; }
+                @Override public Type getRawType() { return raw; }
+                @Override public Type getOwnerType() { return parameterized.getOwnerType(); }
+            };
+        }
+        throw new IllegalArgumentException("@GraphQLId requires String, UUID, or a container of identifiers");
+    }
     private GraphQLOutputType listOutputElement(Type type) {
         GraphQLOutputType element = output(type);
         return type instanceof ParameterizedType parameterized && parameterized.getRawType() == Optional.class
@@ -174,7 +192,7 @@ final class GraphQLTypes {
         definitions.put(filterName, GraphQLTypeReference.typeRef(filterName));
         if (type.isRecord()) for (RecordComponent field : type.getRecordComponents()) {
             if (field.isAnnotationPresent(GraphQLHidden.class)) continue;
-            builder.field(GraphQLInputObjectField.newInputObjectField().name(field.getName()).type(propertyFilter(field.getGenericType())));
+            builder.field(GraphQLInputObjectField.newInputObjectField().name(field.getName()).type(propertyFilter(fieldType(field))));
         }
         builder.field(GraphQLInputObjectField.newInputObjectField().name("and").type(GraphQLList.list(GraphQLTypeReference.typeRef(filterName))))
                 .field(GraphQLInputObjectField.newInputObjectField().name("or").type(GraphQLList.list(GraphQLTypeReference.typeRef(filterName))))

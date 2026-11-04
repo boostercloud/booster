@@ -197,16 +197,25 @@ class AdvancedCoreTest {
     var model = snapshot.deepCopy(); model.put("id", "a");
     ((com.fasterxml.jackson.databind.node.ObjectNode) model.get("state")).set("members", Json.MAPPER.createObjectNode());
     states.put("readModels:GroupView", "a", 0, model);
+    var journal = new InMemoryEventStore();
+    var stream = new StreamId("Team", "a");
+    for (int i = 1; i <= 100; i++) journal.commit("old-" + i, "old-" + i, Map.of(stream, (long)i - 1),
+        List.of(new PendingEvent("old-event-" + i, stream, "TeamChanged", 1, json(new TeamChanged("a", "Earlier")), java.time.Instant.now(), UserContext.anonymous(), Map.of())), Json.MAPPER.nullNode());
     var calls = new AtomicInteger();
     java.util.function.UnaryOperator<JsonNode> upgrade = value -> { calls.incrementAndGet(); var object = (com.fasterxml.jackson.databind.node.ObjectNode) value; object.set("title", object.remove("name")); return object; };
-    try (var runtime = domain(new InMemoryEventStore(), states)
+    try (var runtime = domain(journal, states)
         .schemaVersion(Team.class, 2).upcaster(Team.class, 1, upgrade)
         .schemaVersion(GroupView.class, 2).upcaster(GroupView.class, 1, upgrade).build()) {
       assertEquals(2, calls.get());
       assertEquals("Historic", states.get("snapshots:Team", "a").orElseThrow().value().path("state").path("title").asText());
-      emit(runtime, "older-event", new TeamChanged("a", "Earlier"));
-      assertEquals(100, states.get("snapshots:Team", "a").orElseThrow().value().path("position").asLong());
-      assertEquals(100, states.get("readModels:GroupView", "a").orElseThrow().value().path("position").asLong());
+      assertEquals("Historic", runtime.entity(Team.class, "a").title());
+      assertEquals("Historic", runtime.getReadModel("GroupView", "a", request("read")).path("title").asText());
+      runtime.rebuild();
+      assertEquals("Historic", runtime.entity(Team.class, "a").title());
+      assertTrue(states.get("snapshots:Team", "a").orElseThrow().value().path("position").asLong() >= 100);
+      assertTrue(states.get("readModels:GroupView", "a").orElseThrow().value().path("position").asLong() >= 100);
+      emit(runtime, "new-event", new TeamChanged("a", "Newer"));
+      assertEquals("Newer", runtime.entity(Team.class, "a").title());
     }
     var future = new InMemoryStateStore(); future.put("snapshots:Team", "a", 0, snapshot.put("schemaVersion", 10));
     assertThrows(BoosterException.class, () -> domain(new InMemoryEventStore(), future).build());

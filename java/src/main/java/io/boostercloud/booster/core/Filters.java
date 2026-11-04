@@ -5,8 +5,7 @@ import com.fasterxml.jackson.databind.node.MissingNode;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import com.google.re2j.Pattern;
-import com.google.re2j.PatternSyntaxException;
+import io.boostercloud.booster.core.regex.EcmaRegex;
 
 /** Booster-style structured read-model filters. No Java source or SQL is evaluated. */
 public final class Filters {
@@ -95,11 +94,8 @@ public final class Filters {
           if (!expected.isTextual()) throw invalid("Text operators require a string");
           String operand = expected.textValue();
           if (field.getKey().endsWith("Regex") || field.getKey().equals("regex")) {
-            if (operand.length() > 512) throw invalid("Regular expression exceeds 512 characters");
-            try {
-              var pattern = Pattern.compile(operand, field.getKey().equals("iRegex") ? Pattern.CASE_INSENSITIVE : 0);
-              yield actual.isTextual() && pattern.matcher(actual.textValue()).find();
-            } catch (PatternSyntaxException error) { throw invalid("Invalid regular expression"); }
+            boolean match = EcmaRegex.matches(actual.isTextual() ? actual.textValue() : "", operand, field.getKey().equals("iRegex"));
+            yield actual.isTextual() && match;
           }
           yield actual.isTextual() && (field.getKey().equals("beginsWith") ? actual.textValue().startsWith(operand) : actual.textValue().contains(operand));
         }

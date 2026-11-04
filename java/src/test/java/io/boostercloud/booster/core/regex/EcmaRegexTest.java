@@ -13,7 +13,7 @@ class EcmaRegexTest {
   @Test void matchesRecordedEcmascriptOracleIncludingLookaroundBackreferencesAndUnicode() throws Exception {
     try (var input = getClass().getResourceAsStream("/compatibility/ecmascript-regex.json")) {
       assertNotNull(input);
-      var document = Json.MAPPER.readTree(input); assertEquals(40, document.path("fixtures").size());
+      var document = Json.MAPPER.readTree(input); assertEquals(45, document.path("fixtures").size());
       for (var fixture : document.path("fixtures")) {
         String name = fixture.path("name").asText();
         if (fixture.path("valid").asBoolean()) assertEquals(fixture.path("matched").asBoolean(),

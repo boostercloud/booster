@@ -317,6 +317,46 @@
       "input": "aa",
       "ignoreCase": false,
       "valid": false
+    },
+    {
+      "name": "constructor literal newline",
+      "pattern": "line\nbreak",
+      "input": "line\nbreak",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "constructor literal null",
+      "pattern": "\u0000",
+      "input": "\u0000",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "slash delimiter",
+      "pattern": "/",
+      "input": "/",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "escaped slash",
+      "pattern": "\\/",
+      "input": "/",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": true
+    },
+    {
+      "name": "pattern cannot inject flags",
+      "pattern": "/i/abc",
+      "input": "/i/ABC",
+      "ignoreCase": false,
+      "valid": true,
+      "matched": false
     }
   ]
 }

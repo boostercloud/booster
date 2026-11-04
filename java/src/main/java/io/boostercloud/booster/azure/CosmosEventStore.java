@@ -132,10 +132,8 @@ public final class CosmosEventStore implements EventStore {
       if (existing.isEmpty()) return false;
       var stored = decode(existing.get().value().get("event"), StoredEvent.class);
       if (stored.event().metadata().containsKey("deletedAt") && stored.event().payload().isObject() && stored.event().payload().isEmpty()) return true;
-      var metadata = new HashMap<>(stored.event().metadata()); metadata.putIfAbsent("deletedAt", deletedAt.toString());
       var original = stored.event();
-      var redacted = new StoredEvent(stored.position(), stored.streamVersion(), new PendingEvent(original.id(), original.stream(),
-          original.type(), original.schemaVersion(), Json.MAPPER.createObjectNode(), original.timestamp(), original.user(), metadata));
+      var redacted = new StoredEvent(stored.position(), stored.streamVersion(), original.redacted(deletedAt));
       var eventValue = (ObjectNode) existing.get().value(); eventValue.set("event", Json.MAPPER.valueToTree(redacted));
       var writes = new ArrayList<CosmosDocuments.Write>();
       writes.add(new CosmosDocuments.Write(existing.get().id(), eventValue, existing.get().etag()));

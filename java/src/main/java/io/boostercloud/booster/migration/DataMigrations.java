@@ -38,13 +38,17 @@ import java.util.function.UnaryOperator;
  *
  * <p>Install the lifecycle events before building Booster, configure a durable StateStore,
  * then construct this engine with the same stable definitions on every worker. A global
- * renewable CAS lease serializes workers. Earlier jobs must finish before later jobs start.
+ * renewable CAS lease serializes workers. Jobs start in configured order, including
+ * when an earlier callback returns while its job remains RUNNING. Completion-order
+ * execution is available explicitly for applications with dependent migrations.
  * run() leaves existing RUNNING/FAILED jobs alone; resume() reruns them from their durable
  * checkpoints. Each step has an immutable idempotency key and atomically commits its
  * events and result through Booster. The journal, rather than a returned callback or a
  * progress document, determines whether a job has finished.
  */
 public final class DataMigrations {
+  /** START_ORDER matches Booster's baseline; COMPLETION_ORDER adds a completion barrier. */
+  public enum Ordering { START_ORDER, COMPLETION_ORDER }
   private static final String NAMESPACE = "booster.data-migrations";
   private static final int MAX_CAS_RETRIES = 32;
   private final Booster booster;
@@ -54,22 +58,34 @@ public final class DataMigrations {
   private final UserContext user;
   private final Clock clock;
   private final Duration leaseDuration;
+  private final Ordering ordering;
 
   public DataMigrations(Booster booster, List<DataMigration> migrations, UserContext user) {
-    this(booster, migrations, user, Clock.systemUTC(), Duration.ofMinutes(1));
+    this(booster, migrations, user, Clock.systemUTC(), Duration.ofMinutes(1), Ordering.START_ORDER);
+  }
+
+  public DataMigrations(Booster booster, List<DataMigration> migrations, UserContext user, Ordering ordering) {
+    this(booster, migrations, user, Clock.systemUTC(), Duration.ofMinutes(1), ordering);
   }
 
   public DataMigrations(Booster booster, List<DataMigration> migrations, UserContext user,
       Clock clock, Duration leaseDuration) {
+    this(booster, migrations, user, clock, leaseDuration, Ordering.START_ORDER);
+  }
+
+  public DataMigrations(Booster booster, List<DataMigration> migrations, UserContext user,
+      Clock clock, Duration leaseDuration, Ordering ordering) {
     this.booster = Objects.requireNonNull(booster, "booster");
     this.state = booster.stateStore();
     this.user = Objects.requireNonNull(user, "Migration execution identity must be explicit");
     this.clock = Objects.requireNonNull(clock, "clock");
     this.leaseDuration = Objects.requireNonNull(leaseDuration, "leaseDuration");
+    this.ordering = Objects.requireNonNull(ordering, "ordering");
     if (leaseDuration.compareTo(Duration.ofSeconds(1)) < 0 || leaseDuration.compareTo(Duration.ofHours(1)) > 0)
       throw new IllegalArgumentException("Migration lease duration must be between one second and one hour");
     var configured = new ArrayList<>(Objects.requireNonNull(migrations));
-    configured.sort(Comparator.comparingInt(DataMigration::order).thenComparing(DataMigration::name));
+    // List.sort is stable, preserving declaration order for equal priorities.
+    configured.sort(Comparator.comparingInt(DataMigration::order));
     byName = new LinkedHashMap<>();
     for (var migration : configured) if (byName.putIfAbsent(migration.name(), migration) != null)
       throw new IllegalArgumentException("Duplicate data migration: " + migration.name());
@@ -90,7 +106,7 @@ public final class DataMigrations {
   /** Return true if any job started or remains unfinished, matching Booster's run indication. */
   public boolean run() { return run(false); }
 
-  /** Retry the first unfinished job, preserving its checkpoint and completed step receipts. */
+  /** Retry unfinished jobs in order, preserving their checkpoints and completed step receipts. */
   public boolean resume() { return run(true); }
 
   public Optional<MigrationStatus> status(String name) {
@@ -130,32 +146,38 @@ public final class DataMigrations {
   private boolean run(boolean resume) {
     ensureCatalog();
     if (migrations.isEmpty()) return false;
-    boolean started = false;
+    boolean migrating = false;
     try (var lease = acquireLease()) {
       for (var migration : migrations) {
         lease.assertOwned();
         var current = booster.entity(BoosterDataMigrationEntity.class, migration.name());
         if (current != null && current.status() == DataMigrationStatus.FINISHED) continue;
-        if (current != null && !resume) return true;
-        started = true;
+        migrating = true;
+        if (current != null && !resume) {
+          if (ordering == Ordering.COMPLETION_ORDER) return true;
+          continue;
+        }
         start(migration, lease);
         var after = booster.entity(BoosterDataMigrationEntity.class, migration.name());
-        if (after == null || after.status() != DataMigrationStatus.FINISHED) return true;
+        if (ordering == Ordering.COMPLETION_ORDER &&
+            (after == null || after.status() != DataMigrationStatus.FINISHED)) return true;
       }
-      return started;
+      return migrating;
     }
   }
 
   private void start(DataMigration migration, Lease lease) {
     String name = migration.name();
-    long attempt = mutateProgress(name, value -> value.put("attempt", Math.addExact(value.path("attempt").asLong(0), 1)))
+    long attempt = mutateProgress(name, lease, null,
+        value -> value.put("attempt", Math.addExact(value.path("attempt").asLong(0), 1)))
         .path("attempt").longValue();
     var invocation = Json.MAPPER.createObjectNode().put("name", name).put("attempt", attempt);
     invocation.set("parameters", migration.parameters());
-    booster.executeSystemAction("data-migration-start", invocation, context(name, "start:" + attempt),
+    long lifecycleAttempt = booster.executeSystemAction("data-migration-start", invocation, context(name, "start:" + attempt),
         AccessPolicy.publicAccess(), (ignored, register) -> {
-          lease.assertOwned(); register.emit(new BoosterDataMigrationStarted(name, now())); return null;
-        });
+          lease.assertOwned(); register.emit(new BoosterDataMigrationStarted(name, now()));
+          return register.entity(BoosterDataMigrationEntity.class, name).attempts();
+        }).longValue();
     try {
       booster.executeSystemAction("data-migration-run", invocation, context(name, "run:" + attempt),
           AccessPolicy.publicAccess(), (ignored, register) -> {
@@ -163,8 +185,8 @@ public final class DataMigrations {
             // Read the lifecycle into this transaction's expected stream versions.
             // A newer worker's Started event fences stale buffered effects even if
             // the lease expires after the last ownership check but before commit.
-            long lifecycleAttempt = requireRunning(register, name).attempts();
-            migration.handler().start(new MigrationContext(this, migration, lease, register));
+            requireAttempt(register, name, lifecycleAttempt, false);
+            migration.handler().start(new MigrationContext(this, migration, lease, register, attempt));
             lease.assertOwned();
             // A handler may explicitly flush, clearing the Register's previous
             // read set. Re-establish the lifecycle fence without accepting a
@@ -181,7 +203,8 @@ public final class DataMigrations {
           String safeReason = reason.substring(0, Math.min(reason.length(), 2048));
           booster.executeSystemAction("data-migration-failed", invocation, context(name, "failed:" + attempt),
               AccessPolicy.publicAccess(), (ignored, register) -> {
-                lease.assertOwned(); register.emit(new BoosterDataMigrationFailed(name, now(), safeReason)); return null;
+                lease.assertOwned(); requireAttempt(register, name, lifecycleAttempt, false);
+                register.emit(new BoosterDataMigrationFailed(name, now(), safeReason)); return null;
               });
         }
       } catch (RuntimeException recordingFailure) { failure.addSuppressed(recordingFailure); }
@@ -189,7 +212,7 @@ public final class DataMigrations {
     }
   }
 
-  JsonNode step(DataMigration migration, Lease lease, String key, JsonNode input, CommandHandler<JsonNode> work) {
+  JsonNode step(DataMigration migration, Lease lease, long attempt, String key, JsonNode input, CommandHandler<JsonNode> work) {
     if (key == null || key.isBlank() || key.length() > 512)
       throw new IllegalArgumentException("Migration step keys must contain 1 to 512 characters");
     Objects.requireNonNull(work, "work");
@@ -204,7 +227,7 @@ public final class DataMigrations {
           lease.assertOwned(); requireAttempt(register, migration.name(), lifecycleAttempt, false); return value;
         });
     lease.assertOwned();
-    checkpoint(migration.name(), null, key);
+    checkpoint(migration.name(), lease, attempt, null, key);
     return result;
   }
 
@@ -214,21 +237,26 @@ public final class DataMigrations {
             .put("attempt", 0).set("checkpoint", Json.MAPPER.createObjectNode()));
   }
 
-  void checkpoint(String name, JsonNode value, String lastStep) {
-    mutateProgress(name, previous -> {
+  void checkpoint(String name, Lease lease, long attempt, JsonNode value, String lastStep) {
+    mutateProgress(name, lease, attempt, previous -> {
       if (value != null) previous.set("checkpoint", value.deepCopy());
       if (lastStep != null) previous.put("lastCompletedStep", lastStep);
       return previous;
     });
   }
 
-  private ObjectNode mutateProgress(String name, UnaryOperator<ObjectNode> mutation) {
+  private ObjectNode mutateProgress(String name, Lease lease, Long executionAttempt, UnaryOperator<ObjectNode> mutation) {
     String key = "job:" + hash(name);
     for (int attempt = 0; attempt < MAX_CAS_RETRIES; attempt++) {
       Optional<StateDocument> document = state.get(NAMESPACE, key);
       ObjectNode current = document.filter(value -> !value.deleted()).map(StateDocument::value)
           .map(value -> (ObjectNode) value).orElseGet(() -> Json.MAPPER.createObjectNode().put("attempt", 0)
               .set("checkpoint", Json.MAPPER.createObjectNode()));
+      // CAS protects a write after this check; rechecking on every retry prevents
+      // a stale worker from adopting a newer attempt's progress revision.
+      lease.assertOwned();
+      if (executionAttempt != null && current.path("attempt").asLong() != executionAttempt)
+        throw conflict("Migration progress belongs to another execution attempt: " + name);
       ObjectNode replacement = mutation.apply(current.deepCopy());
       try { return (ObjectNode) state.put(NAMESPACE, key, document.map(StateDocument::version).orElse(0L), replacement).value(); }
       catch (BoosterException conflict) { if (conflict.code() != BoosterException.Code.CONFLICT) throw conflict; }
@@ -237,6 +265,7 @@ public final class DataMigrations {
   }
 
   private void ensureCatalog() {
+    ensureOrdering();
     var configured = Json.MAPPER.createArrayNode();
     for (var migration : migrations) {
       var definition = Json.MAPPER.createObjectNode().put("name", migration.name()).put("order", migration.order());
@@ -256,6 +285,21 @@ public final class DataMigrations {
       catch (BoosterException conflict) { if (conflict.code() != BoosterException.Code.CONFLICT) throw conflict; }
     }
     throw conflict("Concurrent migration catalog updates did not converge");
+  }
+
+  private void ensureOrdering() {
+    var configured = Json.MAPPER.getNodeFactory().textNode(ordering.name());
+    for (int attempt = 0; attempt < MAX_CAS_RETRIES; attempt++) {
+      var prior = state.get(NAMESPACE, "ordering");
+      if (prior.isPresent() && !prior.get().deleted()) {
+        if (!prior.get().value().equals(configured))
+          throw conflict("Migration ordering policy is durable and must match on every worker");
+        return;
+      }
+      try { state.put(NAMESPACE, "ordering", prior.map(StateDocument::version).orElse(0L), configured); return; }
+      catch (BoosterException conflict) { if (conflict.code() != BoosterException.Code.CONFLICT) throw conflict; }
+    }
+    throw conflict("Concurrent migration ordering updates did not converge");
   }
 
   private DataMigration requireMigration(String name) {

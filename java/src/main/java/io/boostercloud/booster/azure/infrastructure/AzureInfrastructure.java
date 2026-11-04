@@ -127,7 +127,7 @@ public final class AzureInfrastructure {
     application.set("properties", node(Map.of("managedEnvironmentId", environmentId,
         "configuration", Map.of("activeRevisionsMode", "Single", "secrets", List.of(Map.of("name", "upstream-token", "value", "[parameters('upstreamToken')]")), "ingress", Map.of("external", true,
             "targetPort", config.port(), "transport", "http", "allowInsecure", false)),
-        "template", Map.of("containers", List.of(Map.of("name", "booster", "image", config.image(), "env", env,
+        "template", Map.of("terminationGracePeriodSeconds", 60, "containers", List.of(Map.of("name", "booster", "image", config.image(), "env", env,
             "resources", Map.of("cpu", 1.0, "memory", "2Gi"),
             "probes", List.of(Map.of("type", "Liveness", "httpGet", Map.of("path", "/health", "port", config.port()),
                 "initialDelaySeconds", 30, "periodSeconds", 30),
