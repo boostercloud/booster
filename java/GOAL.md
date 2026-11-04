@@ -1,6 +1,6 @@
 # Goal: complete Booster Java with Azure and the requested rockets
 
-**Status: IMPLEMENTED AND LOCALLY VERIFIED — final PR delivery checks are in progress.**
+**Status: IMPLEMENTED AND LOCALLY VERIFIED — final closure is blocked on queued GitHub CI.**
 
 Continue implementation in the existing [pull request #1607](https://github.com/boostercloud/booster/pull/1607),
 branch `feat/booster-java`. All implementation, tests and documentation belong
@@ -181,6 +181,16 @@ separate-process integration tests (281 total), with no failures, errors or skip
 This includes the final schema deletion/recovery and GraphQL compatibility fixes. A separately generated
 Maven application also passed its test and real HTTP/GraphQL requests, including
 ECMAScript regular-expression filtering.
+
+Implementation and validation are committed at
+`86d06e5a869ea6947f824107e8c1276ddade6491` in PR #1607. Its repository checks
+were created at 17:30 UTC on 2026-11-04 and remained queued without an assigned
+runner during the delivery observation window. This is not a test failure or
+an implementation gap. The PR remains a draft; do not mark the two final delivery
+items complete until the checks have actually run. Resume by checking the latest
+PR head's CI results, investigating any relevant failures, then closing this
+checklist and marking the PR ready for review. Do not merge. No additional Java
+build is needed unless source changes or a failure warrants it.
 
 Evidence and follow-ups are maintained in [VALIDATION.md](VALIDATION.md).
 Real Azure deployment is deferred by the user's explicit instruction; no live

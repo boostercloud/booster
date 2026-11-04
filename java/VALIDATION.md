@@ -89,6 +89,18 @@ No image was published. The final local image digest is
 `sha256:20ea8805cf64334f4ad4896a0978d7f4bde351ddcfbbab98147b9c5f10358f1a`;
 evidence is retained in `/workspace/.java-tools/final-docker-evidence.json`.
 
+## Repository CI delivery status
+
+The preceding checkpoint's repository checks passed. After pushing the final
+implementation at `86d06e5a869ea6947f824107e8c1276ddade6491`, the checks created
+at 17:30 UTC on 2026-11-04 remained queued during the delivery observation window:
+changes-check, JavaScript CodeQL, CodeSee, lint and unit-tests, plus the aggregate
+CodeQL check. The unit-test job reported `runner_name: null`; none reported a
+failure. These checks are pending, not passed. The PR remains draft and final
+goal closure awaits the latest head's actual CI results. The 281 passing Java
+tests above were executed in this environment; the existing repository workflows
+do not run the new Java Maven suite.
+
 ## Deferred and blocked checks
 
 **Real Azure deployment and tests were not run**, by the user's explicit
