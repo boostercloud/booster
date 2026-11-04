@@ -1,5 +1,10 @@
 # Compatibility with Booster TypeScript
 
+**Goal status: incomplete.** This document records current capabilities and gaps.
+The Azure, advanced-projection, migration, subscription/authentication/API and
+webhook/file-upload gaps required by [GOAL.md](GOAL.md) are outstanding work,
+not accepted exclusions. AWS is explicitly outside the requested scope.
+
 This directory is an independent Java edition of Booster. It preserves the
 event-sourcing and CQRS programming model, but it is not a binary, source, data,
 or deployment-compatible replacement for the TypeScript packages. Existing

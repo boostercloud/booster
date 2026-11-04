@@ -1,5 +1,9 @@
 # Validation record
 
+These results validate the existing local foundation, not completion of the
+expanded Azure and compatibility goal in [GOAL.md](GOAL.md). Those required
+subsystems remain pending until their implementation and tests are recorded.
+
 Validated on 2026-11-04 with Oracle JDK **27.0.1.0.3** and Maven **3.10.0**.
 The Java and Maven official archive checksums were verified. The committed JDK
 bootstrap and Maven launcher were independently exercised with fresh tool caches.

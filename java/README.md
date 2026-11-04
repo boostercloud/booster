@@ -1,5 +1,11 @@
 # Booster Java
 
+**Work in progress in PR #1607.** The required goal includes the Azure provider,
+advanced projections, data migrations, existing API/authentication/subscription
+compatibility, and Java webhook and file-upload rockets. AWS is excluded.
+The implementation described below is the verified local foundation; it is not
+the completed port. Track the remaining requirements in [GOAL.md](GOAL.md).
+
 An independent Java edition of Booster: commands produce durable events, pure
 reducers reconstruct entities, and projections build queryable read models.
 Applications use Java records and typed handlers. The existing TypeScript

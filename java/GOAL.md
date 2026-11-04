@@ -1,47 +1,167 @@
-# Goal: an independent Java edition of Booster
+# Goal: complete Booster Java with Azure and the requested rockets
 
-Build a usable Java implementation of Booster's event-sourced CQRS programming
-model under `java/`, with no changes to the existing TypeScript implementation,
-its dependencies, its lockfile, or its build. Use the current stable Java release
-(Java 27, verified against the official Oracle distribution on 2026-11-04),
-without preview features.
+**Status: IN PROGRESS — the local foundation is not the completed goal.**
 
-## Acceptance criteria
+Continue implementation in the existing [pull request #1607](https://github.com/boostercloud/booster/pull/1607),
+branch `feat/booster-java`. All implementation, tests and documentation belong
+under `java/`. Preserve the existing TypeScript implementation, its dependencies,
+lockfiles and build. Use the latest stable Java release (currently Java 27,
+verified against the official distribution), without silently downgrading it.
 
-- A Java application defines commands, events, entity reducers, read-model
-  projections and queries using typed Java records and handlers.
-- Command failures do not persist their buffered events. Durable atomic commits,
-  optimistic concurrency and request idempotency protect against lost writes
-  and duplicate requests. State can be reconstructed after restart.
-- Public and role-based authorization is explicit; protected operations deny
-  unauthenticated callers. The HTTP boundary supports verified JWT identities.
-- A real GraphQL engine exposes the registered application, validates requests,
-  and exercises the command → journal → entity → projection → query workflow.
-- An executable CLI runs a complete sample application and scaffolds an
-  independent compilable Java project. The sample uses durable local storage.
-- Automated tests cover domain behavior, persistence, concurrency, migrations,
-  authorization, transport, restart/replay, and CLI behavior.
-- The build and tests use a pinned, verified toolchain; documentation includes
-  runnable commands and accurately describes compatibility with TypeScript.
-- All implementation changes stay inside `java/`. Open a pull request with the
-  actual validation results and any remaining limitations.
+This is the persistent repository record of the user's goal. It is not a native
+Codex goal and does not create or guarantee background task execution.
 
-## Architecture decisions
+## Required outcome
 
-Use Maven, Java records, explicit typed registration, Jackson for JSON,
-GraphQL Java for standards-based query execution, a provider interface with
-in-memory and transactional H2/JDBC implementations, and the JDK HTTP server.
-The CLI and sample ship in an executable JAR. The local runtime has no Node.js,
-Docker, cloud account, or external database prerequisite.
+Deliver a Java implementation covering Booster's existing core behavior, the
+**Azure provider**, advanced projections, schema and data migrations,
+subscriptions, authentication, existing API contracts, and the **webhook** and
+**file-upload** rockets. A working local demo alone does not satisfy this goal.
+Do not reduce this scope or substitute interfaces, mocks or documentation for
+working implementations. Report blockers and continue independent work.
 
-Java's type system and runtime APIs are the public contract. This is an
-independent Java edition, with a compatibility matrix for behavior and wire
-protocol differences. Existing TypeScript binaries, npm Rockets and provider
-deployment code are not Java artifacts. Cloud provider implementations and
-the deployment lifecycle must be described honestly in the compatibility matrix.
+**AWS is explicitly excluded.** Docker-deployment and static-site rockets are
+not requested. This does not prohibit using a Java container as an Azure runtime
+if that is necessary to support the selected Java release.
 
-## Delivery evidence
+## Source baselines
 
-The final test results and runtime checks are recorded in `VALIDATION.md`;
-the pull request links the implementation and those results. Do not mark an
-unexecuted or unsupported feature as verified.
+- Booster TypeScript 4.1.0: `6bc5f816ca759db20a9aa2ee814341041ca2f95a`.
+- Webhook rocket: `boostercloud/rocket-webhook`, `07aa8a806ff6ae5acbdb1ba06ebdc068f6650cbb`.
+- File-upload rocket: `boostercloud/rocket-file-uploads`, `cc6d6463231846195bb2d5114c8d792003750f03`.
+
+Inspect these implementations and their tests to establish behavior. Maintain
+`COMPATIBILITY.md` as an actual-versus-required inventory. Java-native source
+APIs may be idiomatic, but observable behavior and existing client contracts
+must be implemented and verified; differences remain open goal items unless
+explicitly accepted by the user.
+
+## Acceptance checklist
+
+### Core and provider contracts
+
+- [x] Establish a typed Java local foundation: commands, events, reducers,
+  simple projections, queries, transactional journal, CLI and real GraphQL.
+- [ ] Complete the remaining core/provider behavior used by the TypeScript
+  baseline, including contextual registration/flush, event handling, notifications,
+  hooks, errors, health and extension functions; inventory each item explicitly.
+- [ ] Preserve ordering, optimistic concurrency, idempotency, authorization,
+  correlation propagation and recovery across provider implementations.
+
+### Azure provider — required, AWS excluded
+
+- [ ] Implement actual Azure runtime adapters for events, snapshots, read models,
+  searching, dispatch/deduplication, subscriptions/connections, scheduling and
+  the provider's event-stream interfaces.
+- [ ] Implement Azure infrastructure and CLI lifecycle: configuration,
+  synthesis, deployment/update, startup/health and intentional teardown.
+- [ ] Cover the baseline's Cosmos DB, Azure Functions/hosting, Event Hubs,
+  Web PubSub, Storage, managed identity and role-assignment responsibilities.
+  Select and document a hosting option that really supports Java 27.
+- [ ] Preserve Cosmos change-feed/lease processing, Event Hubs producer/consumer
+  flow, HTTP/timer/change-feed triggers, the Web PubSub `booster` hub and durable
+  subscription/connection records required by the existing Azure provider.
+- [ ] Verify service serialization, partition/concurrency semantics, retries,
+  pagination, failures and restarts using contract tests and available emulators.
+- [ ] Run an isolated Azure deployment with real command/event/projection/query,
+  subscription and rocket checks, then verify cleanup of created resources.
+  Missing access leaves this item pending; mocks do not prove cloud readiness.
+
+### Advanced projections and read models
+
+- [ ] Implement joined projections across entities, join keys and filter joins,
+  fan-out, unprojection, deletion and no-change outcomes.
+- [ ] Implement persisted read-model versions, concurrency handling/retries,
+  sequence/composite-key behavior and deterministic rebuild/reprojection.
+- [ ] Test duplicate/out-of-order delivery, concurrent updates, joins changing
+  membership, deletion, pagination and restart consistency.
+
+### Schema and data migrations
+
+- [ ] Complete schema migrations for commands, events, entities/snapshots and
+  read models, with consecutive versions, invalid-gap/future-version rejection
+  and preserved historical data.
+- [ ] Implement the data-migration mechanism: named jobs, durable progress,
+  completion/failure records, resumability and idempotency.
+- [ ] Support baseline entity rename/ID migration, touch/reprojection and
+  migration parameters through real provider operations.
+- [ ] Test interrupted and retried migrations against populated persistent data,
+  ensuring no event loss or duplicate side effects.
+
+### Existing APIs, authentication and subscriptions
+
+- [ ] Inventory and implement the existing GraphQL operation names, generated
+  input/output/filter/sort types, nullability, selection behavior, cursor/list
+  semantics, schema versions and error behavior.
+- [ ] Implement the baseline WebSocket subscription protocol and lifecycle,
+  including connection initialization, authentication, start/stop, cleanup,
+  expiration, by-ID and filtered subscriptions, and Azure delivery.
+  The current POST SSE transport alone is insufficient.
+- [ ] Verify the baseline legacy `graphql-ws` message contract:
+  `connection_init`, `start`, `stop`, `connection_terminate`, acknowledgements,
+  data, errors and completion. Do not substitute a different protocol merely
+  because its name is similar.
+- [ ] Complete JWT/public-key/JWKS verification, key rotation, issuer/audience,
+  token timing, configured role claims and baseline authorizer/hook behavior.
+- [ ] Verify compatibility with representative existing clients and recorded
+  TypeScript contract fixtures, including rejection and authorization cases.
+
+### Webhook rocket — Java local and Azure
+
+- [ ] Port the rocket's configuration, routes, methods, request metadata/body,
+  authentication/authorization, handler/event dispatch and response behavior.
+- [ ] Implement the baseline JSON, text, binary and multipart behavior and
+  request/response bounds without forwarding work to Node.js.
+- [ ] Integrate real local and Azure routing/infrastructure; test valid requests,
+  malformed/unauthorized input, duplicate delivery and handler failures.
+
+### File-upload rocket — Java local and Azure
+
+- [ ] Port upload/download URL generation, authorization, file listing,
+  metadata/key handling and the rocket's public command/query contracts.
+- [ ] Implement real local file storage and Azure Blob Storage/SAS behavior,
+  upload notifications, configured handlers and file/entity/event propagation.
+- [ ] Provide corresponding Azure infrastructure, storage and role permissions.
+- [ ] Test upload, download, listing, expiration, access rejection, unsafe paths,
+  duplicate notifications, handler failures and persistence across restart.
+
+### Validation and delivery
+
+- [ ] Expand Java unit, provider-contract, security and integration tests to cover
+  every required subsystem; add compatibility fixtures from the baseline.
+- [ ] Exercise end-to-end applications locally and on Azure, including both
+  rockets, advanced projections, migrations and subscription/authentication flows.
+- [ ] Keep `VALIDATION.md` current with executed commands and distinct passed,
+  failed, skipped, blocked and unrun outcomes. Passing local tests are not evidence
+  that unimplemented provider/API functionality works.
+- [ ] Keep README, compatibility inventory and reproducible build/start/deploy
+  instructions aligned with the implemented behavior.
+- [ ] Resolve relevant PR checks and keep all changes in PR #1607. Do not merge
+  without a separate instruction. Keep the PR draft while required work remains.
+- [ ] Mark this goal complete only when every required item is implemented and
+  validated. Remaining external blockers must be reported, not relabeled as done.
+
+## Current verified baseline
+
+At commit `e22abc405232945f8e17598d1f6a815e6f95cb85`, the local foundation passed
+73 framework tests plus one test in a separately generated application, whose
+HTTP/GraphQL startup was exercised. These results apply only to that existing
+implementation and do not close the Azure, compatibility or rocket items above.
+
+## Resume and blocker protocol
+
+1. Read this file, `COMPATIBILITY.md`, `VALIDATION.md`, current branch/status and
+   PR state before resuming. Preserve user changes and use the existing checkout.
+2. Confirm that tools and all agents use the active environment; a publication
+   previously left agents on an older container. Transfer and verify work before
+   relying on another agent's results.
+3. Work through unchecked acceptance items, recording implementation and test
+   evidence. Do not silently remove requirements or announce the goal completed
+   because a smaller milestone passes.
+4. Inspect configured identities, variable presence and network policy before
+   requesting Azure access. Never ask for credential values in chat.
+5. Report the precise failing operation and required external action promptly;
+   continue useful independent work. Do not invent successful cloud validation.
+6. Commit and push recoverable checkpoints on `feat/booster-java`; update the
+   same PR. A file, commit or PR is not a native Codex goal or a guarantee that
+   the task keeps running when the client closes.
