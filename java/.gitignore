@@ -1,0 +1,11 @@
+/target/
+/.tools/
+/.m2/
+/.data/
+/.booster-java/
+*.mv.db
+*.trace.db
+*.lock.db
+.idea/
+*.iml
+.booster-java-*.lock

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>io.boostercloud</groupId>
+  <artifactId>booster-java</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <name>Booster Java</name>
+  <description>A Java implementation of Booster's event-sourced CQRS application model</description>
+  <url>https://github.com/boostercloud/booster/tree/main/java</url>
+  <licenses><license><name>Apache License 2.0</name><url>https://www.apache.org/licenses/LICENSE-2.0</url></license></licenses>
+  <properties>
+    <maven.compiler.release>27</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <project.build.outputTimestamp>2026-11-04T00:00:00Z</project.build.outputTimestamp>
+    <jackson.version>2.20.1</jackson.version>
+    <junit.version>5.13.4</junit.version>
+    <graal.regex.version>25.5.5.0.3</graal.regex.version>
+  </properties>
+  <dependencies>
+    <dependency><groupId>com.fasterxml.jackson.core</groupId><artifactId>jackson-databind</artifactId><version>${jackson.version}</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jsr310</artifactId><version>${jackson.version}</version></dependency>
+    <dependency><groupId>com.fasterxml.jackson.datatype</groupId><artifactId>jackson-datatype-jdk8</artifactId><version>${jackson.version}</version></dependency>
+    <dependency><groupId>com.graphql-java</groupId><artifactId>graphql-java</artifactId><version>25.0</version></dependency>
+    <dependency><groupId>com.h2database</groupId><artifactId>h2</artifactId><version>2.3.232</version></dependency>
+    <dependency><groupId>org.graalvm.regex</groupId><artifactId>regex</artifactId><version>${graal.regex.version}</version></dependency>
+    <dependency><groupId>org.graalvm.polyglot</groupId><artifactId>polyglot</artifactId><version>${graal.regex.version}</version></dependency>
+    <dependency><groupId>io.undertow</groupId><artifactId>undertow-core</artifactId><version>2.4.4.Final</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-cosmos</artifactId><version>4.83.0</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-identity</artifactId><version>1.19.0</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-messaging-eventhubs</artifactId><version>5.22.1</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-messaging-webpubsub</artifactId><version>1.6.1</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-core-http-jdk-httpclient</artifactId><version>1.3.0</version></dependency>
+    <dependency><groupId>com.azure</groupId><artifactId>azure-storage-blob</artifactId><version>12.37.2</version></dependency>
+    <dependency><groupId>org.junit.jupiter</groupId><artifactId>junit-jupiter</artifactId><version>${junit.version}</version><scope>test</scope></dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-enforcer-plugin</artifactId><version>3.6.2</version>
+        <executions><execution><id>toolchain</id><goals><goal>enforce</goal></goals><configuration><rules>
+          <requireJavaVersion><version>[27,28)</version><message>Booster Java requires JDK 27. Set JAVA_HOME to a Java 27 JDK.</message></requireJavaVersion>
+          <requireMavenVersion><version>[3.9.9,)</version></requireMavenVersion>
+        </rules></configuration></execution></executions>
+      </plugin>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-compiler-plugin</artifactId><version>3.14.1</version><configuration><parameters>true</parameters>
+        <annotationProcessorPaths><path><groupId>org.graalvm.truffle</groupId><artifactId>truffle-dsl-processor</artifactId><version>${graal.regex.version}</version></path></annotationProcessorPaths>
+      </configuration></plugin>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-surefire-plugin</artifactId><version>3.5.4</version><configuration><failIfNoTests>true</failIfNoTests></configuration></plugin>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-failsafe-plugin</artifactId><version>3.5.4</version><executions><execution><goals><goal>integration-test</goal><goal>verify</goal></goals></execution></executions></plugin>
+      <plugin><groupId>org.apache.maven.plugins</groupId><artifactId>maven-shade-plugin</artifactId><version>3.6.2</version>
+        <executions><execution><phase>package</phase><goals><goal>shade</goal></goals><configuration>
+          <shadedArtifactAttached>true</shadedArtifactAttached><shadedClassifierName>all</shadedClassifierName><createDependencyReducedPom>false</createDependencyReducedPom>
+          <filters><filter><artifact>*:*</artifact><excludes><exclude>META-INF/*.SF</exclude><exclude>META-INF/*.DSA</exclude><exclude>META-INF/*.RSA</exclude><exclude>module-info.class</exclude><exclude>META-INF/versions/*/module-info.class</exclude></excludes></filter></filters>
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer"><resource>META-INF/LICENSE</resource></transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer"><resource>META-INF/NOTICE</resource></transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer"><mainClass>io.boostercloud.booster.cli.BoosterCli</mainClass><manifestEntries><Multi-Release>true</Multi-Release></manifestEntries></transformer>
+          </transformers>
+        </configuration></execution></executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

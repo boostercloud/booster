@@ -1,0 +1,31 @@
+#!/bin/sh
+# Small Maven launcher with a pinned distribution and mandatory SHA-512 verification.
+set -eu
+base=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+version=3.10.0
+tools_dir=${BOOSTER_TOOLS_DIR:-"$base/.tools"}
+maven_dir="$tools_dir/apache-maven-$version"
+if [ -z "${JAVA_HOME:-}" ] && [ -x "$tools_dir/jdk-27.0.1.0.3/bin/java" ]; then
+  JAVA_HOME="$tools_dir/jdk-27.0.1.0.3"
+  export JAVA_HOME
+fi
+if [ ! -x "$maven_dir/bin/mvn" ]; then
+  mkdir -p "$tools_dir"
+  download=$(mktemp -d "$tools_dir/maven-download.XXXXXX")
+  trap 'rm -rf "$download"' EXIT HUP INT TERM
+  curl --fail --location --silent --show-error --retry 3 \
+    "https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/$version/apache-maven-$version-bin.tar.gz" \
+    -o "$download/maven.tar.gz"
+  expected=908b1501bfb420bf7c8affb855534a9c407fd6099367bfb9f2f2dcb8e9799102bffb84518cde74c679bd76870247c6528683abdd620581bffa90f95d92d175aa
+  if command -v sha512sum >/dev/null 2>&1; then
+    actual=$(sha512sum "$download/maven.tar.gz" | cut -d ' ' -f 1)
+  else
+    actual=$(shasum -a 512 "$download/maven.tar.gz" | cut -d ' ' -f 1)
+  fi
+  [ "$actual" = "$expected" ] || { echo 'Maven checksum verification failed' >&2; exit 1; }
+  tar -xzf "$download/maven.tar.gz" -C "$download"
+  mv "$download/apache-maven-$version" "$maven_dir"
+  rm -rf "$download"
+  trap - EXIT HUP INT TERM
+fi
+exec "$maven_dir/bin/mvn" -C "$@"

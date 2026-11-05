@@ -1,0 +1,23 @@
+{
+  "repository": "boostercloud/rocket-webhook",
+  "commit": "07aa8a806ff6ae5acbdb1ba06ebdc068f6650cbb",
+  "derivation": "Source-derived contract vectors; not recorded execution of the TypeScript test suite",
+  "sources": [
+    "packages/rocket-webhook-core/src/webhook-dispatcher.ts",
+    "packages/rocket-webhook-core/src/response/webhook-response.ts",
+    "packages/rocket-webhook-core/src/response/webhook-response-builder.ts",
+    "packages/rocket-webhook-core/src/response/responses/webhook-json-response.ts",
+    "packages/rocket-webhook-core/src/response/responses/webhook-text-response.ts",
+    "packages/rocket-webhook-core/src/response/responses/webhook-empty-response.ts"
+  ],
+  "responses": [
+    { "type": "text", "value": "hello", "body": "hello", "contentType": "text/plain" },
+    { "type": "text", "value": null, "body": "", "contentType": "text/plain" },
+    { "type": "empty", "value": null, "body": "", "contentType": "text/plain" },
+    { "type": "json", "value": {"ok": true}, "body": "{\"ok\":true}", "contentType": "application/json" },
+    { "type": "json", "value": false, "body": "", "contentType": "application/json" },
+    { "type": "json", "value": 0, "body": "", "contentType": "application/json" },
+    { "type": "json", "value": null, "body": "", "contentType": "application/json" },
+    { "type": "json", "value": "", "body": "", "contentType": "application/json" }
+  ]
+}
