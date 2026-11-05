@@ -91,15 +91,24 @@ evidence is retained in `/workspace/.java-tools/final-docker-evidence.json`.
 
 ## Repository CI delivery status
 
-The preceding checkpoint's repository checks passed. After pushing the final
-implementation at `86d06e5a869ea6947f824107e8c1276ddade6491`, the checks created
-at 17:30 UTC on 2026-11-04 remained queued during the delivery observation window:
-changes-check, JavaScript CodeQL, CodeSee, lint and unit-tests, plus the aggregate
-CodeQL check. The unit-test job reported `runner_name: null`; none reported a
-failure. These checks are pending, not passed. The PR remains draft and final
-goal closure awaits the latest head's actual CI results. The 281 passing Java
-tests above were executed in this environment; the existing repository workflows
-do not run the new Java Maven suite.
+Verified on 2026-11-05: all six checks on
+`09ceb7307007d6809fc13416fdd3efad19f60ed4` passed: changes-check, JavaScript
+CodeQL, CodeSee, lint, unit-tests and the aggregate CodeQL check. The earlier
+runner queue resolved; the final check completed at 17:42:49 UTC on 2026-11-04.
+The PR was open, ready for review and awaiting approval. This is evidence for
+that head, not a claim about checks on later documentation commits.
+
+The 281 Java tests above ran in this environment. Existing repository workflows
+do not run the Java Maven suite. Adding that automation remains a follow-up.
+
+## Component inventory correction
+
+The 2026-11-05 source comparison found baseline functionality without a complete
+Java equivalent: configurable tracing, injectable CLI extensions, Azure network/
+provider configuration and public application-testing helpers. These are
+implementation gaps, not tests skipped by the 281-test run. Their source files,
+Java counterparts and status are recorded in
+[PORTING_INVENTORY.md](PORTING_INVENTORY.md) and the goal remains open for them.
 
 ## Deferred and blocked checks
 

@@ -6,7 +6,9 @@ projections, schema and data migrations, JWT/JWKS, legacy WebSocket subscription
 calendar scheduling, health sensors, and Java webhook/file-upload rockets.
 AWS is excluded. Real Azure deployment and tests are explicitly deferred by the
 user; local and SDK contract tests do not prove cloud readiness. Track the exact
-requirements and deferred validation in [GOAL.md](GOAL.md).
+requirements and remaining implementation in [GOAL.md](GOAL.md). The
+[component/file inventory](PORTING_INVENTORY.md) lists what is implemented,
+which baseline features remain and which validations are deferred.
 
 An independent Java edition of Booster: commands produce durable events, pure
 reducers reconstruct entities, and projections build queryable read models.

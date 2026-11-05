@@ -12,6 +12,11 @@ checks, failures and deferred work are recorded in [VALIDATION.md](VALIDATION.md
 AWS is excluded by the user. Real Azure deployment, cloud transfers and cleanup
 were explicitly deferred by the user; they remain unverified.
 
+For a component-to-file mapping and the outstanding baseline gaps found on
+2026-11-05, see [PORTING_INVENTORY.md](PORTING_INVENTORY.md). Implemented rows
+below do not establish full coverage of every feature in the corresponding
+TypeScript package.
+
 ## Implementation inventory
 
 | Area | Java implementation | Evidence and boundary |
@@ -244,6 +249,22 @@ of existing TypeScript data and deployments. Source, database and infrastructure
 migration require deliberate conversion and validation. Merely pointing the
 Java provider at a TypeScript Cosmos container or local data directory is not
 supported. No automatic TypeScript database import/export converter is supplied.
+
+## Outstanding baseline implementation
+
+The component/file review identified required follow-up beyond live validation:
+
+- Configurable Trace start/end notifications, action selection and invocation timing.
+- Injectable CLI subcommands with application context and execution customization.
+- Azure Application Gateway/VNet/subnet/NSG responsibilities and equivalent
+  controls for baseline batching/Cosmos per-request options. The Java Container
+  Apps template does not currently expose or provision those capabilities.
+- A public equivalent of application-tester and provider test helpers; current
+  Java integration fixtures are internal test code.
+
+See [PORTING_INVENTORY.md](PORTING_INVENTORY.md) for exact baseline file references.
+These are open implementation items in the goal, not implied exclusions or
+claims that only Azure tests remain.
 
 ## Validation follow-up and migration guidance
 

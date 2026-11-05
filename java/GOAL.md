@@ -1,6 +1,6 @@
 # Goal: complete Booster Java with Azure and the requested rockets
 
-**Status: IMPLEMENTED AND LOCALLY VERIFIED — final closure is blocked on queued GitHub CI.**
+**Status: IN PROGRESS — functional gaps identified by the component inventory; previous CI blocker resolved.**
 
 Continue implementation in the existing [pull request #1607](https://github.com/boostercloud/booster/pull/1607),
 branch `feat/booster-java`. All implementation, tests and documentation belong
@@ -52,7 +52,7 @@ explicitly accepted by the user.
 
 - [x] Establish a typed Java local foundation: commands, events, reducers,
   simple projections, queries, transactional journal, CLI and real GraphQL.
-- [x] Complete the remaining core/provider behavior used by the TypeScript
+- [ ] Complete the remaining core/provider behavior used by the TypeScript
   baseline, including contextual registration/flush, event handling, notifications,
   hooks, errors, health and extension functions; inventory each item explicitly.
 - [x] Preserve ordering, optimistic concurrency, idempotency, authorization,
@@ -151,10 +151,31 @@ explicitly accepted by the user.
 - [x] Test upload, download, listing, expiration, access rejection, unsafe paths,
   duplicate notifications, handler failures and persistence across restart.
 
+### Remaining baseline components identified on 2026-11-05
+
+The file comparison requested by the user identified functional gaps beyond
+Azure validation. Do not describe the entire port as complete while these remain:
+
+- [ ] Implement configurable tracing equivalent to Trace/traceConfiguration:
+  built-in and custom actions, start/end callbacks, action filtering and timing.
+- [ ] Implement a Java-native public CLI extension mechanism equivalent to the
+  baseline injectable commands/context/execution contract.
+- [ ] Address Azure network topology and provider-configuration differences:
+  Application Gateway/VNet/subnet/NSG responsibilities and baseline batching/
+  Cosmos request options. Document an explicit mapping appropriate for Container
+  Apps; do not silently treat missing behavior as merely unrun deployment tests.
+- [ ] Provide the public application-testing helper capabilities corresponding
+  to application-tester and provider test helpers; internal test fixtures alone
+  are not an equivalent user-facing library.
+- [x] Deliver a component/file inventory distinguishing implemented behavior,
+  remaining implementation, unrun validation and explicit exclusions. Maintain
+  [PORTING_INVENTORY.md](PORTING_INVENTORY.md) as implementation continues.
+
 ### Validation and delivery
 
-- [x] Expand Java unit, provider-contract, security and integration tests to cover
-  every required subsystem; add compatibility fixtures from the baseline.
+- [ ] Expand Java unit, provider-contract, security and integration tests to cover
+  every required subsystem, including the newly identified baseline gaps; retain
+  the existing 281-test evidence and compatibility fixtures.
 - [x] Exercise end-to-end applications locally, including both
   rockets, advanced projections, migrations and subscription/authentication flows.
   Azure end-to-end execution is deferred by the user's scope update above.
@@ -163,18 +184,20 @@ explicitly accepted by the user.
   that unimplemented provider/API functionality works.
 - [x] Keep README, compatibility inventory and reproducible build/start/deploy
   instructions aligned with the implemented behavior.
-- [ ] Resolve relevant PR checks and keep all changes in PR #1607. Do not merge
-  without a separate instruction. Keep the PR draft while required work remains.
+- [x] Resolve the queued PR checks on `09ceb730` and keep all changes in PR #1607. Do not merge
+  without a separate instruction. Keep its description explicit about remaining work.
 - [ ] Mark this goal complete only when every currently required item is implemented
   and validated. Keep explicitly deferred Azure live validation separate and visible;
   remaining implementation gaps must not be relabeled as done.
 
 ## Implementation and verification record
 
-The required Java core, full local provider/infrastructure, Azure SDK adapters
-and ARM lifecycle, advanced projections, schema/data migrations, APIs,
-authentication/subscriptions and both rockets are implemented. The compatibility
-inventory records the exact contracts and operational limits.
+Java implementations exist for the core, local provider/infrastructure, Azure
+SDK adapters and ARM lifecycle, advanced projections, schema/data migrations,
+APIs, authentication/subscriptions and both rockets. The 2026-11-05 component
+inventory identified the additional baseline gaps listed above. The previous
+statement that only validation remained was too broad; full functional parity
+has not been established. See [PORTING_INVENTORY.md](PORTING_INVENTORY.md).
 
 The final combined clean Maven install passed 277 unit/contract tests and four
 separate-process integration tests (281 total), with no failures, errors or skips.
@@ -183,14 +206,15 @@ Maven application also passed its test and real HTTP/GraphQL requests, including
 ECMAScript regular-expression filtering.
 
 Implementation and validation are committed at
-`86d06e5a869ea6947f824107e8c1276ddade6491` in PR #1607. Its repository checks
-were created at 17:30 UTC on 2026-11-04 and remained queued without an assigned
-runner during the delivery observation window. This is not a test failure or
-an implementation gap. The PR remains a draft; do not mark the two final delivery
-items complete until the checks have actually run. Resume by checking the latest
-PR head's CI results, investigating any relevant failures, then closing this
-checklist and marking the PR ready for review. Do not merge. No additional Java
-build is needed unless source changes or a failure warrants it.
+`86d06e5a869ea6947f824107e8c1276ddade6491`, followed by the documentation
+checkpoint `09ceb7307007d6809fc13416fdd3efad19f60ed4`. On 2026-11-05 all six
+GitHub checks for `09ceb730` were verified successful. The runner-queue blocker
+is resolved. The PR was open and ready for review, with approval still required.
+This evidence applies to that commit; use GitHub for subsequent head results.
+The functional items above, rather than the old CI queue, now prevent claiming
+complete coverage of the baseline. Preserve the PR's current review state and
+do not merge. Resume implementation from these recorded gaps; real Azure tests
+remain deferred by the user's instruction.
 
 Evidence and follow-ups are maintained in [VALIDATION.md](VALIDATION.md).
 Real Azure deployment is deferred by the user's explicit instruction; no live
