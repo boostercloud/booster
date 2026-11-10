@@ -117,8 +117,11 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
     each page re-runs the ranges. `GROUP BY` and non-`VALUE` aggregates are rejected (Booster issues neither). A
     gateway refusal (400/1004) falls back to the pipeline.
   * Event Hubs: the REST "send batch events" API with a SAS token; each message is
-    `{"Body": "<JSON>", "BrokerProperties": {"PartitionKey": "<entity>-<id>-event"}}`; batches are limited to 1 MiB of
-    REST payload (the JS SDK measures AMQP size); transient failures use the core-amqp policy (30 s base, 90 s cap).
+    `{"Body": "<JSON>", "BrokerProperties": {"PartitionKey": "<entity>-<id>-event"}}`; batches are limited to
+    256 KiB of REST payload, the publication limit of the Basic namespace the infrastructure deploys (the JS SDK sizes
+    batches with the AMQP link's maximum message size, which is that limit; the REST payload, with JSON-escaped
+    bodies, is never smaller than the message the service measures, so Java batches are at most as large); transient
+    failures use the core-amqp policy (30 s base, 90 s cap).
   * Web PubSub: `sendToConnection` with the access-key JWT the JS SDK signs (`aud` = the request URL with its
     `api-version` query and without port, as `webPubSubKeyCredentialPolicy`; 1 h; HS256 with the UTF-8 key), API
     version `2021-10-01`, and the core-rest-pipeline default retry policy.

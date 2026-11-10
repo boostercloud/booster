@@ -125,7 +125,22 @@ class EventHubsRestProducerClientContractTest {
     assertThat(batch.tryAdd(new EventData(obj("a", "x".repeat(60))))).isFalse();
     assertThat(batch.count()).isEqualTo(1);
     assertThat(batch.sizeInBytes()).isLessThanOrEqualTo(120);
-    assertThat(producer.createBatch(CreateBatchOptions.withPartitionKey("pk")).maxSizeInBytes()).isEqualTo(1_048_576);
+    assertThat(producer.createBatch(CreateBatchOptions.withPartitionKey("pk")).maxSizeInBytes()).isEqualTo(262_144);
+  }
+
+  @Test
+  void theDefaultBatchStaysWithinTheBasicTierPublicationLimitTheInfrastructureDeploys() {
+    EventHubsRestProducerClient producer = producer(EventHubRetryOptions.of(0, RetryMode.FIXED));
+    EventDataBatch batch = producer.createBatch(CreateBatchOptions.withPartitionKey("Product-1-event"));
+
+    int accepted = 0;
+    for (int i = 0; i < 100 && batch.tryAdd(new EventData(obj("value", "x".repeat(3000)))); i++) {
+      accepted++;
+    }
+
+    // Basic namespaces (TerraformEventHubNamespace) accept publications of up to 256 KB; 100 events of 3 KB exceed it
+    assertThat(accepted).isBetween(1, 99);
+    assertThat(batch.sizeInBytes()).isLessThanOrEqualTo(256 * 1024);
   }
 
   @Test

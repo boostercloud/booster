@@ -39,8 +39,14 @@ import java.util.function.DoubleSupplier;
  */
 public final class EventHubsRestProducerClient implements EventHubProducerClient {
 
-  /** Maximum batch payload (1 MiB, the Standard tier message size limit). */
-  public static final long DEFAULT_MAX_BATCH_SIZE_IN_BYTES = 1_048_576;
+  /**
+   * Maximum REST payload of a batch when {@link CreateBatchOptions} sets none: 256 KiB, the publication size limit of
+   * the Basic tier namespace the Azure infrastructure deploys ({@code TerraformEventHubNamespace}: "Basic=256K,
+   * Standard=1Mb"). The JS SDK sizes batches with the AMQP link's negotiated maximum message size, which is that tier
+   * limit; a larger REST batch would be rejected by a Basic namespace (a non-transient 4xx) and its events lost. The
+   * REST payload (JSON-escaped bodies) is never smaller than the message the service measures.
+   */
+  public static final long DEFAULT_MAX_BATCH_SIZE_IN_BYTES = 262_144;
   /** REST API version. */
   public static final String API_VERSION = "2014-01";
   /** Content type of a batch. */
