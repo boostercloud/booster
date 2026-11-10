@@ -2,14 +2,19 @@
 
 Java port of `packages/framework-integration-tests`: the sample application every integration suite runs against
 ("my-store", the cart demo of `src/`) and the end-to-end harness and suites that start it as a real process on the
-local provider and talk to it over HTTP and WebSocket. The CLI generator suite (`integration/provider-unaware/cli`) is
-not here: it tests the `boost` CLI, not this application.
+local provider and talk to it over HTTP and WebSocket, plus Java-only durability suites and an offline contract of
+the Azure deployment. The CLI generator suites (`integration/provider-unaware/cli`) are not here: they test the `boost`
+CLI, not this application.
 
 ```bash
 cd java
 mvn -B -pl framework-integration-tests -am verify            # build + unit tests (no application is launched)
-mvn -B -Pe2e -pl framework-integration-tests -am verify      # + every *IT suite against launched applications
+mvn -B -Pe2e -pl framework-integration-tests -am verify      # + every *IT suite (7 minutes, see "Running the suites")
 ```
+
+[Suites](#suites) lists every suite with the TypeScript file it ports; [Running the suites](#running-the-suites) says
+how to run all of them or one and how long they take; [Not covered](#not-covered-and-why) says what is left out and
+why.
 
 ## The application (`src/main/java`)
 
@@ -80,6 +85,50 @@ ApplicationUnderTest applicationUnderTest = ApplicationUnderTest.of(app);
 
 Every process still running when the test JVM exits is killed by a shutdown hook.
 
+## Suites
+
+Every `*IT` class runs in the `e2e` profile (one failsafe JVM, classes in no guaranteed order). "Shared" suites use
+the one application of the whole run, "own" suites start an application of their own, "none" launch nothing. Times
+are the class times of the measured runs on a laptop (see [Running the suites](#running-the-suites)); the first suite
+that needs the shared application also pays its start (about 2 s).
+
+End-to-end (`integration/provider-unaware/end-to-end`, package `endtoend`, spec 17 §8):
+
+| TypeScript | Java | App | What it covers | Time |
+| --- | --- | --- | --- | --- |
+| `cart.integration.ts` | `CartIT` | shared | `ChangeCartItem` and its before hooks (input rewritten, hook throwing), `CartReadModel` by id and list, cart reduction, a read model projecting two entities (`CartReadModel` + `Payment`) | < 1 s |
+| `commands.integration.ts` | `CommandsIT` | shared | public and empty commands, role and custom-policy authorization, `MigrateAllReadModel` (and the local answer for a non-existent read model) | < 1 s |
+| `delete.events.integration.ts` | `DeleteEventsIT` | shared | `HardDelete` of a product event: the event marked deleted, the product's read models removed, the other product's and the cart's untouched, entities after the delete | < 1 s |
+| `entities.integration.ts` | `EntitiesIT` | shared | reducers; data migrations through `MigrateCommand` (`CartIdDataMigrateV1`/`V2`, `DataMigrationsReadModel`) | < 1 s |
+| `events.integration.ts` | `EventsIT` | shared | the event search API (by entity, entity and id, type, time windows, limits, many events, authorization), entity id search with pagination, the global event handler | 14 s |
+| `health.integration.ts` | `HealthIT` | shared | sensor health: the root tree and the `function`, `database`, `database/events`, `database/readmodels` indicators | < 1 s |
+| `queries.integration.ts` | `QueriesIT` | shared | `@Query` classes: scalar, `JSON` and union results, before hook, role authorization | < 1 s |
+| `read-model-concurrency.integration.ts` | `ReadModelConcurrencyIT` | shared | optimistic concurrency of projections (one and two projections per read model, concurrent events of one entity) | < 1 s |
+| `read-models.integration.ts` | `ReadModelsIT` | shared | read models by id and lists: every filter operator, sorting, limits and cursors, field and calculated-field projections, fragments, entity/array/read-model join keys, read-model authorization | 5 s |
+
+Functionality (`integration/provider-unaware/functionality`, package `functionality`, spec 17 §9): the eleven ported
+suites of [Functionality suites](#functionality-suites-functionality) (shared application) and the Java-only
+`LoggedErrorsFunctionalityIT` (own application), together about 45 s, most of it `SubscriptionsFunctionalityIT`
+(15–17 s) and the next scheduled `CheckCartCount` that `ScheduledCommandsFunctionalityIT` waits for (at most 90 s;
+0–20 s measured, depending on when in the minute it runs).
+
+Local provider (`integration/provider-specific/local`, package `providerspecific.local`):
+
+| TypeScript | Java | App | What it covers | Time |
+| --- | --- | --- | --- | --- |
+| `start/start.integration.ts`, `stop/stop.integration.ts` (spec 17 §3.1) | `LocalStartStopIT` | own | the sandbox, the start, the PID file, the stop through the PID; that the stop was graceful, the ports are free and the sandbox is gone | 2 s |
+| `auth.integration.ts` | `LocalAuthIT` | — | disabled as in TypeScript (`xdescribe`, `FIXME: When JWT auth is merged`): sign-up, confirm, sign-in and sign-out of an `/auth` API that no local provider serves | 0 s |
+| `commands.integration.ts`, `read-models.integration.ts` | `LocalCommandsIT`, `LocalReadModelsIT` | shared | disabled as in TypeScript (every `it` is an `xit`): the stored event, the cart snapshot and the stored `CartReadModel` of a `ChangeCartItem` | 0 s |
+| — (Java only) | the six suites of [Durability and recovery](#durability-and-recovery-providerspecificlocaldurability) | own | restarts, crashes, damaged and TypeScript-written data files | 3.3 min, 2.5 min of it `ScheduledCommandsAfterRestartIT` |
+
+No TypeScript npm script runs `auth`, `commands` or `read-models` of `provider-specific/local`
+(`integration/local-start` and `local-stop` only run the `start` and `stop` directories).
+
+Azure (`integration/provider-specific/azure` and the Azure runs of the provider-unaware suites, package
+`azurecontract`): [Azure contract](#azure-contract) — `AzureSynthesisContractIT`, `AzureDeployNukeContractIT`,
+`AzureRuntimeContractIT` (app none: a synth subprocess and in-process function invocations, 3 s together) and the
+opt-in `AzureTerraformValidateIT` (skipped unless `BOOSTER_TERRAFORM_VALIDATE=true`).
+
 ## Layout contract for the suites
 
 **Classes and packages.** One `*IT` class per TypeScript `*.integration.ts` file, in the package of its TypeScript
@@ -91,8 +140,8 @@ names):
 | --- | --- | --- |
 | `integration/provider-unaware/end-to-end` | `com.boostercloud.integration.endtoend` | `cart.integration.ts` → `CartIT`, `delete.events.integration.ts` → `DeleteEventsIT`, `read-model-concurrency.integration.ts` → `ReadModelConcurrencyIT` |
 | `integration/provider-unaware/functionality` | `com.boostercloud.integration.functionality` | `errors.integration.ts` → `ErrorsFunctionalityIT`, `schema.filter.integration.ts` → `SchemaFilterFunctionalityIT` |
-| `integration/provider-specific/local` | `com.boostercloud.integration.providerspecific.local` | `LocalStartStopIT`; Java-only restart/crash suites (`RestartIT`, ...) |
-| `integration/provider-specific/azure` | `com.boostercloud.integration.providerspecific.azure` | not runnable here (needs a deployment) |
+| `integration/provider-specific/local` | `com.boostercloud.integration.providerspecific.local` | `start`/`stop` → `LocalStartStopIT`, `auth.integration.ts` → `LocalAuthIT` (`Local` before the name, as `commands` and `read-models` exist in `end-to-end` too); Java-only suites in sub-packages (`durability.CrashUnderLoadIT`, ...) |
+| `integration/provider-specific/azure` | `com.boostercloud.integration.azurecontract` | not runnable here (needs a deployment); its contract is checked offline by `AzureDeployNukeContractIT` and the other `azurecontract` suites |
 
 Unit tests (no process) are `*Test` classes in the package of the class they test. Only `*IT` classes run in the
 `e2e` profile; only `*Test` classes run in a plain build.
@@ -163,25 +212,7 @@ fields in `@BeforeEach`.
   their pins only when TypeScript behaves that way). A framework bug is fixed in its module (`fix(<module>): ...`).
 * No fixed ports and no `Thread.sleep` loops: launch with `AppProcess` (free ports) and poll with `Sleep.waitForIt`.
 
-**Running.** From `java/` (`JAVA_HOME` must be a JDK 27):
-
-```bash
-mvn -B -Pe2e -pl framework-integration-tests -am verify                                   # everything
-mvn -B -Pe2e -pl framework-integration-tests -am verify \
-    -Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=CartIT                  # one suite, no unit tests
-mvn -B -Pe2e -pl framework-integration-tests -am verify \
-    -Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false '-Dit.test=CartIT,CommandsIT'     # several suites
-```
-
-`-Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false` skips the unit tests of every module of the reactor (`-am`
-builds the framework modules from source; nothing is installed in `~/.m2`).
-
-`-Dbooster.e2e.keepProjects=true` keeps the project directories (`target/e2e-projects`) for inspection;
-`-Dbooster.e2e.appJvmOptions="-Xmx512m ..."` passes JVM options to the launched applications;
-`-Dbooster.e2e.readinessTimeoutSeconds=N` changes the start timeout. The failsafe JVM runs with
-`TESTED_PROVIDER=LOCAL` and `BOOSTER_ENV=local` (`npm run integration/local-end-to-end`) and a per-test timeout of
-3600 s (the mocha `timeout`). The launched applications use the runtime class path the build copies to `target/lib`
-during `package`, exactly like a project built by the CLI.
+**Running.** See [Running the suites](#running-the-suites).
 
 ## Functionality suites (`functionality`)
 
@@ -220,7 +251,11 @@ Differences from TypeScript:
   (TypeScript: `[String]`, because the first string list registered decides the element nullability and the
   registration orders differ; see `ApplicationRegistrationTest`).
 * **Order of stored events.** TypeScript's `expect(ids).to.be.sorted((prev, next) => prev > next)` always passes (a
-  boolean comparator never reorders in V8); `EventsFunctionalityIT` asserts what it means, newest first.
+  boolean comparator never reorders in V8); `EventsFunctionalityIT` asserts what it means, newest first: `createdAt`
+  never increases along the result and never decreases with the registration order (the product number). It does not
+  require the product numbers to strictly descend: the events of one command are stored with one atomic append (see
+  [Durability and recovery](#durability-and-recovery-providerspecificlocaldurability)), so several share a millisecond
+  `createdAt` (on Azure, as in TypeScript, nearly all do), and equal `createdAt`s come in the store's order.
 * **Exact counts.** The two exact count deltas (one event, one cart read model) leave out the work of the scheduled
   command `CheckCartCount` (`TheCheckedCart`): the shared application is fresh, so the cart it checks is created and
   checked during the run, and a check between the two counts would make the delta two forever.
@@ -352,6 +387,54 @@ Not verifiable offline: that Azure accepts the deployment (`terraform apply`), t
 PubSub extension behaviour, and the live Cosmos DB gateway (query plans and continuation conventions follow the
 documented formats, as the provider's contract tests do).
 
+## Running the suites
+
+From `java/`, with `JAVA_HOME` pointing at a JDK 27 (Maven 3.10; nothing is installed in `~/.m2`, `-am` builds the
+framework modules from source):
+
+```bash
+mvn -B -Pe2e -pl framework-integration-tests -am verify                                   # everything
+mvn -B -Pe2e -pl framework-integration-tests -am verify \
+    -Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=CartIT                  # one suite, no unit tests
+mvn -B -Pe2e -pl framework-integration-tests -am verify \
+    -Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false '-Dit.test=CartIT,CommandsIT'     # several suites
+mvn -B -Pe2e -pl framework-integration-tests -am verify \
+    -Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false '-Dit.test=*FunctionalityIT'      # a name pattern
+```
+
+`-Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false` skips the unit tests of every module of the reactor;
+`-Dit.test` matches simple class names and patterns of them (they are unique, see the layout contract).
+
+**Durations.** Measured on an Apple-silicon laptop (JDK 27, Maven 3.10) on 2026-11-10, in three consecutive green
+runs of the whole profile after the stages were merged: one full `mvn -B -Pe2e -pl framework-integration-tests -am
+verify` took **7 min 0 s** of wall-clock time (420, 420 and 421 s).
+About 2.5 minutes of it are the build and unit tests of the upstream modules (`framework-provider-local` 73 s, its
+infrastructure 33 s, `application-tester` 26 s); this module took 4 min 26 s to 4 min 29 s, of which the `*IT` classes
+264–267 s (the sum of their class times). By suite: `ScheduledCommandsAfterRestartIT` 149–153 s (it waits for three
+scheduler minutes), `RepeatedCrashCyclesIT` 23 s, `ScheduledCommandsFunctionalityIT` 20 s (it waits for the shared
+application's next `CheckCartCount`, at most 90 s), `SubscriptionsFunctionalityIT` 15–17 s, `EventsIT` 14 s,
+`CrashUnderLoadIT` 8 s, `TornWriteIT` 7 s, `GracefulRestartIT`, `TypeScriptDataFilesIT` and `ReadModelsIT` 5 s each,
+and every other suite under 2 s. A suite run alone with `-Dtest=NONE` takes seconds when the modules are already
+compiled (`-Dit.test=CartIT`: 5 s in all, the application start included), plus the compilation of whatever changed.
+A `waitForIt` that never matches holds its test for the waiter's timeout (600 s by default) before failing.
+
+**Options.** `-Dbooster.e2e.keepProjects=true` keeps the project directories (`target/e2e-projects`) for inspection;
+`-Dbooster.e2e.appJvmOptions="-Xmx512m ..."` passes JVM options to the launched applications;
+`-Dbooster.e2e.readinessTimeoutSeconds=N` changes the start timeout (default 120 s). The failsafe JVM runs with
+`TESTED_PROVIDER=LOCAL` and `BOOSTER_ENV=local` (`npm run integration/local-end-to-end`) and a per-test timeout of
+3600 s (the mocha `timeout`). The launched applications use the runtime class path the build copies to `target/lib`
+during `package`, exactly like a project built by the CLI. `AzureTerraformValidateIT` runs only with
+`BOOSTER_TERRAFORM_VALIDATE=true` (see [Azure contract](#azure-contract)).
+
+**Logs, processes and ports.** Each launched application writes `target/e2e-logs/<name>.log` and lives in
+`target/e2e-projects/<name>-integration-sandbox`: `local-project` for the shared application, the simple class name
+for a suite's own one, `local-project-start-stop` for `LocalStartStopIT`; the Azure synthesis logs to
+`<sandbox>-synth.log`. Both the HTTP port and the websocket port (`LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT`) of an
+application are free ports chosen at launch, so runs in several checkouts at once do not collide. Every application
+is stopped (or killed, by the crash suites) by its suite, the shared one after the last suite with its graceful exit
+checked; a shutdown hook of the failsafe JVM kills any that is left, so no `com.boostercloud.integration.Main` JVM
+outlives the run (`jps -lm` shows none afterwards).
+
 ## Differences from TypeScript
 
 Application:
@@ -425,7 +508,9 @@ Harness and suites:
   declares its car-domain `it`s after two nested blocks); JUnit runs a class's methods before its `@Nested` classes
   too, so the order is the TypeScript one.
 * Additional end-to-end tests not in TypeScript: `ReadModelConcurrencyIT > With concurrent events of the same entity`
-  (every concurrent event bumps the read model version once, no write lost to the optimistic concurrency check) and
+  (every concurrent event bumps the read model version once, no write lost to the optimistic concurrency check; it
+  found a race the local provider shares with TypeScript, where a third concurrent projection of a new read model
+  stored a second document with the same id, fixed in `framework-provider-local`) and
   `ReadModelsIT > Query read models > filters, sorting and pages the TypeScript suite leaves uncovered`
   (`beginsWith`, `contains`/`in` on plain strings, `not`, `gt`/`gte`/`lt`/`lte`/`in` on numbers, ascending nested
   sort, walking every page of a sorted search with its cursors, and the before hook rewriting a list filter).
@@ -436,39 +521,54 @@ Harness and suites:
   when a request touches them. Their `.booster` fixture in the TypeScript format is hand-written from the TypeScript
   sources (the build has no Node/NeDB), with the shapes `events-adapter.ts`, `read-model-registry.ts` and
   `web-socket-registry.ts` write.
+* The disabled `provider-specific/local` suites run against the shared application (whose sandbox is the one
+  `provider-specific/local/setup.ts` starts) and read `.booster` through the local test helper's raw queries instead of
+  opening NeDB `Datastore`s; `LocalAuthIT` sends its requests with `HttpClient` (`fetch`) to URLs resolved against the
+  application's GraphQL URL (`new URL(path, LOCAL_PROVIDER_HOST)`).
 * `Faker` is a small generator with faker 5's call names (the build allows no extra library): values have the
   formats the suites rely on, not faker's locale data.
 
-## Not implemented
+## Not covered, and why
 
-* The AWS environments (`development`, `production`) and every AWS-gated path (AWS is not ported).
-* Suites other than the local start/stop lifecycle, `cart`, `commands`, `delete.events`, `entities`, `events`, `health`,
-  `queries`, `read-models`, `read-model-concurrency` and the functionality suites: the remaining provider-specific
-  suites are ported by the following stages on top of this layout. The Azure deploy/nuke suites and the load suite
-  (disabled in TypeScript) need cloud resources.
-* `onScheduledCommandHandlerError` and `onEventError` of the global error handler have no end-to-end test (TypeScript
-  has none either): the application's scheduled command never fails, and `onEventError` needs a stored event whose
-  type the application does not register, which no command can produce. `AppErrorHandlerTest` covers both hooks.
-* Durability: read models that missed an event whose processing a crash interrupted (guarantee 4 of "Durability and
-  recovery") only catch up with the entity's next event. Re-processing such events would make event handlers run
-  twice (at-least-once instead of core's at-most-once), a semantic change of core that is not made here.
+* **AWS.** The `development` and `production` environments, `integration/provider-specific/aws` (deploy, nuke) and
+  every AWS gate of the provider-unaware suites (`assumeFalse(AWS)` with the TypeScript warning): the AWS provider is
+  not ported.
+* **A real Azure subscription.** `integration/provider-specific/azure` and the Azure runs of the end-to-end and
+  functionality suites need one; they are contract-tested offline instead (see [Azure contract](#azure-contract),
+  which lists what that cannot verify: `terraform apply`, Kudu, the Functions host and Java worker bindings, the Web
+  PubSub extension, the live Cosmos DB gateway, and the `sensor-health` function at runtime). No run here sets
+  `TESTED_PROVIDER=AZURE`, so the assertions only Azure satisfies (`HealthIT`'s `503` answers, `ReadModelsIT`'s
+  `'100'` cursors, `CommandsIT`'s `Resource Not Found`) are skipped on `LOCAL`, where an extra test pins the local
+  behaviour instead (see [Differences from TypeScript](#differences-from-typescript)).
+* **The load suites** (`integration/provider-unaware/load`, Artillery against AWS): disabled in TypeScript
+  (`integration/aws-load` only echoes `Skipping`) and AWS-only.
+* **The CLI suites** (`integration/provider-unaware/cli`): they test the `boost` CLI, not this application.
+* **Tests TypeScript skips** stay skipped with its reason: `LocalAuthIT` (`xdescribe`) and every test of
+  `LocalCommandsIT` and `LocalReadModelsIT` (`xit`; enabled, they fail GraphQL validation in both languages because
+  their document declares `$quantity: Float` for a `Float!` input field).
+* **`For readonly array`** of the schema filter and search suites is disabled with the TypeScript expectation: Java has
+  no read-only list type and registers the string list types in another order, so the schema differs; `For readonly
+  array as a Java list` pins the Java one (see [Functionality suites](#functionality-suites-functionality)).
+* **`onScheduledCommandHandlerError` and `onEventError`** of the global error handler have no end-to-end test
+  (TypeScript has none either): the application's scheduled command never fails, and `onEventError` needs a stored
+  event whose type the application does not register, which no command can produce. `AppErrorHandlerTest` covers both
+  hooks.
+* **Sequenced read models**: the TypeScript application declares none and no TypeScript suite has a scenario for
+  them; framework-core's tests cover them (`SequencedReadModelIntegrationTest`, `BoosterReadModelsReaderTest`).
+* **Durability**: read models that missed an event whose processing a crash interrupted (guarantee 4 of [Durability
+  and recovery](#durability-and-recovery-providerspecificlocaldurability)) only catch up with the entity's next
+  event. Re-processing such events would make event handlers run twice (at-least-once instead of core's
+  at-most-once), a semantic change of core that is not made here.
 
 ## Tests
 
 * `mvn -B -pl framework-integration-tests -am verify`: `ApplicationRegistrationTest` (in-process boot: registry,
   configuration, GraphQL shapes, the error-handler metadata JSON) and the unit tests of the application's pure logic
   (`CommandHandlersTest`, `CartTest`, `StockTest`, `CartReadModelTest`, `ProjectionsTest`, `CartTotalQuantityTest`,
-  `SchemaMigrationsTest`, `AppErrorHandlerTest`, `CustomLoggerTest`, `TokenVerifiersTest`) and of the harness
-  (`HarnessTest`, `HelpersTest`) and of the functionality suites' helpers (`functionality.StoredDocumentsTest`).
-* `-Pe2e`: `providerspecific.local.LocalStartStopIT` (spec 17 §3.1), `endtoend.CartIT` (§8.1) and
-  `endtoend.CommandsIT` (§8.2), with the shared application; the functionality suites (§9.1–§9.9, see "Functionality
-  suites") with the shared application, and `functionality.LoggedErrorsFunctionalityIT` with its own.
-* `-Pe2e`: `endtoend.DeleteEventsIT` (§8.3), `endtoend.EntitiesIT` (§8.4), `endtoend.EventsIT` (§8.5),
-  `endtoend.HealthIT` (§8.6) and `endtoend.QueriesIT` (§8.7), with the shared application.
-* `-Pe2e`: `endtoend.ReadModelConcurrencyIT` (§8.8) and `endtoend.ReadModelsIT` (§8.9: by-id and list queries,
-  before hooks, every filter operator, sorting, limits and cursors, field and calculated-field projections from GraphQL
-  and code, fragments, projections with entity, array and read-model join keys, read-model authorization), with the
-  shared application.
-* `-Pe2e`, Java-only: the durability and recovery suites of `providerspecific.local.durability` (`GracefulRestartIT`,
-  `CrashUnderLoadIT`, `TornWriteIT`, `RepeatedCrashCyclesIT`, `TypeScriptDataFilesIT`,
-  `ScheduledCommandsAfterRestartIT`), each with an application of its own.
+  `SchemaMigrationsTest`, `AppErrorHandlerTest`, `CustomLoggerTest`, `TokenVerifiersTest`), of the harness
+  (`HarnessTest`, `HelpersTest`), of the functionality suites' helpers (`functionality.StoredDocumentsTest`) and of the
+  Azure fakes (`azurecontract.FakeCosmosSqlTest`, `FakeAzureServicesTest`).
+* `-Pe2e`: every suite of [Suites](#suites): the end-to-end suites (spec 17 §8.1–§8.9) and the functionality suites
+  (§9.1–§9.9) with the shared application, `LoggedErrorsFunctionalityIT`, `LocalStartStopIT` (§3.1) and the six
+  durability suites with applications of their own, the disabled local `auth`, `commands` and `read-models` suites, and
+  the Azure contract suites (§3.3, offline).
