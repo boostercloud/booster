@@ -110,6 +110,42 @@ public final class JsValues {
   }
 
   /**
+   * {@code JSON.stringify(value)} as it appears inside TypeScript template literals: {@code null} (Java's
+   * {@code undefined}) renders as {@code "undefined"}, values that cannot be serialised fall back to their string
+   * form instead of throwing (log lines must never fail).
+   *
+   * @param value any value
+   * @return its JSON text
+   */
+  public static String stringify(Object value) {
+    if (value == null) {
+      return "undefined";
+    }
+    try {
+      return BoosterJson.toJson(value);
+    } catch (RuntimeException e) {
+      return String.valueOf(value);
+    }
+  }
+
+  /**
+   * {@code JSON.stringify(value, null, 2)}, with the fallbacks of {@link #stringify(Object)}.
+   *
+   * @param value any value
+   * @return its indented JSON text
+   */
+  public static String stringifyPretty(Object value) {
+    if (value == null) {
+      return "undefined";
+    }
+    try {
+      return BoosterJson.toPrettyJson(value);
+    } catch (RuntimeException e) {
+      return String.valueOf(value);
+    }
+  }
+
+  /**
    * {@code 'key' in holder} for raw maps (key present, even with a {@code null} value) and records (a component with
    * that name exists).
    *
