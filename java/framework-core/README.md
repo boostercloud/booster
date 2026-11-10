@@ -361,7 +361,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   (the documents behind a search, for the store).
 * Concurrency: projections, read model tasks, item migrations, selections, subscription fetches and notifications run on
   virtual threads with the TypeScript failure semantics (`allSettled` → `PromisesError`, `Promise.all` → first
-  failure); user code must not share unsynchronised mutable state (JavaScript interleaves on one thread).
+  failure); user code must not share unsynchronised mutable state (JavaScript interleaves on one thread). The
+  notifications of one subscription are sent one after the other, in the order of its results (TypeScript starts its
+  `sendMessage` calls in that order).
 * The pub-sub keeps the TypeScript in-memory filter (first top-level property only, `includes` and nested filters decide
   alone, `isDefined` ignored, combinators fail); values are compared in their JSON form and regular expressions use the
   Java dialect. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.

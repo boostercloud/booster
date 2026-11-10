@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -188,6 +189,30 @@ class BoosterSubscribersNotifierTest extends BoosterTestSupport {
     order.verify(connections).sendMessage(config, "connection-1", new GraphQLData("op-1", data("TestReadModels", Map.of("id", "1"))));
     order.verify(connections).sendMessage(config, "connection-1", new GraphQLData("op-1", data("TestReadModels", Map.of("id", "3"))));
     verify(connections, times(2)).sendMessage(any(), any(), any());
+  }
+
+  @Test
+  void sendsTheMessagesOfOneSubscriptionInTheOrderOfTheChangedReadModelsEvenWhenASendIsSlow() {
+    changed(new ReadModelEnvelope("TestReadModel", Map.of("id", "1", "count", 5)),
+        new ReadModelEnvelope("TestReadModel", Map.of("id", "2", "count", 6)),
+        new ReadModelEnvelope("TestReadModel", Map.of("id", "3", "count", 7)));
+    when(readModels.fetchSubscriptions(config, "TestReadModel")).thenReturn(List.of(subscription("TestReadModel",
+        "connection-1", "op-1", "subscription { TestReadModels(minCount: 5) { id } }", null)));
+    List<String> sent = Collections.synchronizedList(new ArrayList<>());
+    doAnswer(invocation -> {
+      GraphQLData message = invocation.getArgument(2);
+      Map<?, ?> data = (Map<?, ?>) message.payload().get("data");
+      String id = String.valueOf(((Map<?, ?>) data.get("TestReadModels")).get("id"));
+      if (id.equals("1")) {
+        Thread.sleep(300); // the first send is slow: the other ones must still go after it
+      }
+      sent.add(id);
+      return null;
+    }).when(connections).sendMessage(any(), any(), any());
+
+    notifier().dispatch(null);
+
+    assertThat(sent).containsExactly("1", "2", "3");
   }
 
   @Test
