@@ -14,6 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Supplier;
 
 /**
  * An embedded document collection persisted in the NeDB format: the Java replacement of {@code @seald-io/nedb}'s
@@ -362,9 +363,10 @@ public class Datastore implements AutoCloseable {
   }
 
   /**
-   * @return the names of the persistent indexes (including {@code _id})
+   * @return the names of the persistent indexes (including {@code _id}), loading the data file first if needed
    */
   public List<String> indexNames() {
+    loadDatabaseIfNeeded();
     Lock read = lock.readLock();
     read.lock();
     try {
@@ -536,8 +538,30 @@ public class Datastore implements AutoCloseable {
   // Operations
   // ---------------------------------------------------------------------------------------------------------------
 
-  private Lock readLockFor() {
-    return ttlIndexes.isEmpty() ? lock.readLock() : lock.writeLock();
+  /**
+   * Runs a read under the shared read lock; when TTL indexes exist the read may expire (remove) documents, so it runs
+   * under the write lock instead. The choice is made while holding the lock, so an index created concurrently cannot
+   * make a reader remove documents under the shared lock.
+   */
+  private <T> T read(Supplier<T> action) {
+    Lock read = lock.readLock();
+    read.lock();
+    try {
+      ensureOpen();
+      if (ttlIndexes.isEmpty()) {
+        return action.get();
+      }
+    } finally {
+      read.unlock();
+    }
+    Lock write = lock.writeLock();
+    write.lock();
+    try {
+      ensureOpen();
+      return action.get();
+    } finally {
+      write.unlock();
+    }
   }
 
   /**
@@ -563,14 +587,7 @@ public class Datastore implements AutoCloseable {
 
   List<Map<String, Object>> execute(Cursor cursor) {
     loadDatabaseIfNeeded();
-    Lock held = readLockFor();
-    held.lock();
-    try {
-      ensureOpen();
-      return cursor.execute(candidates(cursor.query(), false));
-    } finally {
-      held.unlock();
-    }
+    return read(() -> cursor.execute(candidates(cursor.query(), false)));
   }
 
   /**
@@ -582,10 +599,7 @@ public class Datastore implements AutoCloseable {
   public int count(Map<String, Object> query) {
     loadDatabaseIfNeeded();
     Map<String, Object> effective = query == null ? Map.of() : query;
-    Lock held = readLockFor();
-    held.lock();
-    try {
-      ensureOpen();
+    return read(() -> {
       int count = 0;
       for (Map<String, Object> candidate : candidates(effective, false)) {
         if (Model.match(candidate, effective)) {
@@ -593,9 +607,7 @@ public class Datastore implements AutoCloseable {
         }
       }
       return count;
-    } finally {
-      held.unlock();
-    }
+    });
   }
 
   /**
