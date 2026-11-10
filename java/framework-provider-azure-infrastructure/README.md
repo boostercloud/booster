@@ -98,6 +98,9 @@ only receives `subscription_id`; Terraform authenticates by its own means (`ARM_
 * references (`${azurerm_resource_group.mystoreproductionrg.location}`), `depends_on`, `provider = "azurerm"` (only
   where TypeScript sets it), `lifecycle.ignore_changes`, `addOverride` (with numeric path segments indexing lists, so
   `url_path_map.0.path_rule` works for rockets) and `Fn.merge` rendered as an HCL expression;
+* attributes of object type (azurerm attributes that are `list(object)`, not nested blocks, such as the gateway
+  NSG's `security_rule`) carry every attribute of the object, the unset ones as `null`, as the cdktn provider bindings
+  render them: Terraform's JSON syntax requires them all (`terraform validate` rejects the stack otherwise);
 * the document layout: `"//"` metadata, `data`, `output`, `provider.azurerm` (`features {}`, `subscription_id`,
   `resource_provider_registrations = "legacy"`), `resource`, `terraform.backend.local.path =
   <project>/terraform.<stack>.tfstate` and `terraform.required_providers.azurerm = { source = "azurerm", version =

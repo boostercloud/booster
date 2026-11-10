@@ -18,7 +18,6 @@ import com.boostercloud.framework.types.instrumentation.TraceActionTypes;
 import com.boostercloud.framework.core.services.graphql.GraphQLExecution;
 import graphql.ExecutionResult;
 import graphql.GraphQLError;
-import graphql.ParseAndValidate;
 import graphql.language.Document;
 import graphql.parser.Parser;
 import graphql.schema.GraphQLSchema;
@@ -185,7 +184,7 @@ public class BoosterSubscribersNotifier {
   private Document parseSubscriptionQuery(String query) {
     Document document = Parser.parse(query);
     // We probably don't need to validate this again, as it was validated before storing it. BUT! It's always better to fail early
-    List<ValidationError> errors = ParseAndValidate.validate(graphQLSchema, document);
+    List<ValidationError> errors = GraphQLExecution.validate(graphQLSchema, document);
     if (!errors.isEmpty()) {
       throw new GraphQLErrors(new ArrayList<>(errors));
     }
@@ -197,6 +196,10 @@ public class BoosterSubscribersNotifier {
     CountDownLatch finished = new CountDownLatch(1);
     AtomicReference<Throwable> failure = new AtomicReference<>();
     iterator.subscribe(new Subscriber<>() {
+      // TypeScript starts every sendMessage in the order of the stream. Here each notification of the subscription
+      // starts once the previous one is done (onNext is signalled serially), so the connection gets them in order
+      private CompletableFuture<Void> previous = CompletableFuture.completedFuture(null);
+
       @Override
       public void onSubscribe(Subscription stream) {
         stream.request(Long.MAX_VALUE);
@@ -204,10 +207,13 @@ public class BoosterSubscribersNotifier {
 
       @Override
       public void onNext(ExecutionResult result) {
-        notificationPromises.add(Promises.start(() -> {
-          notifyWithGraphQLResult(subscription, result);
-          return null;
-        }));
+        CompletableFuture<Void> notification = previous.handle((ignored, error) -> null)
+            .thenCompose(ignored -> Promises.<Void>start(() -> {
+              notifyWithGraphQLResult(subscription, result);
+              return null;
+            }));
+        previous = notification;
+        notificationPromises.add(notification);
       }
 
       @Override

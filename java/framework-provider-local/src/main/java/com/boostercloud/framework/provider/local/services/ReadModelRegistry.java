@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * The read model store of the local provider: every read model of every type in one collection
@@ -29,6 +30,14 @@ import java.util.Objects;
  * replaces the stored document only if its current {@code value.boosterMetadata.version} equals
  * {@code expectedCurrentVersion} (an atomic compare-and-swap), and otherwise fails with a {@link NedbError} whose
  * {@code errorType} is {@link #UNIQUE_VIOLATED_ERROR_TYPE}.
+ *
+ * <p>Java-only: the insert of a version 1 also fails, with NeDB's unique-violation error, when a read model of the same
+ * type and id is already stored with a version. The unique key carries the version, so once the first version 1 has
+ * been updated to version 2 the index no longer sees it, and a projection that had found no read model before the
+ * first insert (three or more concurrent projections of a new read model) inserted a second document with the same
+ * id in TypeScript. The check and the insert are atomic with respect to other inserts; the error makes core fetch the
+ * stored read model and project again, as for any optimistic-concurrency failure. A stored document without
+ * {@code boosterMetadata.version} does not block the insert, as in TypeScript.
  */
 public class ReadModelRegistry {
 
@@ -36,6 +45,7 @@ public class ReadModelRegistry {
   public static final String UNIQUE_VIOLATED_ERROR_TYPE = NedbError.UNIQUE_VIOLATED;
 
   private final Datastore readModels;
+  private final ReentrantLock insertLock = new ReentrantLock();
   private volatile boolean indexesEnsured;
 
   /** A registry on {@code .booster/read_models.json} in the working directory ({@code new ReadModelRegistry()}). */
@@ -153,7 +163,24 @@ public class ReadModelRegistry {
 
   private void insert(Map<String, Object> readModel) {
     loadDatabaseIfNeeded();
-    readModels.insert(readModel);
+    Object id = Js.get(readModel.get("value"), "id");
+    if (id == null || id == Undefined.INSTANCE) {
+      readModels.insert(readModel);
+      return;
+    }
+    insertLock.lock();
+    try {
+      Map<String, Object> storedVersion = new LinkedHashMap<>();
+      storedVersion.put("typeName", readModel.get("typeName"));
+      storedVersion.put("value.id", id);
+      storedVersion.put("value.boosterMetadata.version", Map.of("$gte", 1));
+      if (readModels.count(storedVersion) > 0) {
+        throw NedbError.uniqueViolated(readModel.get("uniqueKey"));
+      }
+      readModels.insert(readModel);
+    } finally {
+      insertLock.unlock();
+    }
   }
 
   private void update(Map<String, Object> readModel, Long expectedCurrentVersion) {

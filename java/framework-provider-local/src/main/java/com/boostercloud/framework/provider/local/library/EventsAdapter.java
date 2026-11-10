@@ -150,6 +150,10 @@ public final class EventsAdapter {
    * removed once the dispatch returns or fails. A crash in between leaves the entries behind for
    * {@link #recoverUndispatchedEvents}.
    *
+   * <p>The events of the batch (the events one command, event handler or scheduled command registered) are stored
+   * atomically, with one flushed append ({@link EventRegistry#storeAll}): a crash leaves all of them stored or none,
+   * never part of the batch. Each still gets its own {@code createdAt}, in order.
+   *
    * @param userApp the application
    * @param eventRegistry the registry
    * @param journal the dispatch journal
@@ -175,16 +179,18 @@ public final class EventsAdapter {
     journal.addPending(entries);
     try {
       List<EventEnvelope> persistedEventEnvelopes = new ArrayList<>();
+      List<Map<String, Object>> documents = new ArrayList<>(nonPersistedEventEnvelopes.size());
       for (int i = 0; i < nonPersistedEventEnvelopes.size(); i++) {
         EventEnvelope persisted = nonPersistedEventEnvelopes.get(i).persisted(Dates.nowIso());
         Map<String, Object> document = Envelopes.toDocument(persisted);
         document.put("_id", ids.get(i));
-        Retrier.retryIfError(tryNumber -> {
-          persistEvent(eventRegistry, document);
-          return null;
-        }, OptimisticConcurrencyUnexpectedVersionError.class);
+        documents.add(document);
         persistedEventEnvelopes.add(persisted.toBuilder().id(ids.get(i)).build());
       }
+      Retrier.retryIfError(tryNumber -> {
+        eventRegistry.storeAll(documents);
+        return null;
+      }, OptimisticConcurrencyUnexpectedVersionError.class);
       logger.debug("EventEnvelopes stored: ", persistedEventEnvelopes);
       userApp.boosterEventDispatcher(persistedEventEnvelopes);
       return persistedEventEnvelopes;

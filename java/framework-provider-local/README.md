@@ -74,6 +74,10 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   `CorruptDataFileException` and NeDB's message
   (`40% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to prevent dataloss.`),
   leaving the file untouched.
+* `LocalProviderRuntime.loadExistingDataFiles()` (Java-only, called by the local infrastructure at start-up) loads
+  every data file that exists, so a damaged file is found when the application starts (and refuses to start when it
+  is beyond the threshold) instead of by the first request that touches it; missing files are still created on first
+  use (Q19).
 * Compaction happens on every load (as in NeDB), on demand (`Datastore.compactDatafile()`), periodically
   (`setAutocompactionInterval`) and, for the dispatch journal, automatically once it holds 1000 obsolete lines.
 * Each collection has one fair read/write lock: reads run concurrently, writes are serialised (single writer),
@@ -89,6 +93,10 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   `storeDispatched` answers `false` for a re-dispatched event core already saw, which makes re-dispatching safe.
   A failed recovery keeps the pending entries for the next one. Dispatches running in the current process are
   never touched, so recovery can run while the application serves requests.
+* **Atomic event batches** (not in TypeScript). `events.store` writes the events of one batch (what one command,
+  event handler or scheduled command registered) with a single flushed append (`EventRegistry.storeAll`), so a
+  crash or a failed write leaves all of them stored or none: a command is never half applied. TypeScript (and
+  `EventsAdapter.storeEvents` without journal) inserts them one by one.
 
 ## Differences from TypeScript
 
@@ -129,9 +137,15 @@ Provider:
   matches `operation.id` (TypeScript filters on a `subscriptionID` field that does not exist, so `stop` never
   deleted anything, Q9).
 * `events.store` returns (and dispatches) the events with their database `id`, records them in the dispatch
-  journal, and `events.storeDispatched` deduplicates through that journal (TypeScript always returns `true`).
-  Without the journal (`EventsAdapter.storeEvents(userApp, registry, envelopes, config)`) the behaviour is
+  journal, stores the batch atomically (one append; TypeScript stores the events one by one, so a failure or a
+  crash can leave the first ones stored), and `events.storeDispatched` deduplicates through that journal
+  (TypeScript always returns `true`). Without the journal (`EventsAdapter.storeEvents(userApp, registry, envelopes, config)`) the behaviour is
   exactly TypeScript's.
+* A version-1 read model is not inserted when one of the same type and id is already stored with a version: the
+  store fails with NeDB's unique violation, which core retries like any optimistic-concurrency failure. In
+  TypeScript the unique key `<type>_<id>_<version>` of the stored document changes with every update, so a third
+  concurrent projection of a new read model that had found nothing inserted a second document with the same id
+  (both kept being projected, and versions were counted twice).
 * Envelopes read from the store expose NeDB's `_id` as `id` (TypeScript returns the raw documents, with `_id`).
 * `readModels.fetch` returns an empty list when the read model does not exist (TypeScript `[undefined]`), as
   the Java SPI specifies; `readModels.delete` with a `null` read model is a no-op (TypeScript throws a
@@ -144,7 +158,8 @@ Provider:
 * The websocket server (Jetty) processes the events of each connection in order, on a virtual thread, including
   frames received before the `CONNECT` dispatch finished (TypeScript loses them and processes messages
   concurrently, Q11); handler failures are logged (TypeScript: unhandled rejections); closed connections are
-  removed from the connection table (Q10); sending to an unknown connection throws `IllegalStateException`
+  removed from the connection table (Q10); stopping the server lets the open connections process their
+  `DISCONNECT` (core deletes their connection data and subscriptions) before the data files close; sending to an unknown connection throws `IllegalStateException`
   (TypeScript: `TypeError`), sending to a closing one is dropped; there is no idle timeout and messages up to
   100 MiB are accepted (the `ws` defaults); its threads are daemon threads; an upgrade on another path gets 404
   (`ws`: 400).

@@ -61,6 +61,9 @@ public class WebSocketServerAdapter implements AutoCloseable {
   /** Path of the websocket endpoint. */
   public static final String PATH = "/websocket";
 
+  /** How long {@link #close()} lets the connections finish their pending events, {@code DISCONNECT} included. */
+  public static final Duration CLOSE_DRAIN_TIMEOUT = Duration.ofSeconds(5);
+
   private static final long MAX_MESSAGE_SIZE = 100L * 1024 * 1024;
 
   private final GraphQLService graphQLService;
@@ -184,7 +187,12 @@ public class WebSocketServerAdapter implements AutoCloseable {
     connection.send(stringData);
   }
 
-  /** Stops the server and drops every connection. */
+  /**
+   * Stops the server and drops every connection. Stopping the server closes the open connections, whose
+   * {@code DISCONNECT} events (core deletes the connection data and its subscriptions) are processed before this
+   * returns, for up to {@link #CLOSE_DRAIN_TIMEOUT}; whatever is still running then is interrupted. The data files
+   * must therefore be closed after the websocket server, as {@code LocalProviderRuntime.close()} does.
+   */
   @Override
   public synchronized void close() {
     if (server != null) {
@@ -196,11 +204,21 @@ public class WebSocketServerAdapter implements AutoCloseable {
       server = null;
       boundPort = -1;
     }
+    long deadline = System.nanoTime() + CLOSE_DRAIN_TIMEOUT.toNanos();
     for (Connection connection : clients.values()) {
-      connection.executor.shutdownNow();
+      connection.executor.shutdown();
+      try {
+        if (!connection.executor.awaitTermination(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS)) {
+          connection.executor.shutdownNow();
+        }
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        connection.executor.shutdownNow();
+      }
     }
     clients.clear();
   }
+
 
   private static LocalHttpRequest toLocalHttpRequest(ServerUpgradeRequest request) {
     Map<String, String> headers = new LinkedHashMap<>();

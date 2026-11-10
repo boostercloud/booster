@@ -451,25 +451,39 @@
         "security_rule": [
           {
             "access": "Allow",
+            "description": null,
             "destination_address_prefix": "*",
+            "destination_address_prefixes": null,
+            "destination_application_security_group_ids": null,
             "destination_port_range": "*",
+            "destination_port_ranges": null,
             "direction": "Inbound",
             "name": "Allow-All-mystoreproductionrgrjsg",
             "priority": 100,
             "protocol": "Tcp",
             "source_address_prefix": "*",
-            "source_port_range": "*"
+            "source_address_prefixes": null,
+            "source_application_security_group_ids": null,
+            "source_port_range": "*",
+            "source_port_ranges": null
           },
           {
             "access": "Allow",
+            "description": null,
             "destination_address_prefix": "*",
+            "destination_address_prefixes": null,
+            "destination_application_security_group_ids": null,
             "destination_port_range": "*",
+            "destination_port_ranges": null,
             "direction": "Outbound",
             "name": "Allow-All-mystoreproductionrgrjsgb",
             "priority": 100,
             "protocol": "Tcp",
             "source_address_prefix": "*",
-            "source_port_range": "*"
+            "source_address_prefixes": null,
+            "source_application_security_group_ids": null,
+            "source_port_range": "*",
+            "source_port_ranges": null
           }
         ]
       }

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.locks.LockSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -337,6 +338,69 @@ class ReadModelRegistryTest {
         }
       }
       assertThat(failures).hasSize(19);
+    }
+
+    /** Java-only: TypeScript inserted a second document, because the unique key of the first one had become T_a_2. */
+    @Test
+    void aVersion1IsRejectedOnceTheReadModelHasMovedToALaterVersion() {
+      readModelRegistry.store(map("typeName", "T", "value", map("id", "a", "n", 1, "boosterMetadata",
+          map("version", 1))), null);
+      readModelRegistry.store(map("typeName", "T", "value", map("id", "a", "n", 2, "boosterMetadata",
+          map("version", 2))), 1L);
+
+      assertThatThrownBy(() -> readModelRegistry.store(map("typeName", "T", "value", map("id", "a", "n", 3,
+          "boosterMetadata", map("version", 1))), null))
+          .isInstanceOf(NedbError.class)
+          .hasMessage("Can't insert key \"T_a_1\", it violates the unique constraint")
+          .extracting(e -> ((NedbError) e).errorType()).isEqualTo(ReadModelRegistry.UNIQUE_VIOLATED_ERROR_TYPE);
+      assertThat(readModelRegistry.query(map("typeName", "T"))).singleElement()
+          .satisfies(doc -> assertThat(doc).containsEntry("uniqueKey", "T_a_2"));
+      // another type or another id is still inserted, and so is a version 1 next to a document without version
+      readModelRegistry.store(map("typeName", "U", "value", map("id", "a", "boosterMetadata", map("version", 1))), null);
+      readModelRegistry.store(map("typeName", "T", "value", map("id", "b", "boosterMetadata", map("version", 1))), null);
+      readModelRegistry.readModels().insert(map("typeName", "T", "value", map("id", "c")));
+      readModelRegistry.store(map("typeName", "T", "value", map("id", "c", "boosterMetadata", map("version", 1))), null);
+      assertThat(readModelRegistry.query(map())).hasSize(5);
+    }
+
+    /**
+     * Java-only: concurrent projections of a new read model, each retried like core's optimistic concurrency (fetch,
+     * project, store the next version, retry on a violation), leave one document whose version counts every
+     * projection once.
+     */
+    @Test
+    void concurrentProjectionsOfANewReadModelLeaveOneDocumentWithEveryVersion() throws Exception {
+      int projections = 8;
+      for (int round = 0; round < 5; round++) {
+        String id = "rm-" + round;
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+          for (int i = 0; i < projections; i++) {
+            long firstProjectionNanos = i * 4_000_000L;
+            executor.submit(() -> {
+              boolean first = true;
+              while (true) {
+                List<Map<String, Object>> current = readModelRegistry.query(map("typeName", "T", "value.id", id));
+                long version = current.isEmpty() ? 0L
+                    : ((Number) ((Map<?, ?>) value(current.get(0)).get("boosterMetadata")).get("version")).longValue();
+                // The projection runs between the fetch and the store. The first ones are staggered by more than a
+                // flushed write, so that later projections that found no read model store their version 1 after the
+                // stored one has been updated
+                LockSupport.parkNanos(first ? firstProjectionNanos : ThreadLocalRandom.current().nextLong(50_000));
+                first = false;
+                try {
+                  readModelRegistry.store(map("typeName", "T", "value", map("id", id, "boosterMetadata",
+                      map("version", version + 1))), version);
+                  return null;
+                } catch (NedbError e) {
+                  // optimistic concurrency: fetch again and retry
+                }
+              }
+            });
+          }
+        }
+        assertThat(readModelRegistry.query(map("typeName", "T", "value.id", id))).singleElement()
+            .satisfies(doc -> assertThat(doc).containsEntry("uniqueKey", "T_" + id + "_" + projections));
+      }
     }
   }
 

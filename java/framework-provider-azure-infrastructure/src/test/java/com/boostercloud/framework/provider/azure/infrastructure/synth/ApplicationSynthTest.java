@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.boostercloud.framework.provider.azure.infrastructure.support.Fixtures;
 import com.boostercloud.framework.provider.azure.infrastructure.support.TestEnvironment;
 import com.boostercloud.framework.provider.azure.infrastructure.synth.gateway.TerraformApplicationGateway;
+import com.boostercloud.framework.provider.azure.infrastructure.synth.gateway.TerraformNetworkSecurityGroup;
 import com.boostercloud.framework.provider.azure.infrastructure.synth.gateway.TerraformPublicIpData;
 import com.boostercloud.framework.provider.azure.infrastructure.synth.gateway.TerraformSubnet;
 import com.boostercloud.framework.provider.azure.infrastructure.synth.gateway.TerraformSubnetSecurity;
@@ -168,5 +169,24 @@ class ApplicationSynthTest {
     assertThat(stack.terraformStack.toJson()).contains("\"/staging/graphql/*\"")
         .contains("/staging/sensor/health(/.*)?")
         .contains("\"value\": \"http://${data.azurerm_public_ip.mystoreproductiondatapip.fqdn}/staging/graphql\"");
+  }
+
+  @Test
+  void every_security_rule_attribute_is_rendered_because_terraform_json_requires_them_all() {
+    ApplicationSynthStack stack = synth(Fixtures.config()).synth(null);
+    List<?> rules = (List<?>) stack.networkSecurityGroup.attribute("security_rule");
+    assertThat(rules).hasSize(2).allSatisfy(rule -> {
+      // the azurerm schema of security_rule (an attribute of type list(object), not a block)
+      assertThat(((Map<?, ?>) rule).keySet()).map(Object::toString).containsExactlyInAnyOrder("name", "priority", "direction", "access",
+          "protocol", "source_port_range", "destination_port_range", "source_address_prefix",
+          "destination_address_prefix", "description", "destination_address_prefixes",
+          "destination_application_security_group_ids", "destination_port_ranges", "source_address_prefixes",
+          "source_application_security_group_ids", "source_port_ranges");
+      for (String unset : TerraformNetworkSecurityGroup.UNSET_RULE_ATTRIBUTES) {
+        assertThat(((Map<?, ?>) rule).get(unset)).as(unset).isNull();
+      }
+    });
+    assertThat(stack.terraformStack.toJson()).contains("\"description\": null")
+        .contains("\"source_application_security_group_ids\": null");
   }
 }

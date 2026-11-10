@@ -361,7 +361,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   (the documents behind a search, for the store).
 * Concurrency: projections, read model tasks, item migrations, selections, subscription fetches and notifications run on
   virtual threads with the TypeScript failure semantics (`allSettled` → `PromisesError`, `Promise.all` → first
-  failure); user code must not share unsynchronised mutable state (JavaScript interleaves on one thread).
+  failure); user code must not share unsynchronised mutable state (JavaScript interleaves on one thread). The
+  notifications of one subscription are sent one after the other, in the order of its results (TypeScript starts its
+  `sendMessage` calls in that order).
 * The pub-sub keeps the TypeScript in-memory filter (first top-level property only, `includes` and nested filters decide
   alone, `isDefined` ignored, combinators fail); values are compared in their JSON form and regular expressions use the
   Java dialect. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
@@ -450,6 +452,10 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   `extensions` (`{code, data}` of a `BoosterError`, `{}` otherwise); the errors of a subscription that cannot be set
   up have no `extensions`, as in TypeScript. Documents are parsed with graphql-java's default parser limits.
 * The validation errors graphql-js throws as an array travel in a private exception carrying the list.
+* Documents are validated with the rules of the GraphQL specification only, like graphql-js `validate`
+  (`GraphQLExecution.validate`, used by the dispatcher and the subscribers notifier): graphql-java's "good faith
+  introspection" rule (which rejects a `__Type.fields`/`inputFields` selected inside another one, as the schema suites
+  of the integration tests do) and its query complexity limits are not applied.
 * `Date` scalar: values are written with milliseconds and `Z` from the Java date types and from ISO strings
   (TypeScript only accepts `Date` objects); inputs parse with `Dates.parse` (ISO instants, offsets, local date-times
   taken as UTC — JavaScript takes them as local time —, plain dates as UTC midnight; RFC 2822 is not accepted) and
