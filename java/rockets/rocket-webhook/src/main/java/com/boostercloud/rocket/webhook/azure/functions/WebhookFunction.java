@@ -7,7 +7,6 @@ import com.boostercloud.framework.provider.azure.infrastructure.types.FunctionCo
 import com.boostercloud.framework.provider.azure.infrastructure.types.FunctionDefinition;
 import com.boostercloud.framework.types.BoosterConfig;
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Port of {@code functions/webhook-function.ts}. TypeScript generates, per webhook, the JavaScript of an
@@ -46,8 +45,6 @@ public final class WebhookFunction {
    */
   public static final String DATA_TYPE = "binary";
 
-  private static final Pattern NON_NAME_CHARACTERS = Pattern.compile("[^a-zA-Z0-9_]");
-
   private WebhookFunction() {}
 
   /**
@@ -73,10 +70,22 @@ public final class WebhookFunction {
   }
 
   /**
+   * {@code endpoint.replace(/[^a-zA-Z0-9_]/g, '_')}. A JavaScript regular expression without the {@code u} flag
+   * works on UTF-16 code units, so a character outside the BMP (a surrogate pair) becomes two underscores.
+   *
    * @param endpoint a webhook route
-   * @return the function name ({@code endpoint.replace(/[^a-zA-Z0-9_]/g, '_')})
+   * @return the function name
    */
   public static String functionName(String endpoint) {
-    return NON_NAME_CHARACTERS.matcher(endpoint).replaceAll("_");
+    StringBuilder name = new StringBuilder(endpoint.length());
+    for (int i = 0; i < endpoint.length(); i++) {
+      char c = endpoint.charAt(i);
+      name.append(isNameCharacter(c) ? c : '_');
+    }
+    return name.toString();
+  }
+
+  private static boolean isNameCharacter(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
   }
 }

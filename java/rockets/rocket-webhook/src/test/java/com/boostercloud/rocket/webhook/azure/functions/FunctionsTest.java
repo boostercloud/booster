@@ -79,10 +79,24 @@ class FunctionsTest {
     assertThat(definition.config().entryPoint()).isEqualTo(BoosterAzureFunctions.ROCKET_HTTP_ENTRY_POINT);
   }
 
+  /** Names computed with Node 24: {@code endpoint.replace(/[^a-zA-Z0-9_]/g, '_')}. */
   @Test
-  void routes_differing_only_in_non_name_characters_collide_as_in_typescript() {
+  void function_names_replace_every_utf16_unit_outside_the_name_characters_as_javascript() {
     assertThat(WebhookFunction.functionName("a/b")).isEqualTo(WebhookFunction.functionName("a_b")).isEqualTo("a_b");
     assertThat(WebhookFunction.functionName("ñandú/ü")).isEqualTo("_and___");
+    assertThat(WebhookFunction.functionName("v1.hooks-x")).isEqualTo("v1_hooks_x");
+    // A character outside the BMP is a surrogate pair: two underscores
+    assertThat(WebhookFunction.functionName("a😀b")).isEqualTo("a__b");
+  }
+
+  @Test
+  void colliding_function_names_fail_the_synthesis_with_the_node_worker_message() {
+    List<WebhookParamsEvent> params = List.of(WebhookParamsEvent.of("a/b", Handler.class),
+        WebhookParamsEvent.of("ok", Handler.class), WebhookParamsEvent.of("a_b", Handler.class));
+
+    assertThatThrownBy(() -> Functions.mountFunctionsV4(params, config(), stack("xrg"), null))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("A function with name \"a_b\" has already been registered.");
   }
 
   @Test
