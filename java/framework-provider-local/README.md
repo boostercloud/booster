@@ -105,8 +105,19 @@ Store (NeDB replacement):
   implementations instead of becoming a corrupt line for NeDB.
 * Memory-only lookup indexes (on `entityID`, `entityTypeName`, `typeName`, `value.id`, `connectionID`,
   `className`) narrow equality queries; they are never persisted and never change results or their order.
-* Regular expressions are Java patterns (`JsRegExp`, `find()` semantics, flag `i` is Unicode-aware); exotic
-  syntax differences between JavaScript and Java regular expressions are not emulated.
+* Regular expressions keep JavaScript's syntax: `JsRegExp` translates the source (Annex B grammar, flags `i`, `m`,
+  `s`, `u`) into an equivalent Java pattern, so a lone `{`, `\s` with Unicode spaces, `$` at the very end only,
+  identity and octal escapes, `[]`/`[^]` and the like behave as in JavaScript, and invalid sources throw
+  `JsRegExp.SyntaxError` with V8's message (`Invalid regular expression: /^C++/: Nothing to repeat`). Not emulated:
+  JavaScript's non-Unicode case folding for the few characters where it differs from Java's (`ſ`, the Kelvin sign),
+  code-unit matching outside the BMP, and back references to groups that did not participate (empty in JavaScript,
+  a failure in Java).
+* Every acknowledged write is flushed (`FileChannel.force`, about 4 ms on an Apple-silicon laptop) while the
+  collection's write lock is held, so one collection takes roughly 250 single-document writes per second (NeDB does
+  not flush and is faster). Batch inserts share one flush.
+* NeDB's modifiers run in sloppy-mode JavaScript; `Model.modify` reproduces that (setting a property of a primitive is
+  ignored) except for non-index properties set on an array (`'arr.x'`), which JavaScript keeps on the array object
+  until serialization and Java ignores.
 * Errors are `NedbError` (unchecked) with NeDB's messages; the unique-violation message quotes the key with
   `JSON.stringify` (`Can't insert key "T_1_1", it violates the unique constraint`), as `@seald-io/binary-search-tree` does.
 * An undefined element inside an array is stored as `null` (NeDB keeps `undefined` in memory until the next load).
@@ -170,3 +181,17 @@ database health checks report `DOWN` until first use (Q19), unescaped regular-ex
   `ensureIndex` rejects comma-separated names, like NeDB rejects commas in a field name), `timestampData`,
   `afterSerialization`/`beforeDeserialization` hooks, `compareStrings`, the event emitter, and `$where`
   functions other than `java.util.function.Predicate`.
+
+## Tests and parity ledger
+
+`mvn -B -pl framework-provider-local -am verify` from `java/`. `PARITY.md` maps every item of the specification
+(behaviour, data shapes, the TypeScript tests, quirks, documented features) to the Java test that pins it, the commit
+that fixed it, or the reason for an intentional difference. Besides the ports of the TypeScript tests:
+
+* `store.NedbDifferentialTest` replays queries, cursors, modifier updates and data files generated with the real
+  `@seald-io/nedb` 4.0.2 (`src/test/resources/nedb/differential/generate.js`); `store.JsRegExpTest` and
+  `store.JsRegExpDifferentialTest` compare regular expressions with V8 (`src/test/resources/regexp/generate.js`);
+  `library.FilterOperatorSemanticsTest` runs every Booster filter operator end to end on a real store.
+* `store.StoreStressTest`, `store.KillDuringWriteStressTest` (a writer JVM killed with `SIGKILL`) and
+  `ProviderStressTest` cover concurrency on virtual threads, compaction under load, truncated and zero-filled data
+  files and 100k-document collections.

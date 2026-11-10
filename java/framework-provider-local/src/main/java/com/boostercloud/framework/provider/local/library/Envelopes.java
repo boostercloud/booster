@@ -51,7 +51,8 @@ final class Envelopes {
 
   /**
    * @param envelope an envelope record (or any object)
-   * @return its stored JSON shape, without an {@code id} so that {@code _id} stays the only database id
+   * @return its stored JSON shape; an {@code id} is only present when the envelope has one (soft-deleted events keep
+   *     it, as in TypeScript, quirk Q17), so new documents have {@code _id} as their only database id
    */
   static Map<String, Object> toDocument(Object envelope) {
     return BoosterJson.toRawMap(envelope);

@@ -63,4 +63,23 @@ class ProviderTest {
     assertThat(Paths.AUTHENTICATED_USERS_DATABASE).isEqualTo(".booster/authenticated_users.json");
     assertThat(Paths.DISPATCH_JOURNAL_DATABASE).isEqualTo(".booster/dispatch_journal.json");
   }
+
+  /** Spec 10, section 2.6: the constants of the TypeScript provider. */
+  @Test
+  void constantsAreTheTypeScriptOnes() {
+    assertThat(WebSocketServerAdapter.LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT)
+        .isEqualTo("LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT");
+    assertThat(WebSocketServerAdapter.DEFAULT_PORT).isEqualTo("65529");
+    assertThat(WebSocketServerAdapter.PATH).isEqualTo("/websocket");
+    assertThat(com.boostercloud.framework.provider.local.services.ReadModelRegistry.UNIQUE_VIOLATED_ERROR_TYPE)
+        .isEqualTo("uniqueViolated");
+    assertThat(com.boostercloud.framework.provider.local.library.EventsSearchAdapter.DEFAULT_CREATED_AT_SORT_ORDER)
+        .isEqualTo(-1);
+    assertThat(com.boostercloud.framework.provider.local.library.EventsAdapter.ORIGIN_OF_TIME)
+        .isEqualTo("1970-01-01T00:00:00.000Z");
+    assertThat(com.boostercloud.framework.provider.local.services.WebSocketRegistry.EXPIRATION_TTL_SECONDS)
+        .isEqualTo(172800);
+    assertThat(Provider.INFRASTRUCTURE_PACKAGE_NAME)
+        .isEqualTo("com.boostercloud.framework.provider.local.infrastructure");
+  }
 }
