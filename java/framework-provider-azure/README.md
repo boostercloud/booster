@@ -117,8 +117,12 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
   * Event Hubs: the REST "send batch events" API with a SAS token; each message is
     `{"Body": "<JSON>", "BrokerProperties": {"PartitionKey": "<entity>-<id>-event"}}`; batches are limited to 1 MiB of
     REST payload (the JS SDK measures AMQP size); transient failures use the core-amqp policy (30 s base, 90 s cap).
-  * Web PubSub: `sendToConnection` with the access-key JWT the JS SDK signs (`aud` = request URL, 1 h, HS256), API
+  * Web PubSub: `sendToConnection` with the access-key JWT the JS SDK signs (`aud` = the request URL with its
+    `api-version` query and without port, as `webPubSubKeyCredentialPolicy`; 1 h; HS256 with the UTF-8 key), API
     version `2021-10-01`, and the core-rest-pipeline default retry policy.
+  * Cross-partition queries support `VALUE` aggregates only: a non-`VALUE` aggregate (`SELECT COUNT(1) AS total`) or a
+    `GROUP BY` is rejected with an `UnsupportedOperationException` instead of returning per-partition partial results
+    (the JS SDK has a client-side `GROUP BY` pipeline for them; Booster's runtime queries use neither).
 * **Queries that pin the partition key pass it** (`readEntityEventsSince`, `readEntityLatestSnapshot`,
   `fetchSubscriptions`, connection queries), so they run as single-partition queries without a query plan. The SQL
   text and parameters are the TypeScript ones.
@@ -180,6 +184,8 @@ Nothing contacts Azure. `mvn -B -pl framework-provider-azure -am verify` runs:
   headers, bodies, the Cosmos master-key signature and the Event Hubs SAS token (both recomputed independently in the
   tests), the Web PubSub JWT (decoded and its HMAC verified), continuation handling, query plans and the client-side
   merge, batch responses, error mapping (404, 409, 412, 429, 400/1004, 401, 503) and retries.
+* **Known-answer tests** (`SignatureKnownAnswerTest`): the Cosmos DB authorization headers, an Event Hubs SAS token and
+  a Web PubSub JWT compared with values computed with OpenSSL from the documented string-to-sign rules.
   `contract.AzureProviderContractTest` runs the whole `AzureProviderLibrary` with the REST clients against the fake
   server (events store, reads, dispatched markers, read model optimistic concurrency, paginated searches, entity ids,
   stream produce + dedup, subscriptions, websocket messages, health).
@@ -194,3 +200,6 @@ What cannot be verified without deploying: the Azure Functions Java worker's del
 and `connectionContext` metadata to `String` parameters and its handling of the JSON returned to the Web PubSub
 extension; the exact query-plan and `x-ms-documentdb-partitionkeyrangeid` conventions of the live gateway (the
 fixtures follow the documented formats and the SDKs' behaviour).
+
+`PARITY.md` is the item-by-item ledger of both Azure modules against the TypeScript sources: the Java test of each
+behaviour, the gaps fixed by the parity audit, the intentional differences and what cannot be verified offline.

@@ -205,7 +205,8 @@ Object]`, `FunctionAppName not found on rocket [object Object]`). Rocket functio
 reads the Cosmos DB connection string (`az cosmosdb list-connection-strings`) and exposes `outputs()` (`graphqlURL`
 with `BOOSTER_ENV` defaulting to `DEFAULT`, `websocketURL` on hub `booster`, `healthURL` with a trailing slash),
 `counters()` and `queries()` (the method shapes of application-tester's `ProviderTestHelper`, `Counters`, `Queries`),
-backed by the Cosmos DB REST client of `framework-provider-azure`.
+backed by the Cosmos DB REST client of `framework-provider-azure`. The counters run `SELECT VALUE COUNT(1) FROM c`
+(`WHERE c.kind="event"` for events).
 
 ## Differences from TypeScript
 
@@ -236,8 +237,11 @@ backed by the Cosmos DB REST client of `framework-provider-azure`.
 * **SDK clients** are small REST clients with the SDK's long-running operation protocol (`Azure-AsyncOperation`,
   `Location`, `provisioningState`, `Retry-After`, 2 s default); API versions: `Microsoft.Web` `2023-12-01`,
   `Microsoft.SignalRService` `2023-02-01`, `Microsoft.Resources` `2021-04-01`.
-* **Test helper** counters return `long` (`-1` where TypeScript returns `undefined`); the `az` rejections that are
-  strings in TypeScript are exceptions (`RunCommandError` carries `az`'s standard error, e.g. `ResourceGroupNotFound`).
+* **Test helper** counters return `long` (`-1` where TypeScript returns `undefined`) and query
+  `SELECT VALUE COUNT(1) FROM c` instead of `SELECT COUNT(1) as total FROM c`: across partitions a non-`VALUE`
+  aggregate needs the JS SDK's client-side `GROUP BY` pipeline, which the REST client does not implement (same counts).
+  The `az` rejections that are strings in TypeScript are exceptions (`RunCommandError` carries `az`'s standard error,
+  e.g. `ResourceGroupNotFound`).
 * **Not ported (dead code in TypeScript)**: `TerraformWebPubSubExtensionKey`, `TerraformSleep`,
   `TerraformFunctionAppData` (replaced by the post-deploy key polling) and the `time`/`null` providers they needed.
 
@@ -264,3 +268,7 @@ Not verifiable without deploying: that Terraform and the azurerm 5.x provider ac
 `TerraformValidateTest`), the Java worker's handling of the generated `function.json` files (binding data types, the
 Web PubSub return value without `$return`), that Azure Functions runs a Java 27 application (the runtime currently
 offers up to Java 21; see `BOOSTER_AZURE_JAVA_VERSION`), and the live API versions and long-running operation headers.
+
+The parity ledger of both Azure modules (item -> Java test, audit fixes, intentional differences, unverifiable
+items, and a hand walk of the TypeScript synthesis compared with the golden files) is
+[`../framework-provider-azure/PARITY.md`](../framework-provider-azure/PARITY.md).
