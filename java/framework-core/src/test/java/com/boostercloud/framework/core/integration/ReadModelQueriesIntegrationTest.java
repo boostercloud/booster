@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.boostercloud.framework.core.integration.app.readmodels.CartReadModel;
 import com.boostercloud.framework.core.integration.app.readmodels.CategoryReadModel;
+import com.boostercloud.framework.core.integration.app.readmodels.ProductReadModel;
+import com.boostercloud.framework.types.searcher.SortFor;
 import com.boostercloud.framework.core.Booster;
 import com.boostercloud.framework.types.concepts.UUID;
 import java.util.List;
@@ -106,6 +108,31 @@ class ReadModelQueriesIntegrationTest extends IntegrationTestSupport {
 
     assertThat(listAt(data(result), "ListCartReadModels", "items"))
         .containsExactly(map("id", "cart-2", "totalQuantity", 1.0), map("id", "cart-1", "totalQuantity", 7.0));
+  }
+
+  @Test
+  void selectsNestedPathsOfListsAndCountsWithoutItems() {
+    graphQL("mutation { ChangeCartItem(input: {cartId: \"cart-1\", productId: \"" + apple + "\", quantity: 3}) }");
+    graphQL("mutation { ChangeCartItem(input: {cartId: \"cart-1\", productId: \"" + pear + "\", quantity: 4}) }");
+
+    Map<String, Object> nested = graphQL("{ ListCartReadModels { items { items { productId } } } }");
+    Map<String, Object> countOnly = graphQL("{ ListCartReadModels(filter: {checks: {gte: 1}}) { count } }");
+
+    assertThat(data(nested)).isEqualTo(Map.of("ListCartReadModels", Map.of("items", List.of(
+        Map.of("items", List.of(Map.of("productId", apple), Map.of("productId", pear)))))));
+    assertThat(data(countOnly)).isEqualTo(Map.of("ListCartReadModels", Map.of("count", 1)));
+  }
+
+  @Test
+  void theSearcherPagesFromCode() {
+    var first = Booster.readModel(ProductReadModel.class).sortBy(SortFor.of("price", "ASC")).limit(3)
+        .searchPaginated();
+    var second = Booster.readModel(ProductReadModel.class).sortBy(SortFor.of("price", "ASC")).limit(3)
+        .afterCursor(first.cursor()).searchPaginated();
+
+    assertThat(first.items()).extracting(ProductReadModel::sku).containsExactly("FRU-BANANA", "FRU-APPLE", "FRU-PEAR");
+    assertThat(second.items()).extracting(ProductReadModel::sku).containsExactly("TOO-HAMMER");
+    assertThat(second.count()).isEqualTo(1);
   }
 
   @Test
