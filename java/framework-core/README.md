@@ -439,7 +439,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   generic records are `JSON` with `<Name>_<arg>_PropertyFilter` filters, `@CalculatedField` methods are fields (not
   filtered nor sorted).
 * Results handed to `handleResult` are raw JSON maps (`errors` first when present, then `data`) instead of
-  `ExecutionResult` objects; websocket `data` payloads are the same maps. Unknown event types answer
+  `ExecutionResult` objects; websocket `data` payloads are the same maps. The websocket `error` message of a `start`
+  without query carries `{message}` per error (framework-types `GraphQLErrorMessage`); TypeScript serialises its
+  `new Error(...)` with `JSON.stringify`, which sends `{}`. Unknown event types answer
   `{errors: [{message: "Unknown message type <type>"}]}` (TypeScript: an `Error` object); `handleResult(undefined)` is
   the one-argument `handleResult(null)`.
 * Resolver errors keep the thrown error's message (graphql-java's default handler would write `Exception while
@@ -476,6 +478,10 @@ graphql-js wording of syntax, validation and coercion errors is not reproduced (
 
 `mvn -B -pl framework-core -am verify` from `java/`. Surefire runs with `booster.env=test` (TypeScript:
 `BOOSTER_ENV=test`); tests that touch the global state extend `BoosterTestSupport`.
+
+[PARITY.md](PARITY.md) is the parity ledger: every behaviour pinned by a TypeScript test of this package (specs
+04–09) and every core-relevant item of the documentation checklist, with the Java test that pins it, or why it differs
+or lives in another module. Keep it current when a behaviour or a test changes.
 
 **Unit tests** are named after the TypeScript test files (`booster-command-dispatcher.test.ts` →
 `BoosterCommandDispatcherTest`) and port them (Mockito replaces sinon). `ImporterTest` compiles and scans a jar,
