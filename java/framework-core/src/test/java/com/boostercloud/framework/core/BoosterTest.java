@@ -174,6 +174,24 @@ class BoosterTest extends BoosterTestSupport {
   }
 
   @Test
+  void theSearcherReturnsPlainObjectsForASelectionThroughTheSelectedSearches() {
+    ProviderLibrary provider = mock(ProviderLibrary.class);
+    ProviderReadModelsLibrary readModels = mock(ProviderReadModelsLibrary.class);
+    when(provider.readModels()).thenReturn(readModels);
+    when(readModels.search(any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(ReadModelListResult.of(List.of(Map.of("id", "42"))));
+    Booster.config().setProvider(provider);
+
+    List<Map<String, Object>> results = Booster.readModel(TestReadModel.class).select(List.of("id")).searchSelected();
+
+    assertThat(results).containsExactly(Map.of("id", "42"));
+    // The typed search would hand out these maps as TestReadModel instances
+    assertThatThrownBy(() -> Booster.readModel(TestReadModel.class).select(List.of("id")).search())
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("searchSelected()");
+  }
+
+  @Test
   @SuppressWarnings("deprecation")
   void entitiesIDsCallsTheProviderWithItsParameterOrder() {
     ProviderLibrary provider = mock(ProviderLibrary.class);

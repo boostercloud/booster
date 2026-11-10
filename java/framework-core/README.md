@@ -359,7 +359,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   an explanation instead of a `TypeError`. GraphQL error arrays thrown by the notifier are
   `BoosterSubscribersNotifier.GraphQLErrors`.
 * A search with `select` returns maps of the selected paths holding the instance values (`UUID`s, not strings); without
-  it, instances. Non-paginated searches return the provider page's `items` (the provider always returns a
+  it, instances. From code, `Booster.readModel(X.class).select(...)` is read with `searchSelected()` (or
+  `searchOneSelected()`, `searchSelectedPaginated()`, `searchRaw()`); the typed `search()` refuses a selection (see
+  framework-types). Non-paginated searches return the provider page's `items` (the provider always returns a
   `ReadModelListResult`); `finderByIdFunction` returns the raw documents. `readModelSearchDocuments` is a Java addition
   (the documents behind a search, for the store).
 * Concurrency: projections, read model tasks, item migrations, selections, subscription fetches and notifications run on

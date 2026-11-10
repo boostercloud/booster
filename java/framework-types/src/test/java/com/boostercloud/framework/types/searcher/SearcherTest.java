@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -118,6 +119,61 @@ class SearcherTest {
       searcher.sortBy(sort).sortBy(null).select(List.of()).select(null);
       assertThat(searcher.state().sortBy()).isEqualTo(sort);
       assertThat(searcher.state().select()).isEmpty();
+    }
+  }
+
+  /** {@code select} returns plain objects of the selected paths (TypeScript types them {@code Partial<T>}). */
+  @Nested
+  class SearchesWithASelection {
+    private final Map<String, Object> selected = Map.of("someField", "world");
+
+    @BeforeEach
+    void theBackendReturnsPlainObjects() {
+      when(searcherFunction.search(any(), any(), any(), any(), any(), anyBoolean(), any())).thenReturn(List.of(selected));
+    }
+
+    @Test
+    void searchSelectedReturnsThePlainObjectsWithTheBuilderState() {
+      Map<String, Object> filters = Map.of("someField", Map.of("gt", "200"));
+
+      List<Map<String, Object>> results = searcher.filter(filters).limit(5).select(List.of("someField")).searchSelected();
+
+      assertThat(results).containsExactly(selected);
+      verify(searcherFunction).search(SomeModel.class, filters, Map.of(), 5, null, false, List.of("someField"));
+    }
+
+    @Test
+    void searchOneSelectedAndSearchSelectedPaginatedFollowSearchOneAndSearchPaginated() {
+      searcher.select(List.of("someField")).limit(5);
+
+      assertThat(searcher.searchOneSelected()).contains(selected);
+      verify(searcherFunction).search(SomeModel.class, Map.of(), Map.of(), 1, null, false, List.of("someField"));
+
+      ReadModelListResult<Map<String, Object>> page = searcher.searchSelectedPaginated();
+      assertThat(page.items()).containsExactly(selected);
+      verify(searcherFunction).search(SomeModel.class, Map.of(), Map.of(), 5, null, true, List.of("someField"));
+    }
+
+    @Test
+    void theTypedSearchesRefuseASelectionInsteadOfReturningMapsAsT() {
+      searcher.select(List.of("someField"));
+
+      assertThatThrownBy(searcher::search).isInstanceOf(IllegalStateException.class)
+          .hasMessage("search() returns SomeModel instances, but select(...) makes the search return plain objects of"
+              + " the selected paths: call searchSelected() (or searchRaw()) instead");
+      assertThatThrownBy(searcher::searchOne).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("call searchOneSelected()");
+      assertThatThrownBy(searcher::searchPaginated).isInstanceOf(IllegalStateException.class)
+          .hasMessageContaining("call searchSelectedPaginated()");
+      verify(searcherFunction, never()).search(any(), any(), any(), any(), any(), anyBoolean(), any());
+      // searchRaw() keeps the TypeScript behaviour: the backend result as is
+      assertThat(searcher.searchRaw()).isEqualTo(List.of(selected));
+    }
+
+    @Test
+    void theSelectedSearchesNeedASelection() {
+      assertThatThrownBy(searcher::searchSelected).isInstanceOf(IllegalStateException.class)
+          .hasMessage("searchSelected() needs select(...): without a selection the search returns SomeModel instances");
     }
   }
 

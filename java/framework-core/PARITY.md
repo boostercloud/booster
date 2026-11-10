@@ -25,7 +25,7 @@ Counts are ledger rows (a row may group several numbered items that share one te
 | Part | Rows | covered | fixed | differs | elsewhere | n/a | still missing |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript-pinned behaviours (specs 04–09) | 284 | 268 | 2 | 14 | 0 | 0 | 0 |
-| 2. Documentation checklist (spec 18, core-relevant) | 205 | 165 | 6 | 9 | 17 | 8 | 0 |
+| 2. Documentation checklist (spec 18, core-relevant) | 205 | 164 | 6 | 10 | 17 | 8 | 0 |
 
 Missing → fixed: 8 rows. Part 1: spec 04 #3 and #4 (`Booster.readModel(...).search()` was pinned one layer down, at
 the reader, not at the provider call). Part 2: F078 (asynchronous calculated fields), F282 and acceptance 26
@@ -508,7 +508,7 @@ modules and are not listed. "Integration" refers to `integration.*IntegrationTes
 | F244 | `ReadModelRequestEnvelope` fields | `GraphQLGeneratorTest#callsSearchWithTheExpectedPayload` | covered |
 | F245 | filter operator families, `and`/`or`/`not`, `isDefined` | `GraphQLQueryGeneratorTest#hasTheExpectedArgumentsForAStringProperty`, Integration `ReadModelQueriesIntegrationTest#combinesFiltersWithAndOrAndNot`, `#filtersOnArraysOfObjects` | covered (evaluation is the provider's) |
 | F246 | `eq`/`ne` `null`; `regex` support | Integration `ReadModelQueriesIntegrationTest#combinesFiltersWithAndOrAndNot` | elsewhere: providers evaluate filters |
-| F247 | `Booster.readModel(X).filter().select().search()`; instances without `select` | `BoosterTest#theSearcherCallsTheProviderSearchOnceWithTheTypeScriptArgumentsAndReturnsInstances`, Integration `ReadModelQueriesIntegrationTest#theSearcherPagesFromCode` | covered |
+| F247 | `Booster.readModel(X).filter().select().search()`; instances without `select` | `BoosterTest#theSearcherCallsTheProviderSearchOnceWithTheTypeScriptArgumentsAndReturnsInstances`, `#theSearcherReturnsPlainObjectsForASelectionThroughTheSelectedSearches`, Integration `ReadModelQueriesIntegrationTest#theSearcherPagesFromCode` | differs: with `select`, `searchSelected()` (TypeScript retypes `search()` to `Partial<T>`) |
 | F248 | `select` with `[]` array paths | `BoosterReadModelsReaderTest#usesTheTopLevelFieldOfArrayAndNestedPaths`, Integration `ReadModelQueriesIntegrationTest#selectsNestedPathsOfListsAndCountsWithoutItems` | covered |
 | F249 | `select` skips schema migrations | `BoosterReadModelsReaderTest#passesTheSelectionAndDoesNotMigrate`, Integration `MigrationsIntegrationTest#oldReadModelsAreMigratedWhenRead` | covered |
 | F250 | `sortBy` (one field; nested) | `GraphQLQueryHelpersTest#sortsEveryStoredPropertyWithOrderPropertyExceptApplicationClasses`, Integration `ReadModelQueriesIntegrationTest#pagesThroughASortedListWithTheCursor` | covered (one-field limit is the provider's) |
