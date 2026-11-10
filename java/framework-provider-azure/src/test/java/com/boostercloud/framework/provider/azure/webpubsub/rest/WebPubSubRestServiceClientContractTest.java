@@ -9,6 +9,7 @@ import com.boostercloud.framework.provider.azure.support.FakeAzureServer.Respons
 import com.boostercloud.framework.provider.azure.support.Fixtures;
 import com.boostercloud.framework.provider.azure.webpubsub.WebPubSubException;
 import com.boostercloud.framework.types.BoosterJson;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
@@ -76,7 +77,9 @@ class WebPubSubRestServiceClientContractTest {
     assertThat(BoosterJson.parse(new String(decoder.decode(jwt[1]), StandardCharsets.UTF_8))).isEqualTo(Map.of(
         "iat", (int) NOW.getEpochSecond(),
         "exp", (int) NOW.getEpochSecond() + 3600,
-        "aud", server.baseUrl() + "/api/hubs/booster/connections/Xy12%20abCD/:send"));
+        // new URL(request.url) with port = '': the query string stays, the port goes
+        "aud", "http://" + URI.create(server.baseUrl()).getHost()
+            + "/api/hubs/booster/connections/Xy12%20abCD/:send?api-version=2021-10-01"));
     Mac mac = Mac.getInstance("HmacSHA256");
     mac.init(new SecretKeySpec(ACCESS_KEY.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
     byte[] expectedSignature = mac.doFinal((jwt[0] + "." + jwt[1]).getBytes(StandardCharsets.UTF_8));
@@ -117,6 +120,15 @@ class WebPubSubRestServiceClientContractTest {
         .isInstanceOfSatisfying(WebPubSubException.class, error -> assertThat(error.statusCode()).isEqualTo(503));
     assertThat(server.requests()).hasSize(4);
     assertThat(sleeps).hasSize(3);
+  }
+
+  @Test
+  void theAudienceIsTheRequestUrlWithItsQueryAndWithoutPort() {
+    assertThat(WebPubSubTokens.audience(URI.create(
+        "https://My-WPS.webpubsub.azure.com:8080/api/hubs/booster/connections/a%2Fb/:send?api-version=2021-10-01")))
+        .isEqualTo("https://my-wps.webpubsub.azure.com/api/hubs/booster/connections/a%2Fb/:send?api-version=2021-10-01");
+    assertThat(WebPubSubTokens.audience(URI.create("https://wps.webpubsub.azure.com")))
+        .isEqualTo("https://wps.webpubsub.azure.com/");
   }
 
   @Test

@@ -81,11 +81,12 @@ public final class WebPubSubRestServiceClient implements WebPubSubServiceClient 
     String path = connectionString.endpoint() + "/api/hubs/" + UriEncoding.encodeURIComponent(hub) + "/connections/"
         + UriEncoding.encodeURIComponent(connectionId) + "/:send";
     URI target = URI.create(path + "?api-version=" + API_VERSION);
+    String audience = WebPubSubTokens.audience(target);
     for (int retry = 0; ; retry++) {
       long now = clock.instant().getEpochSecond();
       HttpRequest request = HttpRequest.newBuilder(target)
           .timeout(Duration.ofSeconds(60))
-          .header("Authorization", "Bearer " + WebPubSubTokens.accessToken(path, connectionString.accessKey(), now))
+          .header("Authorization", "Bearer " + WebPubSubTokens.accessToken(audience, connectionString.accessKey(), now))
           .header("Content-Type", contentType)
           .POST(HttpRequest.BodyPublishers.ofString(message == null ? "" : message, StandardCharsets.UTF_8))
           .build();
