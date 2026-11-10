@@ -171,6 +171,7 @@ success is always `200`; other statuses come only from thrown errors.
 
 | Situation | Status | Body |
 | --- | --- | --- |
+| `Host` header or URL authority the URL parser rejects (`new URL(req.url, 'http://' + host + '/')`) | 500 | `{"title":"Illegal Argument Exception","reason":"Invalid URL"}` |
 | Unknown route (also `/Test` or `/test/` for `test`) | 500 | `{"title":"Illegal State Exception","reason":"Could not find route Test in parameters."}` |
 | A webhook without `route`/`origin` before the matching one | 500 | `... "reason":"Undefined route parameter [object Object]"` |
 | Method not in `allowedMethods` | 500 | `... "reason":"Method GET not allowed"` |
@@ -179,6 +180,7 @@ success is always `200`; other statuses come only from thrown errors.
 | Handler/authorizer throws `InvalidParameterError` / `NotAuthorizedError` / `NotFoundError` / `InvalidVersionError` | 400 / 401 / 404 / 422 | `{"title": <class title>, "reason": <message>}` |
 | Malformed multipart body | 500 | Busboy's message (`Multipart: Boundary not found`, `Unexpected end of form`, `Malformed part header`) |
 | A registered event no entity reduces | 404 | `Couldn't find information about event X. Is the event handled by an entity?` |
+| Locally, a result header Node's `setHeader` rejects (name not a token; CR, LF, controls or characters above `U+00FF` in a value, e.g. a file name `名.txt`) | 500 | `Header name must be a valid HTTP token ["<name>"]` / `Invalid character in header content ["<name>"]` |
 | Anything else thrown | 500 | `{"title": <class title>, "reason": <message>}` |
 
 Checks run in this order: route, method, token, authorization, body parsing, handler, event storage. Events registered
@@ -239,7 +241,8 @@ the error to `next`.
   `rewrite_rule_set.0.rewrite_rule` (`/<route>` → `/api/<route>`, `rule_sequence` 1, 2...). Rule names are
   `toTerraformName(appPrefix, "ru"|"rw" + 23 characters of a random UUID)`, new on every synthesis.
 * `mountFunctionsV4` (`Functions`, `WebhookFunction`): one package `rocket_<functionApp>.zip` with one function per
-  webhook: name = route with `[^a-zA-Z0-9_]` → `_`, `function.json` = `httpTrigger` `request` (`POST`, `GET`,
+  webhook: name = route with each UTF-16 unit outside `[a-zA-Z0-9_]` → `_` (a repeated name fails the synthesis),
+  `function.json` = `httpTrigger` `request` (`POST`, `GET`,
   `anonymous`, route = the webhook route, `dataType: binary`) + `$return`, entry point
   `BoosterAzureFunctions.ROCKET_HTTP_ENTRY_POINT`, default `host.json` (route prefix `api`).
 * `getFunctionAppName`: `<resourceGroupName>webhookfunc` (it goes into the main app's `ROCKET_FUNCTION_APP_NAMES`; the
@@ -290,14 +293,30 @@ Behaviour:
   body as bytes (`dataType: binary`) so `BoosterAzureFunctions.rocketHttp` can reproduce
   `Buffer.from(await request.arrayBuffer())`. The function app runs the Java stack (`application_stack.java_version`
   instead of `node_version: '~22'`), gets `BOOSTER_APP_CLASS`, and its package has no `package.json`.
+* Route resolution follows the WHATWG URL parser, including the base built from the `Host` header (an invalid one
+  is a 500 `Invalid URL`, title `Illegal Argument Exception` instead of `Type Error`). Domain to ASCII is exact for
+  ASCII host names; for non-ASCII and `xn--` labels it is approximated with RFC 3492 Punycode and `java.net.IDN`
+  (IDNA 2003): UTS 46's joiner and bidi checks and its non-transitional `ß`/`ς` handling are not applied, and a
+  non-ASCII label whose ASCII form exceeds 63 characters fails. Locally, the Jetty server answers many such requests
+  itself before any route runs:
+  `400 Bad HostPort` (spaces, `<`, a bad port, a broken IPv6 address), `400 Blank Host`, `400 No Host` (HTTP/1.1
+  without `Host`, which Node's server also refuses) and `400 Authority!=Host` for absolute-form targets with another
+  authority (Express routes those, and `event.url` is then the absolute URL). Hosts Jetty accepts, such as `a%20b`,
+  get the TypeScript `Invalid URL` answer.
+* Azure: two routes with the same function name (`a/b` and `a_b`) fail `mountFunctionsV4` with the Node worker's
+  `A function with name "a_b" has already been registered.`; TypeScript deploys them and the function app then fails
+  to start, so no webhook works.
+* A `null` header value of a handler result is dropped. TypeScript sends `null` for `null`; for `undefined`,
+  `res.setHeader` fails locally (`Invalid value "undefined" for header "x"`, 500) and Azure sends `undefined`.
 * `dispatch` turns every `Exception` into a failure result; JVM `Error`s (out of memory...) propagate.
 * `Synth` has a constructor taking the UUID source of the rule names (tests use it for golden files); the published
   rocket uses random UUIDs as TypeScript.
 
 TypeScript behaviour kept on purpose: `event.method` is always `POST`; an unknown route and a method that is not allowed
 are 500s; a token is verified even on public webhooks; a webhook without `authorize` is public; `/api/` is stripped from
-local paths too (a route `api/x` can never match); routes differing only in non-name characters give the same Azure
-function name; `toTerraformName` truncation (`estproductionwebhookfunc` for app prefix `testproduction`); the
+local paths too (a route `api/x` can never match); a webhook named `graphql` answers `GET` only (the server's GraphQL
+route takes `POST /graphql` first); Azure function names replace each UTF-16 unit outside `[a-zA-Z0-9_]` (an emoji
+gives two underscores); `toTerraformName` truncation (`estproductionwebhookfunc` for app prefix `testproduction`); the
 `applicationSynthStack.rocketStack ?? []` push that is lost when the bag has no list; the gateway overrides
 **replace** the base gateway's backend pools, path rules and rewrite rules (also the GraphQL and sensor ones) rather
 than adding to them, so verify the gateway before relying on it for anything else; unquoted `Content-Disposition` file
@@ -305,7 +324,12 @@ names; the empty `ROCKET_PACKAGE_MAPPING` entry (no rockets health); `JSON.strin
 
 ## Not implemented
 
-* Busboy's `application/x-www-form-urlencoded` parser: the rocket only runs Busboy for `multipart/form-data`.
+* Busboy's `application/x-www-form-urlencoded` parser. The rocket runs Busboy when the content type *contains*
+  `multipart/form-data`, so it is reachable only with an urlencoded type that quotes that text in a parameter
+  (`application/x-www-form-urlencoded; x="multipart/form-data"`). TypeScript then gives `multipart` the parsed form on
+  Azure and an empty form locally (the server's urlencoded parser already read the body); Java answers 500
+  `Unsupported content type: ...`. It was left out because no verified copy of busboy 1.6.0's `urlencoded.js` (and
+  of its test vectors) was available to port and pin it against.
 * The local package's `http.ts` (`HttpCodes`, `requestFailed`) is not duplicated: the controller uses the framework's
   `Http.requestFailed` (the TypeScript file is a copy of it).
 
@@ -314,7 +338,10 @@ names; the empty `ROCKET_PACKAGE_MAPPING` entry (no rockets health); `JSON.strin
 `mvn -B -pl rockets/rocket-webhook -am verify` from `java/`. The TypeScript repository has no tests (every package
 declares a mocha script but there is no `test/` directory); everything here pins the behaviour read from the source.
 
-* `types.*Test`: route resolution (WHATWG pathname cases computed with Node), descriptor parameters, request shapes.
+The audit of every TypeScript source and spec item against these tests is the ledger [`PARITY.md`](PARITY.md).
+
+* `types.*Test`: route resolution (WHATWG pathnames, 125 `Host` headers and 21 absolute URLs, all computed with Node
+  24), descriptor parameters, request shapes.
 * `core.*Test`: `BoosterWebhookTest` (registration, duplicate error, descriptors), `WebhookDispatcherTest` (order of
   the checks, method policy, tokens and authorizers, event conversion, registered events, results, failures),
   `ParseMultiPartTest`, `WebhookAuthorizerBuilderTest`, `WebhookTokenVerifierTest` (application-tester tokens),
@@ -324,8 +351,11 @@ declares a mocha script but there is no `test/` directory); everything here pins
   `src/test/resources/golden`, regenerated with `-Dbooster.golden.update=true`), guards, random rule names;
   `azure.functions.FunctionsTest`; `azure.AzureRuntimeContractTest`: `BoosterAzureFunctions.rocketHttp` on the
   end-to-end application with the Azure provider against an in-JVM fake Cosmos DB (stored envelopes, answers, query,
-  byte-exact uploads).
+  byte-exact uploads, and the Cosmos DB master-key token of each batch re-derived from Microsoft's documented
+  string-to-sign).
 * `e2e.LocalEndToEndTest`: the `e2e.app` application (webhooks, entities, read models, a command, a role) started with
   `Booster.start`, the local provider over a temporary directory and the real local server on free ports; HTTP calls to
-  the webhooks become events and read models visible through GraphQL; routing, request shapes, responses, uploads,
-  tokens, authorizers and concurrent calls.
+  the webhooks become events and read models visible through GraphQL; routing (`HEAD`, `graphql` shadowing, odd `Host`
+  headers), request shapes, the `express.raw()` limit, responses and header validation, uploads, tokens, authorizers,
+  the rockets health indicator, concurrent calls, and restarts over the same project directory (events and read
+  models kept, concurrent calls on one entity losing no event).

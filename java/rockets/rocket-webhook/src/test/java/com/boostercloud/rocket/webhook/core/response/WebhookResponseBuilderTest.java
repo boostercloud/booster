@@ -140,6 +140,22 @@ class WebhookResponseBuilderTest {
   }
 
   @Test
+  void null_header_values_are_dropped_from_typed_and_raw_results() {
+    // TypeScript sends a null value as "null" (and res.setHeader throws for undefined); Java drops it
+    Map<String, Object> headers = new LinkedHashMap<>();
+    headers.put("X-Null", null);
+    headers.put("X-Kept", "v");
+    Map<String, Object> raw = new LinkedHashMap<>();
+    raw.put("body", "ok");
+    raw.put("headers", headers);
+    raw.put("responseType", "text/plain");
+
+    assertThat(builder(new WebhookHandlerTextReturnType("ok", headers)).getHeaders()).containsExactly(
+        Map.entry("Access-Control-Allow-Origin", "*"), Map.entry("X-Kept", "v"), Map.entry("Content-Type", "text/plain"));
+    assertThat(builder(raw).getHeaders()).containsOnlyKeys("Access-Control-Allow-Origin", "X-Kept", "Content-Type");
+  }
+
+  @Test
   void the_header_order_is_default_handler_then_type_keys() {
     WebhookResponseBuilder builder = builder(WebhookHandlerReturnType.file("x", "a.csv", "text/csv")
         .withHeaders(Map.of("Test", "1")));

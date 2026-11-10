@@ -568,6 +568,16 @@ class WebhookDispatcherTest {
     }
 
     @Test
+    void an_urlencoded_type_quoting_multipart_form_data_is_not_parsed_busboys_urlencoded_parser_is_not_ported() {
+      List<WebhookParamsEvent> params = List.of(WebhookParamsEvent.of("upload", EchoHandler.class));
+      String type = "application/x-www-form-urlencoded; x=\"multipart/form-data\"";
+
+      // TypeScript runs Busboy's urlencoded parser here (README "Not implemented")
+      assertFailure(dispatch(params, post("/upload").header("content-type", type).body("a=1".getBytes(
+          StandardCharsets.UTF_8)).build()), 500, "Illegal State Exception", "Unsupported content type: " + type);
+    }
+
+    @Test
     void malformed_multipart_requests_are_failures() {
       List<WebhookParamsEvent> params = List.of(WebhookParamsEvent.of("upload", EchoHandler.class));
 
