@@ -56,7 +56,10 @@ public final class Webhooks {
             }).build(),
         WebhookParamsEvent.builder().route("fail").handlerClass(Fail.class).build(),
         WebhookParamsEvent.builder().route("echo-header").handlerClass(EchoHeader.class)
-            .allowedMethods(AllowedHttpMethod.GET).build());
+            .allowedMethods(AllowedHttpMethod.GET).build(),
+        // The server mounts /graphql (POST only) before the rockets: only GET reaches this webhook
+        WebhookParamsEvent.builder().route("graphql").handlerClass(Status.class)
+            .allowedMethods(AllowedHttpMethod.GET, AllowedHttpMethod.POST).build());
   }
 
   /** {@code GET /echo-header?name=...&value=...[&file=...]}: answers with the header (or the file name) given. */

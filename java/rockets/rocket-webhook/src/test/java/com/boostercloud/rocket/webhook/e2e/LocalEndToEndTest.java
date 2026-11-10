@@ -340,6 +340,15 @@ class LocalEndToEndTest {
   class Routing {
 
     @Test
+    void a_webhook_named_graphql_is_shadowed_for_post_and_answers_get() {
+      HttpResponse<byte[]> get = Http.get(baseUrl + "/graphql?name=webhook");
+
+      assertThat(get.statusCode()).isEqualTo(200);
+      assertThat(Http.text(get)).isEqualTo("Hello webhook");
+      assertThat(client.query("query { __typename }").get("__typename")).isEqualTo("Query");
+    }
+
+    @Test
     void head_requests_reach_the_get_route_and_the_method_policy_answers_without_body() {
       HttpResponse<byte[]> head = Http.send("HEAD", baseUrl + "/status", Map.of(), null);
 
