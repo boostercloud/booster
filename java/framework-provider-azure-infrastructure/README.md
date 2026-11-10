@@ -110,7 +110,12 @@ Every resource has the TypeScript type, construct id, name and attribute values;
 (`src/test/resources/golden/*.cdk.tf.json`) pin four configurations: no subscriptions, subscriptions with read models
 and a scheduled command, event streaming, and rockets with WAF and the basic plan. With
 `BOOSTER_TERRAFORM_VALIDATE=true` the opt-in `TerraformValidateTest` runs `terraform init -backend=false` and
-`terraform validate` on synthesized stacks (it needs the azurerm provider, downloaded or cached).
+`terraform validate` on three synthesized stacks (streaming with subscriptions, no subscriptions, and rockets with WAF
+and the basic plan, whose test rockets override the gateway's pools, path rules and rewrite rules) and on every golden
+stack of this module and of the rocket modules (`../rockets/*/src/test/resources/golden/*.cdk.tf.json`, pinned to the
+real webhook and file-uploads rockets' synthesis by their golden tests). It needs the azurerm provider, downloaded or
+cached; offline, point `TF_CLI_CONFIG_FILE` at a `provider_installation { filesystem_mirror { … } }` configuration
+whose path is a plugin cache directory.
 
 ## Function apps for the Java worker
 
