@@ -4,7 +4,6 @@ import static com.boostercloud.application.tester.Sleep.waitForIt;
 import static com.boostercloud.integration.harness.Faker.internet;
 import static com.boostercloud.integration.harness.Faker.random;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import com.boostercloud.application.tester.graphql.GraphQLClient;
 import com.boostercloud.application.tester.graphql.GraphQLResponse;
@@ -20,6 +19,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 
 /**
  * Java-only companion of {@code functionality/errors.integration.ts}, for the three hooks of the global error handler
@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Test;
  * migration test reads every cart.
  */
 @EndToEnd(EndToEnd.Application.OWN)
+@EnabledIfEnvironmentVariable(named = AppHelper.TESTED_PROVIDER, matches = AppHelper.LOCAL,
+    disabledReason = "reads the log of the application process the harness launches on the local provider")
 @DisplayName("Global error handler (errors that are logged)")
 class LoggedErrorsFunctionalityIT {
 
@@ -67,7 +69,6 @@ class LoggedErrorsFunctionalityIT {
 
   @BeforeAll
   void before() {
-    assumeTrue(AppHelper.LOCAL.equals(AppHelper.testedProvider()), "reads the log of the local application process");
     String authToken = applicationUnderTest.token().forUser(internet.email(), "Admin");
     client = applicationUnderTest.graphql().client(authToken);
   }
