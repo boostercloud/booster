@@ -1,0 +1,40 @@
+=== fileupload_clientst/function.json
+{
+  "bindings": [
+    {
+      "type": "blobTrigger",
+      "direction": "in",
+      "name": "blob",
+      "path": "rocketfiles/{name}",
+      "connection": "clientst",
+      "dataType": "binary"
+    }
+  ],
+  "scriptFile": "../test.jar",
+  "entryPoint": "com.boostercloud.framework.provider.azure.functions.BoosterAzureFunctions.rocketBlob"
+}
+=== fileupload_cmsst/function.json
+{
+  "bindings": [
+    {
+      "type": "blobTrigger",
+      "direction": "in",
+      "name": "blob",
+      "path": "rocketfiles/{name}",
+      "connection": "cmsst",
+      "dataType": "binary"
+    }
+  ],
+  "scriptFile": "../test.jar",
+  "entryPoint": "com.boostercloud.framework.provider.azure.functions.BoosterAzureFunctions.rocketBlob"
+}
+=== host.json
+{
+  "version": "2.0",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[4.*, 5.0.0)"
+  }
+}
+=== lib/booster-rocket-file-uploads-4.1.0.jar
+=== test.jar
