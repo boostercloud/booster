@@ -129,6 +129,26 @@ class LocalFilesServerTest {
   }
 
   @Test
+  void express_routing_details_are_kept() {
+    // a query string is part of req.url, so a '/' in it moves the folder: path.parse('/client1/f.txt?x=a/b').dir
+    assertThat(Http.put(url("/clientst/rocketfiles/client1/f.txt?x=a/b"), "q".getBytes()).statusCode())
+        .isEqualTo(200);
+    assertThat(project.resolve("clientst/rocketfiles/client1/f.txt?x=a/f.txt")).hasContent("q");
+    // the folder is the raw URL, the file name the decoded parameter
+    assertThat(Http.put(url("/cmsst/rocketfiles/cms/my%20dir/f%20g.txt"), "r".getBytes()).statusCode())
+        .isEqualTo(200);
+    assertThat(project.resolve("cmsst/rocketfiles/cms/my%20dir/f g.txt")).hasContent("r");
+    // one trailing slash is tolerated (strict: false) and path.parse ignores it
+    assertThat(Http.put(url("/clientst/rocketfiles/client2/t.txt/"), "t".getBytes()).statusCode()).isEqualTo(200);
+    assertThat(project.resolve("clientst/rocketfiles/client2/t.txt")).hasContent("t");
+    // routes and the mount path match ignoring case; the folder keeps the case of the URL
+    assertThat(Http.put(url("/CLIENTST/RocketFiles/Client1/upper.txt"), "u".getBytes()).statusCode())
+        .isEqualTo(200);
+    assertThat(project.resolve("clientst/rocketfiles/Client1/upper.txt")).hasContent("u");
+    assertThat(Http.text(Http.get(url("/clientst/rocketfiles/client2/t.txt")))).isEqualTo("t");
+  }
+
+  @Test
   void a_star_directory_is_an_express_wildcard_over_several_segments() {
     HttpResponse<byte[]> response = Http.put(url("/cmsst/rocketfiles/cms/a/b/c.txt"), "c".getBytes());
 
