@@ -140,6 +140,13 @@ public final class Faker {
     }
 
     /**
+     * @return a product material, e.g. {@code Steel}
+     */
+    public String productMaterial() {
+      return pick(MATERIALS);
+    }
+
+    /**
      * @return a product description sentence
      */
     public String productDescription() {
