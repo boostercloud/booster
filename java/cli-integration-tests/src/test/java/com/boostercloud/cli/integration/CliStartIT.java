@@ -175,7 +175,7 @@ class CliStartIT {
     JavaSources.edit(
         source("readmodels", "CartReadModel"),
         "/* NEW CartReadModel HERE */",
-        "ProjectionResult.of(new CartReadModel(entity.id(), entity.items()))");
+        "new CartReadModel(entity.id(), entity.items())");
   }
 
   @Test

@@ -132,7 +132,8 @@ copies.
   `^BOOSTER_VERSION`) becomes the exact `pom.xml` comparison, which includes `<booster.version>` = the CLI version.
   The `.eslint*`, `.prettierrc.yaml`, `.mocharc.yml` and `tsconfig*.json` fixtures have no counterpart.
 - **Placeholders.** The completed placeholders are Java (`authorize = All.class` plus its import,
-  `UUID.of("some-id")`, `postId`, `new PostWithReducer(event.postId(), ...)`, `ProjectionResult.of(...)`). Where
+  `UUID.of("some-id")`, `postId`, `new PostWithReducer(event.postId(), ...)`, `new CartWithProjectionReadModel(...)`
+  inside the generated `ProjectionResult.of(...)`). Where
   TypeScript prepends `import { Item } from '../common/item'` (to a file that then does not compile), the Java test
   adds the import and, before compiling, creates `Item` with `boost new:type`. Each generator class ends with a
   Java-only test that builds the completed sandbox against the framework (TypeScript never compiles them).

@@ -15,6 +15,6 @@ public record CartWithProjectionReadModel(
 
   @Projects(entity = Cart.class, joinKey = "id")
   public static ProjectionResult<CartWithProjectionReadModel> projectCart(Cart entity, CartWithProjectionReadModel currentCartWithProjectionReadModel) {
-    return /* NEW CartWithProjectionReadModel HERE */;
+    return ProjectionResult.of(/* NEW CartWithProjectionReadModel HERE */);
   }
 }

@@ -122,7 +122,7 @@ class GeneratorTest {
           .contains("  @Projects(entity = Product.class, joinKey = \"id\")\n")
           .contains(
               "  public static ProjectionResult<NewReadModel> projectProduct(Product entity, NewReadModel"
-                  + " currentNewReadModel) {\n    return /* NEW NewReadModel HERE */;\n  }\n}\n");
+                  + " currentNewReadModel) {\n    return ProjectionResult.of(/* NEW NewReadModel HERE */);\n  }\n}\n");
     }
 
     @Test

@@ -41,7 +41,7 @@ class MethodGeneratorTest {
                 "projectPost",
                 List.of(new Parameter("entity", "Post", false), new Parameter("currentPostReadModel", "PostReadModel", true)),
                 "ProjectionResult<PostReadModel>",
-                List.of("return /* NEW PostReadModel HERE */")));
+                List.of("return ProjectionResult.of(/* NEW PostReadModel HERE */)")));
   }
 
   @Nested
@@ -80,7 +80,7 @@ class MethodGeneratorTest {
             "  @Projects(entity = Post.class, joinKey = \"id\")\n"
                 + "  public static ProjectionResult<PostReadModel> projectPost(Post entity, PostReadModel"
                 + " currentPostReadModel) {\n"
-                + "    return /* NEW PostReadModel HERE */;\n"
+                + "    return ProjectionResult.of(/* NEW PostReadModel HERE */);\n"
                 + "  }");
     assertThat(projection.referencedTypeNames()).containsExactly("Projects", "Post", "PostReadModel", "ProjectionResult");
   }

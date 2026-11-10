@@ -155,7 +155,11 @@ the deliberate differences:
   `.eslint*`, `.prettierrc.yaml`, `.mocharc.yml`, `tsconfig*.json` and `index.ts` files have no Java counterpart; the
   project gets `pom.xml`, `Main.java`, `config/Config.java`, `.gitignore` and a `README.md`.
 - **Templates.** The stubs produce Java with the same placeholders (`authorize = /* Specify authorized roles here... */`,
-  `return /* NEW X HERE */;`), which, as in TypeScript, must be completed before the code compiles. The view gives
+  `return /* NEW X HERE */;`), which, as in TypeScript, must be completed before the code compiles. In projections
+  (`new:read-model --projects`, `add:projection`) the placeholder is wrapped:
+  `return ProjectionResult.of(/* NEW X HERE */);`. TypeScript's `ProjectionResult<T>` is `T | ReadModelAction`, so a
+  projection may return the read model itself; Java needs the wrapper. In both, writing `new X(...)` in place of the
+  placeholder compiles (`ProjectionResult.delete()` and `ProjectionResult.nothing()` are the other results). The view gives
   stubs `packageName`, one `imports` entry per class (`fqn`), Java field types (`type`; the original is `rawType`) and
   `last`/`hasFields`/`hasImports` flags. Imports are sorted and de-duplicated, and include the field types' classes;
   `type.stub` has imports too. `add:projection` writes `@Projects(entity = X.class, joinKey = "id")`.
