@@ -4,11 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 import static org.awaitility.Awaitility.await;
 
-import com.boostercloud.application.tester.ApplicationOutputs;
 import com.boostercloud.application.tester.ApplicationTester;
-import com.boostercloud.application.tester.Counters;
-import com.boostercloud.application.tester.ProviderTestHelper;
-import com.boostercloud.application.tester.Queries;
 import com.boostercloud.application.tester.graphql.GraphQLClient;
 import com.boostercloud.application.tester.graphql.GraphQLClientException;
 import com.boostercloud.application.tester.graphql.GraphQLError;
@@ -28,6 +24,7 @@ import com.boostercloud.framework.types.Logger;
 import com.boostercloud.framework.types.concepts.UUID;
 import com.boostercloud.rocket.fileuploads.e2e.app.App;
 import com.boostercloud.rocket.fileuploads.support.Http;
+import com.boostercloud.rocket.fileuploads.support.LocalApplications;
 import com.boostercloud.rocket.fileuploads.types.Constants;
 import com.boostercloud.rocket.fileuploads.types.UploadedFileEvent;
 import java.net.URI;
@@ -118,41 +115,7 @@ class LocalEndToEndTest {
     int webSocketPort = URI.create(server.websocketURL()).getPort();
     LocalTestHelper helper = LocalTestHelper.build(config.appName,
         LocalTestHelper.Options.defaults().withBaseDirectory(project).withPorts(server.port(), webSocketPort));
-    applicationUnderTest = new ApplicationTester(ProviderTestHelper.of(
-        new ApplicationOutputs(helper.outputs().graphqlURL(), helper.outputs().websocketURL(),
-            helper.outputs().healthURL()),
-        new Counters() {
-          @Override
-          public long subscriptions() {
-            return helper.counters().subscriptions();
-          }
-
-          @Override
-          public long connections() {
-            return helper.counters().connections();
-          }
-
-          @Override
-          public long readModels(String readModelName) {
-            return helper.counters().readModels(readModelName);
-          }
-
-          @Override
-          public long events() {
-            return helper.counters().events();
-          }
-        },
-        new Queries() {
-          @Override
-          public List<Map<String, Object>> events(String primaryKey) {
-            return helper.queries().events(primaryKey);
-          }
-
-          @Override
-          public List<Map<String, Object>> readModels(String primaryKey, String readModelName) {
-            return helper.queries().readModels(primaryKey, readModelName);
-          }
-        }));
+    applicationUnderTest = LocalApplications.tester(helper);
     client = applicationUnderTest.graphql().client();
   }
 
