@@ -2,8 +2,10 @@ package com.boostercloud.framework.core.coreconcepts.datamigration.entities;
 
 import com.boostercloud.framework.core.coreconcepts.datamigration.events.BoosterDataMigrationFinished;
 import com.boostercloud.framework.core.coreconcepts.datamigration.events.BoosterDataMigrationStarted;
+import com.boostercloud.framework.types.Dates;
 import com.boostercloud.framework.types.concepts.BoosterDataMigrationEntityDuration;
 import com.boostercloud.framework.types.concepts.DataMigrationStatus;
+import java.time.Instant;
 
 /**
  * Port of {@code core-concepts/data-migration/entities/booster-data-migration-entity.ts}: the built-in entity that
@@ -12,7 +14,9 @@ import com.boostercloud.framework.types.concepts.DataMigrationStatus;
  * ({@code started}) and {@code BoosterDataMigrationFinished} ({@code finished}). {@code status} is persisted as a
  * number ({@code 0}/{@code 1}).
  *
- * <p>The record shape is final; the two reducers are skeletons implemented by stage <b>core-2a</b> (spec 06 §3.11.4).
+ * <p>Both reducers read the <b>wall clock at reduction time</b> ({@link Dates#now()}), not the time of the event, as
+ * TypeScript does: the duration reflects when the reductions ran and changes if the stream is reduced again from
+ * scratch.
  *
  * @param id the data migration class name
  * @param status {@code RUNNING} (0) or {@code FINISHED} (1)
@@ -24,7 +28,7 @@ public record BoosterDataMigrationEntity(
 
   /**
    * Reducer of {@link BoosterDataMigrationStarted}: a {@code RUNNING} entity whose {@code duration.start} is the
-   * reduction time. Implemented by stage core-2a.
+   * reduction time. The current state is ignored.
    *
    * @param event the event
    * @param currentDataMigration the current snapshot, or {@code null}
@@ -32,19 +36,47 @@ public record BoosterDataMigrationEntity(
    */
   public static BoosterDataMigrationEntity started(
       BoosterDataMigrationStarted event, BoosterDataMigrationEntity currentDataMigration) {
-    throw new UnsupportedOperationException("not implemented yet: BoosterDataMigrationEntity#started");
+    BoosterDataMigrationEntityDuration duration = new BoosterDataMigrationEntityDuration(Dates.nowIso(), null, null);
+    return new BoosterDataMigrationEntity(event.name(), DataMigrationStatus.RUNNING, event.lastUpdated(), duration);
   }
 
   /**
-   * Reducer of {@link BoosterDataMigrationFinished}: a {@code FINISHED} entity with the elapsed time when the current
-   * snapshot has a {@code duration.start}. Implemented by stage core-2a.
+   * Reducer of {@link BoosterDataMigrationFinished}: a {@code FINISHED} entity. When the current snapshot has a
+   * {@code duration.start} (a non-empty string), the duration gets {@code end} = the reduction time and
+   * {@code elapsedMilliseconds} = {@code end - start} ({@code null} when {@code start} is not a date: JavaScript's
+   * {@code NaN} is written as {@code null}); otherwise the result has no duration.
    *
    * @param event the event
    * @param currentDataMigration the current snapshot
    * @return the new snapshot
+   * @throws NullPointerException when there is no current snapshot (a {@code Finished} event without a previous
+   *     {@code Started} one; TypeScript fails with a {@code TypeError} too), which the event store handles as a reducer
+   *     error
    */
   public static BoosterDataMigrationEntity finished(
       BoosterDataMigrationFinished event, BoosterDataMigrationEntity currentDataMigration) {
-    throw new UnsupportedOperationException("not implemented yet: BoosterDataMigrationEntity#finished");
+    if (currentDataMigration == null) {
+      throw new NullPointerException("Cannot read the duration of the data migration " + event.name()
+          + ": it has no previous state (BoosterDataMigrationFinished was reduced without BoosterDataMigrationStarted)");
+    }
+    Instant current = Dates.now();
+    BoosterDataMigrationEntityDuration currentDuration = currentDataMigration.duration();
+    String start = currentDuration == null ? null : currentDuration.start();
+    if (start != null && !start.isEmpty()) {
+      String end = Dates.toIso(current);
+      Long elapsedTime = elapsedMilliseconds(start, current);
+      BoosterDataMigrationEntityDuration duration = new BoosterDataMigrationEntityDuration(start, end, elapsedTime);
+      return new BoosterDataMigrationEntity(event.name(), DataMigrationStatus.FINISHED, event.lastUpdated(), duration);
+    }
+    return new BoosterDataMigrationEntity(event.name(), DataMigrationStatus.FINISHED, event.lastUpdated(), null);
+  }
+
+  /** {@code current.getTime() - Date.parse(start)}; {@code null} for {@code NaN}. */
+  private static Long elapsedMilliseconds(String start, Instant current) {
+    try {
+      return current.toEpochMilli() - Dates.toEpochMillis(start);
+    } catch (IllegalArgumentException e) {
+      return null;
+    }
   }
 }
