@@ -25,18 +25,24 @@ import java.util.regex.Pattern;
  * keeps the read models whose class simple name is the (transformed) envelope's class name and that pass the in-memory
  * filter evaluator, and returns them in order.
  *
- * <p>The evaluator is the TypeScript one, a deliberately small subset of the provider filter language, kept as is:
+ * <p>The evaluator keeps the operator semantics of the TypeScript one, a small subset of the provider filter language,
+ * but checks the <b>whole</b> filter. TypeScript returns the result of the first top-level property (and of the first
+ * nested property, or of {@code includes}) and ignores the rest, so a subscription filter such as
+ * {@code {id: {ne: ""}, userId: {eq: <me>}}} passed a before hook that validates {@code userId} and still received every
+ * user's changes. Here:
  *
  * <ul>
- *   <li>only the <b>first</b> top-level filter property is evaluated (the others are ignored); no filter matches
- *       everything; {@code and}/{@code or}/{@code not} are read as property names and fail;</li>
- *   <li>the operators of one property are AND-ed in order: {@code eq}/{@code ne} (strict equality: no coercion, objects
- *       and arrays by reference), {@code lt}/{@code gt}/{@code gte}/{@code lte} (JavaScript relational comparison: a
+ *   <li>every top-level property must match (AND); no filter matches everything; {@code and} (every filter of the
+ *       list), {@code or} (at least one) and {@code not} combine filters, at the top level and inside nested property
+ *       filters;</li>
+ *   <li>every operator of one property must match: {@code eq}/{@code ne} (strict equality: no coercion, objects and
+ *       arrays by reference), {@code lt}/{@code gt}/{@code gte}/{@code lte} (JavaScript relational comparison: a
  *       missing property passes), {@code in} (the operand includes the value), {@code contains} (string or array),
- *       {@code beginsWith} (string), {@code regex}/{@code iRegex} (unanchored search, Java regular expressions);</li>
- *   <li>{@code includes} (array; an object operand matches items with those properties) and nested property filters
- *       decide alone: the remaining operators are not evaluated; any other key with a non-object operand (e.g.
- *       {@code isDefined}) is ignored.</li>
+ *       {@code beginsWith} (string), {@code includes} (array; an object operand matches items with those properties),
+ *       {@code regex}/{@code iRegex} (unanchored search, Java regular expressions), {@code isDefined} (the property
+ *       exists and is not {@code null}, as the providers store no nulls);</li>
+ *   <li>a nested property filter (every one of its properties must match) on a missing or {@code null} object fails,
+ *       as in TypeScript; any other key with a non-object operand is ignored.</li>
  * </ul>
  *
  * Read model properties are read from the instance (record components, fields, calculated fields) or the map, and
@@ -99,19 +105,30 @@ public class FilteredReadModelPubSub implements ReadModelPubSub {
   // The in-memory filter evaluator (read-model-pub-sub.ts)
   // ---------------------------------------------------------------------------------------------------------------
 
-  /** {@code filterReadModel(readModel, filters)}: only the first property decides. */
+  /**
+   * {@code filterReadModel(readModel, filters)}: every property and combinator must match (TypeScript: only the first
+   * property decides).
+   */
   static boolean filterReadModel(Object readModel, Map<String, Object> filters) {
     if (filters == null) {
       return true;
     }
     for (Map.Entry<String, Object> filteredProp : filters.entrySet()) {
-      Object readModelPropValue = property(readModel, filteredProp.getKey());
-      return filterByOperation(filteredProp.getValue(), readModelPropValue);
+      Object filter = jsValue(filteredProp.getValue());
+      boolean matches = switch (filteredProp.getKey()) {
+        case "and" -> filterList(filter).stream().allMatch(item -> filterReadModel(readModel, filterMap(item)));
+        case "or" -> filterList(filter).stream().anyMatch(item -> filterReadModel(readModel, filterMap(item)));
+        case "not" -> !filterReadModel(readModel, filterMap(filter));
+        default -> filterByOperation(filter, property(readModel, filteredProp.getKey()));
+      };
+      if (!matches) {
+        return false;
+      }
     }
     return true;
   }
 
-  /** {@code filterByOperation(filter, readModelPropValue)}. */
+  /** {@code filterByOperation(filter, readModelPropValue)}: every operator, nested property and combinator must match. */
   static boolean filterByOperation(Object filter, Object readModelPropValue) {
     for (Map.Entry<String, Object> entry : entries(filter)) {
       String operation = entry.getKey();
@@ -163,7 +180,29 @@ public class FilteredReadModelPubSub implements ReadModelPubSub {
           }
         }
         case "includes" -> {
-          return includes(readModelPropValue, value);
+          if (!includes(readModelPropValue, value)) {
+            return false;
+          }
+        }
+        case "isDefined" -> {
+          if (isDefined(readModelPropValue) != Js.isTruthy(value)) {
+            return false;
+          }
+        }
+        case "and" -> {
+          if (!filterList(value).stream().allMatch(item -> filterByOperation(item, readModelPropValue))) {
+            return false;
+          }
+        }
+        case "or" -> {
+          if (filterList(value).stream().noneMatch(item -> filterByOperation(item, readModelPropValue))) {
+            return false;
+          }
+        }
+        case "not" -> {
+          if (filterByOperation(value, readModelPropValue)) {
+            return false;
+          }
         }
         case "regex" -> {
           if (!regex(readModelPropValue, value, false)) {
@@ -176,13 +215,36 @@ public class FilteredReadModelPubSub implements ReadModelPubSub {
           }
         }
         default -> {
-          if (isObject(value)) {
-            return filterByOperation(value, property(readModelPropValue, operation));
+          if (isObject(value) && !filterByOperation(value, property(readModelPropValue, operation))) {
+            return false;
           }
         }
       }
     }
     return true;
+  }
+
+  /** The filters of {@code and}/{@code or}: a list (a single filter object counts as a list of one). */
+  private static List<?> filterList(Object value) {
+    return switch (value) {
+      case List<?> list -> list;
+      case Map<?, ?> map -> List.of(map);
+      case null, default -> throw new IllegalArgumentException("Cannot read the filters of " + jsString(value)
+          + ": a list of filters was expected");
+    };
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> filterMap(Object value) {
+    if (value instanceof Map<?, ?> map) {
+      return (Map<String, Object>) map;
+    }
+    throw new IllegalArgumentException("Cannot convert " + jsString(value) + " to a filter object");
+  }
+
+  /** The property exists and holds a value (the providers do not store {@code null}s). */
+  private static boolean isDefined(Object readModelPropValue) {
+    return readModelPropValue != null && readModelPropValue != UNDEFINED;
   }
 
   private static boolean regex(Object readModelPropValue, Object element, boolean ignoreCase) {

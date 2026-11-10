@@ -620,3 +620,12 @@ modules and are not listed. "Integration" refers to `integration.*IntegrationTes
 | 37 | health defaults disabled; enabled tree | `BoosterHealthServiceTest#everythingDisabledByDefaultGivesAnEmptyHealthyResponse`, `#allIndicatorsAreUp` | covered |
 | 38 | throwing component → `DOWN`, 503 | `BoosterHealthIndicatorsTest#anExceptionIsDownWithTheErrorAsDetails`, `BoosterHealthServiceTest#anIndicatorThatThrowsFailsTheWholeRequest` | differs (code wins, see F315) |
 | 39 | rejected `globalAuthorizer` → 401 | `BoosterHealthServiceTest#validationFailsWithTheWrongRole` | covered |
+
+## Part 3 — Review fixes that diverge from TypeScript on purpose
+
+Defects found by the port review that TypeScript shares. For security issues the port takes the secure behaviour; each
+divergence is also listed in README "Differences from TypeScript".
+
+| Ref | Java behaviour (TypeScript) | Java test | Status |
+| --- | --- | --- | --- |
+| security-1 | the subscription pub-sub evaluates every top-level property, operator and nested property, plus `and`/`or`/`not` and `isDefined` (TypeScript: the first property decides, so a validating before hook can be bypassed with a second filter property) | `services.pubsub.FilteredReadModelPubSubTest#aValidatingBeforeHookCannotBeBypassedWithAnotherFilterProperty`, `#filtersAddedByABeforeHookAfterTheClientOnesApplyToo`, `#everyTopLevelPropertyMustMatch`, `#everyNestedPropertyMustMatch`, `#andOrAndNotCombineFilters`, `#isDefinedChecksThatThePropertyHasAValue` | differs (security) |

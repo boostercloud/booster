@@ -367,9 +367,15 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   failure); user code must not share unsynchronised mutable state (JavaScript interleaves on one thread). The
   notifications of one subscription are sent one after the other, in the order of its results (TypeScript starts its
   `sendMessage` calls in that order).
-* The pub-sub keeps the TypeScript in-memory filter (first top-level property only, `includes` and nested filters decide
-  alone, `isDefined` ignored, combinators fail); values are compared in their JSON form and regular expressions use the
-  Java dialect. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
+* The pub-sub keeps the operator semantics of the TypeScript in-memory filter (strict `eq`/`ne`, JavaScript relational
+  comparisons, `includes` by partial object) but, **for security, evaluates the whole filter**: every top-level
+  property, every operator and every nested property must match, `and`/`or`/`not` combine filters and `isDefined`
+  checks that the property holds a value. TypeScript returns the result of the first top-level property (and of the
+  first nested property, or of `includes`) and ignores the rest, so a client could pass a before hook that validates
+  `filters.userId.eq` (the row-level security pattern of the documentation) with `{id: {ne: ""}, userId: {eq: <me>}}`
+  and still receive every user's changes over the websocket; hooks that add a filter after the client's were ignored
+  the same way. Values are compared in their JSON form and regular expressions use the Java dialect. Its iterator is a
+  plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
 * `BoosterSubscribersNotifier` executes the stored document with `GraphQLExecution` on graphql-java (TypeScript:
   `graphql.subscribe`), with `KEEP_SUBSCRIPTION_EVENTS_ORDERED`; a second constructor takes the schema (tests and
   embedders). As in TypeScript, searches with a selection (every GraphQL list query) return the stored properties
