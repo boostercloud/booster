@@ -6,7 +6,6 @@ import com.boostercloud.framework.provider.azure.library.SubscriptionModel;
 import com.boostercloud.framework.provider.azure.types.AzureCosmosDBFunctionInput;
 import com.boostercloud.framework.provider.azure.types.AzureEventHubFunctionInput;
 import com.boostercloud.framework.provider.azure.types.AzureHttpFunctionInput;
-import com.boostercloud.framework.provider.azure.types.AzureHttpRequest;
 import com.boostercloud.framework.provider.azure.types.AzureInvocationContext;
 import com.boostercloud.framework.provider.azure.types.AzureWebPubSubFunctionInput;
 import com.boostercloud.framework.provider.azure.types.TimerInfo;
@@ -27,13 +26,11 @@ import com.microsoft.azure.functions.annotation.EventHubTrigger;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
 import com.microsoft.azure.functions.annotation.TimerTrigger;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
-import java.util.regex.Pattern;
 
 /**
  * The Azure Functions (Java worker) entry points of a Booster application: one method per function the Azure
@@ -111,8 +108,6 @@ public class BoosterAzureFunctions {
       CONNECT_FUNCTION, CONNECT_ENTRY_POINT,
       DISCONNECT_FUNCTION, DISCONNECT_ENTRY_POINT,
       MESSAGES_FUNCTION, MESSAGES_ENTRY_POINT);
-
-  private static final Pattern MULTIPART = Pattern.compile("multipart/form-data", Pattern.CASE_INSENSITIVE);
 
   /** Creates the function class (the worker instantiates it). */
   public BoosterAzureFunctions() {}
@@ -313,9 +308,11 @@ public class BoosterAzureFunctions {
 
   /**
    * HTTP rocket functions: builds the request the webhook rocket's generated handler builds
-   * ({@code { req: { method, url, originalUrl, headers, query, params, rawBody, body } }}, the body parsed as JSON
-   * when possible, raw bytes for {@code multipart/form-data}), calls {@code boosterRocketDispatcher} and maps the
-   * result's {@code { status, headers, body }} (object bodies serialised as JSON).
+   * ({@code { req: { method, url, originalUrl, headers, query, params, rawBody, body } }}, see
+   * {@link FunctionMappings#rocketHttpRequest}), calls {@code boosterRocketDispatcher} and maps the result's
+   * {@code { status, headers, body }} (object bodies serialised as JSON, strings and bytes as they are). The body is
+   * bound as bytes ({@code dataType: binary}) so that multipart uploads reach the rocket unchanged, as
+   * {@code Buffer.from(await request.arrayBuffer())} does.
    *
    * @param request the HTTP request (binding {@code request})
    * @param context the invocation context
@@ -324,34 +321,10 @@ public class BoosterAzureFunctions {
   @FunctionName("rocket-http")
   public HttpResponseMessage rocketHttp(
       @HttpTrigger(name = "request", methods = {HttpMethod.GET, HttpMethod.POST},
-          authLevel = AuthorizationLevel.ANONYMOUS, route = "{*route}") HttpRequestMessage<Optional<String>> request,
+          authLevel = AuthorizationLevel.ANONYMOUS, route = "{*route}", dataType = "binary")
+      HttpRequestMessage<Optional<byte[]>> request,
       final ExecutionContext context) {
-    AzureHttpRequest httpRequest = FunctionMappings.httpRequest(request);
-    Map<String, String> headers = new LinkedHashMap<>();
-    httpRequest.forEachHeader((value, key) -> headers.put(key, value));
-    String contentType = headers.getOrDefault("content-type", "");
-    String rawBody = httpRequest.text();
-    Object body;
-    if (MULTIPART.matcher(contentType).find()) {
-      body = rawBody.getBytes(StandardCharsets.UTF_8);
-    } else {
-      try {
-        body = BoosterJson.parse(rawBody);
-      } catch (RuntimeException notJson) {
-        body = rawBody;
-      }
-    }
-    Map<String, Object> req = new LinkedHashMap<>();
-    req.put("method", httpRequest.method());
-    req.put("url", httpRequest.url());
-    req.put("originalUrl", httpRequest.url());
-    req.put("headers", headers);
-    req.put("query", httpRequest.query());
-    req.put("params", httpRequest.params());
-    req.put("rawBody", rawBody);
-    req.put("body", body);
-    Map<String, Object> webhookRequest = new LinkedHashMap<>();
-    webhookRequest.put("req", req);
+    Map<String, Object> webhookRequest = FunctionMappings.rocketHttpRequest(request);
 
     Object result = userApp().boosterRocketDispatcher(webhookRequest);
 
