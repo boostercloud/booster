@@ -1,5 +1,6 @@
 package com.boostercloud.framework.core.services.pubsub;
 
+import com.boostercloud.framework.core.services.graphql.IteratorPublisher;
 import com.boostercloud.framework.types.BoosterConfig;
 import com.boostercloud.framework.types.envelope.ReadModelRequestEnvelope;
 import java.util.Iterator;

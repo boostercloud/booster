@@ -13,9 +13,11 @@ import java.util.concurrent.atomic.AtomicLong;
  * subscription resolver to return a publisher; it maps every published item (a read model) through the selection set.
  *
  * <p>Items are emitted on the thread that requests them, honouring the requested demand, and the publisher completes
- * when the iterator is exhausted (an empty iterator completes immediately). An exception thrown by the iterator is
- * signalled with {@code onError}. The iterator can be consumed once: a second subscriber receives an
- * {@link IllegalStateException}.
+ * when the iterator is exhausted (an empty iterator completes on subscription, without demand, which Reactive Streams
+ * allows). An exception thrown by the iterator is signalled with {@code onError}. Requests and cancellation may come
+ * from any thread, and re-entrant requests from {@code onNext} do not recurse. The iterator can be consumed once: a
+ * second subscriber receives an {@link IllegalStateException}. {@link
+ * com.boostercloud.framework.core.services.pubsub.ReadModelPubSub#toPublisher(Iterator)} returns this publisher too.
  */
 public final class IteratorPublisher implements Flow.Publisher<Object> {
 
@@ -58,7 +60,9 @@ public final class IteratorPublisher implements Flow.Publisher<Object> {
       subscriber.onError(new IllegalStateException("This subscription can only be consumed once"));
       return;
     }
-    subscriber.onSubscribe(new IteratorSubscription(subscriber));
+    IteratorSubscription subscription = new IteratorSubscription(subscriber);
+    subscriber.onSubscribe(subscription);
+    subscription.drain();
   }
 
   private final class IteratorSubscription implements Flow.Subscription {

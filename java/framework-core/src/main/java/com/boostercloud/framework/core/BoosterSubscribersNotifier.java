@@ -15,12 +15,10 @@ import com.boostercloud.framework.types.envelope.ReadModelEnvelope;
 import com.boostercloud.framework.types.envelope.SubscriptionEnvelope;
 import com.boostercloud.framework.types.graphql.GraphQLData;
 import com.boostercloud.framework.types.instrumentation.TraceActionTypes;
-import graphql.ExecutionInput;
+import com.boostercloud.framework.core.services.graphql.GraphQLExecution;
 import graphql.ExecutionResult;
-import graphql.GraphQL;
 import graphql.GraphQLError;
 import graphql.ParseAndValidate;
-import graphql.execution.SubscriptionExecutionStrategy;
 import graphql.language.Document;
 import graphql.parser.Parser;
 import graphql.schema.GraphQLSchema;
@@ -54,7 +52,8 @@ import org.reactivestreams.Subscription;
  *   <li>a {@link FilteredReadModelPubSub} with the changed read models as instances of their classes ({@code Could not
  *       get information about read model with name: <name>} for an unregistered one);</li>
  *   <li>every subscription concurrently: its stored GraphQL document is parsed, validated and executed with
- *       graphql-java (variables from the stored operation, no operation name, as in TypeScript) with a
+ *       {@link GraphQLExecution#execute} (the dispatcher's execution: resolver errors keep their message; variables
+ *       from the stored operation, no operation name, as in TypeScript; events kept in order) with a
  *       {@link GraphQLResolverContext} whose {@code pubSub} is the filtered pub-sub and {@code storeSubscriptions} is
  *       {@code false}; every event of the resulting stream is sent to the subscription's connection as
  *       {@code { type: "data", id: operation.id, payload: { data } }}.</li>
@@ -64,9 +63,9 @@ import org.reactivestreams.Subscription;
  * {@code logger.error}. The expiration time, the authorizer and the stored filters of a subscription are not checked
  * here (the filters are rebuilt by the subscription resolver from the stored document).
  *
- * <p>Contract with the subscription resolvers (stage core-3): the {@link GraphQLResolverContext} is the legacy
- * graphql-java context ({@code environment.getContext()}) and is also stored in the {@code GraphQLContext} under the
- * key {@code GraphQLResolverContext.class}; a subscription data fetcher returns
+ * <p>Contract with the subscription resolvers: the {@link GraphQLResolverContext} is the local context and is stored
+ * in the {@code GraphQLContext} under the key {@code GraphQLResolverContext.class} (read it with
+ * {@code Common.resolverContext(environment)}); a subscription data fetcher returns
  * {@code ReadModelPubSub.toPublisher(context.pubSub().asyncIterator(envelope, config))} (any
  * {@code org.reactivestreams.Publisher} or {@code java.util.concurrent.Flow.Publisher} works).
  */
@@ -74,7 +73,6 @@ public class BoosterSubscribersNotifier {
 
   private final BoosterConfig config;
   private final GraphQLSchema graphQLSchema;
-  private final GraphQL graphQL;
 
   /**
    * Builds (or reuses) the application's GraphQL schema ({@code GraphQLGenerator.generateSchema(config)}).
@@ -94,7 +92,6 @@ public class BoosterSubscribersNotifier {
   public BoosterSubscribersNotifier(BoosterConfig config, GraphQLSchema graphQLSchema) {
     this.config = config;
     this.graphQLSchema = Objects.requireNonNull(graphQLSchema, "graphQLSchema");
-    this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
   }
 
   /**
@@ -163,7 +160,7 @@ public class BoosterSubscribersNotifier {
     return new FilteredReadModelPubSub(readModelInstances);
   }
 
-  @SuppressWarnings({"deprecation", "unchecked"})
+  @SuppressWarnings("unchecked")
   private Object runSubscriptionAndNotify(ReadModelPubSub pubSub, SubscriptionEnvelope subscription) {
     Logger logger = Loggers.getLogger(config, "BoosterSubscribersNotifier#runSubscriptionAndNotify");
     GraphQLResolverContext context = new GraphQLResolverContext(subscription.connectionID(), new LinkedHashMap<>(),
@@ -171,21 +168,12 @@ public class BoosterSubscribersNotifier {
         false, // We don't store the subscription again, just get the result now
         pubSub, null);
     String query = subscription.operation().query();
-    parseSubscriptionQuery(query);
+    Document document = parseSubscriptionQuery(query);
     logger.debug("Running subscription with context: ", context);
     Map<String, Object> variables = subscription.operation().variables() == null
         ? new LinkedHashMap<>()
         : subscription.operation().variables();
-    Map<Object, Object> graphQLContext = new LinkedHashMap<>();
-    graphQLContext.put(GraphQLResolverContext.class, context);
-    graphQLContext.put(SubscriptionExecutionStrategy.KEEP_SUBSCRIPTION_EVENTS_ORDERED, true);
-    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
-        .query(query)
-        .variables(variables)
-        .context(context)
-        .graphQLContext(builder -> builder.of(graphQLContext))
-        .build();
-    ExecutionResult result = graphQL.execute(executionInput);
+    ExecutionResult result = GraphQLExecution.execute(graphQLSchema, document, query, context, variables, null);
     if (result.getData() instanceof Publisher<?> iterator) {
       // It is a stream of results
       return processSubscriptionsIterator((Publisher<ExecutionResult>) iterator, subscription);

@@ -10,6 +10,7 @@ import graphql.GraphQLError;
 import graphql.execution.DataFetcherExceptionHandler;
 import graphql.execution.DataFetcherExceptionHandlerParameters;
 import graphql.execution.DataFetcherExceptionHandlerResult;
+import graphql.execution.SubscriptionExecutionStrategy;
 import graphql.execution.preparsed.PreparsedDocumentEntry;
 import graphql.language.Document;
 import graphql.language.SourceLocation;
@@ -60,7 +61,8 @@ public final class GraphQLExecution {
    * @param variables the variables, or {@code null}
    * @param operationName the operation to run, or {@code null}
    * @return the result; for subscriptions its data is the publisher of results (or {@code null} with errors when the
-   *     subscription could not be set up)
+   *     subscription could not be set up), which emits them in the order of the source events (graphql-js yields them
+   *     in order; graphql-java needs {@code KEEP_SUBSCRIPTION_EVENTS_ORDERED})
    */
   public static ExecutionResult execute(GraphQLSchema schema, Document document, String query,
       GraphQLResolverContext context, Map<String, Object> variables, String operationName) {
@@ -69,10 +71,12 @@ public final class GraphQLExecution {
         .preparsedDocumentProvider((executionInput, parseAndValidate) ->
             CompletableFuture.completedFuture(new PreparsedDocumentEntry(document)))
         .build();
+    Map<Object, Object> graphQLContext = Common.graphQLContextOf(context);
+    graphQLContext.put(SubscriptionExecutionStrategy.KEEP_SUBSCRIPTION_EVENTS_ORDERED, true);
     ExecutionInput.Builder input = ExecutionInput.newExecutionInput()
         .query(query == null ? "" : query)
         .operationName(operationName)
-        .graphQLContext(Common.graphQLContextOf(context))
+        .graphQLContext(graphQLContext)
         .localContext(context);
     if (variables != null) {
       input.variables(variables);

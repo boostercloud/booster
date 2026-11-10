@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.boostercloud.framework.common.PromisesError;
+import com.boostercloud.framework.core.services.graphql.Common;
 import com.boostercloud.framework.core.services.graphql.GraphQLResolverContext;
 import com.boostercloud.framework.core.services.pubsub.FilteredReadModelPubSub;
 import com.boostercloud.framework.core.services.pubsub.ReadModelPubSub;
@@ -71,7 +72,6 @@ class BoosterSubscribersNotifierTest extends BoosterTestSupport {
   private final List<GraphQLResolverContext> contexts = Collections.synchronizedList(new ArrayList<>());
 
   @BeforeEach
-  @SuppressWarnings("deprecation")
   void setUp() {
     config = new BoosterConfig("test");
     config.logger = mock(Logger.class);
@@ -92,8 +92,7 @@ class BoosterSubscribersNotifierTest extends BoosterTestSupport {
     return environment -> {
       GraphQLResolverContext context = environment.getGraphQlContext().get(GraphQLResolverContext.class);
       contexts.add(context);
-      Object legacyContext = environment.getContext();
-      assertThat(legacyContext).isSameAs(context);
+      assertThat(Common.resolverContext(environment)).isSameAs(context);
       Map<String, Object> filters = new LinkedHashMap<>();
       if (environment.getArgument(argument) != null) {
         filters.put(property, Map.of(operator, environment.getArgument(argument)));
