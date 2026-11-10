@@ -69,6 +69,9 @@ class RocketMountingTest {
         .isEqualTo("bytes:YWJj");
 
     assertThat(Http1Client.get(server.url() + "/hooks/x").statusCode()).isEqualTo(201);
+    HttpResponse<String> encoded = Http1Client.get(server.url() + "/hooks/a%2Fb%20c");
+    assertThat(BoosterJson.parse(encoded.body())).extracting(body -> ((Map<?, ?>) body).get("params"))
+        .isEqualTo(Map.of("name", "a/b c"));
     assertThat(Http1Client.send("DELETE", server.url() + "/hooks/x", Map.of(), null).statusCode()).isEqualTo(404);
   }
 
