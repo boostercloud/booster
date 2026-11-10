@@ -83,6 +83,11 @@ class LocalWebhookTest {
         new InfrastructureRocketMetadata(3000));
     assertThat(router.size()).isEqualTo(1);
 
+    // { mountStack } only: the unmountStack of the SPI is the default no-op
+    assertThat(LocalWebhook.class.getMethods()).filteredOn(method -> method.getName().equals("unmountStack"))
+        .singleElement().satisfies(method ->
+            assertThat(method.getDeclaringClass()).isEqualTo(LocalInfrastructureRocket.class));
+
     LocalWebhook broken = new LocalWebhook(List.of(WebhookParamsEvent.builder().handlerClass(Handler.class).build()));
     assertThatThrownBy(() -> broken.mountStack(new BoosterConfig("local"), new Router(), null))
         .isInstanceOf(IllegalStateException.class).hasMessage("Undefined route parameter [object Object]");

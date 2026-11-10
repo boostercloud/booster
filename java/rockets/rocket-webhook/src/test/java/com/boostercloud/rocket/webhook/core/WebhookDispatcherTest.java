@@ -127,6 +127,15 @@ class WebhookDispatcherTest {
     }
   }
 
+  public static final class AsyncFailureHandler {
+    public static CompletableFuture<WebhookHandlerReturnType> handle(WebhookEvent event, Register register) {
+      register.events(new Pinged(UUID.of("p-9"), "lost"));
+      return CompletableFuture.supplyAsync(() -> {
+        throw new InvalidParameterError("rejected later");
+      });
+    }
+  }
+
   public static final class EventOnlyHandler {
     public static WebhookHandlerReturnType handle(WebhookEvent event) {
       return WebhookHandlerReturnType.text(event.route());
@@ -268,6 +277,22 @@ class WebhookDispatcherTest {
       assertThat(dispatch(params, WebhookHttpRequest.builder("POST",
           "https://myappdevrgwebhookfunc.azurewebsites.net/api/clients/other?x=1").build()).status()).isEqualTo(200);
       assertThat(EVENTS).hasSize(2);
+    }
+
+    @Test
+    void a_host_or_url_the_url_parser_rejects_is_a_500_invalid_url_failure() {
+      List<WebhookParamsEvent> params = List.of(WebhookParamsEvent.of("test", EchoHandler.class));
+
+      // new URL(req.url, `http://${req.headers.host}/`) throws TypeError: Invalid URL before any route is looked up
+      assertFailure(dispatch(params, WebhookHttpRequest.builder("POST", "/test").header("host", "a b").build()), 500,
+          "Illegal Argument Exception", "Invalid URL");
+      assertFailure(dispatch(params, WebhookHttpRequest.builder("POST", "/nope").header("host", "h:99999").build()),
+          500, "Illegal Argument Exception", "Invalid URL");
+      assertFailure(dispatch(params, post("https://h:x/api/test").build()), 500, "Illegal Argument Exception",
+          "Invalid URL");
+      assertThat(EVENTS).isEmpty();
+      // Without a host header the base is http://undefined/, which parses
+      assertThat(dispatch(params, WebhookHttpRequest.builder("POST", "/test").build()).status()).isEqualTo(200);
     }
 
     @Test
@@ -655,6 +680,14 @@ class WebhookDispatcherTest {
     void asynchronous_results_are_awaited_and_handlers_may_take_only_the_event() {
       assertThat(call(AsyncHandler.class).body()).isEqualTo("later");
       assertThat(call(EventOnlyHandler.class).body()).isEqualTo("test");
+    }
+
+    @Test
+    void a_failed_asynchronous_result_is_mapped_by_its_cause_and_stores_nothing() {
+      // await handlerClass.handle(...) rejects with the error itself: its class decides the status
+      assertFailure(dispatch(List.of(WebhookParamsEvent.of("test", AsyncFailureHandler.class)), post("/test").build()),
+          400, "Invalid Parameter Error", "rejected later");
+      verify(events, never()).store(anyList(), any());
     }
 
     @Test

@@ -263,6 +263,8 @@ class AzureWebhookSynthTest {
     assertThat(rocket.defines(InfrastructureRocket.Hook.GET_FUNCTION_APP_NAME)).isTrue();
     assertThat(rocket.defines(InfrastructureRocket.Hook.MOUNT_CODE)).isFalse();
     assertThat(rocket.defines(InfrastructureRocket.Hook.MOUNT_FUNCTIONS)).isFalse();
+    // AzureWebhook has no unmountStack: nuke only deletes the resource group
+    assertThat(rocket.defines(InfrastructureRocket.Hook.UNMOUNT_STACK)).isFalse();
     assertThatThrownBy(() -> new Rocket().build("not a list")).isInstanceOf(IllegalArgumentException.class);
   }
 

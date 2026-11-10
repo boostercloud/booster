@@ -25,15 +25,25 @@ import com.microsoft.azure.functions.HttpResponseMessage;
 import com.microsoft.azure.functions.HttpStatus;
 import com.microsoft.azure.functions.HttpStatusType;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -197,6 +207,34 @@ class AzureRuntimeContractTest {
         : (String) response.getBody();
   }
 
+  /**
+   * The master-key token of the Cosmos DB REST API, derived here from Microsoft's documentation ("Access control in the
+   * Azure Cosmos DB SQL API": {@code verb + "\n" + resourceType + "\n" + resourceLink + "\n" + date + "\n" + "" +
+   * "\n"}, verb, type and date lower-cased, HMAC-SHA256 with the base64-decoded key, then
+   * {@code encodeURIComponent("type=master&ver=1.0&sig=" + base64(signature))}), not with the provider's code, and
+   * compared with what the provider sent.
+   */
+  private static void assertSignedWithTheMasterKey(FakeCosmosServer.RecordedRequest request, String verb,
+      String resourceType, String resourceLink) {
+    String date = request.header("x-ms-date");
+    assertThat(date).as("x-ms-date").isNotNull();
+    Instant sent = ZonedDateTime.parse(date, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant();
+    assertThat(Duration.between(sent, Instant.now()).abs()).isLessThan(Duration.ofMinutes(5));
+    assertThat(request.header("x-ms-version")).as("x-ms-version").isNotBlank();
+    String stringToSign = verb + "\n" + resourceType + "\n" + resourceLink + "\n" + date.toLowerCase(Locale.ROOT)
+        + "\n" + "" + "\n";
+    try {
+      Mac hmac = Mac.getInstance("HmacSHA256");
+      hmac.init(new SecretKeySpec(Base64.getDecoder().decode(FakeCosmosServer.KEY), "HmacSHA256"));
+      String signature = Base64.getEncoder().encodeToString(hmac.doFinal(stringToSign.getBytes(StandardCharsets.UTF_8)));
+      // encodeURIComponent and URLEncoder agree on the base64 alphabet and on '=' and '&'
+      assertThat(request.header("authorization"))
+          .isEqualTo(URLEncoder.encode("type=master&ver=1.0&sig=" + signature, StandardCharsets.UTF_8));
+    } catch (GeneralSecurityException e) {
+      throw new IllegalStateException(e);
+    }
+  }
+
   @SuppressWarnings("unchecked")
   private List<Map<String, Object>> storedEvents() {
     return cosmos.requests().stream()
@@ -222,6 +260,7 @@ class AzureRuntimeContractTest {
       assertThat(request.method()).isEqualTo("POST");
       assertThat(request.path()).isEqualTo("/dbs/webhook-e2e-app/colls/webhook-e2e-app-events-store/docs");
       assertThat(request.header("x-ms-documentdb-partitionkey")).isEqualTo("[\"Order-order-9-event\"]");
+      assertSignedWithTheMasterKey(request, "post", "docs", "dbs/webhook-e2e-app/colls/webhook-e2e-app-events-store");
     });
     assertThat(storedEvents()).singleElement().satisfies(event -> {
       assertThat(event).containsEntry("kind", "event").containsEntry("superKind", "domain")
@@ -255,6 +294,8 @@ class AzureRuntimeContractTest {
       Map<String, Object> value = (Map<String, Object>) event.get("value");
       assertThat(value).containsEntry("title", "Scan").containsEntry("sha256", Webhooks.sha256(picture));
     });
+    assertThat(cosmos.requests()).singleElement().satisfies(request -> assertSignedWithTheMasterKey(request, "post",
+        "docs", "dbs/webhook-e2e-app/colls/webhook-e2e-app-events-store"));
   }
 
   @Test
