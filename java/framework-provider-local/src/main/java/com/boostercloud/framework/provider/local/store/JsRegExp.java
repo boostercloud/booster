@@ -2,20 +2,22 @@ package com.boostercloud.framework.provider.local.store;
 
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * A JavaScript {@code RegExp} used as a query value ({@code { field: /abc/ }} or {@code { field: { $regex: /abc/ } }}).
  * Two regular expressions are equal when their source and flags are equal, so translated queries can be compared in
  * tests the way chai compares {@code RegExp}s.
  *
- * <p>The pattern is compiled eagerly, so an invalid source fails where JavaScript's {@code new RegExp(source)} would
- * (with a {@link java.util.regex.PatternSyntaxException} instead of a {@code SyntaxError}). Matching is
- * {@code regex.test(value)}: an unanchored search ({@link java.util.regex.Matcher#find()}). Supported flags:
- * {@code i} (case-insensitive, Unicode-aware like JavaScript), {@code m}, {@code s} and {@code u}; {@code g},
- * {@code y}, {@code d} and {@code v} are accepted and ignored because NeDB's single {@code test} call does not depend
- * on them. The pattern syntax is Java's, which accepts the JavaScript syntax Booster users write ({@code ^}, character
- * classes, quantifiers, groups); exotic differences (for example {@code $} also matching before a final line
- * terminator) are not emulated.
+ * <p>The source is JavaScript syntax: it is translated into an equivalent Java {@link Pattern}
+ * ({@link JsRegExpTranslator}), so that literals such as a lone {@code {}, the Unicode {@code \s}, {@code $} at the
+ * very end of the input, identity escapes ({@code \e}), legacy octal escapes, {@code []} and {@code [^]} behave as in
+ * JavaScript, and Java-only syntax ({@code a*+}, {@code (?i)}) is rejected. The pattern is compiled eagerly, so an
+ * invalid source fails where JavaScript's {@code new RegExp(source)} would, with a {@link SyntaxError} carrying V8's
+ * message ({@code Invalid regular expression: /(/: Unterminated group}). Matching is {@code regex.test(value)}: an
+ * unanchored search ({@link java.util.regex.Matcher#find()}). Flags: {@code i}, {@code m}, {@code s}, {@code u} and
+ * {@code v} change matching; {@code g}, {@code y} and {@code d} are accepted and ignored because NeDB's single
+ * {@code test} call does not depend on them; unknown or repeated flags are rejected like in JavaScript.
  */
 public final class JsRegExp {
 
@@ -32,7 +34,18 @@ public final class JsRegExp {
   public JsRegExp(String source, String flags) {
     this.source = Objects.requireNonNull(source, "source");
     this.flags = flags == null ? "" : flags;
-    this.pattern = Pattern.compile(source, toJavaFlags(this.flags));
+    validateFlags(this.flags);
+    JsRegExpTranslator.Translation translation;
+    try {
+      translation = JsRegExpTranslator.translate(source, this.flags);
+    } catch (JsRegExpTranslator.Failure failure) {
+      throw new SyntaxError(source, this.flags, failure.getMessage(), failure.index);
+    }
+    try {
+      this.pattern = Pattern.compile(translation.pattern(), translation.flags());
+    } catch (PatternSyntaxException e) {
+      throw new SyntaxError(source, this.flags, e.getDescription(), e.getIndex());
+    }
   }
 
   /**
@@ -44,21 +57,14 @@ public final class JsRegExp {
     this(source, "");
   }
 
-  private static int toJavaFlags(String flags) {
-    int result = 0;
-    for (char flag : flags.toCharArray()) {
-      switch (flag) {
-        case 'i' -> result |= Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE;
-        case 'm' -> result |= Pattern.MULTILINE;
-        case 's' -> result |= Pattern.DOTALL;
-        case 'u' -> result |= Pattern.UNICODE_CASE;
-        case 'g', 'y', 'd', 'v' -> {
-          // irrelevant for a single test()
-        }
-        default -> throw new IllegalArgumentException("Invalid flags supplied to RegExp constructor '" + flags + "'");
+  private static void validateFlags(String flags) {
+    for (int i = 0; i < flags.length(); i++) {
+      char flag = flags.charAt(i);
+      if ("dgimsuvy".indexOf(flag) < 0 || flags.indexOf(flag, i + 1) >= 0
+          || (flag == 'u' && flags.indexOf('v') >= 0)) {
+        throw new SyntaxError("Invalid flags supplied to RegExp constructor '" + flags + "'");
       }
     }
-    return result;
   }
 
   /**
@@ -76,7 +82,7 @@ public final class JsRegExp {
   }
 
   /**
-   * @return the compiled Java pattern
+   * @return the compiled Java pattern (the translation of the JavaScript source)
    */
   public Pattern pattern() {
     return pattern;
@@ -108,5 +114,31 @@ public final class JsRegExp {
   @Override
   public String toString() {
     return "/" + source + "/" + flags;
+  }
+
+  /**
+   * JavaScript's {@code SyntaxError} for an invalid regular expression or invalid flags. It is a
+   * {@link PatternSyntaxException} whose message is V8's ({@code Invalid regular expression: /[/: Unterminated
+   * character class}); its simple class name gives the title {@code Syntax Error}, as in TypeScript.
+   */
+  public static final class SyntaxError extends PatternSyntaxException {
+    private static final long serialVersionUID = 1L;
+
+    private final String message;
+
+    SyntaxError(String source, String flags, String description, int index) {
+      super(description, source, index);
+      this.message = "Invalid regular expression: /" + source + "/" + flags + ": " + description;
+    }
+
+    SyntaxError(String message) {
+      super(message, "", -1);
+      this.message = message;
+    }
+
+    @Override
+    public String getMessage() {
+      return message;
+    }
   }
 }
