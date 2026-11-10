@@ -356,6 +356,9 @@ verify the logger calls (`verify(logger).debug("[Booster]|<location>: ", ...)`).
 | Acceptance 16–17: subscriptions over `graphql-ws` | test infra: `WebSocketTest` (end-to-end delivery belongs to the integration tests) |
 | Acceptance 21: `to:"2021-02-13"` excludes that day (string comparison) | test `EventsSearcherBuilderTest#timeFiltersAreInclusiveAndOptional`, `FilterOperatorSemanticsTest` row "lt ISO date prefix" |
 | Acceptance 30–31: `select` | test `FilterOperatorSemanticsTest#selectProjectsTheValues`, `ReadModelRegistryTest.Query#shouldReturnOnlyProjectedFields*` |
+| Acceptance 27: `register.responseHeaders` reach the HTTP response | does not hold for the local provider in TypeScript (Q12: result headers are never written); kept, test infra: `controllers.GraphQLControllerTest.HandleGraphQL.OnSuccess#doesNotSendTheHeadersOfTheResult` |
+| Acceptance 38: a failing health component answers `503` | does not hold for the local provider in TypeScript (Q13: always `200`); kept, test infra: `LocalServerTest#unhealthyApplicationsStillAnswer200` |
+| Acceptance 39: a rejecting `globalAuthorizer` gives `401` on health | test infra: `LocalServerTest#healthFailuresAnswerTheirCodeWithOnlyTheTitle` (the code of the failure result, body `{title}`) |
 | F370–F383, acceptance 41–42 (webhook, file uploads) | out of scope: rocket modules (`rockets/*`) |
 
 ## 7. Stress and differential results
