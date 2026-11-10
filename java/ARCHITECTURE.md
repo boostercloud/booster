@@ -23,6 +23,7 @@ port lives entirely under `java/` and mirrors the TypeScript package layout one-
 | `rocket-webhook-*` (external repo) | `rockets/rocket-webhook` | `com.boostercloud.rocket.webhook.{types,core,local,azure}` |
 | `rocket-file-uploads-*` (external repo) | `rockets/rocket-file-uploads` | `com.boostercloud.rocket.fileuploads.{types,core,local,azure}` |
 | `framework-integration-tests` | `framework-integration-tests` | `com.boostercloud.integration` (sample app + end-to-end tests) |
+| `framework-integration-tests/integration/provider-unaware/cli` | `cli-integration-tests` (`booster-cli-integration-tests`) | `com.boostercloud.cli.integration` (test code only: the `boost` CLI end to end) |
 
 AWS packages are intentionally not ported.
 
@@ -33,6 +34,7 @@ metadata-booster  <-  framework-types  <-  framework-common-helpers  <-  framewo
 framework-types + framework-common-helpers  <-  provider-local, provider-azure      (providers do NOT depend on core)
 provider-*  <-  provider-*-infrastructure
 framework-core + providers  <-  rockets, cli (cli only needs types/helpers), framework-integration-tests
+cli + framework jars (installed into an isolated test repository)  <-  cli-integration-tests
 ```
 
 Inside each module, Java packages and class names mirror the TypeScript file tree:
@@ -304,7 +306,11 @@ Reading from code: `Booster.readModel(CartReadModel.class).filter(Map.of("id", M
 * `framework-integration-tests` contains the sample application (the cart demo used by the
   TypeScript integration suite) and end-to-end tests that start the real application process on
   the local provider and talk to it over HTTP and WebSocket, including restart and crash recovery.
-* `mvn verify` from `java/` builds everything and runs every test.
+* `cli-integration-tests` runs the real `boost` launcher in sandbox projects that the CLI builds with Maven
+  against this reactor's framework jars (installed into `target/booster-repo`, never into `~/.m2`).
+* `mvn verify` from `java/` builds everything and runs every unit and in-process test; the failsafe `*IT`
+  suites of `framework-integration-tests` and `cli-integration-tests` run with the `e2e` profile
+  (`mvn -Pe2e verify`).
 
 ## 10. What "faithful" means
 

@@ -4,7 +4,7 @@ Java port of `packages/framework-integration-tests`: the sample application ever
 ("my-store", the cart demo of `src/`) and the end-to-end harness and suites that start it as a real process on the
 local provider and talk to it over HTTP and WebSocket, plus Java-only durability suites and an offline contract of
 the Azure deployment. The CLI generator suites (`integration/provider-unaware/cli`) are not here: they test the `boost`
-CLI, not this application.
+CLI, not this application, and are ported in [`cli-integration-tests`](../cli-integration-tests/README.md).
 
 ```bash
 cd java
@@ -542,7 +542,8 @@ Harness and suites:
   behaviour instead (see [Differences from TypeScript](#differences-from-typescript)).
 * **The load suites** (`integration/provider-unaware/load`, Artillery against AWS): disabled in TypeScript
   (`integration/aws-load` only echoes `Skipping`) and AWS-only.
-* **The CLI suites** (`integration/provider-unaware/cli`): they test the `boost` CLI, not this application.
+* **The CLI suites** (`integration/provider-unaware/cli`): they test the `boost` CLI, not this application. They are
+  the module [`cli-integration-tests`](../cli-integration-tests/README.md).
 * **Tests TypeScript skips** stay skipped with its reason: `LocalAuthIT` (`xdescribe`) and every test of
   `LocalCommandsIT` and `LocalReadModelsIT` (`xit`; enabled, they fail GraphQL validation in both languages because
   their document declares `$quantity: Float` for a `Float!` input field).

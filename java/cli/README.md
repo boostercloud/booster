@@ -203,3 +203,7 @@ the deliberate differences:
 end-to-end test (`EndToEndTest`) that runs `new:project`, every generator, `add:*`, `stub:publish`, `build`,
 `start`, `deploy`, `synth`, `nuke` and the hook, then compiles the generated sources against a minimal stand-in of
 the framework API. Nothing needs network access or the framework artifacts.
+
+The CLI integration suite of the TypeScript monorepo (`integration/provider-unaware/cli`) runs the real `bin/boost`
+launcher against the framework jars of this reactor; it is the module
+[`cli-integration-tests`](../cli-integration-tests/README.md) (`mvn -B -Pe2e -pl cli-integration-tests -am verify`).
