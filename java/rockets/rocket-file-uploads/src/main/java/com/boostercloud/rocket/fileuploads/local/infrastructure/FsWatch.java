@@ -56,8 +56,11 @@ import java.util.stream.Stream;
  */
 public final class FsWatch implements AutoCloseable {
 
-  /** {@code /(^|[/\\])\../}: a path segment starting with a dot. */
-  static final Pattern HIDDEN_SEGMENT = Pattern.compile("(^|[/\\\\])\\.");
+  /**
+   * {@code /(^|[/\\])\../}: a path segment starting with a dot followed by any character ({@code a/.} itself is not
+   * hidden, {@code a/..} is).
+   */
+  static final Pattern HIDDEN_SEGMENT = Pattern.compile("(^|[/\\\\])\\.[^\\n\\r\\u2028\\u2029]");
 
   /** How long {@link #close()} waits for running dispatches. */
   static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(10);
