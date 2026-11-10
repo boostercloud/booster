@@ -183,6 +183,65 @@ builds the framework modules from source; nothing is installed in `~/.m2`).
 3600 s (the mocha `timeout`). The launched applications use the runtime class path the build copies to `target/lib`
 during `package`, exactly like a project built by the CLI.
 
+## Durability and recovery (`providerspecific.local.durability`)
+
+Java-only suites, beyond TypeScript (whose local provider neither flushes, recovers nor validates its files), that
+check what the application keeps across restarts and crashes on the local provider. Each suite runs against an
+application of its own (`@EndToEnd(EndToEnd.Application.OWN)`, its own process and project directory) that it stops,
+kills (`SIGKILL`), damages and starts again on the same `.booster` files.
+
+### Guarantees
+
+1. **Acknowledged means durable.** A mutation is answered after its events were written and flushed
+   (`FileChannel.force`) and dispatched in-process, so everything acknowledged before a crash is in the store after
+   it, exactly once.
+2. **A command is all or nothing.** The events one command (event handler, scheduled command) registers are written
+   with a single append: a crash leaves all of them or none, never part of a `ChangeMultipleCartItems`.
+3. **Undispatched events are recovered once.** Events stored but whose dispatch had not started when the process
+   died are re-dispatched at start-up, before the server serves (`Re-dispatched N event(s) ...`).
+4. **At most once, and the gap closes.** An event whose processing core had already started (`storeDispatched`) when
+   the process died is not processed again (core's dedup, as on the cloud providers; reported at start-up as
+   `The processing of N event(s) was interrupted by the previous shutdown ...` with their ids). Its events are stored;
+   the read models of its entity may miss it until the entity's next event, which reduces every stored event, so they
+   converge then. It is never half applied.
+5. **No double reduction or projection.** A counter's `amount` never exceeds its stored `CounterAdded` events and its
+   read model is not stored more often (`boosterMetadata.version`) than there are events.
+6. **Damaged files.** On start every existing data file is loaded: a torn last line (a write cut by a crash) is
+   discarded and a few corrupt lines (at most 10 %) are skipped, each with a warning naming the file; with more than
+   10 % the application refuses to start (exit code 1, `The 'start' operation failed`, NeDB's
+   `N% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to
+   prevent dataloss.`), leaving the file untouched, and starts again once it is repaired.
+7. **Graceful stop.** `SIGTERM` ends with exit code 143 after in-flight requests and running scheduled commands
+   finished and the websocket connections were closed (their `DISCONNECT` deletes their subscriptions). Subscription
+   clients reconnect by themselves and re-send their subscriptions.
+8. **Scheduled commands** are scheduled again by every start (runs that fell while the process was down are not
+   replayed: the schedule is a cron).
+9. **One format.** The files are NeDB's, so a `.booster` directory written by the TypeScript provider is served by
+   the Java application, which keeps writing it in the same format.
+
+### Suites
+
+| Suite | Scenario | What it proves |
+| --- | --- | --- |
+| `GracefulRestartIT` | commands, a product, a data migration and a live subscription; `SIGTERM`; start | 7, and that every event, snapshot and read model document, the data-migration state (finished migrations are not run again) and every GraphQL answer are identical after the restart; reduction continues from the stored snapshots; the subscription client reconnects and keeps receiving notifications |
+| `CrashUnderLoadIT` | 16 clients send `IncrementCounter` (unique identifiers) and `ChangeMultipleCartItems` (8 events); `SIGKILL` after 150 acknowledgements; start | 1–5 (`LoadConsistency`): acknowledged mutations stored exactly once, in-flight ones all or nothing, nothing invented, read models converge to the stored events except the reported at-most-once gap, which the next event of each entity closes |
+| `TornWriteIT` | `SIGKILL`; partial JSON line appended to `events.json` and `read_models.json`; then 5 % and more than 10 % of corrupt lines | 6: starts and serves the same data with a torn line, compacts it away and keeps later appends on their own lines; skips few corrupt lines with a warning; refuses to start with too many (exit code 1, file untouched, port released); starts once repaired |
+| `RepeatedCrashCyclesIT` | 6 × (concurrent writes, `SIGKILL`, start), then a graceful restart | 1–5 over everything written since the first cycle after every restart: crashes do not accumulate damage |
+| `TypeScriptDataFilesIT` | the application started on `fixtures/durability/typescript-local-provider` (NeDB files with this application's data shapes as the TypeScript provider writes them) | 9: read models (appended updates, removed ones), events with their users and the event search are served; entities continue from the TypeScript snapshots, events TypeScript never projected are reduced, read-model versions and the `uniqueKey` index continue; all of it survives a restart |
+| `ScheduledCommandsAfterRestartIT` | `CheckCartCount` (every minute) before, after a `SIGTERM` restart and after a `SIGKILL` | 8, and that its earlier runs are kept and counted once (`checks` = stored `CartChecked` events) |
+
+Shared code of the package: `CommandLoad` (concurrent mutations with a record of what was acknowledged),
+`LoadConsistency` (rules 1–5 over the data files and the API), `StoreFiles` (read-only replay of `.booster` with
+`LocalStoreReader`, raw bytes and lines, damaging writers), `RecoveryLog` (what the start-up recovery reported, per
+start) and `Documents`. `ScheduledCommandsAfterRestartIT` waits for up to three scheduler minutes; the others take
+seconds.
+
+These suites found three framework gaps, fixed in `framework-provider-local` and
+`framework-provider-local-infrastructure` (see their READMEs): the events of one command were written one by one (a
+crash left 7 of 8 `CartItemChanged` stored), damaged files were only found by the first request touching them (the
+application started on a corrupt store), and stopping the websocket server interrupted the `DISCONNECT` of open
+connections (their subscriptions survived the restart and every later notification logged an error).
+
 ## Differences from TypeScript
 
 Application:
@@ -232,12 +291,20 @@ Harness and suites:
   `CartIT` requires the error.
 * `AppHelper` supports `AZURE` and `LOCAL` (AWS is not ported); `getProviderTestHelper(LocalTestHelper.Options)` lets
   the harness pass the ports and directory of the application it launched.
+* The durability and recovery suites (`providerspecific.local.durability`) have no TypeScript counterpart: the
+  TypeScript local provider loses unflushed writes on a crash, has no start-up recovery and finds damaged files only
+  when a request touches them. Their `.booster` fixture in the TypeScript format is hand-written from the TypeScript
+  sources (the build has no Node/NeDB), with the shapes `events-adapter.ts`, `read-model-registry.ts` and
+  `web-socket-registry.ts` write.
 * `Faker` is a small generator with faker 5's call names (the build allows no extra library): values have the
   formats the suites rely on, not faker's locale data.
 
 ## Not implemented
 
 * The AWS environments (`development`, `production`) and every AWS-gated path (AWS is not ported).
+* Durability: read models that missed an event whose processing a crash interrupted (guarantee 4 of "Durability and
+  recovery") only catch up with the entity's next event. Re-processing such events would make event handlers run
+  twice (at-least-once instead of core's at-most-once), a semantic change of core that is not made here.
 * Suites other than the local start/stop lifecycle, `cart` and `commands`: the remaining end-to-end, functionality and
   provider-specific suites are ported by the following stages on top of this layout. The Azure deploy/nuke suites and
   the load suite (disabled in TypeScript) need cloud resources.
@@ -251,3 +318,6 @@ Harness and suites:
   (`HarnessTest`, `HelpersTest`).
 * `-Pe2e`: `providerspecific.local.LocalStartStopIT` (spec 17 §3.1), `endtoend.CartIT` (§8.1) and
   `endtoend.CommandsIT` (§8.2), with the shared application.
+* `-Pe2e`, Java-only: the durability and recovery suites of `providerspecific.local.durability` (`GracefulRestartIT`,
+  `CrashUnderLoadIT`, `TornWriteIT`, `RepeatedCrashCyclesIT`, `TypeScriptDataFilesIT`,
+  `ScheduledCommandsAfterRestartIT`), each with an application of its own.
