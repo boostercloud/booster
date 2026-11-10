@@ -183,6 +183,56 @@ builds the framework modules from source; nothing is installed in `~/.m2`).
 3600 s (the mocha `timeout`). The launched applications use the runtime class path the build copies to `target/lib`
 during `package`, exactly like a project built by the CLI.
 
+## Functionality suites (`functionality`)
+
+The port of `integration/provider-unaware/functionality` (spec 17 §9), which TypeScript runs on AWS and Azure
+(`aws-func`, `azure-func`) and locally only by hand (`integration/local-func`, where its raw-store assertions time out
+because the local test helper returns `-1`/`[]`). Here every suite runs on `LOCAL` with the shared application:
+
+| TypeScript | Java | What it checks |
+| --- | --- | --- |
+| `entities.integration.ts` | `EntitiesFunctionalityIT` | a cart and its payment projected into one stored `CartReadModel` |
+| `errors.integration.ts` | `ErrorsFunctionalityIT` | the global error handler on command handlers, before hooks and query handlers |
+| `event-handlers.integration.ts` | `EventHandlersFunctionalityIT` | `StockMoved` → `ProductAvailabilityChanged`, both stored with the Admin `currentUser` |
+| `events.integration.ts` | `EventsFunctionalityIT` | `register.flush()`, stored event documents, 30 and 101 + 50 events in one command |
+| `notifications.integration.ts` | `NotificationsFunctionalityIT` | flushed notifications and their handler, the `defaultTopic` event document |
+| `scheduled-commands.integration.ts` | `ScheduledCommandsFunctionalityIT` | `CheckCartCount` checks `the-checked-cart` within 90 s |
+| `schema.command.integration.ts` | `SchemaCommandFunctionalityIT` | `@NonExposed` command properties are not in the input type |
+| `schema.filter/search/sort.integration.ts` | `SchemaFilterFunctionalityIT`, `SchemaSearchFunctionalityIT`, `SchemaSortFunctionalityIT` | the GraphQL filter, object and sort types of `SchemaReadModel` |
+| `subscriptions.integration.ts` | `SubscriptionsFunctionalityIT` | unsubscribe, terminate, reconnect, filters with before hooks, authorization over the websocket |
+| — (the `TODO` contexts of `errors.integration.ts`) | `LoggedErrorsFunctionalityIT` (own application, `LOCAL` only) | `onDispatchEventHandlerError`, `onReducerError`, `onProjectionError`: the rewritten errors in the application log and what the failures leave in the stores |
+
+`StoredDocuments` (raw document paths, chai's `deep.contain`, the event-store key) and `TheCheckedCart` (counters
+without the scheduled command's work) are the package's helpers.
+
+Differences from TypeScript:
+
+* **Event-store key.** AWS and Azure add the partition key `entityTypeName_entityID_kind` to every event document; the
+  local provider stores the envelopes as they are (TypeScript and Java alike). On `LOCAL` the suites check the three
+  fields that key is made of (`entityTypeName`, `entityID`, `kind`) instead, and leave the field out of `deep.contain`
+  expectations (`StoredDocuments.expectedEventDocument`/`assertEventStoreKey`).
+* **Error-handler metadata.** The expected messages of `ErrorsFunctionalityIT` embed the Java
+  `JSON.stringify(commandMetadata)` of `ChangeCartItem` (same shape, Java type information), the string
+  `ApplicationRegistrationTest` pins.
+* **Readonly arrays.** `For readonly array` of the filter and search suites is disabled with its reason, and
+  `For readonly array as a Java list` pins the Java schema: the filter of `readonlyArray` is
+  `StringArrayPropertyFilter` (TypeScript: `JSON`, Java has no read-only list type), and its type is `[String!]`
+  (TypeScript: `[String]`, because the first string list registered decides the element nullability and the
+  registration orders differ; see `ApplicationRegistrationTest`).
+* **Order of stored events.** TypeScript's `expect(ids).to.be.sorted((prev, next) => prev > next)` always passes (a
+  boolean comparator never reorders in V8); `EventsFunctionalityIT` asserts what it means, newest first.
+* **Exact counts.** The two exact count deltas (one event, one cart read model) leave out the work of the scheduled
+  command `CheckCartCount` (`TheCheckedCart`): the shared application is fresh, so the cart it checks is created and
+  checked during the run, and a check between the two counts would make the delta two forever.
+* **Subscriptions.** The two `the "terminate" operation` tests swallow every error in TypeScript; here their
+  assertions count (clients disconnected in `finally`). Subscription results are awaited at most 2 minutes (TypeScript:
+  the mocha timeout). `keeps the same subscriptions` also checks that a change made after the reconnection reaches
+  every subscription (the TypeScript check after the reconnection is satisfied by the result received before it).
+* **Introspection documents.** graphql-java rejected the nested `__Type.inputFields` of the filter and sort suites
+  ("good faith introspection"); framework-core now validates with the specification rules only, like graphql-js.
+* `notifications > should be persisted when flush is call` and the other suites print what TypeScript logs with
+  `console.log` to the test output.
+
 ## Differences from TypeScript
 
 Application:
@@ -238,9 +288,12 @@ Harness and suites:
 ## Not implemented
 
 * The AWS environments (`development`, `production`) and every AWS-gated path (AWS is not ported).
-* Suites other than the local start/stop lifecycle, `cart` and `commands`: the remaining end-to-end, functionality and
-  provider-specific suites are ported by the following stages on top of this layout. The Azure deploy/nuke suites and
-  the load suite (disabled in TypeScript) need cloud resources.
+* Suites other than the local start/stop lifecycle, `cart`, `commands` and the functionality suites: the remaining
+  end-to-end and provider-specific suites are ported by the following stages on top of this layout. The Azure
+  deploy/nuke suites and the load suite (disabled in TypeScript) need cloud resources.
+* `onScheduledCommandHandlerError` and `onEventError` of the global error handler have no end-to-end test (TypeScript
+  has none either): the application's scheduled command never fails, and `onEventError` needs a stored event whose
+  type the application does not register, which no command can produce. `AppErrorHandlerTest` covers both hooks.
 
 ## Tests
 
@@ -248,6 +301,7 @@ Harness and suites:
   configuration, GraphQL shapes, the error-handler metadata JSON) and the unit tests of the application's pure logic
   (`CommandHandlersTest`, `CartTest`, `StockTest`, `CartReadModelTest`, `ProjectionsTest`, `CartTotalQuantityTest`,
   `SchemaMigrationsTest`, `AppErrorHandlerTest`, `CustomLoggerTest`, `TokenVerifiersTest`) and of the harness
-  (`HarnessTest`, `HelpersTest`).
+  (`HarnessTest`, `HelpersTest`) and of the functionality suites' helpers (`functionality.StoredDocumentsTest`).
 * `-Pe2e`: `providerspecific.local.LocalStartStopIT` (spec 17 §3.1), `endtoend.CartIT` (§8.1) and
-  `endtoend.CommandsIT` (§8.2), with the shared application.
+  `endtoend.CommandsIT` (§8.2), with the shared application; the functionality suites (§9.1–§9.9, see "Functionality
+  suites") with the shared application, and `functionality.LoggedErrorsFunctionalityIT` with its own.
