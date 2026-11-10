@@ -14,7 +14,6 @@ import com.boostercloud.cli.services.Prompter;
 import com.boostercloud.cli.services.ProviderService;
 import com.boostercloud.cli.services.java.JavaNames;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import picocli.CommandLine;
@@ -346,17 +345,6 @@ public final class Project implements Callable<Integer> {
   private static String withoutStackFrames(String message) {
     String text =
         message.lines().filter(line -> !line.startsWith("    at ")).collect(Collectors.joining(System.lineSeparator()));
-    return text.startsWith("Error:") || text.startsWith("You haven't") ? text : "Error: " + text;
-  }
-
-  /** @return the values given on the command line (for tests) */
-  ProjectFlags flags() {
-    return new ProjectFlags(
-        projectName, description, version, author, homepage, license, repository, providerPackageName, groupId,
-        defaults, skipInstall, skipGit);
-  }
-
-  static List<String> providerLabels() {
-    return Arrays.stream(Provider.values()).map(Provider::label).toList();
+    return text.startsWith("Error:") ? text : "Error: " + text;
   }
 }
