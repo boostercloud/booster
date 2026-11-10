@@ -699,17 +699,31 @@ public final class Model {
       lastStep(modifier, obj, fieldParts.get(0), value);
       return;
     }
-    Object next = Js.get(obj, fieldParts.get(0));
+    Object next = read(obj, fieldParts.get(0));
     if (next == UNDEFINED) {
       if (modifier.equals("$unset")) {
         return;
       }
-      next = new LinkedHashMap<String, Object>();
-      set(obj, fieldParts.get(0), next);
+      set(obj, fieldParts.get(0), new LinkedHashMap<String, Object>());
+      // NeDB reads the property again: on a primitive the assignment was ignored and this is undefined
+      next = read(obj, fieldParts.get(0));
     }
     applyModifier(modifier, next, fieldParts.subList(1, fieldParts.size()), value);
   }
 
+  /** {@code obj[field]} in NeDB's (sloppy-mode) modifier code: reading a property of null or undefined throws. */
+  private static Object read(Object obj, String field) {
+    if (obj == null || obj == UNDEFINED) {
+      throw new NedbError("Cannot read properties of " + Js.toJsString(obj) + " (reading '" + field + "')");
+    }
+    return Js.get(obj, field);
+  }
+
+  /**
+   * {@code obj[field] = value} in NeDB's (sloppy-mode) modifier code: maps get the entry, arrays the element; setting a
+   * property of a primitive (or a date) is silently ignored, as is a non-index property of an array (JavaScript keeps
+   * it on the array object, but serialization drops it); null and undefined throw.
+   */
   @SuppressWarnings("unchecked")
   private static void set(Object obj, String field, Object value) {
     if (obj instanceof Map<?, ?> map) {
@@ -724,13 +738,19 @@ public final class Model {
           elements.add(null);
         }
         elements.set(index, value);
-        return;
       }
+      return;
     }
-    throw new NedbError("Cannot create property '" + field + "' on " + Js.typeOf(obj) + " '" + Js.toJsString(obj) + "'");
+    if (obj == null || obj == UNDEFINED) {
+      throw new NedbError("Cannot set properties of " + Js.toJsString(obj) + " (setting '" + field + "')");
+    }
   }
 
+  /** {@code Object.prototype.hasOwnProperty.call(obj, field)}. */
   private static boolean hasOwnProperty(Object obj, String field) {
+    if (obj == null || obj == UNDEFINED) {
+      throw new NedbError("Cannot convert undefined or null to object");
+    }
     return Js.get(obj, field) != UNDEFINED || (obj instanceof Map<?, ?> map && map.containsKey(field));
   }
 
@@ -739,6 +759,9 @@ public final class Model {
     switch (modifier) {
       case "$set" -> set(obj, field, deepCopy(value));
       case "$unset" -> {
+        if (obj == null || obj == UNDEFINED) {
+          throw new NedbError("Cannot convert undefined or null to object");
+        }
         if (obj instanceof Map<?, ?> map) {
           map.remove(field);
         } else if (obj instanceof List<?> list && Js.arrayIndex(field) >= 0 && Js.arrayIndex(field) < list.size()) {
@@ -748,7 +771,7 @@ public final class Model {
       case "$push" -> push(obj, field, value);
       case "$addToSet" -> addToSet(obj, field, value);
       case "$pop" -> {
-        if (!(Js.get(obj, field) instanceof List<?> list)) {
+        if (!(read(obj, field) instanceof List<?> list)) {
           throw new NedbError("Can't $pop an element from non-array values");
         }
         if (!(value instanceof Number number)) {
@@ -762,7 +785,7 @@ public final class Model {
             : new ArrayList<>(list.subList(Math.min(1, list.size()), list.size())));
       }
       case "$pull" -> {
-        if (!(Js.get(obj, field) instanceof List<?> list)) {
+        if (!(read(obj, field) instanceof List<?> list)) {
           throw new NedbError("Can't $pull an element from non-array values");
         }
         List<Object> elements = (List<Object>) list;
@@ -776,7 +799,7 @@ public final class Model {
         if (!(value instanceof Number increment)) {
           throw new NedbError(Js.toJsString(value) + " must be a number");
         }
-        Object current = Js.get(obj, field);
+        Object current = read(obj, field);
         if (!(current instanceof Number number)) {
           if (!hasOwnProperty(obj, field)) {
             set(obj, field, value);
@@ -788,13 +811,13 @@ public final class Model {
         }
       }
       case "$max" -> {
-        Object current = Js.get(obj, field);
+        Object current = read(obj, field);
         if (current == UNDEFINED || relational(value, current, ">")) {
           set(obj, field, deepCopy(value));
         }
       }
       case "$min" -> {
-        Object current = Js.get(obj, field);
+        Object current = read(obj, field);
         if (current == UNDEFINED || relational(value, current, "<")) {
           set(obj, field, deepCopy(value));
         }
@@ -823,7 +846,7 @@ public final class Model {
     if (!hasOwnProperty(obj, field)) {
       set(obj, field, new ArrayList<>());
     }
-    if (!(Js.get(obj, field) instanceof List<?> target)) {
+    if (!(read(obj, field) instanceof List<?> target)) {
       throw new NedbError("Can't $push an element on non-array values");
     }
     List<Object> elements = (List<Object>) target;
@@ -862,7 +885,7 @@ public final class Model {
     if (!hasOwnProperty(obj, field)) {
       set(obj, field, new ArrayList<>());
     }
-    if (!(Js.get(obj, field) instanceof List<?> target)) {
+    if (!(read(obj, field) instanceof List<?> target)) {
       throw new NedbError("Can't $addToSet an element on non-array values");
     }
     if (value instanceof Map<?, ?> map && Js.truthy(map.get("$each"))) {
