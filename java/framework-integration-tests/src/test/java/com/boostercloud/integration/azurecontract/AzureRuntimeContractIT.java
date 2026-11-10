@@ -132,6 +132,8 @@ class AzureRuntimeContractIT {
     settings.put("COSMOSDB_CONNECTION_STRING", services.cosmosConnectionString());
     settings.put("BOOSTER_APP_NAME", "");
     settings.put("BOOSTER_APP_CLASS", TypeScriptAzureApp.APPLICATION_CLASS);
+    // Not an app setting: the region of the machine running the TypeScript Azure suites (read by AzureTestHelper)
+    settings.put("REGION", "East US");
     return settings;
   }
 
@@ -424,6 +426,7 @@ class AzureRuntimeContractIT {
   @DisplayName("the Azure test helper (TESTED_PROVIDER=AZURE)")
   class TheAzureTestHelper {
 
+    private AzureProviderTestHelper providerTestHelper;
     private ApplicationTester applicationUnderTest;
 
     /** {@code getProviderTestHelper()} for AZURE, with {@code az} answering from the fake subscription. */
@@ -433,7 +436,8 @@ class AzureRuntimeContractIT {
       AzureTestHelper helper = AzureTestHelper.build(APP_NAME, "azure", az,
           Params.Configuration.of("app-id", "app-secret", "tenant-id", "subscription-id", "East US"),
           connectionString -> CosmosRestClient.create(connectionString, CosmosRetryOptions.defaults()));
-      applicationUnderTest = new ApplicationTester(new AzureProviderTestHelper(helper));
+      providerTestHelper = new AzureProviderTestHelper(helper);
+      applicationUnderTest = new ApplicationTester(providerTestHelper);
     }
 
     private String azAnswer(Command command) {
@@ -451,9 +455,13 @@ class AzureRuntimeContractIT {
 
     @Test
     @Order(1)
-    @DisplayName("exposes the outputs of the deployed application")
+    @DisplayName("exposes the URLs of the deployed application behind the gateway and Web PubSub")
     void outputs() {
-      assertThat(applicationUnderTest.graphql()).isNotNull();
+      String base = "http://" + RESOURCE_GROUP + "apis.eastus.cloudapp.azure.com/azure";
+      assertThat(providerTestHelper.outputs().graphqlURL()).isEqualTo(base + "/graphql");
+      assertThat(providerTestHelper.outputs().healthURL()).isEqualTo(base + "/sensor/health/");
+      assertThat(providerTestHelper.outputs().websocketURL())
+          .isEqualTo("wss://" + RESOURCE_GROUP + "wps.webpubsub.azure.com:443/client/hubs/booster");
       assertThat(applicationUnderTest.count().readModels("CartReadModel")).isEqualTo(1);
     }
 
