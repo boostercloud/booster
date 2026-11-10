@@ -116,17 +116,19 @@ class AzureTestHelperTest {
 
   @Test
   void counts_the_documents_of_each_container() {
-    FakeCosmos cosmos = new FakeCosmos(List.of(Map.of("total", 7)));
+    // SELECT VALUE COUNT(1): the REST client's cross-partition pipeline runs VALUE aggregates only (TypeScript's
+    // SELECT COUNT(1) as total is a non-VALUE aggregate); the counts are the same
+    FakeCosmos cosmos = new FakeCosmos(List.of(7));
     AzureCounters counters = new AzureCounters("my-store", cosmos.client);
     assertThat(counters.subscriptions()).isEqualTo(7);
     assertThat(counters.connections()).isEqualTo(7);
     assertThat(counters.events()).isEqualTo(7);
     assertThat(counters.readModels("CartReadModel")).isEqualTo(7);
     assertThat(cosmos.queries).isEqualTo(Map.of(
-        "my-store-app-subscriptions-store", List.of(SqlQuerySpec.of("SELECT COUNT(1) as total FROM c")),
-        "my-store-app-connections-store", List.of(SqlQuerySpec.of("SELECT COUNT(1) as total FROM c")),
-        "my-store-app-events-store", List.of(SqlQuerySpec.of("SELECT COUNT(1) as total FROM c WHERE c.kind=\"event\"")),
-        "my-store-app-CartReadModel", List.of(SqlQuerySpec.of("SELECT COUNT(1) as total FROM c"))));
+        "my-store-app-subscriptions-store", List.of(SqlQuerySpec.of("SELECT VALUE COUNT(1) FROM c")),
+        "my-store-app-connections-store", List.of(SqlQuerySpec.of("SELECT VALUE COUNT(1) FROM c")),
+        "my-store-app-events-store", List.of(SqlQuerySpec.of("SELECT VALUE COUNT(1) FROM c WHERE c.kind=\"event\"")),
+        "my-store-app-CartReadModel", List.of(SqlQuerySpec.of("SELECT VALUE COUNT(1) FROM c"))));
   }
 
   @Test
