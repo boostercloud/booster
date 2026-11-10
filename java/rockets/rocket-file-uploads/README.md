@@ -345,7 +345,8 @@ the server port.
   (uploads, downloads, routes, errors, quirks, notifications, unmount); `FsWatchTest` the watcher.
 * Azure: `BlobServiceContractTest` against a fake Blob service (requests, SAS URLs with the signature recomputed from
   the specification, paged listing, deletion, errors), `BlobSasTest` (an OpenSSL known answer),
-  `DefaultAzureCredentialTest`; `AzureRocketSynthTest` synthesizes a whole application with the rocket through the Azure
+  `DefaultAzureCredentialTest`, `BlobTriggerEntryPointTest` (the request `BoosterAzureFunctions.rocketBlob` dispatches
+  is the one the library validates); `AzureRocketSynthTest` synthesizes a whole application with the rocket through the Azure
   infrastructure and compares `golden/file-uploads.cdk.tf.json` and `golden/file-uploads-rocket-package.txt`
   (regenerate with `-Dbooster.golden.update=true`).
 * `e2e.LocalEndToEndTest`: core, the local provider and the local server in-process on free ports with the
