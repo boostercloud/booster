@@ -183,6 +183,66 @@ builds the framework modules from source; nothing is installed in `~/.m2`).
 3600 s (the mocha `timeout`). The launched applications use the runtime class path the build copies to `target/lib`
 during `package`, exactly like a project built by the CLI.
 
+## Azure contract
+
+The TypeScript `integration/azure` scripts deploy the app to a real subscription (`azure-deploy`), run the end-to-end
+and functionality suites against it and nuke it (`azure-nuke`), spec 17 §3.3. Nothing here deploys: the suites of
+`com.boostercloud.integration.azurecontract` check the same contract offline, with `BOOSTER_ENV=azure`,
+`BOOSTER_APP_SUFFIX=contract` (app `my-store-contract`, resource group `mystorecontractazurerg`) and the production code
+paths of `framework-provider-azure` and `framework-provider-azure-infrastructure`:
+
+| Suite | What runs | What is asserted |
+| --- | --- | --- |
+| `AzureSynthesisContractIT` | `java -cp target/classes:target/lib/* com.boostercloud.integration.Main synth` in a sandbox laid out like a CLI-built project (`CliBuiltProject`: the assets plus copies of the module's `target/classes` and `target/lib`) | the files (`cdktf.out/manifest.json`, `stacks/my-store-contractazure/cdk.tf.json`, `functionApp.zip`, `consumerFunctionApp.zip`, `baseWebPubSubBinding.zip`, no `cdktf.json`, no rocket package); every Terraform resource of the stack with its TypeScript construct id, name and attributes (one container per store and per read model with partition keys, unique keys and TTLs, the event hub `test` with 3 partitions and 1 day, the consumer plan with 3 workers, both function apps and their app settings, Web PubSub and its hub, the gateway routes, the outputs); the exact `function.json` of every function (`graphql`, `sensor-health`, `eventProducer` because streaming is on, `connect`/`disconnect`/`messages`, the 19 `<ReadModel>-subscriptions-notifier`, `scheduleFunction-CheckCartCount` with `0 0/1 * * * *`), `eventConsumer` in the consumer package, the bootstrap function; the default `host.json` (the `host.json` asset is ignored, as `createZipV4` does); the package layouts (application jar with every compiled class, `lib/`, assets) |
+| `AzureDeployNukeContractIT` | the app started in-process as `Booster.run` starts it, then `deploy` and `nuke` of `Infrastructure.infrastructure(config.rockets, ...)` with an `InfrastructureContext` whose command runner, HTTP transport and sleeper are a stateful fake subscription (`FakeAzureCloud`); sandboxes `deploy` and `nuke` with the assets of the TypeScript setups | the TypeScript assertions (`After deployment > the ARM template > has been created successfully`: `az group show` finds the resource group that `terraform apply` created; `After nuke > the resource group > is deleted successfully`: `ResourceGroupNotFound`), and the exact sequence: `terraform init -input=false`, `plan -input=false -out=plan`, `apply -input=false -auto-approve plan` in the stack directory with `TF_IN_AUTOMATION=true`; publishing credentials and Kudu `zipDeploy` of `functionApp.zip` then `consumerFunctionApp.zip` with basic authentication; the cold start, 30 s, the host keys, the hub `PUT` with the `webpubsub_extension` key; one Entra ID token; the failure message and no upload when `terraform apply` fails; the resource group `DELETE` and its long-running operation |
+| `AzureRuntimeContractIT` | the entry points of `BoosterAzureFunctions` invoked in-process with the payloads of the Java worker (`FunctionsWorker`), the app settings Terraform gives the function apps pointing at `FakeAzureServices`, a stateful in-JVM Cosmos DB / Event Hubs / Web PubSub provisioned with the containers of the stack; the app boots from `BOOSTER_APP_CLASS` | a `ChangeCartItem` mutation through `graphql` stores its event in one transactional batch (headers, partition key, document); `eventProducer` with the change feed sends it to the event hub `test`; `eventConsumer` de-duplicates (`events-dedup`), marks it dispatched, reads the snapshot and the events with the TypeScript SQL, stores the snapshot and projects `CartReadModel` (schema version 2) and `SchemaReadModel`; a redelivery is dropped; a `CartReadModel` query reads the read model back with a point read; `connect`, `messages` (`connection_init`, `start`), `CartReadModel-subscriptions-notifier` (the data message reaches the connection through Web PubSub) and `disconnect`; the Azure test helper of `TESTED_PROVIDER=AZURE` (`AzureTestHelper` + `harness.AzureProviderTestHelper` + `ApplicationTester`, with a fake `az`) counts and queries what was stored, and its Admin token makes `CreateProduct` succeed (the post-deployment check of `deployment.integration.ts`) |
+| `AzureTerraformValidateIT` | opt-in (`BOOSTER_TERRAFORM_VALIDATE=true`): synth, then `terraform init -backend=false` and `terraform validate -json` in the stack directory (`BOOSTER_TERRAFORM_BINARY`, default `terraform`; set `TF_PLUGIN_CACHE_DIR` to reuse the azurerm provider) | Terraform and the azurerm 5.x provider accept the stack |
+
+```bash
+mvn -B -Pe2e -pl framework-integration-tests -am verify -Dtest=NONE -Dsurefire.failIfNoSpecifiedTests=false \
+    '-Dit.test=AzureSynthesisContractIT,AzureDeployNukeContractIT,AzureRuntimeContractIT'   # about 10 s
+BOOSTER_TERRAFORM_VALIDATE=true mvn -B -Pe2e -pl framework-integration-tests -am verify -Dtest=NONE \
+    -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=AzureTerraformValidateIT          # downloads azurerm once
+```
+
+The expectations are written from the TypeScript sources, not from the Java output: `TypeScriptAzureApp` lists the
+concepts of the TypeScript app that drive the synthesis (19 read models, `CheckCartCount`, subscriptions and streaming
+on, no rockets, the azure assets), the names `helper/utils.ts` derives for `my-store-contract` + `azure`, and the
+functions `functions-code-generator.ts` registers, in its order.
+
+The fakes are strict, so a contract violation fails the suite instead of being absorbed: `FakeAzureServices` checks the
+Cosmos DB master-key signature, the partition key header against the document, unique ids and unique keys per logical
+partition, `If-Match`, the 400/1004 refusal of cross-partition queries the gateway cannot serve, the Event Hubs shared
+access signature and the Web PubSub access-key JWT; it executes queries with `FakeCosmosSql` (the subset of the SQL
+dialect Booster uses, with Cosmos DB semantics: undefined comparisons, type order, `IN`, `IS_DEFINED`, `ORDER BY`,
+`OFFSET/LIMIT`, `TOP`, `VALUE COUNT`, `DISTINCT`) and answers query plans like the gateway (rewritten `ORDER BY` queries
+with `orderByItems`/`payload`). Unknown endpoints, missing containers, unsupported queries and bad signatures are
+recorded in `failures()`, which every test requires to be empty. `FakeAzureCloud` answers only for what `terraform apply`
+created from the synthesized JSON (resource groups, function apps, Web PubSub) and creates the `webpubsub_extension` key
+only after a package with a Web PubSub trigger was uploaded and the host was started. `FakeCosmosSqlTest` and
+`FakeAzureServicesTest` (plain `verify`) pin the fakes themselves against the production REST client.
+
+The in-process suites restore what they change (`InProcessAzureApplication`: the `booster.env` property, the
+`EnvironmentVariables` overrides, `Booster.reset()`), so they share the failsafe JVM with the local suites. The Azure
+provider creates its clients once per JVM from the app settings (`AzureClients.shared()`), hence one `FakeAzureServices`
+per JVM (`shared()`, reset by each suite); a suite pointing the provider at another endpoint in the same JVM would not
+be seen.
+
+Differences from TypeScript in these suites (beyond the documented ones of the Azure modules):
+
+* The TypeScript suites run `boost deploy`/`boost nuke` against Azure and assert two facts afterwards; here the same
+  facts are asserted against the fake subscription, together with the command and request sequence that produces them.
+  The functions run in-process instead of in the Azure Functions host: the binding of the `function.json` files by the
+  Java worker (data types, the Web PubSub return value) is not exercised.
+* The CLI launch is reproduced (`CliBuiltProject`) rather than going through `boost synth`, which would rebuild the
+  project with Maven; the deploy and nuke run in the test JVM because their outside world must be injected.
+* Container definitions are read once per container by the REST client (cached), so the request sequences ignore those
+  `GET /dbs/<db>/colls/<container>` requests.
+
+Not verifiable offline: that Azure accepts the deployment (`terraform apply`), the real Kudu, Functions host and Web
+PubSub extension behaviour, and the live Cosmos DB gateway (query plans and continuation conventions follow the
+documented formats, as the provider's contract tests do).
+
 ## Differences from TypeScript
 
 Application:
