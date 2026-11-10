@@ -23,12 +23,15 @@ import java.util.Map;
  *       {@code fieldSize} (1 MiB by default, {@code valueTruncated}); the files, fields and parts above
  *       {@code files}/{@code fields}/{@code parts} are skipped (the listener's {@code *Limit} methods are called
  *       once);</li>
- *   <li>the preamble before the first boundary and the epilogue after the closing one are ignored.</li>
+ *   <li>the preamble before the first boundary is ignored, and so is what is written after the closing boundary
+ *       (Busboy still parses the rest of the chunk that contains it).</li>
  * </ul>
  *
- * <p>Errors (Busboy's {@code 'error'} events) are thrown as {@link IllegalStateException}s with Busboy's messages:
- * {@code Malformed part header} (from {@link #write}), {@code Unexpected end of form} and {@code Unexpected end of file}
- * (from {@link #end()}). After an error the parser ignores further data.
+ * <p>Errors are Busboy's {@code 'error'} events, reported to {@link Listener#error} as {@link IllegalStateException}s
+ * with Busboy's messages; the default listener method throws them. {@code Malformed part header} (a malformed or
+ * oversized part header) is reported while writing and, as in Busboy, the parser goes on with the next part;
+ * {@code Unexpected end of form} ({@link #end()} before the closing boundary) also fails the open file
+ * ({@link FileListener#error}) and stops the parser.
  */
 public final class Multipart {
 
@@ -68,6 +71,31 @@ public final class Multipart {
 
     /** {@code 'fieldsLimit'}: a field part was skipped because of the {@code fields} limit. */
     default void fieldsLimit() {}
+
+    /**
+     * {@code 'error'}. Busboy streams without an {@code 'error'} listener fail (Node throws the error), which is what
+     * this default does.
+     *
+     * @param error the error
+     */
+    default void error(IllegalStateException error) {
+      throw error;
+    }
+
+    /**
+     * @return whether there is a {@code 'file'} listener ({@code listenerCount('file') > 0}): file parts are skipped
+     *     otherwise
+     */
+    default boolean listensToFiles() {
+      return true;
+    }
+
+    /**
+     * @return whether there is a {@code 'field'} listener: field parts are skipped otherwise
+     */
+    default boolean listensToFields() {
+      return true;
+    }
   }
 
   /** The consumer of a file part (Busboy's {@code FileStream}). */
@@ -84,6 +112,13 @@ public final class Multipart {
 
     /** The file part ended ({@code push(null)}, followed by the stream's {@code 'end'}). */
     void end();
+
+    /**
+     * The form ended in the middle of this file (the file stream is destroyed with the error).
+     *
+     * @param error {@code Unexpected end of form} or {@code Unexpected end of file}
+     */
+    default void error(IllegalStateException error) {}
   }
 
   /**
@@ -138,7 +173,7 @@ public final class Multipart {
   private HeaderParser activeHeaderParser;
   private FileListener fileStream;
   private boolean complete;
-  private boolean failed;
+  private boolean ended;
 
   private long parts = -1; // Account for initial boundary
   private long fields;
@@ -194,15 +229,11 @@ public final class Multipart {
   }
 
   /**
-   * {@code _write(chunk)}: parses the next bytes of the body.
+   * {@code _write(chunk)}: parses the next bytes of the body (ignored after {@link #end()}).
    *
    * @param chunk the bytes (the array is not kept)
-   * @throws IllegalStateException {@code Malformed part header}
    */
   public void write(byte[] chunk) {
-    if (failed) {
-      return;
-    }
     if (!ignoring) {
       bparser.push(chunk, 0);
     }
@@ -219,38 +250,42 @@ public final class Multipart {
   }
 
   /**
-   * {@code end()} ({@code _final}): flushes the look-behind data and checks the form ended.
-   *
-   * @throws IllegalStateException {@code Unexpected end of form} when the closing boundary was not read,
-   *     {@code Malformed part header} when a part header is incomplete, {@code Unexpected end of file} when a file part
-   *     is still open
+   * {@code end()} ({@code _final}, then {@code _destroy}): flushes the look-behind data and checks the form ended,
+   * reporting {@code Unexpected end of form} when the closing boundary was not read (also to the open file, if any),
+   * {@code Malformed part header} when a part header is incomplete, and {@code Unexpected end of file} to a file that is
+   * still open.
    */
   public void end() {
-    if (failed) {
+    if (ended) {
       return;
     }
+    ended = true;
     if (!ignoring) {
       bparser.destroy();
     }
-    if (!complete) {
-      fail();
-      throw new IllegalStateException("Unexpected end of form");
-    }
-    if (activeHeaderParser != null) {
-      fail();
-      throw new IllegalStateException("Malformed part header");
-    }
-    if (fileStream != null) {
+    IllegalStateException err = complete ? checkEndState() : new IllegalStateException("Unexpected end of form");
+    activeHeaderParser = null;
+    ignoring = true;
+    if (err != null) {
+      FileListener open = fileStream;
       fileStream = null;
-      fail();
-      throw new IllegalStateException("Unexpected end of file");
+      if (open != null) {
+        open.error(err);
+      }
+      listener.error(err);
     }
   }
 
-  private void fail() {
-    failed = true;
-    activeHeaderParser = null;
-    ignoring = true;
+  private IllegalStateException checkEndState() {
+    if (activeHeaderParser != null) {
+      return new IllegalStateException("Malformed part header");
+    }
+    FileListener open = fileStream;
+    if (open != null) {
+      fileStream = null;
+      open.error(new IllegalStateException("Unexpected end of file"));
+    }
+    return complete ? null : new IllegalStateException("Unexpected end of form");
   }
 
   private void onHeader(Map<String, List<String>> header) {
@@ -317,6 +352,12 @@ public final class Multipart {
         return;
       }
       ++files;
+
+      if (!listener.listensToFiles()) {
+        skipPart = true;
+        return;
+      }
+
       fileSize = 0;
       fileStream = listener.file(partName, new FileInfo(filename, partEncoding, partType));
     } else {
@@ -330,6 +371,12 @@ public final class Multipart {
         return;
       }
       ++fields;
+
+      if (!listener.listensToFields()) {
+        skipPart = true;
+        return;
+      }
+
       field = new ByteArrayOutputStream();
       fieldChunks = 0;
       fieldSize = 0;
@@ -341,9 +388,6 @@ public final class Multipart {
   }
 
   private void ssCb(boolean isMatch, byte[] data, int start, int end, boolean isDataSafe) {
-    if (ignoring) {
-      return;
-    }
     retrydata:
     while (data != null) {
       if (activeHeaderParser != null) {
@@ -351,8 +395,8 @@ public final class Multipart {
         if (ret == -1) {
           activeHeaderParser = null;
           hparser.reset();
-          fail();
-          throw new IllegalStateException("Malformed part header");
+          listener.error(new IllegalStateException("Malformed part header"));
+          break;
         }
         start = ret;
       }
@@ -385,7 +429,8 @@ public final class Multipart {
         if (matchPostBoundary == 2) {
           matchPostBoundary = 0;
           if (data[start] == '-') {
-            // End of multipart data
+            // End of multipart data. As in Busboy, later writes are ignored, but the search goes on over the rest of
+            // the current chunk (so a boundary in the epilogue of the same chunk starts a new part).
             complete = true;
             ignoring = true;
             return;
