@@ -151,6 +151,21 @@ class LocalEndToEndTest {
     client = applicationUnderTest.graphql().client();
   }
 
+  /**
+   * What stopping {@code boost start} and starting it again does: the server and Booster stop, then the application
+   * starts again (new configuration, new rocket registration) over the same project directory, on new free ports.
+   */
+  private void restart() {
+    server.close();
+    server = null;
+    Booster.reset();
+    Booster.start(App.class);
+    config = Booster.config();
+    config.logger = Logger.NOOP;
+    config.setUserProjectRootPath(project.toString());
+    startServer();
+  }
+
   private static Map<String, Object> variables(Object... keysAndValues) {
     Map<String, Object> variables = new LinkedHashMap<>();
     for (int i = 0; i < keysAndValues.length; i += 2) {
@@ -261,7 +276,104 @@ class LocalEndToEndTest {
   }
 
   @Nested
+  class Restarts {
+
+    private int quantityOf(Map<String, Object> event) {
+      return ((Number) ((Map<?, ?>) event.get("value")).get("quantity")).intValue();
+    }
+
+    @Test
+    void webhook_events_and_read_models_survive_restarts_and_concurrent_calls_lose_no_event() throws Exception {
+      assertThat(postJson("/orders", "{\"orderId\":\"durable-1\",\"product\":\"desk\",\"quantity\":1}", Map.of())
+          .statusCode()).isEqualTo(200);
+      awaitReadModel(ORDER, "OrderReadModel", "durable-1", "placed");
+
+      restart();
+
+      assertThat(server.recoveredEvents()).isEmpty();
+      assertThat(awaitReadModel(ORDER, "OrderReadModel", "durable-1", "placed")).containsEntry("product", "desk")
+          .containsEntry("quantity", 1);
+      assertThat(applicationUnderTest.query().events("Order-durable-1-event")).hasSize(1);
+
+      // 16 concurrent calls on the order placed before the restart and 16 on new orders
+      List<Future<HttpResponse<byte[]>>> responses = new ArrayList<>();
+      try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        for (int i = 1; i <= 16; i++) {
+          String same = "{\"orderId\":\"durable-1\",\"product\":\"desk\",\"quantity\":" + (i + 1) + "}";
+          String other = "{\"orderId\":\"durable-other-" + i + "\",\"product\":\"chair\",\"quantity\":" + i + "}";
+          responses.add(executor.submit(() -> postJson("/orders", same, Map.of())));
+          responses.add(executor.submit(() -> postJson("/orders", other, Map.of())));
+        }
+      }
+      for (Future<HttpResponse<byte[]>> response : responses) {
+        assertThat(response.get().statusCode()).as(Http.text(response.get())).isEqualTo(200);
+      }
+      List<Map<String, Object>> events = applicationUnderTest.query().events("Order-durable-1-event");
+      assertThat(events).hasSize(17);
+      assertThat(events).extracting(event -> event.get("requestID")).doesNotHaveDuplicates();
+      assertThat(events).extracting(this::quantityOf).containsExactlyInAnyOrder(
+          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17);
+      for (int i = 1; i <= 16; i++) {
+        assertThat(awaitReadModel(ORDER, "OrderReadModel", "durable-other-" + i, "placed")).containsEntry("quantity", i);
+      }
+      // The entity, and so its read model, ends with the event stored last (events come newest first)
+      int latest = quantityOf(events.getFirst());
+      await().atMost(TIMEOUT).pollInterval(Duration.ofMillis(200)).until(() ->
+          client.query(ORDER, variables("id", "durable-1")).get("OrderReadModel") instanceof Map<?, ?> readModel
+              && readModel.get("quantity") instanceof Number quantity && quantity.intValue() == latest);
+
+      restart();
+
+      assertThat(server.recoveredEvents()).isEmpty();
+      assertThat(applicationUnderTest.query().events("Order-durable-1-event")).hasSize(17);
+      assertThat(applicationUnderTest.count().events()).isEqualTo(1 + 16 + 16);
+      assertThat(awaitReadModel(ORDER, "OrderReadModel", "durable-1", "placed")).containsEntry("quantity", latest);
+      assertThat(postJson("/orders", "{\"orderId\":\"durable-2\",\"product\":\"lamp\"}", Map.of()).statusCode())
+          .isEqualTo(200);
+      assertThat(awaitReadModel(ORDER, "OrderReadModel", "durable-2", "placed")).containsEntry("product", "lamp");
+      assertThat(client.mutate(CONFIRM, variables("orderId", "durable-1")).get("ConfirmOrder")).isEqualTo(true);
+      assertThat(awaitReadModel(ORDER, "OrderReadModel", "durable-1", "confirmed")).containsEntry("quantity", latest);
+    }
+  }
+
+  @Nested
   class Routing {
+
+    @Test
+    void head_requests_reach_the_get_route_and_the_method_policy_answers_without_body() {
+      HttpResponse<byte[]> head = Http.send("HEAD", baseUrl + "/status", Map.of(), null);
+
+      // Express routes HEAD to the GET handler; dispatch answers `Method HEAD not allowed` and res.json sends no body
+      assertThat(head.statusCode()).isEqualTo(500);
+      assertThat(head.body()).isEmpty();
+      assertThat(Http.header(head, "Content-Type")).isEqualTo("application/json; charset=utf-8");
+    }
+
+    @Test
+    void a_host_header_jetty_accepts_but_the_url_parser_rejects_is_a_500_invalid_url() {
+      String response = Http.raw(server.port(),
+          "GET /status HTTP/1.1\r\nHost: a%20b\r\nConnection: close\r\n\r\n");
+      String noHost = Http.raw(server.port(), "GET /status?name=x HTTP/1.0\r\n\r\n");
+
+      assertThat(response).startsWith("HTTP/1.1 500 ")
+          .endsWith("{\"title\":\"Illegal Argument Exception\",\"reason\":\"Invalid URL\"}");
+      // An HTTP/1.0 request without Host resolves against http://undefined/
+      assertThat(noHost).startsWith("HTTP/1.1 200 ").endsWith("Hello x");
+    }
+
+    @Test
+    void octet_stream_bodies_over_the_100kb_of_express_raw_fail_before_the_webhook() {
+      HttpResponse<byte[]> atLimit = Http.send("POST", baseUrl + "/inspect",
+          Map.of("Content-Type", "application/octet-stream"), new byte[100 * 1024]);
+      HttpResponse<byte[]> overLimit = Http.send("POST", baseUrl + "/inspect",
+          Map.of("Content-Type", "application/octet-stream"), new byte[100 * 1024 + 1]);
+
+      assertThat(atLimit.statusCode()).isEqualTo(200);
+      assertThat(((Map<?, ?>) json(atLimit)).get("body")).isEqualTo(100 * 1024);
+      // The PayloadTooLargeError reaches the server's error handler: httpStatusCodeFor gives 500
+      assertThat(overLimit.statusCode()).isEqualTo(500);
+      assertThat(json(overLimit)).isEqualTo(failure("Payload Too Large Error", "request entity too large"));
+    }
 
     @Test
     void the_method_policy_and_the_exact_route_match_are_enforced_by_the_dispatcher() {
@@ -376,6 +488,43 @@ class LocalEndToEndTest {
       assertThat(Http.text(response)).isEqualTo(Webhooks.DailyReport.CSV);
       assertThat(Http.header(response, "Content-Type")).isEqualTo("text/csv");
       assertThat(Http.header(response, "Content-Disposition")).isEqualTo("attachment; filename=daily.csv");
+    }
+
+    @Test
+    void headers_node_would_reject_fail_the_request_and_latin1_values_are_sent() {
+      HttpResponse<byte[]> badName = Http.get(baseUrl + "/echo-header?name=Bad%20Header&value=x");
+      HttpResponse<byte[]> badValue = Http.get(baseUrl + "/echo-header?name=X-Test&value=a%0D%0Ab");
+      HttpResponse<byte[]> badFileName = Http.get(baseUrl + "/echo-header?file="
+          + URLEncoder.encode("名.txt", StandardCharsets.UTF_8));
+      HttpResponse<byte[]> latin1 = Http.get(baseUrl + "/echo-header?name=X-Test&value="
+          + URLEncoder.encode("café", StandardCharsets.UTF_8));
+
+      // res.setHeader throws inside handleWebhook: requestFailed answers 500 with the error (TypeError in TypeScript)
+      assertThat(badName.statusCode()).isEqualTo(500);
+      assertThat(json(badName)).isEqualTo(failure("Illegal Argument Exception",
+          "Header name must be a valid HTTP token [\"Bad Header\"]"));
+      assertThat(json(badValue)).isEqualTo(failure("Illegal Argument Exception",
+          "Invalid character in header content [\"X-Test\"]"));
+      assertThat(json(badFileName)).isEqualTo(failure("Illegal Argument Exception",
+          "Invalid character in header content [\"Content-Disposition\"]"));
+      assertThat(latin1.statusCode()).isEqualTo(200);
+      assertThat(Http.header(latin1, "X-Test")).isEqualTo("café");
+    }
+
+    @Test
+    void the_webhook_rocket_has_no_entry_in_the_rockets_health_indicator() {
+      config.sensorConfiguration.health.booster.get("rockets").enabled = true;
+
+      HttpResponse<byte[]> response = Http.get(baseUrl + "/sensor/health/rockets");
+
+      // Its parameters are a list without rocketProviderPackage, so areRocketFunctionsUp finds no rocket
+      assertThat(response.statusCode()).as(Http.text(response)).isEqualTo(200);
+      assertThat((List<?>) json(response)).singleElement().satisfies(indicator -> {
+        Map<?, ?> rockets = (Map<?, ?>) indicator;
+        assertThat(rockets.get("id")).isEqualTo("rockets");
+        assertThat(rockets.get("status")).isEqualTo("UNKNOWN");
+        assertThat(rockets.get("details")).isEqualTo(Map.of("reason", "No Rockets found"));
+      });
     }
 
     @Test

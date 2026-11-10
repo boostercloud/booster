@@ -54,7 +54,23 @@ public final class Webhooks {
                 throw new NotAuthorizedError("Invalid API key");
               }
             }).build(),
-        WebhookParamsEvent.builder().route("fail").handlerClass(Fail.class).build());
+        WebhookParamsEvent.builder().route("fail").handlerClass(Fail.class).build(),
+        WebhookParamsEvent.builder().route("echo-header").handlerClass(EchoHeader.class)
+            .allowedMethods(AllowedHttpMethod.GET).build());
+  }
+
+  /** {@code GET /echo-header?name=...&value=...[&file=...]}: answers with the header (or the file name) given. */
+  public static final class EchoHeader {
+    private EchoHeader() {}
+
+    public static WebhookHandlerReturnType handle(WebhookEvent event, Register register) {
+      if (event.query().get("file") instanceof String fileName) {
+        return WebhookHandlerReturnType.file("content".getBytes(StandardCharsets.UTF_8), fileName, "text/plain");
+      }
+      Map<String, Object> headers = new LinkedHashMap<>();
+      headers.put(String.valueOf(event.query().get("name")), event.query().get("value"));
+      return WebhookHandlerReturnType.text("ok").withHeaders(headers);
+    }
   }
 
   /** {@code POST /orders}: places an order from a JSON body. */

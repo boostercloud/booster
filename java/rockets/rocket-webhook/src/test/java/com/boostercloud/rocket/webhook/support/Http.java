@@ -2,6 +2,8 @@ package com.boostercloud.rocket.webhook.support;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -56,6 +58,25 @@ public final class Http {
    */
   public static HttpResponse<byte[]> get(String url) {
     return send("GET", url, Map.of(), null);
+  }
+
+  /**
+   * Sends bytes as they are on a new connection (for requests {@link HttpClient} refuses to build, such as odd
+   * {@code Host} headers) and reads until the server closes it; send {@code Connection: close}.
+   *
+   * @param port the local port
+   * @param request the request head and body
+   * @return the raw response, decoded as ISO-8859-1
+   */
+  public static String raw(int port, String request) {
+    try (Socket socket = new Socket(InetAddress.getLoopbackAddress(), port)) {
+      socket.setSoTimeout(30_000);
+      socket.getOutputStream().write(request.getBytes(StandardCharsets.ISO_8859_1));
+      socket.getOutputStream().flush();
+      return new String(socket.getInputStream().readAllBytes(), StandardCharsets.ISO_8859_1);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /**
