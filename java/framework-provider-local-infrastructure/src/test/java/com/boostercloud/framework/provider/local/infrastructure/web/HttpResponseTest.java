@@ -60,6 +60,21 @@ class HttpResponseTest {
   }
 
   @Test
+  void anEmptyContentTypeCountsAsMissingLikeExpress() {
+    MemoryHttpResponse bytes = new MemoryHttpResponse();
+    bytes.setHeader("Content-Type", "").send(new byte[] {7});
+    assertThat(bytes.getHeader("Content-Type")).isEqualTo("application/octet-stream");
+
+    MemoryHttpResponse text = new MemoryHttpResponse();
+    text.setHeader("Content-Type", "").send("x");
+    assertThat(text.getHeader("Content-Type")).isEqualTo("text/html; charset=utf-8");
+
+    MemoryHttpResponse json = new MemoryHttpResponse();
+    json.setHeader("Content-Type", "").json(Map.of("a", 1));
+    assertThat(json.getHeader("Content-Type")).isEqualTo("application/json; charset=utf-8");
+  }
+
+  @Test
   void noContentResponsesDropTheBody() {
     MemoryHttpResponse response = new MemoryHttpResponse();
     response.status(204).send("ignored");

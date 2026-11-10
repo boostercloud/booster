@@ -224,15 +224,15 @@ public abstract class HttpResponse {
    */
   public void json(Object body) {
     String text = BoosterJson.toJson(body);
-    if (getHeader("Content-Type") == null) {
+    if (!hasContentType()) {
       header("Content-Type", "application/json");
     }
     send(text);
   }
 
   /**
-   * {@code res.send(body)}: a string is sent as UTF-8 ({@code text/html} by default, the charset forced to
-   * {@code utf-8}); a byte array as is ({@code application/octet-stream} by default); {@code null} as an empty body;
+   * {@code res.send(body)}: a string is sent as UTF-8 ({@code text/html} when the content type is absent or empty, the
+   * charset forced to {@code utf-8}); a byte array as is ({@code application/octet-stream} when absent or empty); {@code null} as an empty body;
    * anything else as JSON. 204 and 304 responses drop the body and its headers, 205 sends an empty body.
    *
    * @param body the body
@@ -242,13 +242,13 @@ public abstract class HttpResponse {
     if (body == null) {
       bytes = EMPTY;
     } else if (body instanceof String text) {
-      if (getHeader("Content-Type") == null) {
+      if (!hasContentType()) {
         type("html");
       }
       setHeader("Content-Type", MimeTypes.setCharset(getHeader("Content-Type"), "utf-8"));
       bytes = text.getBytes(StandardCharsets.UTF_8);
     } else if (body instanceof byte[] array) {
-      if (getHeader("Content-Type") == null) {
+      if (!hasContentType()) {
         type("bin");
       }
       bytes = array;
@@ -270,6 +270,16 @@ public abstract class HttpResponse {
       setHeader("Content-Length", Integer.toString(bytes.length));
     }
     finishWith(bytes);
+  }
+
+  /**
+   * Express's {@code if (!this.get('Content-Type'))}: an absent <b>or empty</b> content type counts as missing.
+   *
+   * @return whether a non-empty {@code Content-Type} is set
+   */
+  private boolean hasContentType() {
+    String type = getHeader("Content-Type");
+    return type != null && !type.isEmpty();
   }
 
   /**
