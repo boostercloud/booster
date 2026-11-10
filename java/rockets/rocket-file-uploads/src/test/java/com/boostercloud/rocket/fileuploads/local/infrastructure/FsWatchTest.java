@@ -22,6 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 class FsWatchTest {
 
   private static final Duration TIMEOUT = Duration.ofSeconds(30);
+  private static final Duration QUIET = Duration.ofSeconds(3);
 
   @TempDir
   Path project;
@@ -73,6 +74,10 @@ class FsWatchTest {
     expected.put("name", "client1/myfile.txt");
     assertThat(request).containsExactlyEntriesOf(expected);
     await().atMost(TIMEOUT).until(() -> dispatched.contains(expected));
+    // no debouncing: every change is dispatched, even the same one right again
+    watch.onChange("client1/myfile.txt");
+    await().atMost(TIMEOUT).until(() -> dispatched.size() == 2);
+    assertThat(dispatched).containsExactly(expected, expected);
   }
 
   @Test
@@ -102,12 +107,37 @@ class FsWatchTest {
     Path file = project.resolve("clientst/rocketfiles/client1/myfile.txt");
 
     Files.writeString(file, "one");
-    await().atMost(TIMEOUT).until(() -> names().contains("client1/myfile.txt"));
-    int afterCreation = dispatched.size();
-
+    int afterCreation = awaitNotificationsBeyond(0);
+    // rewriting an existing file (a second upload of the same name): Node's 'change' event
+    Files.writeString(file, "two, a different content");
+    int afterModification = awaitNotificationsBeyond(afterCreation);
     Files.delete(file);
-    await().atMost(TIMEOUT).until(() -> dispatched.size() > afterCreation);
+    awaitNotificationsBeyond(afterModification);
+
     assertThat(names()).containsOnly("client1/myfile.txt");
+  }
+
+  /**
+   * Waits for a notification after the first {@code count} ones, then until none has arrived for {@link #QUIET}
+   * (longer than the 2-second polling of macOS), so that the notifications of the next step are not those of this one
+   * (a creation can be reported as a creation and then a modification).
+   *
+   * @return the number of notifications once quiet
+   */
+  private int awaitNotificationsBeyond(int count) {
+    await().atMost(TIMEOUT).until(() -> dispatched.size() > count);
+    int[] last = {dispatched.size()};
+    long[] since = {System.nanoTime()};
+    await().atMost(TIMEOUT).pollInterval(Duration.ofMillis(100)).until(() -> {
+      int now = dispatched.size();
+      if (now != last[0]) {
+        last[0] = now;
+        since[0] = System.nanoTime();
+        return false;
+      }
+      return System.nanoTime() - since[0] >= QUIET.toNanos();
+    });
+    return last[0];
   }
 
   @Test

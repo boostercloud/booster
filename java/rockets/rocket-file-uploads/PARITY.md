@@ -25,7 +25,7 @@ Every row names the Java test that pins the behaviour, as `Class#method` under
 | Part | Rows | covered | fixed | differs | inherited | n/a |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript tests (28 `it`) | 28 | 28 | 0 | 0 | 0 | 0 |
-| 2. Behaviour (spec §3) | 98 | 59 | 14 | 21 | 3 | 1 |
+| 2. Behaviour (spec §3) | 98 | 58 | 15 | 21 | 3 | 1 |
 | 3. Data shapes (spec §4) | 12 | 10 | 1 | 1 | 0 | 0 |
 | 4. Characterisation tests (spec §5.3) | 16 | 14 | 1 | 1 | 0 | 0 |
 | 5. Porting notes and hazards (spec §6) | 16 | 9 | 2 | 5 | 0 | 0 |
@@ -224,7 +224,7 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | Directory → `next()` → Express 404; `HEAD` | `#a_directory_falls_through_to_not_found_and_head_answers_the_headers_only` | fixed `c9f5cd0e0` (test) |
 | `Range` requests and `304` of `send` | — | inherited: not emitted by the framework's `download` |
 | No authentication | `#a_put_writes_the_raw_body_and_answers_the_typescript_result` | covered |
-| Watcher: recursive, both event kinds, no debounce, deletions notified | `FsWatchTest#notifies_creations_modifications_and_deletions`, `#watches_directories_created_later_and_their_first_files` | covered |
+| Watcher: recursive, both event kinds, no debounce, deletions notified | `FsWatchTest#notifies_creations_modifications_and_deletions` (create, rewrite, delete: one more notification each), `#dispatches_the_typescript_request` (no debounce), `#watches_directories_created_later_and_their_first_files`, `LocalFilesServerTest#a_second_put_of_the_same_name_is_notified_again` | fixed (test): no test rewrote an existing file, so dropping `ENTRY_MODIFY` passed every test |
 | Hidden-segment regex `/(^\|[/\\])\../` and parent-directory filter | `FsWatchTest#ignores_hidden_segments_and_other_directories` | covered |
 | Request `{BOOSTER_ROCKET_FUNCTION_ID, uri, name}` in that order, `uri` with the mount port | `FsWatchTest#dispatches_the_typescript_request`, `LocalFilesServerTest#uploads_are_notified_to_the_rocket_function` | covered |
 | Every change of a burst notified | `FsWatchTest#a_burst_larger_than_the_jdk_event_queue_is_fully_notified` | fixed `b633079cc` |
