@@ -153,7 +153,8 @@ Provider:
 * The websocket server (Jetty) processes the events of each connection in order, on a virtual thread, including
   frames received before the `CONNECT` dispatch finished (TypeScript loses them and processes messages
   concurrently, Q11); handler failures are logged (TypeScript: unhandled rejections); closed connections are
-  removed from the connection table (Q10); sending to an unknown connection throws `IllegalStateException`
+  removed from the connection table (Q10); stopping the server lets the open connections process their
+  `DISCONNECT` (core deletes their connection data and subscriptions) before the data files close; sending to an unknown connection throws `IllegalStateException`
   (TypeScript: `TypeError`), sending to a closing one is dropped; there is no idle timeout and messages up to
   100 MiB are accepted (the `ws` defaults); its threads are daemon threads; an upgrade on another path gets 404
   (`ws`: 400).
