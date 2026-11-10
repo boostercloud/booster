@@ -1,23 +1,100 @@
 package com.boostercloud.framework.core;
 
+import com.boostercloud.framework.common.Instances;
+import com.boostercloud.framework.common.Loggers;
+import com.boostercloud.framework.common.Promises;
+import com.boostercloud.framework.core.instrumentation.Tracer;
+import com.boostercloud.framework.core.services.graphql.GraphQLGenerator;
+import com.boostercloud.framework.core.services.graphql.GraphQLResolverContext;
+import com.boostercloud.framework.core.services.pubsub.FilteredReadModelPubSub;
+import com.boostercloud.framework.core.services.pubsub.ReadModelPubSub;
 import com.boostercloud.framework.types.BoosterConfig;
+import com.boostercloud.framework.types.Logger;
+import com.boostercloud.framework.types.concepts.ReadModelMetadata;
+import com.boostercloud.framework.types.envelope.ReadModelEnvelope;
+import com.boostercloud.framework.types.envelope.SubscriptionEnvelope;
+import com.boostercloud.framework.types.graphql.GraphQLData;
+import com.boostercloud.framework.types.instrumentation.TraceActionTypes;
+import graphql.ExecutionInput;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
+import graphql.GraphQLError;
+import graphql.ParseAndValidate;
+import graphql.execution.SubscriptionExecutionStrategy;
+import graphql.language.Document;
+import graphql.parser.Parser;
+import graphql.schema.GraphQLSchema;
+import graphql.validation.ValidationError;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
+import org.reactivestreams.Publisher;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 /**
  * Port of {@code booster-subscribers-notifier.ts}: the entry point invoked by the provider when read models change;
  * re-executes every matching subscription against the changed read models and pushes the results to the
- * subscribers' connections.
+ * subscribers' connections. Traced as {@code DISPATCH_SUBSCRIBER_NOTIFIER}.
  *
- * <p>Skeleton: implemented by stage <b>core-2b</b> (spec 07 §3.5); trace action {@code DISPATCH_SUBSCRIBER_NOTIFIER}.
+ * <ol>
+ *   <li>{@code provider.readModels().rawToEnvelopes(config, request)}: the changed read models;</li>
+ *   <li>the stored subscriptions of every changed read model type ({@code fetchSubscriptions}, one call per type in
+ *       first-appearance order, concurrently);</li>
+ *   <li>a {@link FilteredReadModelPubSub} with the changed read models as instances of their classes ({@code Could not
+ *       get information about read model with name: <name>} for an unregistered one);</li>
+ *   <li>every subscription concurrently: its stored GraphQL document is parsed, validated and executed with
+ *       graphql-java (variables from the stored operation, no operation name, as in TypeScript) with a
+ *       {@link GraphQLResolverContext} whose {@code pubSub} is the filtered pub-sub and {@code storeSubscriptions} is
+ *       {@code false}; every event of the resulting stream is sent to the subscription's connection as
+ *       {@code { type: "data", id: operation.id, payload: { data } }}.</li>
+ * </ol>
+ *
+ * <p>{@link #dispatch} never throws: any failure (aggregated across subscriptions) is logged with
+ * {@code logger.error}. The expiration time, the authorizer and the stored filters of a subscription are not checked
+ * here (the filters are rebuilt by the subscription resolver from the stored document).
+ *
+ * <p>Contract with the subscription resolvers (stage core-3): the {@link GraphQLResolverContext} is the legacy
+ * graphql-java context ({@code environment.getContext()}) and is also stored in the {@code GraphQLContext} under the
+ * key {@code GraphQLResolverContext.class}; a subscription data fetcher returns
+ * {@code ReadModelPubSub.toPublisher(context.pubSub().asyncIterator(envelope, config))} (any
+ * {@code org.reactivestreams.Publisher} or {@code java.util.concurrent.Flow.Publisher} works).
  */
 public class BoosterSubscribersNotifier {
 
   private final BoosterConfig config;
+  private final GraphQLSchema graphQLSchema;
+  private final GraphQL graphQL;
 
   /**
+   * Builds (or reuses) the application's GraphQL schema ({@code GraphQLGenerator.generateSchema(config)}).
+   *
    * @param config the configuration
    */
   public BoosterSubscribersNotifier(BoosterConfig config) {
+    this(config, GraphQLGenerator.generateSchema(config));
+  }
+
+  /**
+   * A notifier for a given schema (tests and embedders).
+   *
+   * @param config the configuration
+   * @param graphQLSchema the schema the stored subscription documents are executed against
+   */
+  public BoosterSubscribersNotifier(BoosterConfig config, GraphQLSchema graphQLSchema) {
     this.config = config;
+    this.graphQLSchema = Objects.requireNonNull(graphQLSchema, "graphQLSchema");
+    this.graphQL = GraphQL.newGraphQL(graphQLSchema).build();
   }
 
   /**
@@ -28,11 +105,194 @@ public class BoosterSubscribersNotifier {
   }
 
   /**
-   * {@code dispatch(request)}. Implemented by stage core-2b.
+   * {@code dispatch(request)}.
    *
    * @param request the provider-specific request
    */
   public void dispatch(Object request) {
-    throw new UnsupportedOperationException("not implemented yet: BoosterSubscribersNotifier#dispatch");
+    Tracer.trace(TraceActionTypes.DISPATCH_SUBSCRIBER_NOTIFIER.value(), BoosterSubscribersNotifier.class, "dispatch",
+        Arrays.asList(request), () -> {
+          Logger logger = Loggers.getLogger(config, "BoosterSubscribersNotifier#dispatch");
+          try {
+            logger.debug("Received the following event for subscription dispatching: ", request);
+            List<ReadModelEnvelope> readModelEnvelopes = config.provider().readModels().rawToEnvelopes(config, request);
+            logger.debug("[SubsciptionDispatcher] The following ReadModels were updated: ", readModelEnvelopes);
+            List<SubscriptionEnvelope> subscriptions = getSubscriptions(readModelEnvelopes);
+            logger.debug("Found the following subscriptions for those read models: ", subscriptions);
+
+            ReadModelPubSub pubSub = getPubSub(readModelEnvelopes);
+            Promises.mapAllSettledAndFulfilled(subscriptions, subscription -> runSubscriptionAndNotify(pubSub, subscription));
+          } catch (Exception e) {
+            logger.error(e);
+          }
+          return null;
+        });
+  }
+
+  private Object getReadModelInstance(ReadModelEnvelope envelope) {
+    ReadModelMetadata readModelMetadata = config.readModels.get(envelope.typeName());
+    if (readModelMetadata == null) {
+      throw new IllegalStateException("Could not get information about read model with name: " + envelope.typeName());
+    }
+    return Instances.createInstance(readModelMetadata.type(), envelope.value());
+  }
+
+  private List<SubscriptionEnvelope> getSubscriptions(List<ReadModelEnvelope> readModelEnvelopes) {
+    LinkedHashSet<String> readModelUniqueNames = new LinkedHashSet<>();
+    for (ReadModelEnvelope readModelEnvelope : readModelEnvelopes) {
+      readModelUniqueNames.add(readModelEnvelope.typeName());
+    }
+    List<Callable<List<SubscriptionEnvelope>>> fetches = new ArrayList<>();
+    for (String name : readModelUniqueNames) {
+      fetches.add(() -> config.provider().readModels().fetchSubscriptions(config, name));
+    }
+    List<SubscriptionEnvelope> subscriptions = new ArrayList<>();
+    for (List<SubscriptionEnvelope> subscriptionSet : Promises.runAll(fetches)) {
+      if (subscriptionSet != null) {
+        subscriptions.addAll(subscriptionSet);
+      }
+    }
+    return subscriptions;
+  }
+
+  private ReadModelPubSub getPubSub(List<ReadModelEnvelope> readModelEnvelopes) {
+    List<Object> readModelInstances = new ArrayList<>();
+    for (ReadModelEnvelope envelope : readModelEnvelopes) {
+      readModelInstances.add(getReadModelInstance(envelope));
+    }
+    return new FilteredReadModelPubSub(readModelInstances);
+  }
+
+  @SuppressWarnings({"deprecation", "unchecked"})
+  private Object runSubscriptionAndNotify(ReadModelPubSub pubSub, SubscriptionEnvelope subscription) {
+    Logger logger = Loggers.getLogger(config, "BoosterSubscribersNotifier#runSubscriptionAndNotify");
+    GraphQLResolverContext context = new GraphQLResolverContext(subscription.connectionID(), new LinkedHashMap<>(),
+        subscription.operation(), subscription.requestID(), subscription.currentUser(),
+        false, // We don't store the subscription again, just get the result now
+        pubSub, null);
+    String query = subscription.operation().query();
+    parseSubscriptionQuery(query);
+    logger.debug("Running subscription with context: ", context);
+    Map<String, Object> variables = subscription.operation().variables() == null
+        ? new LinkedHashMap<>()
+        : subscription.operation().variables();
+    Map<Object, Object> graphQLContext = new LinkedHashMap<>();
+    graphQLContext.put(GraphQLResolverContext.class, context);
+    graphQLContext.put(SubscriptionExecutionStrategy.KEEP_SUBSCRIPTION_EVENTS_ORDERED, true);
+    ExecutionInput executionInput = ExecutionInput.newExecutionInput()
+        .query(query)
+        .variables(variables)
+        .context(context)
+        .graphQLContext(builder -> builder.of(graphQLContext))
+        .build();
+    ExecutionResult result = graphQL.execute(executionInput);
+    if (result.getData() instanceof Publisher<?> iterator) {
+      // It is a stream of results
+      return processSubscriptionsIterator((Publisher<ExecutionResult>) iterator, subscription);
+    }
+    // If "subscribe" returns an ExecutionResult (instead of a stream) the subscription failed.
+    throw new GraphQLErrors(result.getErrors());
+  }
+
+  private Document parseSubscriptionQuery(String query) {
+    Document document = Parser.parse(query);
+    // We probably don't need to validate this again, as it was validated before storing it. BUT! It's always better to fail early
+    List<ValidationError> errors = ParseAndValidate.validate(graphQLSchema, document);
+    if (!errors.isEmpty()) {
+      throw new GraphQLErrors(new ArrayList<>(errors));
+    }
+    return document;
+  }
+
+  private Object processSubscriptionsIterator(Publisher<ExecutionResult> iterator, SubscriptionEnvelope subscription) {
+    List<CompletableFuture<Void>> notificationPromises = Collections.synchronizedList(new ArrayList<>());
+    CountDownLatch finished = new CountDownLatch(1);
+    AtomicReference<Throwable> failure = new AtomicReference<>();
+    iterator.subscribe(new Subscriber<>() {
+      @Override
+      public void onSubscribe(Subscription stream) {
+        stream.request(Long.MAX_VALUE);
+      }
+
+      @Override
+      public void onNext(ExecutionResult result) {
+        notificationPromises.add(Promises.start(() -> {
+          notifyWithGraphQLResult(subscription, result);
+          return null;
+        }));
+      }
+
+      @Override
+      public void onError(Throwable error) {
+        failure.set(error);
+        finished.countDown();
+      }
+
+      @Override
+      public void onComplete() {
+        finished.countDown();
+      }
+    });
+    try {
+      finished.await();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new CancellationException("Interrupted while running the subscription " + subscription.operation().id());
+    }
+    if (failure.get() != null) {
+      throw com.boostercloud.framework.core.internal.UserCode.rethrow(failure.get());
+    }
+    List<CompletableFuture<Void>> notifications;
+    synchronized (notificationPromises) {
+      notifications = new ArrayList<>(notificationPromises);
+    }
+    return Promises.all(notifications);
+  }
+
+  private void notifyWithGraphQLResult(SubscriptionEnvelope subscription, ExecutionResult result) {
+    Logger logger = Loggers.getLogger(config, "BoosterSubscribersNotifier#notifyWithGraphQLResult");
+    if (result.getErrors() != null && !result.getErrors().isEmpty()) {
+      throw new GraphQLErrors(result.getErrors());
+    }
+    Object readModel = result.getData();
+    Map<String, Object> payload = new LinkedHashMap<>();
+    payload.put("data", readModel);
+    GraphQLData message = new GraphQLData(subscription.operation().id(), payload);
+    logger.debug("Notifying connectionID '" + subscription.connectionID() + "' with the following wrappeed read model: ",
+        readModel);
+    config.provider().connections().sendMessage(config, subscription.connectionID(), message);
+    logger.debug("Notifications sent");
+  }
+
+  /**
+   * The GraphQL errors of a subscription run (TypeScript throws the {@code GraphQLError} array itself): parse or
+   * validation errors of the stored document, errors of the subscription resolver, or errors of one event.
+   */
+  public static final class GraphQLErrors extends RuntimeException {
+    private static final long serialVersionUID = 1L;
+
+    private final transient List<GraphQLError> errors;
+
+    /**
+     * @param errors the errors
+     */
+    public GraphQLErrors(List<? extends GraphQLError> errors) {
+      super(message(errors));
+      this.errors = errors == null ? List.of() : List.copyOf(errors);
+    }
+
+    /**
+     * @return the GraphQL errors
+     */
+    public List<GraphQLError> errors() {
+      return errors;
+    }
+
+    private static String message(List<? extends GraphQLError> errors) {
+      if (errors == null || errors.isEmpty()) {
+        return "undefined";
+      }
+      return String.join(",", errors.stream().map(GraphQLError::getMessage).toList());
+    }
   }
 }
