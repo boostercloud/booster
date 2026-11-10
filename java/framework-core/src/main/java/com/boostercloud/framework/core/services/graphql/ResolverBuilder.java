@@ -1,17 +1,14 @@
 package com.boostercloud.framework.core.services.graphql;
 
-import graphql.schema.DataFetcher;
-
 /**
- * Port of {@code ResolverBuilder} ({@code services/graphql/common.ts}): builds the resolver of a field for a class.
- *
- * <p>Owned by stage <b>core-3</b> (spec 08 §2.3).
+ * Port of {@code ResolverBuilder} ({@code services/graphql/common.ts}): builds the resolver of a field for a read
+ * model, command or query class.
  */
 @FunctionalInterface
 public interface ResolverBuilder {
   /**
    * @param objectClass the read model, command or query class
-   * @return the resolver
+   * @return the resolver (a graphql-java {@code DataFetcher}), or {@code null} for the default property resolver
    */
-  DataFetcher<Object> build(Class<?> objectClass);
+  GraphQLFieldResolver build(Class<?> objectClass);
 }
