@@ -41,6 +41,9 @@ Commits of this audit:
 * `1a562c579` — `GraphQLExecutionTest#waitsForAsynchronousCalculatedFieldsAndTypesThemWithTheirResult`
 * `50d7233d0` — `EventStoreTest#returnsTheMigratedSnapshotWithoutStoringItBackWhenThereAreNoPendingEvents`,
   `EventStoreTest#failsWhenTheLatestSnapshotHasAnUnknownSchemaVersion`
+* `b403e1c3e` — not a parity gap: `integration.MigrationsIntegrationTest#theDataMigrationEventsAreNotReadableThroughTheApi`
+  failed intermittently (it compared the in-memory store's strictly increasing `createdAt` with the clock); the
+  assertion now allows that bump
 
 ---
 
