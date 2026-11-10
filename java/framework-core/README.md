@@ -3,8 +3,9 @@
 Java port of `packages/framework-core`: the annotations a Booster application is written with, the `Booster`
 facade that boots it, the dispatchers of commands, queries, scheduled commands and rockets, authorization and
 token verification, the global error handler, tracing and schema migrations — plus the entry points the providers
-call (`UserApp`). The event pipeline, the read models, the health sensor and the GraphQL layer are ported by later
-stages; their public signatures exist already as **skeletons** (see [Module layout](#module-layout)).
+call (`UserApp`) and the event pipeline (event store, snapshots, event handlers, event streams, event search). The
+read models, the health sensor and the GraphQL layer are ported by later stages; their public signatures exist already
+as **skeletons** (see [Module layout](#module-layout)).
 
 ```java
 @Command(authorize = All.class)
@@ -43,8 +44,8 @@ way against this module, boots it and dispatches a command and a query.
 | `UserApp` method | Delegate | Stage |
 | --- | --- | --- |
 | `boosterServeGraphQL` | `new BoosterGraphQLDispatcher(config).dispatch(raw)` | core-3 |
-| `boosterEventDispatcher` | `BoosterEventDispatcher.dispatch(raw, config)` | core-2a |
-| `boosterConsumeEventStream` / `boosterProduceEventStream` | `BoosterEventStreamConsumer.consume` / `BoosterEventStreamProducer.produce` | core-2a |
+| `boosterEventDispatcher` | `BoosterEventDispatcher.dispatch(raw, config)` | done |
+| `boosterConsumeEventStream` / `boosterProduceEventStream` | `BoosterEventStreamConsumer.consume` / `BoosterEventStreamProducer.produce` | done |
 | `boosterNotifySubscribers` | `new BoosterSubscribersNotifier(config).dispatch(raw)` | core-2b |
 | `boosterHealth` | `new BoosterHealthService(config).boosterHealth(raw)` | core-2b |
 | `boosterTriggerScheduledCommands` (+ deprecated alias) | `new BoosterScheduledCommandDispatcher(config).dispatch(raw)` | done |
@@ -54,6 +55,48 @@ way against this module, boots it and dispatches a command and a query.
 migration (`SchemaMigrator`), `before` hooks (`FilterHelpers`), instance creation (`Instances.createInstance`),
 static `handle(command, register)`, global error handler, `RegisterHandler.handle` (wraps the registered events and
 stores them with retry/backoff). Queries follow the same path without migration and register.
+
+**Events** (spec 06; `booster-event-dispatcher.ts` and friends):
+
+1. The provider calls `boosterEventDispatcher(raw)` with a page of its event store change feed
+   (`provider.events().rawToEnvelopes(raw)`), or `boosterConsumeEventStream(raw)` with stream messages
+   (`dedupEventStream(config, raw)`, then `rawStreamToEnvelopes(config, raw, dedup)`). Both entry points, and
+   `boosterProduceEventStream` (which hands each entity's events to `provider.events().produce`), **never throw**: every
+   failure is logged.
+2. `RawEventsParser.streamPerEntityEvents` drops snapshots and soft-deleted events, groups the page by
+   `(entityTypeName, entityID)` (page order kept inside a group) and calls the per-entity callback for every group.
+3. `BoosterEventProcessor` (the callback): `EventStore.storeDispatchedEvent` marks every event as dispatched
+   (`provider.events().storeDispatched`, retried; a mark that cannot be stored means "process it") and drops the ones
+   already seen; then the **event handlers** of the remaining events run (handlers of the type, then the
+   `@GlobalEventHandler`s; one event instance per event, bound from the stored, un-migrated value; a fresh `Register`
+   per handler with the event's request id and user, stored with `RegisterHandler.handle` after the handler) together
+   with — unless the entity name is a notification topic — **the snapshot and the projection**:
+   `EventStore.fetchEntitySnapshot` then `ReadModelStore.project`.
+4. `EventStore.fetchEntitySnapshot(entity, id)` loads the latest snapshot (schema-migrated), the events stored after
+   its `snapshottedEventCreatedAt` (or `1970-01-01T00:00:00.000Z`), reduces them one by one in provider order
+   (`BoosterEntityTouched`/`BoosterEntityMigrated` by the framework, every other event schema-migrated and passed with
+   the current entity, `null` at first, to its static `@Reduces` method) and stores one snapshot for the final state
+   with retry/backoff. Unregistered events and reducer failures go to the global error handler (the class Javadoc has
+   the exact skip/abort rules). `Booster.entity` and the data migrations use the same method.
+
+Other entry points: `Booster.events` → `BoosterEventSearch.eventSearch` (values bound to their event/notification
+classes), `BoosterEventsReader` (GraphQL `eventsByEntity`/`eventsByType`: validation and per-entity authorization,
+then `Booster.events`), `Booster.deleteEvent` → `BoosterDeleteEventDispatcher` (un-project and delete the snapshots
+of each event, then the events), `BoosterTouchEntityHandler.touchEntity` (stores a `BoosterEntityTouched` event so the
+snapshot is rebuilt and the read models re-projected).
+
+**Execution model of the event pipeline.** TypeScript awaits the entity groups, the handlers-versus-projection pair,
+the events of a group and the handlers of an event concurrently on its single thread, never failing fast. Java runs
+each of those on its own **virtual thread** through the foundation's `Promises` helpers with `allSettled` semantics:
+everything is joined before the call returns (serverless hosts rely on that), and a failure is collected (and logged
+or rethrown as a `PromisesError` exactly where TypeScript does) only after every sibling finished. Guarantees kept:
+the reduction of an entity is strictly sequential in provider order, with one `fetchEntitySnapshot` per entity per
+page; one entity's failure never affects another; the events handed to the handlers keep the page order.
+Non-guarantees, as in TypeScript: the order in which handlers (of one event, or of the events of a batch) complete,
+and the order between handlers and projections. The difference is real parallelism: user handlers, reducers of
+different entities and projections may run at the same time on several threads, so state they share must be
+thread-safe, and handlers must not mutate the event instance they share with the other handlers of the event (records
+are immutable).
 
 **Running** (`Booster.run(main, args)`, the contract of `java/cli/README.md`): `start [--port N]` (blocks while the
 local server runs), `synth`, `deploy`, `nuke` through `config.provider().infrastructure()`; with
@@ -82,8 +125,8 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
 | `services/filter-helpers.ts`, `services/read-model-searcher.ts` | `services.FilterHelpers`, `services.ReadModelSearcher` | done |
 | `services/graphql/common.ts` (`GraphQLResolverContext`) | `services.graphql.GraphQLResolverContext` | done |
 | `sensor/health/health-indicators/default-booster-health-indicators.ts` | `sensor.health.healthindicators.DefaultBoosterHealthIndicators` | done |
-| `core-concepts/**` | `coreconcepts.datamigration.events.*`, `coreconcepts.touchentity.events.*` (records, done); `coreconcepts.datamigration.entities.BoosterDataMigrationEntity` (record done, reducers core-2a) | done / core-2a |
-| `services/event-store.ts`, `services/raw-events-parser.ts`, `booster-event-dispatcher.ts`, `booster-event-processor.ts`, `booster-event-stream-consumer.ts`, `booster-event-stream-producer.ts`, `booster-delete-event-dispatcher.ts`, `booster-touch-entity-handler.ts`, `booster-events-reader.ts`, `booster-event-search.ts` | `services.EventStore`, `services.RawEventsParser`, `BoosterEventDispatcher`, `BoosterEventProcessor`, `BoosterEventStreamConsumer`, `BoosterEventStreamProducer`, `BoosterDeleteEventDispatcher`, `BoosterTouchEntityHandler`, `BoosterEventsReader`, `BoosterEventSearch` | core-2a |
+| `core-concepts/**` | `coreconcepts.datamigration.events.*`, `coreconcepts.touchentity.events.*`, `coreconcepts.datamigration.entities.BoosterDataMigrationEntity` | done |
+| `services/event-store.ts`, `services/raw-events-parser.ts`, `booster-event-dispatcher.ts`, `booster-event-processor.ts`, `booster-event-stream-consumer.ts`, `booster-event-stream-producer.ts`, `booster-delete-event-dispatcher.ts`, `booster-touch-entity-handler.ts`, `booster-events-reader.ts`, `booster-event-search.ts` | `services.EventStore`, `services.RawEventsParser`, `BoosterEventDispatcher`, `BoosterEventProcessor`, `BoosterEventStreamConsumer`, `BoosterEventStreamProducer`, `BoosterDeleteEventDispatcher`, `BoosterTouchEntityHandler`, `BoosterEventsReader`, `BoosterEventSearch` (+ Java addition `services.IgnoredReducerError`) | done |
 | `services/read-model-store.ts`, `booster-read-models-reader.ts`, `booster-subscribers-notifier.ts`, `services/pub-sub/*`, `read-model-schema-migrator.ts`, `booster-data-migrations.ts` | `services.ReadModelStore`, `BoosterReadModelsReader`, `BoosterSubscribersNotifier`, `services.pubsub.*`, `ReadModelSchemaMigrator`, `BoosterDataMigrations` | core-2b |
 | `sensor/health/booster-health-service.ts`, `health-utils.ts`, the indicators, `booster-version.ts`, `os-info.ts` | `sensor.health.BoosterHealthService`, `sensor.health.HealthUtils`, `sensor.health.healthindicators.*` | core-2b |
 | `booster-graphql-dispatcher.ts`, `services/graphql/**` | `BoosterGraphQLDispatcher`, `services.graphql.*` (generators, type informer, `Common`, `TargetTypeMetadata`, `ResolverBuilder`), `services.graphql.querygenerators.*`, `services.graphql.queryhelpers.*`, `services.graphql.websocketprotocol.*` | core-3 |
@@ -176,6 +219,52 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
   descriptor); a `null` `onStart`/`onEnd` does nothing; `elapsedInvocationMillis` uses `Dates` (replaceable clock).
 * `BoosterRocketDispatcher` and other plain TypeScript `Error`s are `IllegalStateException`s with the same messages.
 
+**Events**
+
+* `EventStore.fetchEntitySnapshot` returns an `Optional` (empty when the entity has no state, or when the new snapshot
+  could not be stored after every attempt — TypeScript's `undefined`). The loaded snapshot reaches the reducers as a
+  `NonPersistedEntitySnapshotEnvelope` (its persistence fields dropped; TypeScript keeps them on the same object), and
+  that is what is stored again in the TypeScript quirk where pending entries exist but none changed the state.
+* `throw undefined` (a global error handler that returns nothing for a reducer error) is the Java exception
+  `services.IgnoredReducerError`, with the reducer error as cause: as in TypeScript, the reduction of the entity stops
+  and nothing is stored. The double dispatch of a missing reducer (first from the reduction, then from the loop) is
+  kept.
+* Reducers are resolved with `UserCode.findStatic(entityClass, methodName, event, entity)`: a reducer whose parameters
+  cannot take the arguments is an `IllegalStateException` (TypeScript: a `TypeError` calling `undefined`) handled as a
+  reducer error. A reducer returning a `CompletionStage` is awaited (TypeScript would store the `Promise`). A missing
+  entity registration while reducing, and an event type registered as neither event nor notification when calling its
+  handlers, are `IllegalStateException`s with explicit messages (TypeScript: `TypeError`s), on the same paths.
+* The values of the built-in `BoosterEntityTouched`/`BoosterEntityMigrated` events are read from raw maps (from
+  storage) or from the records themselves (in-process providers); `BoosterEntityMigrated.newEntity` is used as is.
+* `loadEventStreamSince` returns `List<? extends EventStoreEntryEnvelope>` so that the "skip what is not an event"
+  check stays meaningful; a `null` provider list counts as empty. `storeDispatchedEvent` returns `boolean`.
+* Event handlers: `eventHandlerMetadata` of `onDispatchEventHandlerError` is always `null` (TypeScript reads
+  `e.eventHandlerMetadata`, which nothing sets). Failures of user reducers and handlers are routed to the global error
+  handler when they are `Exception`s (as in the other dispatchers); the entry points and the per-entity isolation
+  catch every `Throwable`.
+* `BoosterDeleteEventDispatcher` passes `SnapshotDeleteParameters(entityID, entityTypeName, createdAt)` built from
+  each event (TypeScript passes the event envelope, from which providers read those three fields).
+* `eventSearch` returns new `EventSearchResponse` records with the bound values (TypeScript mutates the provider's
+  objects); results of unknown types are returned as received.
+* `BoosterEventsReader`: the typed `EventSearchParameters` cannot hold both `entity` and `type`, and `null`
+  parameters are the "none" case. `fetch(requestID, currentUser, rawParameters)` is a Java addition that classifies
+  raw parameters (GraphQL arguments) by key presence, as TypeScript's `'entity' in parameters`, with the exact
+  TypeScript errors. An entity registered with a `null` authorizer is denied (TypeScript would fail calling it).
+* `RawEventsParser` groups by a composite `(entityTypeName, entityID)` key (TypeScript's `` `${name}-${id}` `` string
+  can collide). The raw events are passed to the debug log as objects (TypeScript renders them with `util.inspect`
+  eagerly). The snapshot-storage error message renders the date like JavaScript's `Date.prototype.toString()` in the
+  system time zone.
+* `BoosterDataMigrationEntity.finished`: an unparsable `duration.start` gives a `null` `elapsedMilliseconds`
+  (JavaScript `NaN`, written as `null`); without a current state it throws a `NullPointerException` with a message
+  (TypeScript: `TypeError`). The wall clock comes from `Dates` (replaceable in tests).
+* Test seams (the TypeScript tests replace private and static members with sinon): `EventStore`'s steps are
+  package-private, non-final methods; `BoosterEventProcessor`'s steps are package-private methods of an instance
+  (`callback`, `filterDispatched`, `snapshotAndUpdateReadModels`, `dispatchEntityEventsToEventHandlers`,
+  `getEventInstance`, `callEventHandler`, `handleRegister`), because Mockito static mocks only apply to the calling
+  thread and the pipeline runs on virtual threads; `BoosterEventDispatcher.dispatch`,
+  `BoosterEventStreamConsumer.consume` and `BoosterDeleteEventDispatcher.deleteEvent` have package-private overloads
+  that take the stores.
+
 **Token verification**
 
 * `jsonwebtoken` and `jwks-rsa` are replaced by JDK code (`Utilities`, `JwksClient`, `PemKeys`) that keeps their check
@@ -193,8 +282,9 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
 
 ## Not implemented here
 
-Everything in the core-2a, core-2b and core-3 rows of the layout table (skeletons). The data-migration reducers
-`BoosterDataMigrationEntity.started/finished` belong to core-2a.
+Everything in the core-2b and core-3 rows of the layout table (skeletons). The event pipeline calls the core-2b
+`ReadModelStore.project`, which is still a skeleton in this stage: projections work once core-2b lands (the event
+tests mock it).
 
 ## Tests
 
@@ -203,3 +293,6 @@ Everything in the core-2a, core-2b and core-3 rows of the layout table (skeleton
 TypeScript test files (`booster-command-dispatcher.test.ts` → `BoosterCommandDispatcherTest`); `ImporterTest`
 compiles and scans a jar, `BoosterTokenVerifierTest` uses an in-process JWKS server (`JwtTestKeys`, replacing
 `mock-jwks`), and `UserFacingApiTest` compiles and boots an application written with the documented API.
+The event tests have no TypeScript counterpart for the stream consumer/producer (`BoosterEventStreamTest`), deletion,
+touching and the data-migration reducers; `BoosterEventDispatcherTest` also runs the whole pipeline end to end with a
+mocked provider and `ReadModelStore`.
