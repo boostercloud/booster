@@ -87,7 +87,7 @@ container names are placeholders: the generated `function.json` is authoritative
 | `eventHandler` | `eventHandler` | `cosmosDBTrigger` `documents` (string), lease container `leases` | `boosterEventDispatcher({ documents, context })` |
 | `eventProducer` | `eventProducer` | `cosmosDBTrigger` `documents` | `boosterProduceEventStream` |
 | `eventConsumer` (consumer app) | `eventConsumer` | `eventHubTrigger` `messages`, cardinality `many`, dataType `string` | `boosterConsumeEventStream({ messages, context })` |
-| `connect` / `disconnect` / `messages` | `connect` / `disconnect` / `messages` | `webPubSubTrigger` `request` (hub `booster`) + `$return`; metadata `connectionContext` | `boosterServeGraphQL({ request, context })`; error responses as `functions.js` |
+| `connect` / `disconnect` / `messages` | `connect` / `disconnect` / `messages` | `webPubSubTrigger` `request` (hub `booster`, connection `WebPubSubConnectionString`; no `$return` binding, the return value answers the trigger as with the Node v4 registration); metadata `connectionContext` | `boosterServeGraphQL({ request, context })`; error responses as `functions.js` |
 | `<ReadModel>-subscriptions-notifier` | `subscriptionsNotifier` | `cosmosDBTrigger` `documents` on the read model container | `boosterNotifySubscribers({ documents, context, typeName })`, `typeName` from the function name |
 | `scheduleFunction-<Command>` | `scheduledCommand` | `timerTrigger` `timer` (NCRONTAB) | `boosterTriggerScheduledCommands({ timer, context, typeName })`, `typeName` from the function name |
 | HTTP rocket functions | `rocketHttp` | `httpTrigger` `request` (GET, POST) + `$return` | `boosterRocketDispatcher({ req: { method, url, originalUrl, headers, query, params, rawBody, body } })` (webhook rocket shape) |
