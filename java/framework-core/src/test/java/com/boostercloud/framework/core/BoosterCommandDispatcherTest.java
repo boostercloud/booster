@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +27,7 @@ import com.boostercloud.framework.types.concepts.CommandMetadata;
 import com.boostercloud.framework.types.concepts.Register;
 import com.boostercloud.framework.types.concepts.UUID;
 import com.boostercloud.framework.types.envelope.CommandEnvelope;
+import com.boostercloud.framework.types.envelope.ContextEnvelope;
 import com.boostercloud.framework.types.envelope.NonPersistedEventEnvelope;
 import com.boostercloud.framework.types.envelope.UserEnvelope;
 import com.boostercloud.framework.types.errors.InvalidParameterError;
@@ -76,6 +79,18 @@ class BoosterCommandDispatcherTest extends BoosterTestSupport {
         throw FAILURE.get();
       }
       return "result of " + command.comment();
+    }
+  }
+
+  /** {@code register.mdx}: events flushed before a failure stay stored, the ones registered afterwards do not. */
+  @Command(authorize = All.class)
+  public record FlushingComment(String comment) {
+    public static void handle(FlushingComment command, Register register) {
+      register.events(new CommentPosted(UUID.of("post-1"), "flushed"));
+      register.flush();
+      HANDLED.add(List.copyOf(register.eventList()));
+      register.events(new CommentPosted(UUID.of("post-1"), "lost"));
+      throw new IllegalStateException("failed after the flush");
     }
   }
 
@@ -174,7 +189,7 @@ class BoosterCommandDispatcherTest extends BoosterTestSupport {
     when(provider.events()).thenReturn(events);
     when(events.store(anyList(), any())).thenReturn(List.of());
     config.setProvider(provider);
-    for (Class<?> type : List.of(Post.class, PostComment.class, SlowCommand.class, HookedComment.class,
+    for (Class<?> type : List.of(Post.class, PostComment.class, FlushingComment.class, SlowCommand.class, HookedComment.class,
         DoubleHookedComment.class, MigratedCommentMigration.class, MigratedComment.class)) {
       Decorators.registerClass(type);
     }
@@ -294,6 +309,33 @@ class BoosterCommandDispatcherTest extends BoosterTestSupport {
         .dispatchCommand(envelope("PostComment", 1, Map.of("comment", "x")), context(new LinkedHashMap<>())))
         .isSameAs(FAILURE.get());
     verify(events, never()).store(anyList(), any());
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void eventsFlushedBeforeAHandlerFailureStayStoredAndTheLaterOnesAreNot() {
+    assertThatThrownBy(() -> new BoosterCommandDispatcher(config)
+        .dispatchCommand(envelope("FlushingComment", 1, Map.of("comment", "x")), context(new LinkedHashMap<>())))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("failed after the flush");
+
+    ArgumentCaptor<List<NonPersistedEventEnvelope>> stored = ArgumentCaptor.forClass(List.class);
+    verify(events, times(1)).store(stored.capture(), eq(config));
+    assertThat(stored.getValue()).extracting(NonPersistedEventEnvelope::value)
+        .containsExactly(new CommentPosted(UUID.of("post-1"), "flushed"));
+    assertThat(HANDLED).containsExactly(List.of());
+  }
+
+  @Test
+  void theRegisterCarriesTheRequestContextOfTheCommand() {
+    ContextEnvelope requestContext = new ContextEnvelope(
+        new ContextEnvelope.Request(Map.of("authorization", "Bearer x"), Map.of("query", "mutation")), new Object());
+    CommandEnvelope envelope = envelope("PostComment", 1, Map.of("comment", "x")).toBuilder().context(requestContext).build();
+
+    new BoosterCommandDispatcher(config).dispatchCommand(envelope, context(new LinkedHashMap<>()));
+
+    assertThat(REGISTER.get().context()).isSameAs(requestContext);
+    assertThat(REGISTER.get().context().rawContext()).isSameAs(requestContext.rawContext());
   }
 
   @Test
