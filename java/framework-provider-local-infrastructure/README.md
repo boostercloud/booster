@@ -54,10 +54,17 @@ The `declare module 'http' { rawBody }` augmentation of `index.ts` is `HttpReque
 3. The port is bound (failing with `Could not listen on port N: ...` when taken) and each rocket's
    `mountStack(config, router, new InfrastructureRocketMetadata(port))` runs, in `config.rockets` order, on the same
    router, after the framework routes.
-4. Java-only start-up recovery: `runtime.recoverUndispatchedEvents(config)` re-dispatches the events a crash left
+4. Java-only start-up check: `runtime.loadExistingDataFiles()` loads the `.booster` files that exist. A torn last
+   line (a write cut by a crash) and up to 10 % of corrupt lines are skipped with a warning
+   (`[Booster local store] Discarding an incomplete last line of ...`, `Skipped N corrupt line(s) of ...`); a file
+   with more than 10 % of corrupt lines fails the start with NeDB's `CorruptDataFileException`
+   (`N% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to
+   prevent dataloss.`), logged as `Could not load the data files of <project>/.booster; the server does not start: ...`,
+   so `Booster.run` reports `The 'start' operation failed` and exits with code 1, leaving the file untouched.
+5. Java-only start-up recovery: `runtime.recoverUndispatchedEvents(config)` re-dispatches the events a crash left
    stored but undispatched (`framework-provider-local` README, "Durability and recovery"); a failure is logged and the
    server starts anyway (the entries stay for the next start).
-5. The provider's websocket server is started if needed, the HTTP server starts serving, the scheduler is configured
+6. The provider's websocket server is started if needed, the HTTP server starts serving, the scheduler is configured
    (TypeScript does it in the `listen` callback) and
    `Local server listening on http://localhost:3000 (GraphQL: ..., health: ..., websocket: ws://localhost:65529/websocket)`
    is logged (`[Booster]|LocalInfrastructure#start:` prefix, info level).
@@ -169,7 +176,9 @@ Lifecycle:
   port 0 (TypeScript passes the requested port); a taken port fails `start` with an exception (Node crashes with an
   unhandled `EADDRINUSE`). When the bound port differs from `BOOSTER_INTERNAL_LOCAL_PORT`, the variable is overridden
   in-process (`InternalInfo.setBoosterLocalPort`) so the health sensor probes the right URL.
-* Start-up recovery of undispatched events, the websocket server being (re)started with the HTTP server, the listening
+* The start-up load of the existing data files (a corrupt file stops the start; TypeScript loads each NeDB file on
+  first use, so it starts and the requests touching the file fail), start-up recovery of undispatched events, the
+  websocket server being (re)started with the HTTP server, the listening
   and stopping log lines, `unmountStack()` on shutdown: Java-only.
 * `deploy`, `nuke` and `synth` exist and throw `UnsupportedOperationException` with the CLI's message
   (`Attempted to perform the 'deploy' operation with a provider that does not support this feature, please check your
@@ -237,5 +246,6 @@ rocket routes too (a rocket that streams an upload must not receive it as `appli
   `WebSocketTest` (graphql-ws connect/message/disconnect), `RocketMountingTest` (loading errors, routes, streaming
   upload/download, unmount), `GracefulShutdownTest` (in-flight requests finish, new connections refused, stores
   closed), `SignalShutdownTest` (SIGTERM to a real JVM running `start`), `RestartTest` (data survives a restart; events
-  left undispatched by a crash are re-dispatched at start-up) and `testhelper.*Test` (counters and queries over NeDB
+  left undispatched by a crash are re-dispatched at start-up; a torn last line or a few corrupt lines are discarded
+  before the server serves, too many corrupt lines fail the start) and `testhelper.*Test` (counters and queries over NeDB
   files, readiness).

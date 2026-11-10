@@ -23,6 +23,9 @@ import com.boostercloud.framework.types.envelope.EntitySnapshotEnvelope;
 import com.boostercloud.framework.types.envelope.EventEnvelope;
 import com.boostercloud.framework.types.envelope.NonPersistedEntitySnapshotEnvelope;
 import com.boostercloud.framework.types.envelope.NonPersistedEventEnvelope;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -33,6 +36,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 /** Port of {@code test/library/events-adapter.test.ts}. */
 class EventsAdapterTest {
@@ -238,10 +242,42 @@ class EventsAdapterTest {
           map("_id", "id2", "entityTypeName", second.entityTypeName(), "entityID", second.entityID().value())));
       Map<String, Object> firstDocument = raw(mockEventEnvelop.persisted("2026-11-10T09:15:27.412Z"));
       firstDocument.put("_id", "id1");
-      inOrder.verify(mockEventRegistry).store(firstDocument);
+      Map<String, Object> secondDocument = raw(second.persisted("2026-11-10T09:15:27.412Z"));
+      secondDocument.put("_id", "id2");
+      inOrder.verify(mockEventRegistry).storeAll(List.of(firstDocument, secondDocument));
       inOrder.verify(mockUserApp).boosterEventDispatcher(stored);
       inOrder.verify(journal).remove(List.of("id1", "id2"));
+      verify(mockEventRegistry, never()).store(any());
       assertThat(stored).extracting(EventEnvelope::id).containsExactly("id1", "id2");
+    }
+
+    @Test
+    void withTheJournalTheBatchIsStoredAtomically(@TempDir Path directory) throws IOException {
+      // A crash, or a failed write, must never leave part of the events one command registered: the batch is one
+      // insert. Here its second document is invalid for the store, so the insert fails before writing anything (the
+      // TypeScript one-by-one loop, kept by the variant without journal, would have stored the first event).
+      Path eventsFile = directory.resolve("events.json");
+      EventRegistry registry = new EventRegistry(eventsFile);
+      DispatchJournal journal = new DispatchJournal(directory.resolve("dispatch_journal.json"));
+      NonPersistedEventEnvelope invalid = Mocks.nonPersistedEvent().toBuilder().value(map("$where", "x")).build();
+      try {
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> EventsAdapter.storeEvents(mockUserApp, registry,
+            journal, List.of(mockEventEnvelop, invalid), mockConfig))
+            .hasMessageContaining("Field names cannot begin with the $ character");
+        assertThat(registry.count()).isZero();
+        assertThat(Files.exists(eventsFile) ? Files.readString(eventsFile) : "").isEmpty();
+        assertThat(journal.size()).isZero();
+        verify(mockUserApp, never()).boosterEventDispatcher(any());
+
+        List<EventEnvelope> stored = EventsAdapter.storeEvents(mockUserApp, registry, journal,
+            List.of(mockEventEnvelop, Mocks.nonPersistedEvent(), Mocks.nonPersistedEvent()), mockConfig);
+        assertThat(registry.count()).isEqualTo(3);
+        assertThat(Files.readAllLines(eventsFile)).hasSize(3);
+        assertThat(stored).extracting(EventEnvelope::id).doesNotContainNull().doesNotHaveDuplicates();
+      } finally {
+        registry.events().close();
+        journal.datastore().close();
+      }
     }
   }
 

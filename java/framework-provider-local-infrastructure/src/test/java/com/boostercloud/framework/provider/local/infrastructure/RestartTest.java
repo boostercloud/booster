@@ -2,8 +2,10 @@ package com.boostercloud.framework.provider.local.infrastructure;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.boostercloud.framework.provider.local.LocalProviderRuntime;
 import com.boostercloud.framework.provider.local.infrastructure.testhelper.LocalTestHelper;
 import com.boostercloud.framework.provider.local.library.ApiAdapter;
+import com.boostercloud.framework.provider.local.store.CorruptDataFileException;
 import com.boostercloud.framework.types.concepts.UUID;
 import com.boostercloud.framework.types.envelope.EventEnvelope;
 import com.boostercloud.framework.types.envelope.NonPersistedEventEnvelope;
@@ -21,7 +23,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Stopping and starting the server over the same {@code .booster} directory, and start-up crash recovery. */
+/**
+ * Stopping and starting the server over the same {@code .booster} directory, start-up crash recovery and the start-up
+ * load of damaged data files.
+ */
 class RestartTest {
 
   @TempDir
@@ -112,6 +117,61 @@ class RestartTest {
     LocalServer third = fixture.start(crashImage, again);
     assertThat(third.recoveredEvents()).isEmpty();
     assertThat(again.processedEvents).isEmpty();
+  }
+
+  private static final String VALID_EVENT_LINE = "{\"kind\":\"event\",\"entityTypeName\":\"Cart\",\"entityID\":\"cart-1\","
+      + "\"typeName\":\"CartItemChanged\",\"value\":{\"cartId\":\"cart-1\"},\"createdAt\":\"2026-11-10T09:15:27.412Z\","
+      + "\"_id\":\"Xk2pQ9aLm0TzB7cd\"}";
+
+  @Test
+  void aDataFileWithTooManyCorruptLinesFailsTheStartAndIsLeftUntouched() throws IOException {
+    Path events = Files.createDirectories(directory.resolve(".booster")).resolve("events.json");
+    String contents = VALID_EVENT_LINE + "\n{\"kind\":\"event\",\"entityTy\n" + "garbage\n";
+    Files.writeString(events, contents);
+    LocalProviderRuntime runtime = ServerFixture.runtime(directory, new FakeUserApp(fixture.config));
+    try {
+      org.assertj.core.api.Assertions.assertThatThrownBy(() -> Infrastructure.infrastructure(List.of(),
+              fixture.options(runtime)).startServer(fixture.config, 0))
+          .isInstanceOf(CorruptDataFileException.class)
+          .hasMessage("66% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously "
+              + "refusing to start NeDB to prevent dataloss.");
+      assertThat(Files.readString(events)).isEqualTo(contents);
+      org.mockito.Mockito.verify(fixture.logger).error("[Booster]|LocalInfrastructure#start: ",
+          "Could not load the data files of " + directory.resolve(".booster").toAbsolutePath()
+              + "; the server does not start: 66% of the data file is corrupt, more than given corruptAlertThreshold "
+              + "(10%). Cautiously refusing to start NeDB to prevent dataloss.");
+    } finally {
+      runtime.close();
+    }
+  }
+
+  @Test
+  void aTornLastLineAndFewCorruptLinesAreDiscardedBeforeTheServerServes() throws IOException {
+    Path events = Files.createDirectories(directory.resolve(".booster")).resolve("events.json");
+    StringBuilder contents = new StringBuilder();
+    for (int i = 0; i < 10; i++) {
+      contents.append(VALID_EVENT_LINE.replace("Xk2pQ9aLm0TzB7cd", "Xk2pQ9aLm0TzB7c" + i)).append('\n');
+    }
+    contents.append("not json\n");                                     // 1 corrupt line of 11: under 10 %
+    contents.append("{\"kind\":\"event\",\"entityTypeName\":\"Ca");     // torn last line: not counted
+    Files.writeString(events, contents.toString());
+
+    LocalServer server = fixture.start(directory, new FakeUserApp(fixture.config));
+
+    // loaded (and compacted) at start-up, before any request touched the store
+    assertThat(server.runtime().eventRegistry().isLoaded()).isTrue();
+    List<String> lines = Files.readAllLines(events);
+    assertThat(lines).hasSize(10).allSatisfy(line -> assertThat(line).startsWith("{\"kind\":\"event\""));
+    assertThat(server.runtime().eventRegistry().count(Map.of())).isEqualTo(10);
+  }
+
+  @Test
+  void missingDataFilesAreStillCreatedOnFirstUse() {
+    LocalServer server = fixture.start(directory, storingApp());
+    assertThat(Files.exists(directory.resolve(".booster/events.json"))).isFalse();
+    assertThat(Files.exists(directory.resolve(".booster/read_models.json"))).isFalse();
+    assertThat(Http1Client.postJson(server.graphqlURL(), "{\"cartId\":\"cart-1\"}").statusCode()).isEqualTo(200);
+    assertThat(Files.exists(directory.resolve(".booster/events.json"))).isTrue();
   }
 
   private static void copyTree(Path from, Path to) {

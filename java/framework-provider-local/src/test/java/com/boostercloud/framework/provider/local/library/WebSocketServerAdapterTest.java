@@ -38,6 +38,7 @@ class WebSocketServerAdapterTest {
   private BoosterConfig config;
   private WebSocketServerAdapter server;
   private volatile CountDownLatch connectGate = new CountDownLatch(0);
+  private volatile long disconnectMillis;
 
   @BeforeEach
   void setUp() {
@@ -48,6 +49,9 @@ class WebSocketServerAdapterTest {
       ExpressWebSocketMessage message = invocation.getArgument(0);
       if (message.connectionContext().eventType() == EventType.CONNECT) {
         connectGate.await(5, TimeUnit.SECONDS);
+      }
+      if (message.connectionContext().eventType() == EventType.DISCONNECT && disconnectMillis > 0) {
+        Thread.sleep(disconnectMillis);
       }
       received.add(message);
       if (message.data() instanceof java.util.Map<?, ?> data && "boom".equals(data.get("type"))) {
@@ -133,6 +137,25 @@ class WebSocketServerAdapterTest {
     await().atMost(Duration.ofSeconds(5)).until(() -> server.connectionIds().isEmpty());
     assertThatThrownBy(() -> server.sendToConnection(connectionId, map()))
         .isInstanceOf(IllegalStateException.class);
+  }
+
+  @Test
+  void closingTheServerLetsTheOpenConnectionsProcessTheirDisconnectFirst() throws Exception {
+    // core's DISCONNECT handling deletes the connection data and subscriptions (flushed writes); the runtime closes
+    // the data files right after the websocket server, so close() must not return (or interrupt it) before
+    disconnectMillis = 300;
+    WebSocket first = connect(new Listener(), "graphql-ws");
+    WebSocket second = connect(new Listener(), "graphql-ws");
+    await().atMost(Duration.ofSeconds(5)).until(() -> received.size() == 2);
+
+    server.close();
+
+    assertThat(received).extracting(m -> m.connectionContext().eventType())
+        .containsExactly(EventType.CONNECT, EventType.CONNECT, EventType.DISCONNECT, EventType.DISCONNECT);
+    assertThat(server.connectionIds()).isEmpty();
+    assertThat(server.isRunning()).isFalse();
+    first.abort();
+    second.abort();
   }
 
   @Test
