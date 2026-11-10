@@ -141,6 +141,11 @@ Provider:
   crash can leave the first ones stored), and `events.storeDispatched` deduplicates through that journal
   (TypeScript always returns `true`). Without the journal (`EventsAdapter.storeEvents(userApp, registry, envelopes, config)`) the behaviour is
   exactly TypeScript's.
+* A version-1 read model is not inserted when one of the same type and id is already stored with a version: the
+  store fails with NeDB's unique violation, which core retries like any optimistic-concurrency failure. In
+  TypeScript the unique key `<type>_<id>_<version>` of the stored document changes with every update, so a third
+  concurrent projection of a new read model that had found nothing inserted a second document with the same id
+  (both kept being projected, and versions were counted twice).
 * Envelopes read from the store expose NeDB's `_id` as `id` (TypeScript returns the raw documents, with `_id`).
 * `readModels.fetch` returns an empty list when the read model does not exist (TypeScript `[undefined]`), as
   the Java SPI specifies; `readModels.delete` with a `null` read model is a no-op (TypeScript throws a
