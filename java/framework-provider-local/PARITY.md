@@ -39,6 +39,7 @@ Test classes without a module prefix are in `framework-provider-local`; `infra:`
 | `a3270a0b3` | A JSON-array GraphQL body became an error envelope with a Java-only message; TypeScript hands it to core, which answers `Received an empty GraphQL query`. |
 | `cfde5462a` | NeDB's modifier code is sloppy-mode JavaScript: `$set`/`$inc` on `n.x` when `n` is a number or a string is silently ignored, and `$push` then fails with NeDB's own message. The Java `Model` threw `Cannot create property ...`. |
 | `b31432b83` and this ledger's commit | Missing pins: provider-level concurrency, persisted document shapes, health counts, TypeScript constants. |
+| `c1ad2886e` | Flaky test (found by the Azure contract stage): `ReadModelAdapterTest#shouldReturnAnArrayOfEnvelopes` compared Java numbers, and the mock's random `bar` is sometimes an integral double that the JSON conversion of a raw envelope turns into an integral number (JavaScript semantics, not a provider change). It compares the JSON forms; `#convertsTheNumbersOfRawEnvelopesLikeJavaScript` pins the conversion. |
 
 No foundation module was changed.
 
