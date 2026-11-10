@@ -574,6 +574,45 @@ class EventStoreTest extends BoosterTestSupport {
       assertThat(GET_ID_CALLS).hasValue(2);
     }
 
+    // data-migrations.md: schema migrations are lazy and nothing is written back until a new snapshot is reduced
+    @Test
+    void returnsTheMigratedSnapshotWithoutStoringItBackWhenThereAreNoPendingEvents() {
+      config.schemaMigrations.put("AnEntity",
+          Map.of(2, new SchemaMigrationMetadata(AnEntityMigration.class, "toV2", 2, AnEntityV1.class, AnEntity.class)));
+      EntitySnapshotEnvelope storedV1Snapshot = NonPersistedEntitySnapshotEnvelope.builder().version(1)
+          .superKind(SuperKindType.DOMAIN).requestID(UUID.of("old")).entityID(UUID.of("42")).entityTypeName("AnEntity")
+          .typeName("AnEntity").value(rawMap("id", "42", "total", 5)).snapshottedEventCreatedAt(IMPORTANT_DATE_TIME_STAMP)
+          .build().persisted("2019-12-23T06:30:00.500Z");
+      when(events.latestEntitySnapshot(config, "AnEntity", UUID.of("42"))).thenReturn(Optional.of(storedV1Snapshot));
+      when(events.forEntitySince(config, "AnEntity", UUID.of("42"), IMPORTANT_DATE_TIME_STAMP)).thenReturn(List.of());
+
+      Optional<EntitySnapshotEnvelope> result = new EventStore(config).fetchEntitySnapshot("AnEntity", UUID.of("42"));
+
+      assertThat(result).get().satisfies(snapshot -> {
+        assertThat(snapshot.version()).isEqualTo(2);
+        assertThat(snapshot.value()).isEqualTo(new AnEntity(UUID.of("42"), 5));
+        // every other field of the stored envelope is kept ({ ...envelope, value, version })
+        assertThat(snapshot).isEqualTo(storedV1Snapshot.toBuilder().version(2).value(new AnEntity(UUID.of("42"), 5)).build());
+      });
+      verify(events, never()).storeSnapshot(any(), any());
+    }
+
+    @Test
+    void failsWhenTheLatestSnapshotHasAnUnknownSchemaVersion() {
+      EntitySnapshotEnvelope futureSnapshot = NonPersistedEntitySnapshotEnvelope.builder().version(4)
+          .superKind(SuperKindType.DOMAIN).requestID(UUID.of("old")).entityID(UUID.of("42")).entityTypeName("AnEntity")
+          .typeName("AnEntity").value(rawMap("id", "42", "count", 5)).snapshottedEventCreatedAt(IMPORTANT_DATE_TIME_STAMP)
+          .build().persisted("2019-12-23T06:30:00.500Z");
+      when(events.latestEntitySnapshot(config, "AnEntity", UUID.of("42"))).thenReturn(Optional.of(futureSnapshot));
+
+      assertThatThrownBy(() -> new EventStore(config).fetchEntitySnapshot("AnEntity", UUID.of("42")))
+          .isInstanceOf(InvalidVersionError.class)
+          .hasMessage("Can not migrate schema an unknown version: The current schema version of AnEntity is 1, which is"
+              + " lower than the received version 4");
+      verify(events, never()).forEntitySince(any(), any(), any(), any());
+      verify(events, never()).storeSnapshot(any(), any());
+    }
+
     @Test
     void failsWhenAnEventHasAnUnknownSchemaVersion() {
       when(events.forEntitySince(config, "AnEntity", UUID.of("42"), ORIGIN_OF_TIME))
