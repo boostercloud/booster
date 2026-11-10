@@ -240,7 +240,7 @@ class LocalEndToEndTest {
     // 4. list
     Object listed = client.mutate(LIST, variables("directory", "client1", "storageName", "clientst"))
         .get("FileUploadList");
-    assertThat(listed).asList().singleElement().satisfies(item -> {
+    assertThat((List<?>) listed).singleElement().satisfies(item -> {
       Map<?, ?> map = (Map<?, ?>) item;
       assertThat(map.get("name")).isEqualTo("client1/myfile.txt");
       Map<?, ?> properties = (Map<?, ?>) map.get("properties");

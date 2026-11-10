@@ -41,6 +41,7 @@ class BoosterRocketFilesTest {
   private ProviderEventsLibrary events;
 
   @BeforeEach
+  @SuppressWarnings("deprecation")
   void setUp() {
     config = new BoosterConfig("local");
     config.logger = Logger.NOOP;

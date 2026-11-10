@@ -35,6 +35,7 @@ class FileUploadedTest {
   private RocketFileUploadedLibrary library;
 
   @BeforeEach
+  @SuppressWarnings("deprecation")
   void setUp() {
     config = new BoosterConfig("local");
     logger = mock(Logger.class);
