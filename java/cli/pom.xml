@@ -61,7 +61,11 @@
           </archive>
         </configuration>
       </plugin>
-      <!-- Executable fat jar used by bin/boost: target/booster-cli-<version>.jar -->
+      <!--
+        Executable fat jar used by bin/boost: target/booster-cli-<version>.jar. It replaces the main artifact, so the
+        pom that is installed or deployed with it is the dependency-reduced one (written under target/): picocli and
+        the mustache compiler are inside the jar and must not reach consumers a second time as dependencies.
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -72,7 +76,8 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>

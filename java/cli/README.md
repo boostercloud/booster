@@ -7,7 +7,9 @@ generates resources and builds, runs, deploys and removes applications. It is bu
 
 - Module: `java/cli` (artifact `com.boostercloud:booster-cli`), base package `com.boostercloud.cli`.
 - Entry point: `com.boostercloud.cli.Main` (`bin/run` in TypeScript).
-- Executable: `target/booster-cli-<version>.jar` (shaded) and the launchers `bin/boost` / `bin/boost.cmd`.
+- Executable: `target/booster-cli-<version>.jar` (shaded) and the launchers `bin/boost` / `bin/boost.cmd`. The
+  shaded jar is the main artifact, and the pom installed or deployed with it is the dependency-reduced one
+  (`target/dependency-reduced-pom.xml`), without picocli and Mustache, which are inside the jar.
 
 ## Installing
 
