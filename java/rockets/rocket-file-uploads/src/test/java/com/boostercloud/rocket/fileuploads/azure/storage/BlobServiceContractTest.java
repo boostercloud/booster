@@ -111,6 +111,26 @@ class BlobServiceContractTest {
   }
 
   @Test
+  void the_date_header_has_a_two_digit_day_like_the_sdk() {
+    // @azure/storage-blob sends Date.toUTCString(): "Tue, 03 Nov 2026 ...", the IMF-fixdate of RFC 7231 (2DIGIT day)
+    BlobStorageContext.use(new BlobStorageContext(new JdkHttpTransport(), scope -> "test-token", server::endpoint,
+        Clock.fixed(Instant.parse("2026-11-03T08:05:01.500Z"), ZoneOffset.UTC),
+        BlobStorageContext.DEFAULT_API_VERSION));
+    server.handler(request -> switch (request.method()) {
+      case "POST" -> Response.xml(200, KEY_RESPONSE);
+      case "DELETE" -> Response.empty(202);
+      default -> Response.xml(200, "<EnumerationResults><Blobs /><NextMarker /></EnumerationResults>");
+    });
+
+    new RocketFilesLibrary().presignedPut(config, CLIENT, "client1", "myfile.txt");
+    new RocketFilesLibrary().list(config, CLIENT, "client1");
+    new RocketFilesLibrary().deleteFile(config, CLIENT, "client1", "myfile.txt");
+
+    assertThat(server.requests()).extracting(request -> request.header("x-ms-date")).containsExactly(
+        "Tue, 03 Nov 2026 08:05:01 GMT", "Tue, 03 Nov 2026 08:05:01 GMT", "Tue, 03 Nov 2026 08:05:01 GMT");
+  }
+
+  @Test
   void presigned_get_signs_a_read_sas() throws Exception {
     server.handler(request -> Response.xml(200, KEY_RESPONSE));
 

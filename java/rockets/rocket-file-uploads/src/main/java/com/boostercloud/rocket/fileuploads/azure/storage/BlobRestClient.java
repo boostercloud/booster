@@ -10,11 +10,13 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import javax.xml.XMLConstants;
@@ -39,13 +41,22 @@ import org.xml.sax.SAXException;
  *   <li>{@code DELETE <service>/<container>/<blob>} (Java addition for {@code deleteFile}).</li>
  * </ul>
  *
- * Every request carries {@code x-ms-version}, {@code x-ms-date} and {@code Authorization: Bearer <token>}; failures
+ * Every request carries {@code x-ms-version}, {@code x-ms-date} (two-digit day, as the SDK) and
+ * {@code Authorization: Bearer <token>}; failures
  * are {@link StorageError}s with the service's error code and message.
  */
 public final class BlobRestClient {
 
   private static final Duration TIMEOUT = Duration.ofSeconds(60);
+  /** Parses the dates of the answers (RFC 1123, one- or two-digit day). */
   private static final DateTimeFormatter RFC_1123 = DateTimeFormatter.RFC_1123_DATE_TIME;
+  /**
+   * {@code x-ms-date}: {@code Tue, 03 Nov 2026 08:05:01 GMT}, what the SDK sends ({@code Date.toUTCString()}, the
+   * IMF-fixdate of RFC 7231, always a two-digit day). {@link DateTimeFormatter#RFC_1123_DATE_TIME} writes
+   * {@code Tue, 3 Nov 2026} on the 1st to the 9th of each month.
+   */
+  static final DateTimeFormatter X_MS_DATE =
+      DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).withZone(ZoneOffset.UTC);
 
   private final BlobStorageContext context;
 
@@ -188,8 +199,7 @@ public final class BlobRestClient {
   private Map<String, String> headers() {
     Map<String, String> headers = new LinkedHashMap<>();
     headers.put("x-ms-version", context.apiVersion());
-    headers.put("x-ms-date", RFC_1123.format(ZonedDateTime.ofInstant(context.clock().instant(),
-        java.time.ZoneOffset.UTC)));
+    headers.put("x-ms-date", X_MS_DATE.format(context.clock().instant()));
     headers.put("Accept", "application/xml");
     headers.put("Authorization", "Bearer " + context.credential().getToken(BlobStorageContext.STORAGE_SCOPE));
     return headers;

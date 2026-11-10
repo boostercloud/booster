@@ -235,7 +235,8 @@ Runtime (`…azure`, used by the main function app when commands call `FileHandl
 * `list(directory)`: `List Blobs` with `prefix=<directory>` and `include=metadata`, every page (a prefix: `client1`
   also lists `client10/...`).
 * `deleteFile`: `Delete Blob` (with its snapshots); `false` for `BlobNotFound`.
-* Calls use the Blob REST API (`x-ms-version: 2025-11-05`) over `java.net.http`, with an Azure AD token from
+* Calls use the Blob REST API (`x-ms-version: 2025-11-05`, `x-ms-date` written as the SDK does, two-digit day:
+  `Tue, 03 Nov 2026 08:05:01 GMT`) over `java.net.http`, with an Azure AD token from
   `storage.DefaultAzureCredential`: environment service principal (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,
   `AZURE_CLIENT_SECRET`), managed identity (App Service `IDENTITY_ENDPOINT`/`IDENTITY_HEADER`, else IMDS;
   `AZURE_CLIENT_ID` picks a user-assigned identity), Azure CLI. The caller needs `Storage Blob Data Contributor` on the

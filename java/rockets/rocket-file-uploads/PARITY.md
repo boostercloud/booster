@@ -25,7 +25,7 @@ Every row names the Java test that pins the behaviour, as `Class#method` under
 | Part | Rows | covered | fixed | differs | inherited | n/a |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript tests (28 `it`) | 28 | 28 | 0 | 0 | 0 | 0 |
-| 2. Behaviour (spec §3) | 97 | 59 | 13 | 21 | 3 | 1 |
+| 2. Behaviour (spec §3) | 98 | 59 | 14 | 21 | 3 | 1 |
 | 3. Data shapes (spec §4) | 12 | 10 | 1 | 1 | 0 | 0 |
 | 4. Characterisation tests (spec §5.3) | 16 | 14 | 1 | 1 | 0 | 0 |
 | 5. Porting notes and hazards (spec §6) | 16 | 9 | 2 | 5 | 0 | 0 |
@@ -245,6 +245,7 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | New `BlobServiceClient` + `DefaultAzureCredential` per call | `DefaultAzureCredentialTest` | differs: one credential per process with a token cache |
 | `DefaultAzureCredential` chain | `DefaultAzureCredentialTest` (8 tests) | differs: environment, managed identity, Azure CLI only (README "Not implemented") |
 | REST `x-ms-version` | `BlobServiceContractTest` | differs: `2025-11-05` (the SDK's own version); the SAS keeps `2018-11-09` |
+| REST `x-ms-date`: the SDK's `Date.toUTCString()` (`Tue, 03 Nov 2026 08:05:01 GMT`, two-digit day) | `BlobServiceContractTest#the_date_header_has_a_two_digit_day_like_the_sdk` | fixed: `RFC_1123_DATE_TIME` wrote a one-digit day (`Tue, 3 Nov`) on the 1st to the 9th of each month |
 | `listBlobFolder`: prefix, flat, every page, `include=metadata`, item mapping | `BlobServiceContractTest#list_follows_the_markers_and_maps_the_blobs`, `#an_empty_directory_lists_the_whole_container` | covered |
 | Storage failures | `#a_refused_key_request_is_a_storage_error`, `#transport_failures_are_storage_errors` | covered (`StorageError` for the SDK's `RestError`) |
 | `getMetadataFromRequest`: `context.triggerMetadata`, else `InvocationContext.triggerMetadata is missing for the blob upload request` | `azure.FileUploadedTest#extracts_triggerMetadata_from_Azure_Functions_v4_InvocationContext`, `#fails_without_trigger_metadata` | covered |
