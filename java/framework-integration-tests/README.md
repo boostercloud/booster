@@ -230,6 +230,19 @@ Harness and suites:
   `Migrated 0 NonExistentReadModel`. It is skipped on `LOCAL` and an extra test pins the local answer.
 * `cart.integration.ts > throws an exception when before hook throws` passes in TypeScript when nothing is thrown;
   `CartIT` requires the error.
+* `HealthIT > root health returns all indicators` and `> database health returns the indicator` expect `503` (an
+  indicator that is not `UP` in the tree). Only a provider that honours the `status-code` of `healthRequestResult`
+  answers it (Azure): the local `HealthController` (TypeScript and Java, `framework-provider-local-infrastructure`
+  PARITY Q13) answers `200` to every successful health request. Both are skipped on `LOCAL`, and two extra tests run
+  the same body assertions with the local `200`.
+* `DeleteEventsIT > then the first event is set as deleted` also requires `deletedAt` to be non-null (TypeScript's
+  `not.to.be.undefined` accepts `null`). Two extra tests pin what TypeScript leaves unchecked: a deleted event cannot be
+  deleted again and is returned with the defaults of its class only (`createInstance(ProductCreated, {})`:
+  `{productDetails: {}, productType: 'Other'}`), and `EntitiesIT > after the data migrations` checks the two
+  `DataMigrationsReadModel` rows behind `count >= 2` (`CartIdDataMigrateV1`/`V2`, status `"1"` = `FINISHED`).
+* The AWS gates of `delete.events`, `entities > Data migration`, `events > Query events ids` and `health` are
+  `assumeFalse` in a `@BeforeAll`, after the TypeScript warning lines (AWS never runs here). Chai's `undefined` checks
+  on JSON fields are key checks (`containsKey`/`doesNotContainKey`), so a `null` value counts as present, as in chai.
 * `AppHelper` supports `AZURE` and `LOCAL` (AWS is not ported); `getProviderTestHelper(LocalTestHelper.Options)` lets
   the harness pass the ports and directory of the application it launched.
 * `Faker` is a small generator with faker 5's call names (the build allows no extra library): values have the
@@ -238,8 +251,9 @@ Harness and suites:
 ## Not implemented
 
 * The AWS environments (`development`, `production`) and every AWS-gated path (AWS is not ported).
-* Suites other than the local start/stop lifecycle, `cart` and `commands`: the remaining end-to-end, functionality and
-  provider-specific suites are ported by the following stages on top of this layout. The Azure deploy/nuke suites and
+* Suites other than the local start/stop lifecycle, `cart`, `commands`, `delete.events`, `entities`, `events`, `health`
+  and `queries`: the remaining end-to-end, functionality and provider-specific suites are ported by the following
+  stages on top of this layout. The Azure deploy/nuke suites and
   the load suite (disabled in TypeScript) need cloud resources.
 
 ## Tests
@@ -251,3 +265,5 @@ Harness and suites:
   (`HarnessTest`, `HelpersTest`).
 * `-Pe2e`: `providerspecific.local.LocalStartStopIT` (spec 17 §3.1), `endtoend.CartIT` (§8.1) and
   `endtoend.CommandsIT` (§8.2), with the shared application.
+* `-Pe2e`: `endtoend.DeleteEventsIT` (§8.3), `endtoend.EntitiesIT` (§8.4), `endtoend.EventsIT` (§8.5),
+  `endtoend.HealthIT` (§8.6) and `endtoend.QueriesIT` (§8.7), with the shared application.
