@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { expect } from '../expect'
 import { search } from '../../src/helpers/query-helper'
-import { createStubInstance, fake, match, restore, stub, SinonStubbedInstance } from 'sinon'
+import { createStubInstance, fake, match, restore, stub, SinonStub, SinonStubbedInstance } from 'sinon'
 import { CosmosClient } from '@azure/cosmos'
 import { BoosterConfig, FilterFor, ProjectionFor } from '@boostercloud/framework-types'
 import { random } from 'faker'
@@ -586,6 +586,114 @@ describe('Query helper', () => {
           ],
         })
       )
+    })
+
+    describe('with continuation token pagination', () => {
+      let fetchNext: SinonStub
+
+      beforeEach(() => {
+        fetchNext = stub()
+        mockCosmosDbClient = createStubInstance(CosmosClient, {
+          database: stub().returns({
+            container: stub().returns({
+              items: {
+                query: stub().returns({ fetchNext }),
+              },
+            }),
+          }) as any,
+        })
+      })
+
+      const filters: FilterFor<Product> = { or: [{ id: { contains: 'an-id' } }] }
+
+      it('skips empty pages returned by cross-partition queries until results are found', async () => {
+        const emptyRangeToken = '[{"token":null,"range":{"min":"05C1","max":"FF"}}]'
+        fetchNext
+          .onFirstCall()
+          .resolves({ resources: [], continuationToken: emptyRangeToken })
+          .onSecondCall()
+          .resolves({ resources: [], continuationToken: emptyRangeToken })
+          .onThirdCall()
+          .resolves({ resources: [{ id: 'an-id-that-exists' }], continuationToken: 'next-token' })
+
+        const result = (await search(
+          mockCosmosDbClient as any,
+          mockConfig,
+          mockReadModelName,
+          filters,
+          20,
+          undefined,
+          true
+        )) as any
+
+        expect(fetchNext).to.have.been.calledThrice
+        expect(result.items).to.have.length(1)
+        expect(result.items[0].id).to.equal('an-id-that-exists')
+        expect(result.count).to.equal(1)
+        expect(result.cursor).to.deep.equal({ continuationToken: 'next-token', id: '20' })
+      })
+
+      it('stops at the first non-empty page', async () => {
+        fetchNext.resolves({ resources: [{ id: 'a' }], continuationToken: 'next-token' })
+
+        const result = (await search(
+          mockCosmosDbClient as any,
+          mockConfig,
+          mockReadModelName,
+          filters,
+          20,
+          undefined,
+          true
+        )) as any
+
+        expect(fetchNext).to.have.been.calledOnce
+        expect(result.items).to.have.length(1)
+      })
+
+      it('keeps the numeric cursor id when an empty page is followed by a non-empty terminal page', async () => {
+        // A numeric cursor id is always returned for non-empty pages for backwards compatibility (#1594)
+        fetchNext
+          .onFirstCall()
+          .resolves({ resources: [], continuationToken: '[{"token":null,"range":{"min":"","max":"05C1"}}]' })
+          .onSecondCall()
+          .resolves({ resources: [{ id: 'an-id-that-exists' }], continuationToken: undefined })
+
+        const result = (await search(
+          mockCosmosDbClient as any,
+          mockConfig,
+          mockReadModelName,
+          filters,
+          20,
+          undefined,
+          true
+        )) as any
+
+        expect(fetchNext).to.have.been.calledTwice
+        expect(result.items).to.have.length(1)
+        expect(result.cursor).to.deep.equal({ id: '20' })
+      })
+
+      it('returns an empty result without a cursor when the query is exhausted', async () => {
+        fetchNext
+          .onFirstCall()
+          .resolves({ resources: [], continuationToken: '[{"token":null,"range":{"min":"","max":"05C1"}}]' })
+          .onSecondCall()
+          .resolves({ resources: [], continuationToken: undefined })
+
+        const result = (await search(
+          mockCosmosDbClient as any,
+          mockConfig,
+          mockReadModelName,
+          filters,
+          20,
+          undefined,
+          true
+        )) as any
+
+        expect(fetchNext).to.have.been.calledTwice
+        expect(result.items).to.be.empty
+        expect(result.cursor).to.be.undefined
+      })
     })
 
     it('supports isDefine filters', async () => {
