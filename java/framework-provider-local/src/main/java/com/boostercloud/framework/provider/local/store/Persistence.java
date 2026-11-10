@@ -7,6 +7,7 @@ import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
@@ -35,18 +36,39 @@ import java.util.function.Consumer;
  */
 final class Persistence {
 
+  /** Opens the channels the store writes through; replaceable by tests to inject write failures. */
+  @FunctionalInterface
+  interface ChannelFactory {
+    /** The real file system. */
+    ChannelFactory DEFAULT = FileChannel::open;
+
+    /**
+     * @param path the file
+     * @param options how to open it
+     * @return the channel
+     * @throws IOException when it cannot be opened
+     */
+    FileChannel open(Path path, OpenOption... options) throws IOException;
+  }
+
   private final Path file;
   private final Path tempFile;
   private final double corruptAlertThreshold;
   private final Consumer<String> warnings;
+  private final ChannelFactory channels;
   private FileChannel appendChannel;
   private boolean failed;
 
   Persistence(Path file, double corruptAlertThreshold, Consumer<String> warnings) {
+    this(file, corruptAlertThreshold, warnings, ChannelFactory.DEFAULT);
+  }
+
+  Persistence(Path file, double corruptAlertThreshold, Consumer<String> warnings, ChannelFactory channels) {
     this.file = file;
     this.tempFile = file.resolveSibling(file.getFileName().toString() + "~");
     this.corruptAlertThreshold = corruptAlertThreshold;
     this.warnings = warnings;
+    this.channels = channels;
   }
 
   Path file() {
@@ -200,7 +222,7 @@ final class Persistence {
 
   private FileChannel appendChannel() throws IOException {
     if (appendChannel == null || !appendChannel.isOpen()) {
-      appendChannel = FileChannel.open(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+      appendChannel = channels.open(file, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
           StandardOpenOption.APPEND);
     }
     return appendChannel;
@@ -223,7 +245,7 @@ final class Persistence {
       text.append(line).append('\n');
     }
     ByteBuffer buffer = StandardCharsets.UTF_8.encode(text.toString());
-    try (FileChannel channel = FileChannel.open(tempFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+    try (FileChannel channel = channels.open(tempFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE,
         StandardOpenOption.TRUNCATE_EXISTING)) {
       while (buffer.hasRemaining()) {
         channel.write(buffer);

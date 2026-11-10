@@ -72,10 +72,18 @@ public class Datastore implements AutoCloseable {
    * @param options the options
    */
   public Datastore(DatastoreOptions options) {
+    this(options, Persistence.ChannelFactory.DEFAULT);
+  }
+
+  /**
+   * @param options the options
+   * @param channels opens the channels the data file is written through (tests inject write failures with it)
+   */
+  Datastore(DatastoreOptions options, Persistence.ChannelFactory channels) {
     this.options = options;
     this.persistence = options.inMemoryOnly()
         ? null
-        : new Persistence(options.filename(), options.corruptAlertThreshold(), options.warnings());
+        : new Persistence(options.filename(), options.corruptAlertThreshold(), options.warnings(), channels);
     this.idGenerator = new IdGenerator(options.clock());
     this.indexes.put("_id", new Index("_id", true, false, false));
   }

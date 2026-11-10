@@ -210,3 +210,7 @@ that fixed it, or the reason for an intentional difference. Besides the ports of
 * `store.StoreStressTest`, `store.KillDuringWriteStressTest` (a writer JVM killed with `SIGKILL`) and
   `ProviderStressTest` cover concurrency on virtual threads, compaction under load, truncated and zero-filled data
   files and 100k-document collections.
+* `store.DatastoreTest.WriteFailuresAndFlushes` injects write failures into the real files
+  (`store.FaultInjectingChannels`: an append that stops halfway, a truncate that fails) and checks that every write
+  is flushed before the call returns. That a flushed write survives a power loss depends on the device and is not
+  tested.

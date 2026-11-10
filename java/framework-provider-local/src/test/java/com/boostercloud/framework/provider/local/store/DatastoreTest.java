@@ -571,6 +571,92 @@ class DatastoreTest {
     }
   }
 
+  /**
+   * Write failures injected into the real files ({@link FaultInjectingChannels}), and the flushes of every write.
+   * Whether a flushed write survives a power loss is up to the device and cannot be tested here; what is pinned is
+   * that every acknowledged write is flushed before the call returns.
+   */
+  @Nested
+  class WriteFailuresAndFlushes {
+    private final FaultInjectingChannels channels = new FaultInjectingChannels();
+
+    private Datastore openFaulty() {
+      Datastore datastore = new Datastore(DatastoreOptions.of(file).withWarnings(warnings::add), channels);
+      opened.add(datastore);
+      return datastore;
+    }
+
+    private List<String> operations() {
+      return channels.log.stream().map(entry -> entry.replaceAll(" \\d+$", "")).toList();
+    }
+
+    @Test
+    void anAppendThatFailsHalfwayIsCutBackSoTheNextOneStartsOnItsOwnLine() throws IOException {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a", "v", 1));
+      long sizeBefore = Files.size(file);
+      channels.log.clear();
+      channels.failNextWriteAfter(7);
+      assertThatThrownBy(() -> datastore.insert(map("_id", "b", "v", 2))).isInstanceOf(NedbError.class)
+          .hasMessageContaining("No space left on device");
+      assertThat(channels.log).containsExactly("partial-write test.json 7", "truncate test.json " + sizeBefore,
+          "force test.json false");
+      assertThat(Files.size(file)).isEqualTo(sizeBefore);
+      assertThat(datastore.find(map()).exec()).containsExactly(map("_id", "a", "v", 1));
+
+      datastore.insert(map("_id", "c", "v", 3));
+      assertThat(lines()).containsExactly("{\"_id\":\"a\",\"v\":1}", "{\"_id\":\"c\",\"v\":3}");
+      assertThat(open().find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("a", "c");
+      assertThat(warnings).isEmpty();
+    }
+
+    @Test
+    void whenAFailedAppendCannotBeCutBackTheStoreRefusesWritesUntilItIsReloaded() {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a"));
+      channels.failNextWriteAfter(3);
+      channels.failTruncate(true);
+      assertThatThrownBy(() -> datastore.insert(map("_id", "b"))).isInstanceOf(NedbError.class);
+      channels.failTruncate(false);
+      assertThatThrownBy(() -> datastore.insert(map("_id", "c"))).isInstanceOf(NedbError.class)
+          .hasMessageContaining("could not be repaired after a failed write");
+      assertThat(datastore.find(map()).exec()).containsExactly(map("_id", "a"));
+
+      datastore.loadDatabase();
+      assertThat(warnings).anyMatch(w -> w.contains("incomplete last line"));
+      datastore.insert(map("_id", "c"));
+      assertThat(open().find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("a", "c");
+    }
+
+    @Test
+    void everyWriteIsFlushedBeforeTheCallReturns() {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a"));
+      channels.log.clear();
+      datastore.insert(map("_id", "b"));
+      datastore.update(map("_id", "b"), map("$set", map("x", 1)), UpdateOptions.DEFAULTS);
+      datastore.remove(map("_id", "a"), false);
+      datastore.ensureIndex(IndexOptions.unique("x", true));
+      assertThat(operations()).containsExactly(
+          "write test.json", "force test.json false",
+          "write test.json", "force test.json false",
+          "write test.json", "force test.json false",
+          "write test.json", "force test.json false");
+    }
+
+    @Test
+    void compactionFlushesTheNewFileBeforeItReplacesTheOldOne() throws IOException {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a"));
+      datastore.insert(map("_id", "b"));
+      datastore.remove(map("_id", "a"), false);
+      channels.log.clear();
+      datastore.compactDatafile();
+      assertThat(operations()).containsExactly("write test.json~", "force test.json~ true");
+      assertThat(lines()).containsExactly("{\"_id\":\"b\"}");
+    }
+  }
+
   @Nested
   class Concurrency {
     @Test
