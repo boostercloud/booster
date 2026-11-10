@@ -176,7 +176,7 @@ Azure. The rocket's types are external to the GraphQL schema (`JSON`), as TypeSc
 
 Errors (messages as in TypeScript): `Rocket not found. Please make sure you have setup the rocket packageName correctly`,
 `Missing userConfiguration`, `Missing storageAccountName`, `Storage account name <name> not found`,
-`Invalid directory <directory>`; a second `rocketForLocal()`/`rocketForAzure()` on one configuration fails with
+`Invalid directory <directory>`, and for `deleteFile` (Java addition) `Invalid file name <fileName>`; a second `rocketForLocal()`/`rocketForAzure()` on one configuration fails with
 `Error registering rocket function with id rocket-files: There is already a rocket function registered under the same ID, ""`.
 
 ## Events
@@ -219,7 +219,8 @@ rocket function.
 * `list(directory)`: the entries of the folder (not recursive; files, sub-folders and dot files), byte order of the
   names, `name = path.join(directory, entry)`, `properties.lastModified` = inode change time. A missing folder fails
   with `ENOENT: no such file or directory, scandir '<path>'`.
-* `deleteFile(directory, fileName)`: removes the file (`false` when it did not exist); the watcher notifies it.
+* `deleteFile(directory, fileName)`: removes the file (`false` when it did not exist); the watcher notifies it. The
+  file name must be a plain name of that directory (see Differences).
 
 The local server has no authentication: the presigned URLs work for anyone who can reach the port.
 
@@ -282,7 +283,11 @@ The connection is identity-based (`<storage>__serviceUri`). Names must match `^[
 * **No mutation of the caller's configuration.** Records are immutable: the descriptor holds lower-cased copies.
 * **`deleteFile` exists** for both providers (the TypeScript documentation lists it as AWS-only/TODO). Locally the
   deletion is notified by the watcher like any change (an `UploadedFileEvent` is stored, as TypeScript does for any
-  deletion in the folder); on Azure blob triggers do not fire on deletions.
+  deletion in the folder); on Azure blob triggers do not fire on deletions. Only the directory is checked against the
+  patterns, so the file name must be a plain name of it (not empty, `.` or `..`, no `/` or `\`), otherwise
+  `Invalid file name <fileName>`: a command such as the `DeleteFile` example passes the client's file name through,
+  and `../admin/secret.txt` would otherwise delete a file of a folder the patterns do not allow. The presigned URLs
+  keep TypeScript's unvalidated file names.
 * **`presignedPut` is generic** (`String url = handler.presignedPut(...)`) for TypeScript's `Promise<string> |
   Promise<any>`.
 * **Project directory**: `config.userProjectRootPath()` (or the working directory) instead of `process.cwd()`.

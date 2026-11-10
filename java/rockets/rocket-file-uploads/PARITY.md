@@ -25,7 +25,7 @@ Every row names the Java test that pins the behaviour, as `Class#method` under
 | Part | Rows | covered | fixed | differs | inherited | n/a |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript tests (28 `it`) | 28 | 28 | 0 | 0 | 0 | 0 |
-| 2. Behaviour (spec §3) | 96 | 59 | 12 | 21 | 3 | 1 |
+| 2. Behaviour (spec §3) | 97 | 59 | 13 | 21 | 3 | 1 |
 | 3. Data shapes (spec §4) | 12 | 10 | 1 | 1 | 0 | 0 |
 | 4. Characterisation tests (spec §5.3) | 16 | 14 | 1 | 1 | 0 | 0 |
 | 5. Porting notes and hazards (spec §6) | 16 | 9 | 2 | 5 | 0 | 0 |
@@ -165,9 +165,10 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | Parameters read as `RocketFilesConfiguration` (also raw JSON) | `types.RocketFilesConfigurationTest#raw_parameters_are_read_back` | covered |
 | Library from `rocketProviderPackage`, storage from `getUserConfiguration` | `#the_storage_is_selected_by_name`, `azure.storage.BlobServiceContractTest#the_file_handler_uses_the_azure_library_of_the_descriptor` | covered |
 | `presignedGet` / `presignedPut` / `list`: directory checked first (`Invalid directory <d>`, before any provider call), then delegated with the selected storage | `#every_method_checks_the_directory_first`, `#presigned_urls_of_the_local_library`, `#list_and_delete_go_to_the_library` | covered |
-| File names never validated | `#presigned_urls_of_the_local_library` | covered |
+| File names never validated | `#presigned_urls_of_the_local_library`, `#delete_only_removes_a_file_of_the_checked_directory` | covered for the presigned URLs (`deleteFile`: next rows) |
 | `presignedPut: Promise<string> \| Promise<any>` | `#presigned_urls_of_the_local_library` | differs: generic `<T> T` |
 | No `deleteFile` | `#list_and_delete_go_to_the_library` | differs: Java addition `deleteFile(directory, fileName)` (documented as a TODO in TypeScript) |
+| `deleteFile` file name (Java addition, so no TypeScript rule): only the directory is checked against the patterns | `#delete_only_removes_a_file_of_the_checked_directory`, `local.RocketFilesLibraryTest#delete_stays_in_the_given_directory`, `azure.storage.BlobServiceContractTest#delete_refuses_file_names_that_leave_the_directory` | fixed (security): a plain name is required (`Invalid file name <fileName>`), so `../admin/secret.txt` cannot delete outside the allowed folders |
 
 ### §3.4 `isValidDirectory`
 
@@ -334,7 +335,7 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | 13 | in-place mutation of user input | copies | differs |
 | 14 | `ctime`, `strcmp` order | `ListHandler` | covered |
 | 15 | `path.parse` / `path.join` | `NodePath` | covered (`types.NodePathTest`, Node-computed) |
-| 16 | security hazards | traversal refused (400); `https,http` SAS and no local auth kept | differs (traversal) / covered |
+| 16 | security hazards | traversal refused (400); `deleteFile` takes plain file names only; `https,http` SAS and no local auth kept | differs (traversal) / covered |
 
 ## 6. TypeScript sources
 

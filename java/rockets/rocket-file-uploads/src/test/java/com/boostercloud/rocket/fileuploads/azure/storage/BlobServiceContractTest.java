@@ -217,6 +217,18 @@ class BlobServiceContractTest {
   }
 
   @Test
+  void delete_refuses_file_names_that_leave_the_directory() {
+    server.handler(request -> Response.empty(202));
+
+    for (String fileName : List.of("../admin/secret.txt", "a/../../admin/secret.txt", "sub/x.txt", "..\\x", "..",
+        ".", "")) {
+      assertThatThrownBy(() -> new RocketFilesLibrary().deleteFile(config, CLIENT, "client1", fileName))
+          .isInstanceOf(IllegalArgumentException.class).hasMessage("Invalid file name " + fileName);
+    }
+    assertThat(server.requests()).isEmpty();
+  }
+
+  @Test
   void deleting_from_a_missing_container_fails() {
     server.handler(request -> Response.xml(404, "<Error><Code>ContainerNotFound</Code>"
         + "<Message>The specified container does not exist.</Message></Error>")

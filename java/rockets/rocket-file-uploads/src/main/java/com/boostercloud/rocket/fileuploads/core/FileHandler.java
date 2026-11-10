@@ -26,7 +26,9 @@ import java.util.List;
  * <p>The constructor finds the rocket descriptor in {@code config.rockets} (the first one of the Azure or local
  * infrastructure packages), loads its provider runtime library and selects the storage
  * ({@link RocketFilesParams#getUserConfiguration}). Every method first checks the directory against the storage's
- * directory patterns ({@code Invalid directory <directory>}); file names are not validated, as in TypeScript.
+ * directory patterns ({@code Invalid directory <directory>}). The file names of the presigned URLs are not validated,
+ * as in TypeScript; {@link #deleteFile} (a Java addition) only takes a plain file name
+ * ({@link Utils#isPlainFileName}), so it cannot reach a folder the patterns do not allow.
  */
 public final class FileHandler {
 
@@ -123,15 +125,21 @@ public final class FileHandler {
   }
 
   /**
-   * Java addition (the TypeScript documentation lists {@code deleteFile} as AWS-only): removes a file.
+   * Java addition (the TypeScript documentation lists {@code deleteFile} as AWS-only): removes a file of the
+   * directory. The directory is the one checked against the patterns, so the file name must be a plain name
+   * ({@link Utils#isPlainFileName}): {@code ../admin/secret.txt} or {@code sub/x.txt} would reach a folder the
+   * patterns may not allow.
    *
    * @param directory the directory
-   * @param fileName the file name
+   * @param fileName the file name, without folders
    * @return {@code true} when the file was deleted, {@code false} when it did not exist
-   * @throws IllegalArgumentException {@code Invalid directory <directory>}
+   * @throws IllegalArgumentException {@code Invalid directory <directory>}, {@code Invalid file name <fileName>}
    */
   public boolean deleteFile(String directory, String fileName) {
     checkDirectory(directory);
+    if (!Utils.isPlainFileName(fileName)) {
+      throw new IllegalArgumentException("Invalid file name " + fileName);
+    }
     return provider.deleteFile(config, userConfiguration, directory, fileName);
   }
 

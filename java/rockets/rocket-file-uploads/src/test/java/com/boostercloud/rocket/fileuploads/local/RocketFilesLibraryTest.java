@@ -107,6 +107,20 @@ class RocketFilesLibraryTest {
   }
 
   @Test
+  void delete_stays_in_the_given_directory() throws Exception {
+    Path secret = Files.createDirectories(project.resolve("clientst/rocketfiles/admin")).resolve("secret.txt");
+    Files.writeString(secret, "secret");
+    Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
+
+    // inside the container, but not in client1: refused, the file stays
+    assertThatThrownBy(() -> library.deleteFile(config, CLIENT, "client1", "../admin/secret.txt"))
+        .isInstanceOf(IllegalArgumentException.class).hasMessage("Invalid file name ../admin/secret.txt");
+    assertThatThrownBy(() -> library.deleteFile(config, CLIENT, "client1", "sub/../../admin/secret.txt"))
+        .isInstanceOf(IllegalArgumentException.class).hasMessage("Invalid file name sub/../../admin/secret.txt");
+    assertThat(secret).hasContent("secret");
+  }
+
+  @Test
   void the_metadata_is_the_request_and_is_always_valid() {
     Map<String, Object> request = Map.of("name", "client1/a.txt");
     assertThat(library.getMetadataFromRequest(request)).isSameAs(request);
