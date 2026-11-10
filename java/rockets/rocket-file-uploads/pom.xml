@@ -15,14 +15,32 @@
   <name>Booster file uploads rocket</name>
   <description>File uploads rocket (types, core, local and Azure implementations).</description>
 
+  <!-- One module for the six TypeScript packages: types + core (application side), the local runtime and
+       infrastructure, the Azure runtime and infrastructure. -->
   <dependencies>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-common-helpers</artifactId>
+    </dependency>
     <dependency>
       <groupId>com.boostercloud</groupId>
       <artifactId>booster-framework-core</artifactId>
     </dependency>
     <dependency>
       <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-local</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
       <artifactId>booster-framework-provider-local-infrastructure</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-azure</artifactId>
     </dependency>
     <dependency>
       <groupId>com.boostercloud</groupId>
