@@ -187,6 +187,30 @@ class CosmosRestClientContractTest {
     }
 
     @Test
+    void nonAsciiPartitionKeysAreSentEscapedLikeJsonStringifyAndEscapeNonAscii() throws Exception {
+      server.enqueue(container(EVENTS, "/entityTypeName_entityID_kind"))
+          .enqueue(Response.json(201, "{}"))
+          .enqueue(Response.json(201, "{}"))
+          .enqueue(Fixtures.response("cosmos/read-model-document.json", 200));
+      CosmosRestClient client = client();
+
+      events(client).items().create(obj("entityTypeName_entityID_kind", "Product-日本-event", "id", "1"));
+      events(client).items().create(obj("entityTypeName_entityID_kind", "Product-ñ\u007f-event", "id", "2"));
+      client.database(DB).container("new-booster-app-app-CartReadModel").item("日本", "日本").read();
+
+      assertThat(server.request(1).header("x-ms-documentdb-partitionkey"))
+          .isEqualTo("[\"Product-\\u65e5\\u672c-event\"]");
+      assertThat(server.request(1).json())
+          .isEqualTo(obj("entityTypeName_entityID_kind", "Product-日本-event", "id", "1"));
+      assertThat(server.request(2).header("x-ms-documentdb-partitionkey"))
+          .isEqualTo("[\"Product-\\u00f1\\u007f-event\"]");
+      RecordedRequest read = server.request(3);
+      assertSigned(read, "GET", "docs", "dbs/" + DB + "/colls/new-booster-app-app-CartReadModel/docs/日本");
+      assertThat(read.header("x-ms-documentdb-partitionkey")).isEqualTo("[\"\\u65e5\\u672c\"]");
+      assertThat(CosmosRestClient.partitionKeyHeader("😀\"")).isEqualTo("[\"\\ud83d\\ude00\\\"\"]");
+    }
+
+    @Test
     void conflictsAreCosmosExceptionsWithTheServiceMessage() {
       server.enqueue(container("dispatched", "/eventId")).enqueue(Fixtures.response("cosmos/error-409.json", 409));
 

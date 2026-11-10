@@ -102,7 +102,9 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
 * **REST instead of the Azure SDKs.** `@azure/cosmos`, `@azure/event-hubs` (AMQP) and `@azure/web-pubsub` are replaced
   by small ports with `java.net.http` REST adapters (no Azure SDK, as the architecture requires). The adapters keep
   the SDK behaviour the TypeScript code relies on:
-  * Cosmos DB: master-key HMAC authorization, `x-ms-version 2020-07-15`, partition key headers, a random UUID `id`
+  * Cosmos DB: master-key HMAC authorization, `x-ms-version 2020-07-15`, partition key headers (JSON with every
+    character from U+007F up written as a `\uXXXX` escape, as the SDK's `jsonStringifyAndEscapeNonASCII` does, so
+    entity and read model ids with non-ASCII characters work), a random UUID `id`
     for documents without one (`create`, `upsert`, batch `Create`), the partition key of `create`/`upsert` read from
     the document with the container's partition key definition (one `GET colls/<id>` per container, cached),
     `read()` of a missing document returning a 404 response instead of throwing, `ResourceThrottleRetryPolicy` for

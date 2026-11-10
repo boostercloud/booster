@@ -604,13 +604,40 @@ public final class CosmosRestClient implements CosmosClient {
 
   /**
    * @param value a partition key value
-   * @return the {@code x-ms-documentdb-partitionkey} header: a JSON array with the value, {@code [{}]} when undefined
+   * @return the {@code x-ms-documentdb-partitionkey} header: a JSON array with the value, {@code [{}]} when undefined.
+   *     Like the SDK's {@code jsonStringifyAndEscapeNonASCII}, every UTF-16 unit from U+007F up is written as a JSON
+   *     unicode escape ({@link #escapeNonAscii}), so the header is ASCII (the JDK client rejects header values above
+   *     U+00FF and would send U+0080 to U+00FF as single ISO-8859-1 bytes)
    */
   static String partitionKeyHeader(Object value) {
     if (value == PartitionKeyValue.UNDEFINED) {
       return "[{}]";
     }
-    return BoosterJson.toJson(java.util.Collections.singletonList(value));
+    return escapeNonAscii(BoosterJson.toJson(java.util.Collections.singletonList(value)));
+  }
+
+  /**
+   * {@code jsonStringifyAndEscapeNonASCII}'s replacement step: every UTF-16 unit from U+007F to U+FFFF becomes a
+   * backslash, {@code u} and its code as four lower-case hexadecimal digits. Outside strings JSON text is ASCII, so the
+   * result is the same JSON value.
+   *
+   * @param json JSON text
+   * @return the text with every character from U+007F up escaped
+   */
+  static String escapeNonAscii(String json) {
+    StringBuilder escaped = null;
+    for (int i = 0; i < json.length(); i++) {
+      char c = json.charAt(i);
+      if (c >= 0x7F) {
+        if (escaped == null) {
+          escaped = new StringBuilder(json.length() + 16).append(json, 0, i);
+        }
+        escaped.append(String.format("\\u%04x", (int) c));
+      } else if (escaped != null) {
+        escaped.append(c);
+      }
+    }
+    return escaped == null ? json : escaped.toString();
   }
 
   static Map<String, String> requestOptionHeaders(RequestOptions options) {
