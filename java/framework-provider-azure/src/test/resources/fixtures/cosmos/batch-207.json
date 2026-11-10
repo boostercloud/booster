@@ -1,0 +1,10 @@
+[
+  {
+    "statusCode": 409,
+    "requestCharge": 1.24
+  },
+  {
+    "statusCode": 424,
+    "requestCharge": 0
+  }
+]

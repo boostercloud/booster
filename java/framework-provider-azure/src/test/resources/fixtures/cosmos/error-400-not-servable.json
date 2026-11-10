@@ -1,0 +1,4 @@
+{
+  "code": "BadRequest",
+  "message": "The provided cross partition query can not be directly served by the gateway. This is a first chance (internal) exception that all newer clients will know how to handle gracefully. This exception is traced, but unless you see it bubble up as an exception (which only happens on older SDK clients), then you can safely ignore this message.\r\nActivityId: 5d5c5b3e-0000-0000-0000-000000000000"
+}

@@ -1,0 +1,1 @@
+<Error><Code>401</Code><Detail>InvalidSignature: The token has an invalid signature. TrackingId:6e1f, SystemTracker:ns.servicebus.windows.net:booster_events, Timestamp:2026-11-10T09:15:04</Detail></Error>
