@@ -26,9 +26,13 @@ import org.junit.jupiter.api.Test;
  *
  * <p>TypeScript checks the order of the stored events with chai-arrays' {@code sorted((prev, next) => prev > next)}.
  * A boolean comparator never returns a negative number, so V8's sort leaves any array as it is and that assertion
- * always passes; the port asserts what it means (newest first, so the product numbers strictly descend), as the
- * layout contract requires for assertions that pass silently. The exact count of {@code should create an event in the
- * event store} leaves out the events of the scheduled command (see {@link TheCheckedCart}).
+ * always passes; the port asserts what it means, as the layout contract requires for assertions that pass silently:
+ * the events come newest first ({@code createdAt} never increases along the result) and an event registered later is
+ * never older than one registered before it ({@code createdAt} never decreases with the product number). The product
+ * numbers themselves cannot be required to strictly descend: the events of one command are stored together, so
+ * several of them can share a millisecond {@code createdAt} (on Azure, as in TypeScript, nearly all of them do), and
+ * the order of equal {@code createdAt}s is the store's. The exact count of {@code should create an event in the event
+ * store} leaves out the events of the scheduled command (see {@link TheCheckedCart}).
  */
 @EndToEnd
 @DisplayName("events")
@@ -212,6 +216,7 @@ class EventsFunctionalityIT {
     List<Map<String, Object>> events = applicationUnderTest.query().events(primaryKey);
     assertThat(events).isNotNull();
     List<Integer> eventProductIds = new ArrayList<>();
+    List<String> eventCreatedAts = new ArrayList<>();
     for (Map<String, Object> event : events) {
       assertEventStoreKey(event, primaryKey);
       int productIdNumber = Integer.parseInt((String) at(event, "value.productId"));
@@ -223,13 +228,23 @@ class EventsFunctionalityIT {
       assertThat(event.get("entityTypeName")).isEqualTo("Cart");
       assertThat(event.get("typeName")).isEqualTo("CartItemChanged");
       eventProductIds.add(productIdNumber);
+      eventCreatedAts.add((String) event.get("createdAt"));
     }
 
     // Newest first: the events were registered with the product numbers 0, 1, 2, ... (see the class comment)
-    assertThat(eventProductIds).hasSize(eventsToCreate);
-    for (int i = 1; i < eventProductIds.size(); i++) {
-      assertThat(eventProductIds.get(i - 1)).as("product numbers in %s", eventProductIds)
-          .isGreaterThan(eventProductIds.get(i));
+    assertThat(eventProductIds).hasSize(eventsToCreate).doesNotHaveDuplicates();
+    String[] createdAtByProductNumber = new String[eventsToCreate];
+    for (int i = 0; i < eventProductIds.size(); i++) {
+      createdAtByProductNumber[eventProductIds.get(i)] = eventCreatedAts.get(i);
+      if (i > 0) {
+        assertThat(eventCreatedAts.get(i - 1)).as("createdAt of the events in the order returned: %s", eventCreatedAts)
+            .isGreaterThanOrEqualTo(eventCreatedAts.get(i));
+      }
+    }
+    for (int productNumber = 1; productNumber < eventsToCreate; productNumber++) {
+      assertThat(createdAtByProductNumber[productNumber])
+          .as("createdAt of product %d (registered after product %d)", productNumber, productNumber - 1)
+          .isGreaterThanOrEqualTo(createdAtByProductNumber[productNumber - 1]);
     }
   }
 }
