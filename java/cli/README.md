@@ -153,7 +153,11 @@ the deliberate differences:
   contain hyphens, so `read-models`, `event-handlers` and `scheduled-commands` are `readmodels`, `eventhandlers` and
   `scheduledcommands`; `queries` is created with the project (TypeScript creates it on demand). The
   `.eslint*`, `.prettierrc.yaml`, `.mocharc.yml`, `tsconfig*.json` and `index.ts` files have no Java counterpart; the
-  project gets `pom.xml`, `Main.java`, `config/Config.java`, `.gitignore` and a `README.md`.
+  project gets `pom.xml`, `Main.java`, `config/Config.java`, `.gitignore` and a `README.md`. The `.gitignore`
+  ignores the build directory `/target/` (for `dist/`, `lib/`, `node_modules`) and anchors `/tmp/` and `/coverage`
+  to the project root, which TypeScript leaves unanchored: Java packages are directories, so a package named
+  `target`, `tmp` or `coverage` (or the group `com.target`, i.e. the whole source tree) would otherwise be left out of
+  git, initial commit included.
 - **Templates.** The stubs produce Java with the same placeholders (`authorize = /* Specify authorized roles here... */`,
   `return /* NEW X HERE */;`), which, as in TypeScript, must be completed before the code compiles. In projections
   (`new:read-model --projects`, `add:projection`) the placeholder is wrapped:
