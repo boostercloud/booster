@@ -26,6 +26,7 @@ import com.boostercloud.framework.types.Logger;
 import com.boostercloud.framework.types.concepts.EventStreamConfiguration;
 import com.boostercloud.framework.types.envelope.EventEnvelope;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
@@ -233,6 +234,29 @@ class EventsStreamAdaptersTest {
 
       verify(logger).debug("[Booster]|events-adapter#rawEventsStreamToEnvelopes: ",
           "CONSUMED_EVENT:instance-1#Cart-42-event=>(0#10#7#2026-11-10T09:15:04Z)");
+    }
+
+    @Test
+    void theBindingDataGuardIsStructural() {
+      EnvironmentVariables.set("WEBSITE_INSTANCE_ID", "instance-2");
+      Map<String, Object> input = new LinkedHashMap<>();
+      input.put("messages", List.of());
+      input.put("context", Map.of("invocationId", "i"));
+      input.put("bindingData", obj("partitionKeyArray", List.of("Cart-1-event", "Cart-2-event"),
+          "offsetArray", List.of("1", "2"), "sequenceNumberArray", List.of(3, 4),
+          "enqueuedTimeUtcArray", List.of("t1", "t2")));
+
+      EventsStreamConsumerAdapter.rawEventsStreamToEnvelopes(config, input,
+          List.of(obj("kind", "event"), obj("kind", "event")));
+
+      verify(logger).debug("[Booster]|events-adapter#rawEventsStreamToEnvelopes: ",
+          "CONSUMED_EVENT:instance-2#Cart-2-event=>(1#2#4#t2)");
+      assertThat(EventsStreamConsumerAdapter.isEventHubConsumerInput(input)).isTrue();
+      input.put("bindingData", obj("partitionKeyArray", "not an array"));
+      assertThat(EventsStreamConsumerAdapter.isEventHubConsumerInput(input)).isFalse();
+      input.put("bindingData", "not an object");
+      assertThat(EventsStreamConsumerAdapter.isEventHubConsumerInput(input)).isFalse();
+      assertThat(EventsStreamConsumerAdapter.isEventHubConsumerInput(List.of())).isFalse();
     }
   }
 }

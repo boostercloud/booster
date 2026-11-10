@@ -101,20 +101,18 @@ public final class EventsStreamConsumerAdapter {
     Logger logger = Loggers.getLogger(config, "events-adapter#rawEventsStreamToEnvelopes");
     logger.debug("Mapping " + dedupEventStream.size() + " events");
 
-    EventHubConsumerInput.BindingData bindingData = null;
-    if (rawInput instanceof EventHubConsumerInput consumerInput && consumerInput.bindingData() != null
-        && consumerInput.bindingData().partitionKeyArray() != null) {
-      bindingData = consumerInput.bindingData();
-    }
+    // Extract binding data from the input
+    Object bindingData = isEventHubConsumerInput(rawInput) ? get(rawInput, "bindingData") : null;
 
     List<Object> documents = new ArrayList<>();
     for (int index = 0; index < dedupEventStream.size(); index++) {
       Object rawParsed = parse(dedupEventStream.get(index));
       String instance = EnvironmentVariables.get(OtherEnvironmentVarNames.WEBSITE_INSTANCE_ID).orElse("undefined");
       if (bindingData != null) {
-        logger.debug("CONSUMED_EVENT:" + instance + "#" + at(bindingData.partitionKeyArray(), index) + "=>(" + index
-            + "#" + at(bindingData.offsetArray(), index) + "#" + at(bindingData.sequenceNumberArray(), index) + "#"
-            + at(bindingData.enqueuedTimeUtcArray(), index) + ")");
+        logger.debug("CONSUMED_EVENT:" + instance + "#" + at(get(bindingData, "partitionKeyArray"), index) + "=>("
+            + index + "#" + at(get(bindingData, "offsetArray"), index) + "#"
+            + at(get(bindingData, "sequenceNumberArray"), index) + "#"
+            + at(get(bindingData, "enqueuedTimeUtcArray"), index) + ")");
       }
       if (EventDocuments.isEvent(rawParsed)) {
         documents.add(rawParsed);
@@ -132,7 +130,23 @@ public final class EventsStreamConsumerAdapter {
     return parameters != null && parameters.dedupTtl() != null ? parameters.dedupTtl() : DEFAULT_DEDUP_TTL;
   }
 
-  private static String at(List<?> values, int index) {
-    return values == null || index >= values.size() ? "undefined" : String.valueOf(values.get(index));
+  /**
+   * The private {@code isEventHubConsumerInput} guard: an Event Hub input whose {@code bindingData} is an object with a
+   * {@code partitionKeyArray} array. Structural, so it accepts an {@link EventHubConsumerInput} record or a raw map.
+   *
+   * @param input the raw input
+   * @return whether it carries binding data
+   */
+  static boolean isEventHubConsumerInput(Object input) {
+    if (!AzureFunctionTypes.isEventHubFunctionInput(input)) {
+      return false;
+    }
+    Object bindingData = get(input, "bindingData");
+    boolean isObject = bindingData instanceof Map<?, ?> || bindingData instanceof EventHubConsumerInput.BindingData;
+    return isObject && get(bindingData, "partitionKeyArray") instanceof List<?>;
+  }
+
+  private static String at(Object values, int index) {
+    return values instanceof List<?> list && index < list.size() ? String.valueOf(list.get(index)) : "undefined";
   }
 }
