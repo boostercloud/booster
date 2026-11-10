@@ -580,6 +580,12 @@ public final class MetadataExtractors {
       for (int i = 0; i < variables.length && i < arguments.length; i++) {
         local.put(variables[i], substitute(arguments[i], bindings));
       }
+    } else if (type instanceof Class<?>) {
+      // A raw use of a generic class (`List` without arguments): its variables erase to their bounds
+      for (TypeVariable<?> variable : raw.getTypeParameters()) {
+        Class<?> bound = rawClassOf(variable.getBounds()[0]);
+        local.putIfAbsent(variable, bound == null ? Object.class : bound);
+      }
     }
     if (raw == target) {
       TypeVariable<?>[] variables = raw.getTypeParameters();

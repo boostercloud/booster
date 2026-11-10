@@ -79,6 +79,27 @@ Rejections become unchecked exceptions. Never declare checked exceptions on fram
 * `UUID` is Booster's own value type `com.boostercloud.framework.types.concepts.UUID` (a string
   wrapper, any string is a valid id, `UUID.generate()` creates a random one). It serialises as a
   JSON string and maps to the GraphQL `ID` scalar. It is **not** `java.util.UUID`.
+* `BoosterJson.mapper()` reproduces `JSON.stringify`: absent values (`null`, empty `Optional`) are
+  omitted from objects (but kept inside raw maps), objects are serialised from their **fields**
+  (any visibility, `transient` excluded; records from their components), never from getters;
+  `double`/`float` are written like JavaScript numbers (`2.0` → `2`, non-finite → `null`); a
+  `BoosterError` is written as `{"data", "code"}` and any other `Throwable` as `{"message"}`.
+  Unknown properties are ignored when reading. `BoosterJson.toRaw(x)` is a real JSON round trip
+  (numbers come back as `JSON.parse` would give them), so raw values compare equal regardless of how
+  they were produced.
+* `Instances.createInstance` **binds** recursively (TypeScript only does a shallow
+  `Object.assign`): records through their canonical constructor, classes through the constructor
+  whose parameter names match their fields (`-parameters`) or their no-argument constructor plus
+  field assignment; nested types, collections, maps, enums, dates, `Optional` and sealed
+  hierarchies are converted to the declared generic types; types with Jackson creator/value
+  annotations go through `BoosterJson`. Missing properties become `null`/defaults/empty
+  `Optional`s, unknown raw keys are dropped.
+* Read models cross the provider SPI as raw documents (`Map<String, Object>` including the
+  `boosterMetadata` key). `ProviderReadModelsLibrary.search` always returns a
+  `ReadModelListResult` (TypeScript returns a bare array when not paginated); core returns its
+  `items` for non-paginated searches.
+* Environment variables are read through `EnvironmentVariables.get` (an in-process override table,
+  then `System.getenv`), the replacement of reading and assigning `process.env`.
 
 ## 5. Decorators become annotations + reflection
 
@@ -107,6 +128,34 @@ Rules:
   (GraphQL `Float`, as in TypeScript where all numbers are `Float`); `boolean`→Boolean; enums→Enum;
   `List`/`Set`/arrays→Array; `UUID`→`ID`; `java.time.Instant`/`java.util.Date`→`Date`;
   `Map`/`Object`→`JSON`; other classes/records→Class (object types).
+* `com.boostercloud.metadata.ClassMetadata.of(cls)` (the replacement of
+  `Reflect.getMetadata('booster:typeinfo', cls)`) gives each `TypeMetadata` a TypeScript-compatible
+  `name` (`string`, `number`, `boolean`, `Date`, `UUID`, `Cart`, `string[]`, `Record<string, Cart>`,
+  `Page<Cart>`, `Promise<boolean>`, `unknown`, `void`) and the TypeScript `typeGroup`/`typeName`
+  rules, so the GraphQL generator ports its naming rules unchanged: dates are `Interface` with no
+  `typeName` (matched by name), sealed interfaces/classes are `Union` (members = permitted
+  subclasses, name = the sealed type), `Map`s are the `Type` alias `Record<K, V>`, instantiated
+  generic classes are `Object`, futures are `Promise<T>`, functional interfaces are `Function`,
+  other interfaces `Interface`, unresolved type variables `Other`.
+* Field order is deterministic: record components, or declared fields root superclass first, in
+  **class-file declaration order** (read with `java.lang.classfile`), then calculated fields.
+  Calculated fields (TypeScript getters, `isGetAccessor = true`) are no-argument instance methods
+  annotated with an annotation whose simple name is `CalculatedField`; its `dependsOn` attribute
+  fills `PropertyMetadata.dependencies`. Methods are the class's own declared methods (static and
+  instance) in declaration order, without record accessors and generated members.
+* Nullability details: `@Nullable` on a property behaves like TypeScript's `?` and therefore also
+  marks the type arguments nullable (`@Nullable List<String>` → `[String]`), `Optional<T>` behaves
+  like `T | undefined` and does not (`Optional<List<String>>` → `[String!]`), and a type-use
+  `@Nullable` on a type argument (`List<@Nullable String>`) marks only that argument.
+* External types (exposed as `JSON`, not expanded): JDK classes and the packages in
+  `ExternalTypes` (`com.boostercloud.framework.types.`, `com.boostercloud.framework.common.`,
+  `com.boostercloud.metadata`, Jackson, graphql-java; applications can add more). This replaces
+  TypeScript's "imported from a package" rule; `TypeMetadata.isExternal()` is the
+  `isExternalType` predicate.
+* `ProjectionResult<T>` is a sealed interface whose permitted types are `ProjectionResult.Upsert`
+  and the enum `ReadModelAction`: `return ReadModelAction.DELETE;` from a method declared
+  `ProjectionResult<CartReadModel>` compiles (with an unchecked-conversion warning);
+  `ProjectionResult.delete()` / `ProjectionResult.nothing()` are the warning-free forms.
 
 ## 6. Configuration, start-up and entry points
 
@@ -225,6 +274,18 @@ Reading from code: `Booster.readModel(CartReadModel.class).filter(Map.of("id", M
 * `Logger` (`debug/info/warn/error`) and `getLogger(config, location, prefix)` are ported as-is;
   the default implementation writes to the console honouring `config.logLevel`. No SLF4J in
   framework code (Jetty's own logging is routed to a no-op binding).
+* Concretely: `BoosterError extends RuntimeException`; `code()` defaults to the runtime class's
+  simple name. `BoosterErrors.httpStatusCodeFor(error)` matches the **exact simple class name**
+  (a subclass of `NotFoundError` maps to 500, as in TypeScript); `TypeLevel.toClassTitle(error)`
+  builds HTTP error titles. Places where TypeScript throws a plain `Error` throw
+  `IllegalStateException`/`IllegalArgumentException` with the same message.
+* Error names (`retryWithBackoff`'s `nonRetryableErrors`/`retryableErrors`, log lines) are simple
+  class names (`BoosterErrors.errorName`); TypeScript uses `error.name`, which Booster errors never
+  set. `BoosterErrors.errorToString` renders errors like JavaScript (`"Name: message"`).
+* `com.boostercloud.framework.common.Loggers.getLogger(config, location, prefix)` passes the prefix
+  (`[Booster]|Location: `) as the first argument of the sink, followed by the caller's arguments
+  unformatted; levels are a snapshot at creation and `error` is always on. The sink is
+  `config.logger` or `ConsoleLogger` (debug/info to stdout, warn/error to stderr).
 
 ## 8. Persistence
 
