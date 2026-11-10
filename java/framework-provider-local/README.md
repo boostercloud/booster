@@ -74,6 +74,10 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   `CorruptDataFileException` and NeDB's message
   (`40% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to prevent dataloss.`),
   leaving the file untouched.
+* `LocalProviderRuntime.loadExistingDataFiles()` (Java-only, called by the local infrastructure at start-up) loads
+  every data file that exists, so a damaged file is found when the application starts (and refuses to start when it
+  is beyond the threshold) instead of by the first request that touches it; missing files are still created on first
+  use (Q19).
 * Compaction happens on every load (as in NeDB), on demand (`Datastore.compactDatafile()`), periodically
   (`setAutocompactionInterval`) and, for the dispatch journal, automatically once it holds 1000 obsolete lines.
 * Each collection has one fair read/write lock: reads run concurrently, writes are serialised (single writer),

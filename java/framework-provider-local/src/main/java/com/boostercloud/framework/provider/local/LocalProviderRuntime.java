@@ -8,11 +8,14 @@ import com.boostercloud.framework.provider.local.services.GraphQLService;
 import com.boostercloud.framework.provider.local.services.HealthService;
 import com.boostercloud.framework.provider.local.services.ReadModelRegistry;
 import com.boostercloud.framework.provider.local.services.WebSocketRegistry;
+import com.boostercloud.framework.provider.local.store.CorruptDataFileException;
+import com.boostercloud.framework.provider.local.store.Datastore;
 import com.boostercloud.framework.types.BoosterConfig;
 import com.boostercloud.framework.types.EnvironmentVariables;
 import com.boostercloud.framework.types.UserApp;
 import com.boostercloud.framework.types.UserAppRegistry;
 import com.boostercloud.framework.types.envelope.EventEnvelope;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -232,6 +235,40 @@ public final class LocalProviderRuntime implements AutoCloseable {
    */
   public List<EventEnvelope> recoverUndispatchedEvents(BoosterConfig config) {
     return EventsAdapter.recoverUndispatchedEvents(userApp(), eventRegistry, dispatchJournal, config);
+  }
+
+  /**
+   * Java-only: loads now every data file of {@code .booster} that exists (events, read models, connections,
+   * subscriptions and the dispatch journal), so that a damaged file is found when the application starts instead of by
+   * the first request that touches it. Each file is replayed and compacted as on any load: a torn last line (a write
+   * cut by a crash) is discarded and up to 10 % of other corrupt lines are skipped, with a warning. Files that do not
+   * exist yet are left alone: they are still created on first use, as in TypeScript (Q19).
+   *
+   * @throws CorruptDataFileException when more than 10 % of the lines of a file are corrupt (NeDB's
+   *     {@code corruptAlertThreshold}); that file is left untouched
+   */
+  public void loadExistingDataFiles() {
+    if (hasDataFile(eventRegistry.events())) {
+      eventRegistry.loadDatabaseIfNeeded();
+    }
+    if (hasDataFile(readModelRegistry.readModels())) {
+      readModelRegistry.loadDatabaseIfNeeded();
+    }
+    if (hasDataFile(connectionRegistry.datastore())) {
+      connectionRegistry.loadDatabaseIfNeeded();
+    }
+    if (hasDataFile(subscriptionRegistry.datastore())) {
+      subscriptionRegistry.loadDatabaseIfNeeded();
+    }
+    if (hasDataFile(dispatchJournal.datastore())) {
+      dispatchJournal.datastore().loadDatabaseIfNeeded();
+    }
+  }
+
+  /** Whether the datastore's file, or the {@code <file>~} a crash during a compaction can leave, exists. */
+  private static boolean hasDataFile(Datastore datastore) {
+    Path file = datastore.filename();
+    return file != null && (Files.exists(file) || Files.exists(Path.of(file + "~")));
   }
 
   /** Stops the websocket server and releases the data files. */

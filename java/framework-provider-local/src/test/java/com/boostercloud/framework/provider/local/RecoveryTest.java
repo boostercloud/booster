@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
 import com.boostercloud.framework.provider.local.services.DispatchJournal;
+import com.boostercloud.framework.provider.local.store.CorruptDataFileException;
 import com.boostercloud.framework.types.BoosterConfig;
 import com.boostercloud.framework.types.Logger;
 import com.boostercloud.framework.types.concepts.UUID;
@@ -21,6 +22,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -250,6 +252,44 @@ class RecoveryTest {
     app.release.countDown();
     storing.get(10, TimeUnit.SECONDS);
     assertThat(app.processedEvents).hasSize(1);
+  }
+
+  @Test
+  void loadExistingDataFilesLoadsTheFilesThatExistAndCreatesNoOther() throws IOException {
+    Path project = directory.resolve("eager");
+    Path booster = Files.createDirectories(project.resolve(".booster"));
+    // what a crash during the compaction of read_models.json leaves: only the temporary copy
+    Files.writeString(booster.resolve("read_models.json~"),
+        "{\"typeName\":\"CartReadModel\",\"value\":{\"id\":\"cart-1\"},\"_id\":\"Aa1Bb2Cc3Dd4Ee5F\"}\n");
+    Files.writeString(booster.resolve("subscriptions.json"), "{\"connectionID\":\"c\",\"_id\":\"Mm2Nn3Oo4Pp5Qq6R\"}\n");
+    LocalProvider provider = provider(project, new FakeUserApp(config));
+
+    provider.runtime().loadExistingDataFiles();
+
+    assertThat(provider.runtime().readModelRegistry().isLoaded()).isTrue();
+    assertThat(provider.runtime().readModelRegistry().readModels().count(Map.of())).isEqualTo(1);
+    assertThat(Files.exists(booster.resolve("read_models.json"))).isTrue();
+    assertThat(provider.runtime().subscriptionRegistry().isLoaded()).isTrue();
+    assertThat(provider.runtime().eventRegistry().isLoaded()).isFalse();
+    assertThat(provider.runtime().connectionRegistry().isLoaded()).isFalse();
+    assertThat(booster.resolve("events.json")).doesNotExist();
+    assertThat(booster.resolve("connections.json")).doesNotExist();
+    assertThat(booster.resolve("dispatch_journal.json")).doesNotExist();
+  }
+
+  @Test
+  void loadExistingDataFilesRefusesACorruptFile() throws IOException {
+    Path project = directory.resolve("corrupt");
+    Path booster = Files.createDirectories(project.resolve(".booster"));
+    Files.writeString(booster.resolve("dispatch_journal.json"),
+        "{\"_id\":\"Aa1Bb2Cc3Dd4Ee5F\",\"state\":\"pending\"}\nx\n");
+    LocalProvider provider = provider(project, new FakeUserApp(config));
+
+    assertThatThrownBy(() -> provider.runtime().loadExistingDataFiles())
+        .isInstanceOf(CorruptDataFileException.class)
+        .hasMessageStartingWith("50% of the data file is corrupt");
+    assertThat(Files.readString(booster.resolve("dispatch_journal.json")))
+        .isEqualTo("{\"_id\":\"Aa1Bb2Cc3Dd4Ee5F\",\"state\":\"pending\"}\nx\n");
   }
 
   @Test
