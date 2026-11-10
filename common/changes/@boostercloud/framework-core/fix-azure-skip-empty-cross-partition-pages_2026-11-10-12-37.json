@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix Azure read model searches returning empty pages for cross-partition queries (e.g. contains, or) by fetching past empty Cosmos DB pages that still carry a continuation token",
+      "type": "patch",
+      "packageName": "@boostercloud/framework-core"
+    }
+  ],
+  "packageName": "@boostercloud/framework-core",
+  "email": "mario@theagilemonkeys.com"
+}

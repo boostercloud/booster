@@ -103,7 +103,16 @@ export async function search<TResult>(
     }
 
     const queryIterator = container.items.query(querySpec, feedOptions)
-    const { resources, continuationToken } = await queryIterator.fetchNext()
+    let { resources, continuationToken } = await queryIterator.fetchNext()
+
+    // Cross-partition queries (e.g. CONTAINS on the partition key) can return an empty page together with a
+    // continuation token pointing at the next partition range. Keep fetching until we get results or the query
+    // is exhausted, otherwise callers receive an empty page even though matching items exist.
+    // We stop at the first non-empty page: fetching further could exceed `limit`, and the continuation token
+    // would then skip the extra items.
+    while ((resources ?? []).length === 0 && continuationToken) {
+      ;({ resources, continuationToken } = await queryIterator.fetchNext())
+    }
 
     const finalResources = processResources(resources || [])
 
