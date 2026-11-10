@@ -83,13 +83,20 @@ class GraphQLAdapterTest {
     }
 
     @Test
-    void aBodyThatIsNotAnObjectGivesAnErrorEnvelope() {
-      GraphQLRequestEnvelopeOrError result = GraphQLAdapter.rawGraphQLRequestToEnvelope(mockConfig,
+    void bodiesThatAreNotObjectsReachCoreAsTypeScriptHandsThem() {
+      // a JSON array: an operation without query (core answers "Received an empty GraphQL query")
+      GraphQLRequestEnvelopeOrError array = GraphQLAdapter.rawGraphQLRequestToEnvelope(mockConfig,
           LocalHttpRequest.of("POST", "/", Map.of(), java.util.List.of(1)), () -> mockUuid);
-      assertThat(result).isInstanceOf(GraphQLRequestEnvelopeError.class);
-      assertThat(result.requestID()).isEqualTo(mockUuid);
-      assertThat(result.eventType()).isEqualTo(EventType.MESSAGE);
-      assertThat(result.connectionID()).isNull();
+      assertThat(array).isInstanceOf(GraphQLRequestEnvelope.class);
+      assertThat(((GraphQLRequestEnvelope) array).value()).isEqualTo(GraphQLOperation.builder().build());
+      assertThat(((GraphQLRequestEnvelope) array).context().request().body()).isEqualTo(java.util.List.of(1));
+      assertThat(array.requestID()).isEqualTo(mockUuid);
+      assertThat(array.eventType()).isEqualTo(EventType.MESSAGE);
+      assertThat(array.connectionID()).isNull();
+      // a falsy body: no value (core answers "Received an empty GraphQL body")
+      GraphQLRequestEnvelopeOrError empty = GraphQLAdapter.rawGraphQLRequestToEnvelope(mockConfig,
+          map("headers", map(), "body", ""), () -> mockUuid);
+      assertThat(((GraphQLRequestEnvelope) empty).value()).isNull();
     }
   }
 

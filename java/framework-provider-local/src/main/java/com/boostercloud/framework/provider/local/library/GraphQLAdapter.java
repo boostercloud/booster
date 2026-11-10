@@ -36,8 +36,10 @@ import java.util.function.Supplier;
  * <p>Java-specific: the envelope's {@code value} is typed, so a websocket message that is not a client message of the
  * {@code graphql-ws} protocol (no or unknown {@code type}) becomes an error envelope carrying the error core reports
  * for it in TypeScript ({@code Unknown message type. Message=[object Object]}); core answers it with
- * {@code connection_error}, as in TypeScript. A body that cannot be read as a GraphQL operation also gives an error
- * envelope.
+ * {@code connection_error}, as in TypeScript. An HTTP body that is not an object reaches core the way TypeScript hands
+ * it over: a falsy body as no value (core: {@code Received an empty GraphQL body}), anything else, such as a JSON array,
+ * as an operation without query (core: {@code Received an empty GraphQL query}). An object that cannot be read as a
+ * GraphQL operation (for example {@code variables} that are not an object) gives an error envelope.
  */
 public final class GraphQLAdapter {
 
@@ -134,8 +136,9 @@ public final class GraphQLAdapter {
       return value;
     }
     if (!(body instanceof Map<?, ?>)) {
-      throw new IllegalArgumentException("The GraphQL request body must be a JSON object, but it was: "
-          + BoosterJson.toJson(body));
+      // TypeScript hands any other body to core as it is: core reports a falsy one as an empty body and anything
+      // else (a JSON array) as an operation without query
+      return Js.truthy(body) ? GraphQLOperation.builder().build() : null;
     }
     return BoosterJson.convert(body, GraphQLOperation.class);
   }

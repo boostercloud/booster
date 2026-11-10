@@ -140,7 +140,9 @@ Provider:
 * `GraphQLRequestEnvelope.value` is typed: the HTTP body becomes a `GraphQLOperation`, websocket messages a
   `GraphQLClientMessage`. A websocket message outside the `graphql-ws` protocol becomes an error envelope with
   the error TypeScript's core reports for it (`Unknown message type. Message=[object Object]`), which core
-  answers with `connection_error` as in TypeScript; an HTTP body that is not a JSON object becomes an error
+  answers with `connection_error` as in TypeScript. An HTTP body that is not an object reaches core as TypeScript
+  hands it over (a JSON array as an operation without query, a falsy body as no value), so core reports the same
+  `Received an empty GraphQL query` / `body` errors; an object that cannot be read as an operation gives an error
   envelope.
 * The raw HTTP request is `LocalHttpRequest` (lower-cased header names, mount-relative `url`, parsed body, raw
   bytes) instead of Express's `Request`; raw maps with `headers`/`body`/`url` are accepted too.
