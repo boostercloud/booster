@@ -1,0 +1,21 @@
+package {{{packageName}}};
+
+{{#imports}}
+import {{{fqn}}};
+{{/imports}}
+
+@Event
+{{#hasFields}}
+public record {{{name}}}(
+{{#fields}}
+    {{{type}}} {{{name}}}{{^last}},{{/last}}
+{{/fields}}
+) {
+{{/hasFields}}
+{{^hasFields}}
+public record {{{name}}}() {
+{{/hasFields}}
+  public UUID entityID() {
+    return /* the associated entity ID */;
+  }
+}

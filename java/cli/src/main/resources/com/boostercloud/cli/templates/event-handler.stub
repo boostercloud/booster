@@ -1,0 +1,10 @@
+package {{{packageName}}};
+
+{{#imports}}
+import {{{fqn}}};
+{{/imports}}
+
+@EventHandler({{{event}}}.class)
+public class {{{name}}} {
+  public static void handle({{{event}}} event, Register register) {}
+}

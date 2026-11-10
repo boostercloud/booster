@@ -1,0 +1,19 @@
+package {{{packageName}}};
+
+{{#imports}}
+import {{{fqn}}};
+{{/imports}}
+
+@Entity
+public record {{{name}}}(
+    UUID id{{#fields}},
+    {{{type}}} {{{name}}}{{/fields}}
+) {
+{{#events}}
+
+  @Reduces({{{eventName}}}.class)
+  public static {{{name}}} reduce{{{eventName}}}({{{eventName}}} event, {{{name}}} current{{{name}}}) {
+    return /* NEW {{name}} HERE */;
+  }
+{{/events}}
+}
