@@ -132,7 +132,30 @@ public final class Importer {
     } catch (IOException e) {
       throw new UncheckedIOException("Could not scan the package " + packagePath, e);
     }
+    // Jars without directory entries are not returned by getResources: scan the root class's own location too.
+    CodeSource codeSource = rootClass.getProtectionDomain().getCodeSource();
+    if (codeSource != null && codeSource.getLocation() != null && "file".equals(codeSource.getLocation().getProtocol())) {
+      try {
+        Path location = Path.of(codeSource.getLocation().toURI());
+        URL packageLocation = Files.isDirectory(location)
+            ? location.resolve(packagePath).toUri().toURL()
+            : codeSource.getLocation();
+        if (urls.stream().noneMatch(url -> sameLocation(url, packageLocation))) {
+          urls.add(packageLocation);
+        }
+      } catch (URISyntaxException | IOException | IllegalArgumentException e) {
+        // An unusual code source: the class-loader resources are enough.
+      }
+    }
     return urls;
+  }
+
+  private static boolean sameLocation(URL first, URL second) {
+    try {
+      return first.toURI().normalize().equals(second.toURI().normalize());
+    } catch (URISyntaxException e) {
+      return first.toString().equals(second.toString());
+    }
   }
 
   private static List<String> classResources(URL url, String packagePath) {
