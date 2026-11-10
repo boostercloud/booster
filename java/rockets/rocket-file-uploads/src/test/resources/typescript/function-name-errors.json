@@ -1,0 +1,37 @@
+[
+  {
+    "containerName": "Bad",
+    "storageName": "x",
+    "error": "Invalid containerName: \"Bad\". Must match /^[a-z0-9_-]+$/."
+  },
+  {
+    "containerName": "x",
+    "storageName": "Bad",
+    "error": "Invalid storageName: \"Bad\". Must match /^[a-z0-9_-]+$/."
+  },
+  {
+    "containerName": "",
+    "storageName": "x",
+    "error": "Invalid containerName: \"\". Must match /^[a-z0-9_-]+$/."
+  },
+  {
+    "containerName": "ok",
+    "storageName": "",
+    "error": "Invalid storageName: \"\". Must match /^[a-z0-9_-]+$/."
+  },
+  {
+    "containerName": "a.b",
+    "storageName": "c",
+    "error": "Invalid containerName: \"a.b\". Must match /^[a-z0-9_-]+$/."
+  },
+  {
+    "containerName": "x'y",
+    "storageName": "z",
+    "error": "Invalid containerName: \"x'y\". Must match /^[a-z0-9_-]+$/."
+  },
+  {
+    "containerName": "Bad",
+    "storageName": "Bad",
+    "error": "Invalid containerName: \"Bad\". Must match /^[a-z0-9_-]+$/."
+  }
+]
