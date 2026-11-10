@@ -19,6 +19,7 @@ import com.boostercloud.framework.provider.local.services.ReadModelRegistry;
 import com.boostercloud.framework.provider.local.store.JsRegExp;
 import com.boostercloud.framework.provider.local.store.NedbError;
 import com.boostercloud.framework.types.BoosterConfig;
+import com.boostercloud.framework.types.BoosterJson;
 import com.boostercloud.framework.types.Logger;
 import com.boostercloud.framework.types.concepts.UUID;
 import com.boostercloud.framework.types.envelope.ReadModelEnvelope;
@@ -77,8 +78,23 @@ class ReadModelAdapterTest {
     void shouldReturnAnArrayOfEnvelopes() {
       Map<String, Object> value1 = Mocks.readModelEnvelope();
       ReadModelEnvelope value2 = new ReadModelEnvelope("T", map("id", "x"));
-      assertThat(ReadModelAdapter.rawReadModelEventsToEnvelopes(mockConfig, List.of(value1, value2)))
-          .containsExactly(new ReadModelEnvelope(typeName(value1), value1.get("value")), value2);
+      // Raw maps are converted through JSON, so their numbers come back as JavaScript numbers (the random bar can be an
+      // integral double such as 74125.0, which becomes an integral number): compare the JSON forms
+      assertThat(BoosterJson.toRaw(ReadModelAdapter.rawReadModelEventsToEnvelopes(mockConfig, List.of(value1, value2))))
+          .isEqualTo(BoosterJson.toRaw(List.of(new ReadModelEnvelope(typeName(value1), value1.get("value")), value2)));
+    }
+
+    @Test
+    void convertsTheNumbersOfRawEnvelopesLikeJavaScript() {
+      Map<String, Object> raw = map("typeName", "T", "value", map("id", "x", "integral", 74125.0, "decimal", 1.25));
+      ReadModelEnvelope envelope =
+          ReadModelAdapter.rawReadModelEventsToEnvelopes(mockConfig, List.of(raw)).getFirst();
+      Map<?, ?> value = (Map<?, ?>) envelope.value();
+      assertThat(value.get("integral")).isInstanceOf(Number.class).isNotInstanceOf(Double.class);
+      assertThat(((Number) value.get("integral")).longValue()).isEqualTo(74125L);
+      assertThat(value.get("decimal")).isEqualTo(1.25);
+      // which is why shouldReturnAnArrayOfEnvelopes compares the JSON forms
+      assertThat(BoosterJson.toRaw(envelope.value())).isEqualTo(BoosterJson.toRaw(raw.get("value")));
     }
   }
 
