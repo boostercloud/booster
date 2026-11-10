@@ -158,6 +158,21 @@ public class EventRegistry {
   }
 
   /**
+   * Java-only: inserts several event documents atomically, with one flushed append (all of them are stored, or none
+   * is). A process killed during the call leaves either every line or, at most, a torn last line that the next load
+   * discards; never part of the batch.
+   *
+   * @param storableObjects the documents (an {@code _id} may be given; otherwise one is generated)
+   */
+  public void storeAll(List<Map<String, Object>> storableObjects) {
+    if (storableObjects.isEmpty()) {
+      return;
+    }
+    loadDatabaseIfNeeded();
+    events.insert(storableObjects);
+  }
+
+  /**
    * Java-only: a fresh {@code _id}, so that callers can reference a document before inserting it.
    *
    * @return the id

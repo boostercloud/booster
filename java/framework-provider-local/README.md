@@ -89,6 +89,10 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   `storeDispatched` answers `false` for a re-dispatched event core already saw, which makes re-dispatching safe.
   A failed recovery keeps the pending entries for the next one. Dispatches running in the current process are
   never touched, so recovery can run while the application serves requests.
+* **Atomic event batches** (not in TypeScript). `events.store` writes the events of one batch (what one command,
+  event handler or scheduled command registered) with a single flushed append (`EventRegistry.storeAll`), so a
+  crash or a failed write leaves all of them stored or none: a command is never half applied. TypeScript (and
+  `EventsAdapter.storeEvents` without journal) inserts them one by one.
 
 ## Differences from TypeScript
 
@@ -129,8 +133,9 @@ Provider:
   matches `operation.id` (TypeScript filters on a `subscriptionID` field that does not exist, so `stop` never
   deleted anything, Q9).
 * `events.store` returns (and dispatches) the events with their database `id`, records them in the dispatch
-  journal, and `events.storeDispatched` deduplicates through that journal (TypeScript always returns `true`).
-  Without the journal (`EventsAdapter.storeEvents(userApp, registry, envelopes, config)`) the behaviour is
+  journal, stores the batch atomically (one append; TypeScript stores the events one by one, so a failure or a
+  crash can leave the first ones stored), and `events.storeDispatched` deduplicates through that journal
+  (TypeScript always returns `true`). Without the journal (`EventsAdapter.storeEvents(userApp, registry, envelopes, config)`) the behaviour is
   exactly TypeScript's.
 * Envelopes read from the store expose NeDB's `_id` as `id` (TypeScript returns the raw documents, with `_id`).
 * `readModels.fetch` returns an empty list when the read model does not exist (TypeScript `[undefined]`), as

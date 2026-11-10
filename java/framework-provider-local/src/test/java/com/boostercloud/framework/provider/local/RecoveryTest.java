@@ -272,7 +272,9 @@ class RecoveryTest {
     assertThatThrownBy(() -> provider.events().store(List.of(event("cart-2", 1), invalid), config))
         .hasMessage("Field names cannot contain a .");
     assertThat(provider.runtime().dispatchJournal().size()).isZero();
-    assertThat(provider.events().forEntitySince(config, "Cart", UUID.of("cart-2"))).hasSize(1);
+    // the batch is stored atomically: an event that cannot be stored keeps the whole batch out of the store (a crash
+    // can therefore never leave part of the events of one command behind)
+    assertThat(provider.events().forEntitySince(config, "Cart", UUID.of("cart-2"))).isEmpty();
   }
 
   @Test
