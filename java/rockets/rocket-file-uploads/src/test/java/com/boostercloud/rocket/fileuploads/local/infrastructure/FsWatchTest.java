@@ -123,6 +123,25 @@ class FsWatchTest {
   }
 
   @Test
+  void a_burst_larger_than_the_jdk_event_queue_is_fully_notified() throws Exception {
+    Path folder = Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
+    start(List.of("client1"));
+    // the JDK keeps 512 pending events per directory and reports the rest as OVERFLOW (the macOS service polls every
+    // 2 seconds, so all these files fall into one poll); Node's recursive watch reports every one of them
+    int count = 700;
+    for (int i = 0; i < count; i++) {
+      Files.writeString(folder.resolve("f" + i + ".txt"), Integer.toString(i));
+    }
+
+    List<Object> expected = new ArrayList<>();
+    for (int i = 0; i < count; i++) {
+      expected.add("client1/f" + i + ".txt");
+    }
+    await().atMost(Duration.ofSeconds(60)).untilAsserted(() ->
+        assertThat(new java.util.HashSet<>(names())).containsAll(expected));
+  }
+
+  @Test
   void stops_on_close() throws Exception {
     Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
     start(List.of("client1"));

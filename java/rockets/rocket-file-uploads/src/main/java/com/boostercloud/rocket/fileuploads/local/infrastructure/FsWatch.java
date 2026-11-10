@@ -49,7 +49,8 @@ import java.util.stream.Stream;
  *
  * <p>Java implementation: the JDK {@link WatchService} with every directory of the tree registered (it is not
  * recursive); directories created later are registered when they appear and their existing entries are notified, so
- * a file written right after its directory was created is not missed. The service is native on Linux and Windows and
+ * a file written right after its directory was created is not missed; when the JDK drops events of a busy directory
+ * ({@code OVERFLOW}) its entries are notified again. The service is native on Linux and Windows and
  * polls every 2 seconds on macOS, so notifications may arrive that much later than with Node. A failing dispatch is
  * logged (TypeScript leaves an unhandled promise rejection). {@link #close()} stops watching and waits for the
  * dispatches in flight.
@@ -199,8 +200,13 @@ public final class FsWatch implements AutoCloseable {
       }
       Path directory = keys.get(key);
       if (directory != null) {
+        boolean overflowed = false;
         for (WatchEvent<?> event : key.pollEvents()) {
-          if (event.kind() == OVERFLOW || !(event.context() instanceof Path name)) {
+          if (event.kind() == OVERFLOW) {
+            overflowed = true;
+            continue;
+          }
+          if (!(event.context() instanceof Path name)) {
             continue;
           }
           Path child = directory.resolve(name);
@@ -213,9 +219,37 @@ public final class FsWatch implements AutoCloseable {
             }
           }
         }
+        if (overflowed) {
+          rescan(directory);
+        }
       }
       if (!key.reset()) {
         keys.remove(key);
+      }
+    }
+  }
+
+  /**
+   * After an {@code OVERFLOW} (the JDK keeps at most 512 pending events per directory and drops the rest; Node's
+   * recursive watch loses nothing in that case): notifies every entry of the directory again, and registers (and
+   * notifies the contents of) the sub-directories that are not watched yet, so no upload goes unnoticed.
+   */
+  private void rescan(Path directory) {
+    List<Path> children = new ArrayList<>();
+    try (Stream<Path> list = Files.list(directory)) {
+      list.forEach(children::add);
+    } catch (IOException | UncheckedIOException e) {
+      logger.debug("Could not rescan", directory, e);
+      return;
+    }
+    for (Path child : children) {
+      handle(child);
+      if (Files.isDirectory(child, LinkOption.NOFOLLOW_LINKS) && !keys.containsValue(child)) {
+        try {
+          registerTree(child, true);
+        } catch (IOException | UncheckedIOException e) {
+          logger.debug("Could not watch", child, e);
+        }
       }
     }
   }
