@@ -115,8 +115,11 @@ public final class ProjectIndex {
 
   static int skipAnnotation(List<JavaLexer.Token> tokens, int at) {
     int i = at + 1;
-    while (i < tokens.size() && (tokens.get(i).kind() == JavaLexer.Kind.IDENTIFIER || tokens.get(i).is("."))) {
+    if (i < tokens.size() && tokens.get(i).kind() == JavaLexer.Kind.IDENTIFIER) {
       i++;
+      while (i + 1 < tokens.size() && tokens.get(i).is(".") && tokens.get(i + 1).kind() == JavaLexer.Kind.IDENTIFIER) {
+        i += 2;
+      }
     }
     if (i < tokens.size() && tokens.get(i).is("(")) {
       int depth = 0;
