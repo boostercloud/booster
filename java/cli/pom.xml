@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.boostercloud</groupId>
+    <artifactId>booster-parent</artifactId>
+    <version>4.1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>booster-cli</artifactId>
+  <name>Booster CLI</name>
+  <description>The boost command line tool.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-common-helpers</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+    </dependency>
+  </dependencies>
+</project>
