@@ -650,6 +650,29 @@ describe('Query helper', () => {
         expect(result.items).to.have.length(1)
       })
 
+      it('keeps the numeric cursor id when an empty page is followed by a non-empty terminal page', async () => {
+        // A numeric cursor id is always returned for non-empty pages for backwards compatibility (#1594)
+        fetchNext
+          .onFirstCall()
+          .resolves({ resources: [], continuationToken: '[{"token":null,"range":{"min":"","max":"05C1"}}]' })
+          .onSecondCall()
+          .resolves({ resources: [{ id: 'an-id-that-exists' }], continuationToken: undefined })
+
+        const result = (await search(
+          mockCosmosDbClient as any,
+          mockConfig,
+          mockReadModelName,
+          filters,
+          20,
+          undefined,
+          true
+        )) as any
+
+        expect(fetchNext).to.have.been.calledTwice
+        expect(result.items).to.have.length(1)
+        expect(result.cursor).to.deep.equal({ id: '20' })
+      })
+
       it('returns an empty result without a cursor when the query is exhausted', async () => {
         fetchNext
           .onFirstCall()
