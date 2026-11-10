@@ -197,6 +197,23 @@ class LocalFilesServerTest {
   }
 
   @Test
+  void a_directory_falls_through_to_not_found_and_head_answers_the_headers_only() throws Exception {
+    Files.createDirectories(project.resolve("clientst/rocketfiles/client1/sub"));
+    Http.put(url("/clientst/rocketfiles/client1/a.txt"), "abc".getBytes());
+
+    // res.download of a directory calls next() (EISDIR), so Express's final handler answers
+    HttpResponse<byte[]> directory = Http.get(url("/clientst/rocketfiles/client1/sub"));
+    assertThat(directory.statusCode()).isEqualTo(404);
+    assertThat(Http.text(directory)).contains("Cannot GET /clientst/rocketfiles/client1/sub");
+    // GET routes answer HEAD
+    HttpResponse<byte[]> head = Http.send("HEAD", url("/clientst/rocketfiles/client1/a.txt"), Map.of(), null);
+    assertThat(head.statusCode()).isEqualTo(200);
+    assertThat(head.headers().firstValue("content-length")).hasValue("3");
+    assertThat(head.headers().firstValue("content-disposition")).hasValue("attachment; filename=\"a.txt\"");
+    assertThat(head.body()).isEmpty();
+  }
+
+  @Test
   void dot_files_are_not_served() throws Exception {
     Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
     Files.writeString(project.resolve("clientst/rocketfiles/client1/.env"), "secret");
