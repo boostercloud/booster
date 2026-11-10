@@ -1,0 +1,658 @@
+{
+  "//": {
+    "metadata": {
+      "backend": "local",
+      "stackName": "my-storeproduction",
+      "version": "0.25.0"
+    },
+    "outputs": {
+      "azureFeature": {
+        "graphqlURL": "azureFeaturegraphqlURL_E7D4B382",
+        "httpURL": "azureFeaturehttpURL_8AD6F458",
+        "sensorHealthURL": "azureFeaturesensorHealthURL_9F4278B4",
+        "websocketURL": "azureFeaturewebsocketURL_42CA5872"
+      }
+    }
+  },
+  "data": {
+    "azurerm_public_ip": {
+      "mystoreproductiondatapip": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductiondatapip",
+            "uniqueId": "mystoreproductiondatapip"
+          }
+        },
+        "name": "${azurerm_public_ip.pip.name}",
+        "provider": "azurerm",
+        "resource_group_name": "mystoreproductionrg"
+      }
+    }
+  },
+  "output": {
+    "azureFeaturegraphqlURL_E7D4B382": {
+      "description": "The base URL for sending GraphQL mutations and queries",
+      "value": "http://${data.azurerm_public_ip.mystoreproductiondatapip.fqdn}/production/graphql"
+    },
+    "azureFeaturehttpURL_8AD6F458": {
+      "description": "The base URL for all the auth endpoints",
+      "value": "http://${data.azurerm_public_ip.mystoreproductiondatapip.fqdn}/production"
+    },
+    "azureFeaturesensorHealthURL_9F4278B4": {
+      "description": "The base URL for getting health information",
+      "value": "http://${data.azurerm_public_ip.mystoreproductiondatapip.fqdn}/production/sensor/health"
+    },
+    "azureFeaturewebsocketURL_42CA5872": {
+      "description": "The URL for the websocket communication. Used for subscriptions",
+      "value": "wss://${azurerm_web_pubsub.mystoreproductionwps.hostname}/client/hubs/booster_events"
+    }
+  },
+  "provider": {
+    "azurerm": [
+      {
+        "features": [
+          {}
+        ],
+        "resource_provider_registrations": "legacy",
+        "subscription_id": "subscription-id"
+      }
+    ]
+  },
+  "resource": {
+    "azurerm_application_gateway": {
+      "ag": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/ag",
+            "uniqueId": "ag"
+          }
+        },
+        "backend_address_pool": [
+          {
+            "fqdns": [
+              "${azurerm_windows_function_app.oreproductionwebhookfunc.name}.azurewebsites.net"
+            ],
+            "name": "rocketWebHookBackendAddressPool"
+          }
+        ],
+        "backend_http_settings": [
+          {
+            "cookie_based_affinity": "Disabled",
+            "name": "mainBackendHttpSettings",
+            "pick_host_name_from_backend_address": true,
+            "port": 80,
+            "protocol": "Http",
+            "request_timeout": 20
+          }
+        ],
+        "frontend_ip_configuration": [
+          {
+            "name": "myFrontendIpConfiguration",
+            "public_ip_address_id": "${azurerm_public_ip.pip.id}"
+          }
+        ],
+        "frontend_port": [
+          {
+            "name": "myFrontendPort",
+            "port": 80
+          }
+        ],
+        "gateway_ip_configuration": [
+          {
+            "name": "myGatewayIpConfiguration",
+            "subnet_id": "${azurerm_subnet.mystoreproductionvsn.id}"
+          }
+        ],
+        "http_listener": [
+          {
+            "frontend_ip_configuration_name": "myFrontendIpConfiguration",
+            "frontend_port_name": "myFrontendPort",
+            "name": "mainHttpListener",
+            "protocol": "Http"
+          }
+        ],
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgapigw",
+        "provider": "azurerm",
+        "request_routing_rule": [
+          {
+            "backend_address_pool_name": "functionManagementBackendAddressPool",
+            "backend_http_settings_name": "mainBackendHttpSettings",
+            "http_listener_name": "mainHttpListener",
+            "name": "mainRequestRoutingRule",
+            "priority": 100,
+            "rewrite_rule_set_name": "mainRewriteRuleSet",
+            "rule_type": "PathBasedRouting",
+            "url_path_map_name": "mainUrlPathMap"
+          }
+        ],
+        "resource_group_name": "mystoreproductionrg",
+        "rewrite_rule_set": [
+          {
+            "name": "mainRewriteRuleSet",
+            "rewrite_rule": [
+              {
+                "condition": [
+                  {
+                    "ignore_case": true,
+                    "pattern": "/production/graphql",
+                    "variable": "var_request_uri"
+                  }
+                ],
+                "name": "graphQLRewriteRule",
+                "rule_sequence": 100,
+                "url": {
+                  "components": "path_only",
+                  "path": "/api/graphql"
+                }
+              },
+              {
+                "condition": [
+                  {
+                    "ignore_case": true,
+                    "pattern": "/production/sensor/health(/.*)?",
+                    "variable": "var_request_uri"
+                  }
+                ],
+                "name": "sensorRewriteRule",
+                "rule_sequence": 101,
+                "url": {
+                  "components": "path_only",
+                  "path": "/api/sensor/health{var_request_uri_1}"
+                }
+              }
+            ]
+          }
+        ],
+        "sku": {
+          "capacity": 1,
+          "name": "WAF_v2",
+          "tier": "WAF_v2"
+        },
+        "url_path_map": [
+          {
+            "default_backend_address_pool_name": "functionManagementBackendAddressPool",
+            "default_backend_http_settings_name": "mainBackendHttpSettings",
+            "default_rewrite_rule_set_name": "mainRewriteRuleSet",
+            "name": "mainUrlPathMap",
+            "path_rule": [
+              {
+                "backend_address_pool_name": "rocketWebHookBackendAddressPool",
+                "backend_http_settings_name": "mainBackendHttpSettings",
+                "name": "mystoreproductionrutest",
+                "paths": [
+                  "/test",
+                  "/test/*"
+                ],
+                "rewrite_rule_set_name": "mainRewriteRuleSet"
+              }
+            ]
+          }
+        ],
+        "waf_configuration": {
+          "enabled": true,
+          "firewall_mode": "Detection",
+          "rule_set_version": "3.0"
+        }
+      }
+    },
+    "azurerm_cosmosdb_account": {
+      "mystoreproductiondba": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductiondba",
+            "uniqueId": "mystoreproductiondba"
+          }
+        },
+        "automatic_failover_enabled": true,
+        "consistency_policy": {
+          "consistency_level": "Session"
+        },
+        "depends_on": [
+          "azurerm_resource_group.mystoreproductionrg"
+        ],
+        "geo_location": [
+          {
+            "failover_priority": 0,
+            "location": "${azurerm_resource_group.mystoreproductionrg.location}"
+          }
+        ],
+        "is_virtual_network_filter_enabled": false,
+        "kind": "GlobalDocumentDB",
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "multiple_write_locations_enabled": false,
+        "name": "mystoreproductionrgcdba",
+        "offer_type": "Standard",
+        "provider": "azurerm",
+        "resource_group_name": "mystoreproductionrg"
+      }
+    },
+    "azurerm_cosmosdb_sql_container": {
+      "cartreadmodel": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/cartreadmodel",
+            "uniqueId": "cartreadmodel"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.mystoreproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.mystoreproductiondbd.name}",
+        "name": "my-store-app-CartReadModel",
+        "partition_key_paths": [
+          "/id"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.mystoreproductiondba.resource_group_name}"
+      },
+      "mystoreproductionevents": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionevents",
+            "uniqueId": "mystoreproductionevents"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.mystoreproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.mystoreproductiondbd.name}",
+        "name": "my-store-app-events-store",
+        "partition_key_paths": [
+          "/entityTypeName_entityID_kind"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.mystoreproductiondba.resource_group_name}"
+      },
+      "mystoreproductionsubscr": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionsubscr",
+            "uniqueId": "mystoreproductionsubscr"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.mystoreproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.mystoreproductiondbd.name}",
+        "default_ttl": -1,
+        "name": "my-store-app-subscriptions-store",
+        "partition_key_paths": [
+          "/className"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.mystoreproductiondba.resource_group_name}"
+      },
+      "oductionconnectionstable": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/oductionconnectionstable",
+            "uniqueId": "oductionconnectionstable"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.mystoreproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.mystoreproductiondbd.name}",
+        "default_ttl": -1,
+        "name": "my-store-app-connections-store",
+        "partition_key_paths": [
+          "/connectionID"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.mystoreproductiondba.resource_group_name}"
+      },
+      "oductiondispatchedevents": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/oductiondispatchedevents",
+            "uniqueId": "oductiondispatchedevents"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.mystoreproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.mystoreproductiondbd.name}",
+        "default_ttl": 300,
+        "name": "my-store-app-dispatched-events",
+        "partition_key_paths": [
+          "/eventId"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.mystoreproductiondba.resource_group_name}",
+        "unique_key": [
+          {
+            "paths": [
+              "/eventId"
+            ]
+          }
+        ]
+      },
+      "productreadmodel": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/productreadmodel",
+            "uniqueId": "productreadmodel"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.mystoreproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.mystoreproductiondbd.name}",
+        "name": "my-store-app-ProductReadModel",
+        "partition_key_paths": [
+          "/id"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.mystoreproductiondba.resource_group_name}"
+      }
+    },
+    "azurerm_cosmosdb_sql_database": {
+      "mystoreproductiondbd": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductiondbd",
+            "uniqueId": "mystoreproductiondbd"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.mystoreproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "name": "my-store-app",
+        "provider": "azurerm",
+        "resource_group_name": "mystoreproductionrg"
+      }
+    },
+    "azurerm_network_security_group": {
+      "mystoreproductionsg": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionsg",
+            "uniqueId": "mystoreproductionsg"
+          }
+        },
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgrjsg",
+        "resource_group_name": "mystoreproductionrg",
+        "security_rule": [
+          {
+            "access": "Allow",
+            "destination_address_prefix": "*",
+            "destination_port_range": "*",
+            "direction": "Inbound",
+            "name": "Allow-All-mystoreproductionrgrjsg",
+            "priority": 100,
+            "protocol": "Tcp",
+            "source_address_prefix": "*",
+            "source_port_range": "*"
+          },
+          {
+            "access": "Allow",
+            "destination_address_prefix": "*",
+            "destination_port_range": "*",
+            "direction": "Outbound",
+            "name": "Allow-All-mystoreproductionrgrjsgb",
+            "priority": 100,
+            "protocol": "Tcp",
+            "source_address_prefix": "*",
+            "source_port_range": "*"
+          }
+        ]
+      }
+    },
+    "azurerm_public_ip": {
+      "pip": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/pip",
+            "uniqueId": "pip"
+          }
+        },
+        "allocation_method": "Static",
+        "domain_name_label": "mystoreproductionrgapis",
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgpip",
+        "resource_group_name": "mystoreproductionrg",
+        "sku": "Standard"
+      }
+    },
+    "azurerm_resource_group": {
+      "mystoreproductionrg": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionrg",
+            "uniqueId": "mystoreproductionrg"
+          }
+        },
+        "location": "East US",
+        "name": "mystoreproductionrg",
+        "provider": "azurerm"
+      }
+    },
+    "azurerm_service_plan": {
+      "mystoreproductionpsp": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionpsp",
+            "uniqueId": "mystoreproductionpsp"
+          }
+        },
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgpsp",
+        "os_type": "Windows",
+        "provider": "azurerm",
+        "resource_group_name": "mystoreproductionrg",
+        "sku_name": "B1",
+        "worker_count": 2
+      }
+    },
+    "azurerm_storage_account": {
+      "mystoreproductionsp": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionsp",
+            "uniqueId": "mystoreproductionsp"
+          }
+        },
+        "account_replication_type": "LRS",
+        "account_tier": "Standard",
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgsp",
+        "provider": "azurerm",
+        "resource_group_name": "mystoreproductionrg"
+      }
+    },
+    "azurerm_subnet": {
+      "mystoreproductionvsn": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionvsn",
+            "uniqueId": "mystoreproductionvsn"
+          }
+        },
+        "address_prefixes": [
+          "10.0.1.0/24"
+        ],
+        "name": "mystoreproductionrgvsn",
+        "resource_group_name": "mystoreproductionrg",
+        "virtual_network_name": "${azurerm_virtual_network.mystoreproductionvn.name}"
+      }
+    },
+    "azurerm_subnet_network_security_group_association": {
+      "mystoreproductionsnsg": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionsnsg",
+            "uniqueId": "mystoreproductionsnsg"
+          }
+        },
+        "network_security_group_id": "${azurerm_network_security_group.mystoreproductionsg.id}",
+        "subnet_id": "${azurerm_subnet.mystoreproductionvsn.id}"
+      }
+    },
+    "azurerm_virtual_network": {
+      "mystoreproductionvn": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionvn",
+            "uniqueId": "mystoreproductionvn"
+          }
+        },
+        "address_space": [
+          "10.0.0.0/16"
+        ],
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgvn",
+        "resource_group_name": "mystoreproductionrg"
+      }
+    },
+    "azurerm_web_pubsub": {
+      "mystoreproductionwps": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionwps",
+            "uniqueId": "mystoreproductionwps"
+          }
+        },
+        "capacity": 1,
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgwps",
+        "provider": "azurerm",
+        "resource_group_name": "mystoreproductionrg",
+        "sku": "Free_F1"
+      }
+    },
+    "azurerm_web_pubsub_hub": {
+      "mystoreproductionwpsh": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionwpsh",
+            "uniqueId": "mystoreproductionwpsh"
+          }
+        },
+        "anonymous_connections_enabled": true,
+        "depends_on": [
+          "azurerm_windows_function_app.mystoreproductionfunc",
+          "azurerm_web_pubsub.mystoreproductionwps"
+        ],
+        "event_handler": [
+          {
+            "system_events": [
+              "connect",
+              "disconnected"
+            ],
+            "url_template": "https://${azurerm_windows_function_app.mystoreproductionfunc.name}.azurewebsites.net/runtime/webhooks/webpubsub?code=PLACEHOLDER",
+            "user_event_pattern": "*"
+          }
+        ],
+        "lifecycle": {
+          "ignore_changes": [
+            "event_handler"
+          ]
+        },
+        "name": "booster",
+        "provider": "azurerm",
+        "web_pubsub_id": "${azurerm_web_pubsub.mystoreproductionwps.id}"
+      }
+    },
+    "azurerm_windows_function_app": {
+      "mystoreproductionfunc": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/mystoreproductionfunc",
+            "uniqueId": "mystoreproductionfunc"
+          }
+        },
+        "app_settings": "${merge({\"WEBSITE_RUN_FROM_PACKAGE\" = \"1\", \"WEBSITE_CONTENTSHARE\" = \"mystoreproductionfunc\", \"CUSTOM_SETTING\" = \"custom value\", \"WebPubSubConnectionString\" = azurerm_web_pubsub.mystoreproductionwps.primary_connection_string, \"BOOSTER_ENV\" = \"production\", \"BOOSTER_REST_API_URL\" = \"http://mystoreproductionrgapis.eastus.cloudapp.azure.com/production\", \"EVENTHUB_CONNECTION_STRING\" = \"\", \"EVENTHUB_NAME\" = \"booster_events\", \"EVENTHUB_MAX_RETRIES\" = \"5\", \"EVENTHUB_MODE\" = \"exponential\", \"COSMOSDB_CONNECTION_STRING\" = \"AccountEndpoint=https://${azurerm_cosmosdb_account.mystoreproductiondba.name}.documents.azure.com:443/;AccountKey=${azurerm_cosmosdb_account.mystoreproductiondba.primary_key};\", \"WEBSITE_CONTENTAZUREFILECONNECTIONSTRING\" = azurerm_storage_account.mystoreproductionsp.primary_connection_string, \"BOOSTER_APP_NAME\" = \"\", \"BOOSTER_APP_CLASS\" = \"com.example.store.Main\"}, {\"ROCKET_FUNCTION_APP_NAMES\" = \"mystoreproductionrgwebhookfunc,mystoreproductionrgfilesfunc\", \"ROCKET_PACKAGE_MAPPING\" = \"rocket-file-uploads:mystoreproductionrgwebhookfunc\"})}",
+        "depends_on": [
+          "azurerm_resource_group.mystoreproductionrg"
+        ],
+        "functions_extension_version": "~4",
+        "identity": {
+          "type": "SystemAssigned"
+        },
+        "lifecycle": {
+          "ignore_changes": [
+            "app_settings[\"WEBSITE_RUN_FROM_PACKAGE\"]"
+          ]
+        },
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgfpr",
+        "provider": "azurerm",
+        "resource_group_name": "mystoreproductionrg",
+        "service_plan_id": "${azurerm_service_plan.mystoreproductionpsp.id}",
+        "site_config": {
+          "application_stack": {
+            "java_version": "21"
+          }
+        },
+        "storage_account_access_key": "${azurerm_storage_account.mystoreproductionsp.primary_access_key}",
+        "storage_account_name": "${azurerm_storage_account.mystoreproductionsp.name}",
+        "zip_deploy_file": "<PROJECT_ROOT>/baseWebPubSubBinding.zip"
+      },
+      "oreproductionwebhookfunc": {
+        "//": {
+          "metadata": {
+            "path": "my-storeproduction/oreproductionwebhookfunc",
+            "uniqueId": "oreproductionwebhookfunc"
+          }
+        },
+        "app_settings": {
+          "BOOSTER_APP_CLASS": "com.example.store.Main",
+          "BOOSTER_ENV": "production",
+          "BOOSTER_ROCKET_FUNCTION_ID": "rocket-webhook",
+          "COSMOSDB_CONNECTION_STRING": "AccountEndpoint=https://${azurerm_cosmosdb_account.mystoreproductiondba.name}.documents.azure.com:443/;AccountKey=${azurerm_cosmosdb_account.mystoreproductiondba.primary_key};",
+          "WEBSITE_CONTENTSHARE": "oreproductionwebhookfunc",
+          "WEBSITE_RUN_FROM_PACKAGE": "1"
+        },
+        "depends_on": [
+          "azurerm_resource_group.mystoreproductionrg"
+        ],
+        "functions_extension_version": "~4",
+        "lifecycle": {
+          "ignore_changes": [
+            "app_settings[\"WEBSITE_RUN_FROM_PACKAGE\"]"
+          ]
+        },
+        "location": "${azurerm_resource_group.mystoreproductionrg.location}",
+        "name": "mystoreproductionrgwebhookfunc",
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_resource_group.mystoreproductionrg.name}",
+        "service_plan_id": "${azurerm_service_plan.mystoreproductionpsp.id}",
+        "site_config": {
+          "application_stack": {
+            "java_version": "21"
+          }
+        },
+        "storage_account_access_key": "${azurerm_storage_account.mystoreproductionsp.primary_access_key}",
+        "storage_account_name": "${azurerm_storage_account.mystoreproductionsp.name}"
+      }
+    }
+  },
+  "terraform": {
+    "backend": {
+      "local": {
+        "path": "<PROJECT_ROOT>/terraform.my-storeproduction.tfstate"
+      }
+    },
+    "required_providers": {
+      "azurerm": {
+        "source": "azurerm",
+        "version": "~> 5.0"
+      }
+    }
+  }
+}
