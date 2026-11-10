@@ -21,7 +21,7 @@ The six npm packages are one Maven module (`com.boostercloud:booster-rocket-file
 | `@boostercloud/rocket-file-uploads-local` | `…fileuploads.local` | `RocketFilesLibrary` (the module object), `handlers.PresignedGet/PresignedPut/ListHandler`, `FileUploaded`; Java additions `handlers.DeleteFile`, `LocalStorage` |
 | `@boostercloud/rocket-file-uploads-local-infrastructure` | `…fileuploads.local.infrastructure` | `Rocket` (the default export), `LocalRocketFiles`, `Infra`, `FsWatch`, `controllers.FileController` (`http.ts` is the framework's `Http`, the same code) |
 | `@boostercloud/rocket-file-uploads-azure` | `…fileuploads.azure` | `RocketFilesLibrary`, `handlers.BlobService/PresignedGet/PresignedPut/ListHandler`, `FileUploaded`; Java additions `handlers.DeleteFile`, `storage.*` (the Blob REST client, SAS signing, credential chain) |
-| `@boostercloud/rocket-file-uploads-azure-infrastructure` | `…fileuploads.azure.infrastructure` | `Rocket`, `AzureRocketFiles`, `Helper`, `functions.Functions`, `functions.RocketFilesFileUploadedFunction`, `synth.Synth`, `synth.TerraformStorageAccount/StorageContainer/FunctionApp/RoleAssignment` |
+| `@boostercloud/rocket-file-uploads-azure-infrastructure` | `…fileuploads.azure.infrastructure` | `Rocket`, `AzureRocketFiles`, `Helper`, `functions.Functions`, `functions.RocketFilesFileUploadedFunction`, `synth.Synth`, `synth.TerraformStorageAccount/StorageContainer/FunctionApp/RoleAssignment`; Java-only `synth.ConstructIds` (unique construct ids) |
 
 `List` is taken in Java, so `handlers/list.ts` is `ListHandler`.
 
@@ -292,10 +292,11 @@ The connection is identity-based (`<storage>__serviceUri`). Names must match `^[
   error). Error titles of I/O failures come from Java classes (`Unchecked IO Exception` instead of `Error`, same
   status and Node-like reason). The dot-file `404` and the directory fall-through of `res.download` are emulated.
 * **Watcher**: the JDK `WatchService` with every folder registered (Node's recursive `fs.watch`); new folders are
-  registered when they appear and the entries already in them are notified. On macOS the JDK polls every 2 seconds, so
-  notifications come later than with Node; Node's event multiplicity is platform-specific anyway. A failing dispatch is
-  logged (Node: an unhandled rejection, which ends the process). The watchers stop when the server stops
-  (`unmountStack`, which TypeScript does not have locally).
+  registered when they appear and the entries already in them are notified; when the JDK drops the events of a busy
+  directory (more than 512 pending, `OVERFLOW`) its entries are notified again, so a burst of uploads is not lost. On
+  macOS the JDK polls every 2 seconds, so notifications come later than with Node; Node's event multiplicity is
+  platform-specific anyway. A failing dispatch is logged (Node: an unhandled rejection, which ends the process). The
+  watchers stop when the server stops (`unmountStack`, which TypeScript does not have locally).
 * **Envelope**: no `createdAt` before storing (the provider sets it in both implementations); a `null` metadata is
   stored as `{}`.
 * **Azure SDK replaced** by REST calls: `@azure/storage-blob` and `@azure/identity` are not available in Java without
@@ -307,13 +308,19 @@ The connection is identity-based (`<storage>__serviceUri`). Names must match `^[
   the generated `functions.js`; the function app runs the Java stack (`java_version`) and gets `BOOSTER_APP_CLASS`. The
   Java entry point passes only `blobTrigger` and `uri` as trigger metadata (the Node host adds `properties`,
   `metadata`, `name`, `sys`...), so the stored metadata, and therefore the entity ids, differ from a Node deployment.
-* **Terraform**: container and role assignment construct ids are deterministic (TypeScript hashes unresolved tokens);
+* **Terraform**: container and role assignment construct ids are deterministic, computed from the names (TypeScript
+  computes them from unresolved token strings, so they are opaque); when two storages' names end alike, which would
+  give the same id, a counter is added to the name;
   the identity connection keys are the literal `<account>__serviceUri` (TypeScript: a token resolving to it). The
   `FunctionApp identity not found` check is applied to the function app's `identity` attribute/override (TypeScript's
   check on a token list never fires).
 * **minimatch / brace-expansion**: on Windows `\` is treated as `/` in paths and patterns (minimatch's own rule);
   brace sequences with numbers beyond `long` are not expanded as numbers.
 * The `Ignoring blob trigger` lines go to a replaceable logger (`azure.FileUploaded.useLogger`, the console by default).
+* Inherited from the framework's local server (see its README): in the directory patterns used as route paths only
+  `*` (and `:param`) are special, so glob characters such as `?`, `+`, `()` and `[]` are literal (Express 4 treats
+  them as regular expression syntax); `res.download` answers no `Range` requests and no `304`; Java errors are titled
+  by class (`Unchecked IO Exception` where Node writes `Error`).
 
 ### TypeScript quirks kept on purpose
 
@@ -333,7 +340,8 @@ the server port.
 
 ## Tests
 
-`mvn -B -pl rockets/rocket-file-uploads -am verify` from `java/`.
+`mvn -B -pl rockets/rocket-file-uploads -am verify` from `java/`. [PARITY.md](PARITY.md) maps every TypeScript test,
+every item of the rocket's specification and every TypeScript source to the Java test that pins it.
 
 * `types.UtilsTest` ports `utils.test.ts` and `azure.FileUploadedTest` ports `file-uploaded.test.ts`; the other
   packages have no TypeScript tests.
@@ -352,6 +360,17 @@ the server port.
 * `e2e.LocalEndToEndTest`: core, the local provider and the local server in-process on free ports with the
   `e2e.app` application: presigned PUT, upload, the read model produced by the notification, presigned GET, list,
   delete, restart on the same directory, files dropped by hand and the error messages.
+* `e2e.LocalServerProcessEndToEndTest`: the same application run as `boost start` runs it (a separate JVM,
+  `java -cp target/classes:<dependencies> Main start --port N` from a project directory, free ports): concurrent
+  presigned URL mutations, uploads, overwrites, downloads and listings, the events, snapshots and read models, SIGTERM,
+  and a second process over the same project directory.
+* TypeScript-side expectations (`src/test/resources/typescript`, written by `generate.mjs`, which runs the rocket's
+  own `functions.js` generator with Node and computes user delegation SAS vectors from the public specification with
+  Node's `crypto`): `AzureRocketSynthTest` diffs the `function.json` files with `functions.js`, the name validation
+  messages, and the Terraform with a hand walk of the TypeScript synth code
+  (`file-uploads-resources.expected.json`), attribute by attribute; `BlobSasSpecificationVectorsTest` compares the
+  SAS string-to-sign, signatures, query strings and URLs. Regenerate with
+  `node generate.mjs <rocket-file-uploads repository> .` (Node 23.6 or later).
 
 Not verifiable without deploying: that Azure accepts the generated SAS and Terraform, and how the Java worker delivers
 the blob trigger binding data (`BlobTrigger`, `Uri`) to `rocketBlob`.
