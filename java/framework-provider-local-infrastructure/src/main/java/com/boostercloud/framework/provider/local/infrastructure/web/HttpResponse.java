@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * An HTTP response with the semantics of the Express {@code Response} the TypeScript controllers and rockets use:
@@ -35,6 +36,10 @@ import java.util.Map;
 public abstract class HttpResponse {
 
   private static final byte[] EMPTY = new byte[0];
+  /** Node's {@code checkIsHttpToken}. */
+  private static final Pattern HTTP_TOKEN = Pattern.compile("^[\\^_`a-zA-Z\\-0-9!#$%&'*+.|~]+$");
+  /** Node's {@code checkInvalidHeaderChar}. */
+  private static final Pattern INVALID_HEADER_CHAR = Pattern.compile("[^\\t\\x20-\\x7e\\x80-\\xff]");
   private static final DateTimeFormatter HTTP_DATE =
       DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US).withZone(ZoneOffset.UTC);
 
@@ -95,20 +100,32 @@ public abstract class HttpResponse {
   }
 
   /**
-   * Node's {@code res.setHeader(name, value)}: replaces the header.
+   * Node's {@code res.setHeader(name, value)}: replaces the header. As Node ({@code validateHeaderName} and
+   * {@code validateHeaderValue}), the name must be an HTTP token and the value may only contain tabs and the
+   * characters {@code U+0020}-{@code U+007E} and {@code U+0080}-{@code U+00FF} (no CR, LF or other controls).
    *
    * @param name the header name (case kept, matched case-insensitively)
    * @param value a string, a number or a collection of strings
    * @return this response
    * @throws IllegalStateException when the headers were already sent
+   * @throws IllegalArgumentException {@code Header name must be a valid HTTP token ["<name>"]} or
+   *     {@code Invalid character in header content ["<name>"]} (Node's {@code TypeError}s)
    */
   public synchronized HttpResponse setHeader(String name, Object value) {
     ensureHeadersNotSent();
+    if (name == null || !HTTP_TOKEN.matcher(name).matches()) {
+      throw new IllegalArgumentException("Header name must be a valid HTTP token [\"" + name + "\"]");
+    }
     List<String> values = new ArrayList<>();
     if (value instanceof Collection<?> collection) {
       collection.forEach(element -> values.add(String.valueOf(element)));
     } else if (value != null) {
       values.add(value instanceof Double number ? BoosterJson.formatNumber(number) : String.valueOf(value));
+    }
+    for (String text : values) {
+      if (INVALID_HEADER_CHAR.matcher(text).find()) {
+        throw new IllegalArgumentException("Invalid character in header content [\"" + name + "\"]");
+      }
     }
     headers.put(name.toLowerCase(Locale.ROOT), new HeaderValues(name, values));
     return this;

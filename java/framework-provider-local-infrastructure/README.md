@@ -135,7 +135,10 @@ The `web` package is the Express API rockets need:
   `headers()` (lower-cased, Node joining rules), `body()`, `rawBody()`, `inputStream()` (the unread body, for
   streaming uploads), `readAllBytes()`, `is(type)`, `attribute(name[, value])`, `toLocalHttpRequest()`.
 * `HttpResponse` — `status`, `setHeader`, `header` (Express `res.set`), `type`, `vary`, `getHeader`, `removeHeader`,
-  `json`, `send`, `end`, `outputStream()`, `download(path[, name])`, `headersSent()`, `finished()`.
+  `json`, `send`, `end`, `outputStream()`, `download(path[, name])`, `headersSent()`, `finished()`. `setHeader`
+  (and so `header`) validates like Node's: a name that is not an HTTP token fails with `Header name must be a valid
+  HTTP token ["<name>"]`, a value with CR, LF, other controls or characters above `U+00FF` with `Invalid character in
+  header content ["<name>"]` (`IllegalArgumentException`, Node's `TypeError`), before anything reaches Jetty.
 * `BodyParsers.json/urlencoded/raw`, `Cors.middleware()`, `MimeTypes`, `QueryStrings`, `Uris`.
 * `MemoryHttpResponse` records a response in memory for unit tests of handlers.
 

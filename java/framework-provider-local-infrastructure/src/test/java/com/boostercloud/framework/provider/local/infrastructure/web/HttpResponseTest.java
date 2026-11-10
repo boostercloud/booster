@@ -115,6 +115,37 @@ class HttpResponseTest {
     assertThat(response.headersSent()).isTrue();
   }
 
+  /** Messages computed with Node 24's {@code http.ServerResponse#setHeader}. */
+  @Test
+  void setHeaderValidatesNamesAndValuesLikeNode() {
+    MemoryHttpResponse response = new MemoryHttpResponse();
+
+    assertThatThrownBy(() -> response.setHeader("Bad Header", "x")).isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Header name must be a valid HTTP token [\"Bad Header\"]");
+    assertThatThrownBy(() -> response.setHeader("", "x"))
+        .hasMessage("Header name must be a valid HTTP token [\"\"]");
+    assertThatThrownBy(() -> response.setHeader("X:colon", "v"))
+        .hasMessage("Header name must be a valid HTTP token [\"X:colon\"]");
+    assertThatThrownBy(() -> response.setHeader("X-Ok", "a\r\nb")).isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid character in header content [\"X-Ok\"]");
+    assertThatThrownBy(() -> response.setHeader("Content-Disposition", "attachment; filename=名.txt"))
+        .hasMessage("Invalid character in header content [\"Content-Disposition\"]");
+    assertThatThrownBy(() -> response.header("X-Arr", List.of("a", "b\n")))
+        .hasMessage("Invalid character in header content [\"X-Arr\"]");
+    assertThatThrownBy(() -> response.setHeader("X-Del", "a\u007fb"))
+        .hasMessage("Invalid character in header content [\"X-Del\"]");
+    assertThatThrownBy(() -> response.setHeader("X-Ctl", "a\u0001b"))
+        .hasMessage("Invalid character in header content [\"X-Ctl\"]");
+    assertThat(response.headers()).isEmpty();
+
+    response.setHeader("X-Latin", "café").setHeader("X-Tab", "a\tb").setHeader("X-Num", 5)
+        .setHeader("x-token_chars!#$%&'*+.^`|~", "ok");
+    assertThat(response.getHeader("X-Latin")).isEqualTo("café");
+    assertThat(response.getHeader("X-Tab")).isEqualTo("a\tb");
+    assertThat(response.getHeader("X-Num")).isEqualTo("5");
+    assertThat(response.getHeader("x-token_chars!#$%&'*+.^`|~")).isEqualTo("ok");
+  }
+
   @Test
   void invalidStatusCodesAreRejected() {
     assertThatThrownBy(() -> new MemoryHttpResponse().status(42)).hasMessage("Invalid status code: 42");
