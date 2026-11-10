@@ -210,8 +210,11 @@ public class WebSocketServerAdapter implements AutoCloseable {
     return LocalHttpRequest.of(request.getMethod(), request.getHttpURI().getPathQuery(), headers, null);
   }
 
-  /** One websocket connection: its session, upgrade request and serial event queue. */
-  private final class Connection implements Session.Listener.AutoDemanding {
+  /**
+   * One websocket connection: its session, upgrade request and serial event queue. Public only because Jetty binds the
+   * listener methods with a public method lookup; it is not meant to be used directly.
+   */
+  public final class Connection implements Session.Listener.AutoDemanding {
     private final LocalHttpRequest upgradeRequest;
     private final ExecutorService executor =
         Executors.newSingleThreadExecutor(Thread.ofVirtual().name("booster-websocket-connection").factory());
@@ -234,14 +237,22 @@ public class WebSocketServerAdapter implements AutoCloseable {
 
     @Override
     public void onWebSocketText(String message) {
-      executor.execute(() -> handleMessage(message));
+      enqueue(() -> handleMessage(message));
     }
 
     @Override
     public void onWebSocketBinary(ByteBuffer payload, Callback callback) {
       String message = StandardCharsets.UTF_8.decode(payload).toString();
       callback.succeed();
-      executor.execute(() -> handleMessage(message));
+      enqueue(() -> handleMessage(message));
+    }
+
+    private void enqueue(Runnable task) {
+      try {
+        executor.execute(task);
+      } catch (java.util.concurrent.RejectedExecutionException e) {
+        // the connection is closing or the server stopped: the frame is dropped, as ws does after close
+      }
     }
 
     private void handleMessage(String message) {
@@ -282,7 +293,7 @@ public class WebSocketServerAdapter implements AutoCloseable {
     }
 
     private void dispatch(ExpressWebSocketMessage request) {
-      executor.execute(() -> process(request));
+      enqueue(() -> process(request));
     }
 
     private void process(ExpressWebSocketMessage request) {

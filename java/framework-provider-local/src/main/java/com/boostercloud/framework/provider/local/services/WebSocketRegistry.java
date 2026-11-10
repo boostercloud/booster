@@ -144,9 +144,12 @@ public class WebSocketRegistry {
    * @param envelope a {@link ConnectionData}, a {@code SubscriptionEnvelope} or a raw map (functions/classes are
    *     dropped, as NeDB drops them)
    */
+  @SuppressWarnings("unchecked")
   public void store(Object envelope) {
     loadDatabaseIfNeeded();
-    datastore.insert(BoosterJson.toRawMap(envelope));
+    datastore.insert(envelope instanceof Map<?, ?> document
+        ? (Map<String, Object>) document
+        : BoosterJson.toRawMap(envelope));
   }
 
   /**
