@@ -824,6 +824,11 @@ public class Datastore implements AutoCloseable {
     }
   }
 
+  /**
+   * Removes the documents from memory, then appends their {@code $$deleted} markers. Like insert and update, the
+   * in-memory state changes first, so a growth-triggered compaction run by that append rewrites the file without the
+   * removed documents; if the append fails, the documents are put back.
+   */
   private void removeDocuments(List<Map<String, Object>> removed) {
     if (removed.isEmpty()) {
       return;
@@ -835,10 +840,18 @@ public class Datastore implements AutoCloseable {
       marker.put("_id", document.get("_id"));
       lines.add(Serialization.serialize(marker));
     }
-    persist(lines, removed.size() * 2L);
     for (Map<String, Object> document : removed) {
       removeFromIndexes(document);
       documents.remove(document.get("_id"));
+    }
+    try {
+      persist(lines, removed.size() * 2L);
+    } catch (RuntimeException e) {
+      for (Map<String, Object> document : removed) {
+        documents.put(document.get("_id"), document);
+        addToIndexes(document);
+      }
+      throw e;
     }
   }
 

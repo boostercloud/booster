@@ -484,6 +484,45 @@ class DatastoreTest {
     }
 
     @Test
+    void aRemovalThatTriggersTheGrowthCompactionIsOnDiskToo() {
+      // the dispatch journal's lifecycle: insert, $set, remove. The remove that crosses the threshold compacts the
+      // file; the compacted file must already be without the removed document (and stay so after a reload)
+      Path journal = directory.resolve("journal.json");
+      Datastore datastore = open(DatastoreOptions.of(journal).withAutocompactionLineThreshold(10));
+      for (int i = 0; i < 7; i++) {
+        String id = "id" + i;
+        datastore.insert(map("_id", id, "state", "pending"));
+        datastore.update(map("_id", id), map("$set", map("state", "dispatched")), UpdateOptions.DEFAULTS);
+        datastore.remove(map("_id", id), false);
+        assertThat(datastore.size()).isZero();
+        Datastore reloaded = open(DatastoreOptions.of(journal));
+        assertThat(reloaded.getAllData()).as("file after step %d", i).isEmpty();
+        reloaded.close();
+      }
+    }
+
+    @Test
+    void aFailedRemovalKeepsTheDocumentsAndTheirIndexes() throws IOException {
+      Path data = directory.resolve("remove.json");
+      Datastore store = open(DatastoreOptions.of(data));
+      store.ensureIndex(IndexOptions.unique("k", true));
+      store.insert(map("_id", "a", "k", "x"));
+      store.compactDatafile();
+      data.toFile().setWritable(false);
+      try {
+        org.junit.jupiter.api.Assumptions.assumeFalse(data.toFile().canWrite(), "running as root");
+        assertThatThrownBy(() -> store.remove(map("_id", "a"), false)).isInstanceOf(NedbError.class);
+        assertThat(store.find(map("k", "x")).exec()).containsExactly(map("_id", "a", "k", "x"));
+      } finally {
+        data.toFile().setWritable(true);
+      }
+      assertThatThrownBy(() -> store.insert(map("_id", "b", "k", "x"))).isInstanceOf(NedbError.class)
+          .hasMessageContaining("unique constraint");
+      assertThat(store.remove(map("k", "x"), false)).isEqualTo(1);
+      assertThat(store.size()).isZero();
+    }
+
+    @Test
     void periodicCompaction() throws IOException {
       Datastore datastore = open();
       datastore.insert(map("_id", "a"));
