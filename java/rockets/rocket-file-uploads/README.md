@@ -298,7 +298,8 @@ The connection is identity-based (`<storage>__serviceUri`). Names must match `^[
   error). Error titles of I/O failures come from Java classes (`Unchecked IO Exception` instead of `Error`, same
   status and Node-like reason). The dot-file `404` and the directory fall-through of `res.download` are emulated.
 * **Watcher**: the JDK `WatchService` with every folder registered (Node's recursive `fs.watch`); new folders are
-  registered when they appear and the entries already in them are notified; when the JDK drops the events of a busy
+  registered when they appear and the entries already in them are notified (each folder is registered before it is
+  listed, so a file created meanwhile is not missed); when the JDK drops the events of a busy
   directory (more than 512 pending, `OVERFLOW`) its entries are notified again, so a burst of uploads is not lost. On
   macOS the JDK polls every 2 seconds, so notifications come later than with Node; Node's event multiplicity is
   platform-specific anyway. A failing dispatch is logged (Node: an unhandled rejection, which ends the process). The

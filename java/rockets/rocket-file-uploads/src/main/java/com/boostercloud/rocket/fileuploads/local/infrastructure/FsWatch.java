@@ -25,7 +25,9 @@ import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.time.Duration;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +51,8 @@ import java.util.stream.Stream;
  *
  * <p>Java implementation: the JDK {@link WatchService} with every directory of the tree registered (it is not
  * recursive); directories created later are registered when they appear and their existing entries are notified, so
- * a file written right after its directory was created is not missed; when the JDK drops events of a busy directory
+ * a file written right after its directory was created is not missed (each directory is registered before it is
+ * listed, so nothing created meanwhile falls in between); when the JDK drops events of a busy directory
  * ({@code OVERFLOW}) its entries are notified again. The service is native on Linux and Windows and
  * polls every 2 seconds on macOS, so notifications may arrive that much later than with Node. A failing dispatch is
  * logged (TypeScript leaves an unhandled promise rejection). {@link #close()} stops watching and waits for the
@@ -78,6 +81,15 @@ public final class FsWatch implements AutoCloseable {
   private final Set<Thread> dispatches = ConcurrentHashMap.newKeySet();
   private final Thread loop;
   private volatile boolean closed;
+  private volatile Consumer<Path> listed = directory -> {};
+
+  /**
+   * For tests: called with each directory of a tree being registered once its entries are listed, before they are
+   * notified (to create a file "right after the listing").
+   */
+  void afterListing(Consumer<Path> hook) {
+    this.listed = hook;
+  }
 
   private FsWatch(BoosterConfig config, Path root, String storageName, String containerName, int port,
       List<String> directories, Consumer<Map<String, Object>> dispatcher) {
@@ -265,22 +277,44 @@ public final class FsWatch implements AutoCloseable {
     }
   }
 
-  /** Registers a directory and its sub-directories; for a new directory, notifies what it already contains. */
+  /**
+   * Registers a directory and its sub-directories; for a new directory, notifies what it already contains (files and
+   * folders, not following links). Each directory is registered <em>before</em> it is listed: an entry created after
+   * the registration produces an event, one created before it is in the listing, so none falls in between (listing
+   * first and registering later lost the files created meanwhile: inotify adds the watch after them, and the polling
+   * service of macOS takes them into its first snapshot).
+   *
+   * @throws IOException when {@code start} cannot be registered or listed; a sub-directory removed meanwhile is
+   *     skipped
+   */
   private void registerTree(Path start, boolean notifyEntries) throws IOException {
-    List<Path> entries = new ArrayList<>();
-    try (Stream<Path> walk = Files.walk(start)) {
-      walk.forEach(entries::add);
-    }
-    for (Path entry : entries) {
-      if (Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)) {
-        try {
-          keys.put(entry.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY), entry);
-        } catch (ClosedWatchServiceException e) {
-          return;
+    Deque<Path> pending = new ArrayDeque<>();
+    pending.push(start);
+    while (!pending.isEmpty()) {
+      Path directory = pending.pop();
+      List<Path> entries;
+      try {
+        keys.put(directory.register(watchService, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY), directory);
+        try (Stream<Path> list = Files.list(directory)) {
+          entries = list.toList();
         }
+      } catch (ClosedWatchServiceException e) {
+        return;
+      } catch (IOException | UncheckedIOException e) {
+        if (directory.equals(start)) {
+          throw e;
+        }
+        logger.debug("Could not watch", directory, e);
+        continue;
       }
-      if (notifyEntries && !entry.equals(start)) {
-        handle(entry);
+      listed.accept(directory);
+      for (Path entry : entries) {
+        if (notifyEntries) {
+          handle(entry);
+        }
+        if (Files.isDirectory(entry, LinkOption.NOFOLLOW_LINKS)) {
+          pending.push(entry);
+        }
       }
     }
   }

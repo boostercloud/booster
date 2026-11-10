@@ -5,6 +5,8 @@ import static org.awaitility.Awaitility.await;
 
 import com.boostercloud.framework.types.BoosterConfig;
 import com.boostercloud.framework.types.Logger;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -150,6 +152,29 @@ class FsWatchTest {
     await().atMost(TIMEOUT).until(() -> names().contains("client1/a/b/deep.txt"));
     Files.writeString(nested.resolve("later.txt"), "later");
     await().atMost(TIMEOUT).until(() -> names().contains("client1/a/b/later.txt"));
+  }
+
+  @Test
+  void a_file_created_while_a_new_folder_is_registered_is_notified() throws Exception {
+    Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
+    start(List.of("client1/**"));
+    Path folder = project.resolve("clientst/rocketfiles/client1/new");
+    Path racer = folder.resolve("racer.txt");
+    // a file written into the new folder right after the watcher listed it (a concurrent upload into a new folder)
+    watch.afterListing(directory -> {
+      if (directory.equals(folder) && Files.notExists(racer)) {
+        try {
+          Files.writeString(racer, "racer");
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
+      }
+    });
+
+    Files.createDirectories(folder);
+
+    // Node's recursive watch reports every creation; the folder must be watched before it is listed
+    await().atMost(Duration.ofSeconds(15)).until(() -> names().contains("client1/new/racer.txt"));
   }
 
   @Test

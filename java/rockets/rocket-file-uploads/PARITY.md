@@ -25,7 +25,7 @@ Every row names the Java test that pins the behaviour, as `Class#method` under
 | Part | Rows | covered | fixed | differs | inherited | n/a |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript tests (28 `it`) | 28 | 28 | 0 | 0 | 0 | 0 |
-| 2. Behaviour (spec §3) | 98 | 58 | 15 | 21 | 3 | 1 |
+| 2. Behaviour (spec §3) | 99 | 58 | 16 | 21 | 3 | 1 |
 | 3. Data shapes (spec §4) | 12 | 10 | 1 | 1 | 0 | 0 |
 | 4. Characterisation tests (spec §5.3) | 16 | 14 | 1 | 1 | 0 | 0 |
 | 5. Porting notes and hazards (spec §6) | 16 | 9 | 2 | 5 | 0 | 0 |
@@ -228,6 +228,7 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | Hidden-segment regex `/(^\|[/\\])\../` and parent-directory filter | `FsWatchTest#ignores_hidden_segments_and_other_directories` | covered |
 | Request `{BOOSTER_ROCKET_FUNCTION_ID, uri, name}` in that order, `uri` with the mount port | `FsWatchTest#dispatches_the_typescript_request`, `LocalFilesServerTest#uploads_are_notified_to_the_rocket_function` | covered |
 | Every change of a burst notified | `FsWatchTest#a_burst_larger_than_the_jdk_event_queue_is_fully_notified` | fixed `b633079cc` |
+| Every creation in a new folder notified, also those made while the watcher registers it | `FsWatchTest#a_file_created_while_a_new_folder_is_registered_is_notified` | fixed: the tree was listed before its folders were registered, so files created in between were never notified; each folder is now registered before it is listed |
 | Unhandled rejection of a failing dispatch | `FsWatchTest#a_failing_dispatch_is_logged_and_the_watch_goes_on` | differs: logged, the watch goes on |
 | Watchers never stop | `LocalFilesServerTest#the_watchers_stop_with_the_server` | differs: stopped by `unmountStack` when the server stops |
 | macOS latency | `FsWatchTest` (timeouts) | differs: the JDK polls every 2 s on macOS |
