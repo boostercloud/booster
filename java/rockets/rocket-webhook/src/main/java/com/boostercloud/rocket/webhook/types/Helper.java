@@ -15,6 +15,8 @@ public final class Helper {
   private static final Pattern ROUTE_PREFIX = Pattern.compile("^(/api/|/)");
   private static final Pattern SCHEME = Pattern.compile("^([A-Za-z][A-Za-z0-9+.\\-]*):");
   private static final Set<String> SPECIAL_SCHEMES = Set.of("http", "https", "ws", "wss", "ftp", "file");
+  /** The message of the {@code TypeError} {@code new URL} throws. */
+  static final String INVALID_URL = "Invalid URL";
 
   private Helper() {}
 
@@ -27,18 +29,45 @@ public final class Helper {
    * <p>Examples: {@code /test} → {@code test}, {@code /api/test} → {@code test}, {@code /clients/other} →
    * {@code clients/other}, {@code /test/} → {@code test/}.
    *
+   * <p>As {@code new URL} does, the base must parse even when the URL is absolute: a {@code Host} header the URL parser
+   * rejects (empty, with spaces, a port that is not a number below 65536, a broken IPv6 or IPv4 address...) fails, and
+   * so does an absolute or scheme-relative URL with such an authority. A missing header gives the valid base
+   * {@code http://undefined/}.
+   *
    * @param request the rocket request
    * @return the route
    * @throws IllegalArgumentException {@code Cannot read properties of undefined (reading 'url')} when the request has
-   *     no {@code req}
+   *     no {@code req}; {@code Invalid URL} (TypeScript's {@code TypeError}) when the base or the URL does not parse
    */
   public static String getRouteFromRequest(WebhookRequest request) {
     WebhookHttpRequest req = request.req();
     if (req == null) {
       throw new IllegalArgumentException("Cannot read properties of undefined (reading 'url')");
     }
+    String host = req.headers().get("host");
+    if (!isValidBase(host == null ? "undefined" : host)) {
+      throw new IllegalArgumentException(INVALID_URL);
+    }
     String pathname = pathname(req.url());
     return ROUTE_PREFIX.matcher(pathname).replaceFirst("");
+  }
+
+  /**
+   * Whether {@code 'http://' + host + '/'} parses.
+   *
+   * @param host the {@code Host} header text
+   * @return whether the base URL is valid
+   */
+  static boolean isValidBase(String host) {
+    return WhatwgHost.isValidSpecialAuthority(authority(stripSlashes(host.replaceAll("[\\t\\n\\r]", ""))));
+  }
+
+  private static String authority(String afterSlashes) {
+    int end = 0;
+    while (end < afterSlashes.length() && "/\\?#".indexOf(afterSlashes.charAt(end)) < 0) {
+      end++;
+    }
+    return afterSlashes.substring(0, end);
   }
 
   /**
@@ -47,6 +76,8 @@ public final class Helper {
    *
    * @param url an absolute or relative URL ({@code null} is TypeScript's {@code undefined}, i.e. {@code "undefined"})
    * @return the pathname, starting with {@code /} for special schemes
+   * @throws IllegalArgumentException {@code Invalid URL} when the authority of an absolute or scheme-relative URL does
+   *     not parse
    */
   static String pathname(String url) {
     String input = url == null ? "undefined" : url;
@@ -58,14 +89,15 @@ public final class Helper {
       if (!SPECIAL_SCHEMES.contains(name)) {
         return opaqueOrHierarchicalPath(rest);
       }
-      if (name.equals("http") && !rest.startsWith("/") && !rest.startsWith("\\")) {
-        // Same scheme as the base and no authority: relative to the base
+      if (name.equals("http") && !startsWithTwoSlashes(rest)) {
+        // Same scheme as the base without two slashes: a path relative to the base
         return relativePath(rest);
       }
-      return pathAfterAuthority(stripSlashes(rest));
+      // Other special schemes take an authority after any number of slashes (file: hosts follow other rules)
+      return pathAfterAuthority(stripSlashes(rest), !name.equals("file"));
     }
     if (startsWithTwoSlashes(input)) {
-      return pathAfterAuthority(stripSlashes(input));
+      return pathAfterAuthority(stripSlashes(input), true);
     }
     return relativePath(input);
   }
@@ -81,12 +113,12 @@ public final class Helper {
     return specialPath(input);
   }
 
-  private static String pathAfterAuthority(String afterSlashes) {
-    int end = 0;
-    while (end < afterSlashes.length() && "/\\?#".indexOf(afterSlashes.charAt(end)) < 0) {
-      end++;
+  private static String pathAfterAuthority(String afterSlashes, boolean validateAuthority) {
+    String authority = authority(afterSlashes);
+    if (validateAuthority && !WhatwgHost.isValidSpecialAuthority(authority)) {
+      throw new IllegalArgumentException(INVALID_URL);
     }
-    String rest = afterSlashes.substring(end);
+    String rest = afterSlashes.substring(authority.length());
     if (rest.isEmpty() || rest.charAt(0) == '?' || rest.charAt(0) == '#') {
       return "/";
     }
