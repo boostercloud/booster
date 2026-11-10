@@ -522,7 +522,7 @@ public final class MetadataExtractors {
     };
   }
 
-  private static Type resolve(Type type, Map<TypeVariable<?>, Type> bindings) {
+  static Type resolve(Type type, Map<TypeVariable<?>, Type> bindings) {
     Type current = type;
     int guard = 0;
     while (current instanceof TypeVariable<?> variable && bindings.containsKey(variable) && guard++ < 32) {
@@ -552,7 +552,7 @@ public final class MetadataExtractors {
    * example the element type of {@code class Tags extends ArrayList<String>} seen as {@code Iterable}. Unknown
    * arguments are {@code Object.class}.
    */
-  private static Type[] typeArguments(Type type, Class<?> target, Map<TypeVariable<?>, Type> bindings) {
+  static Type[] typeArguments(Type type, Class<?> target, Map<TypeVariable<?>, Type> bindings) {
     Type[] found = findTypeArguments(resolve(type, bindings), target, new HashMap<>(bindings), 0);
     if (found == null) {
       Type[] unknown = new Type[target.getTypeParameters().length];
@@ -607,7 +607,7 @@ public final class MetadataExtractors {
   }
 
   /** Bindings of the type variables of every generic superclass of {@code type}, as bound by its subclasses. */
-  private static Map<TypeVariable<?>, Type> bindingsFor(Class<?> type) {
+  static Map<TypeVariable<?>, Type> bindingsFor(Class<?> type) {
     Map<TypeVariable<?>, Type> bindings = new HashMap<>();
     List<Type> supertypes = new ArrayList<>();
     for (Class<?> current = type; current != null; current = current.getSuperclass()) {
@@ -630,7 +630,7 @@ public final class MetadataExtractors {
     return bindings;
   }
 
-  private static Type substitute(Type type, Map<TypeVariable<?>, Type> bindings) {
+  static Type substitute(Type type, Map<TypeVariable<?>, Type> bindings) {
     if (bindings.isEmpty()) {
       return type;
     }
@@ -661,7 +661,7 @@ public final class MetadataExtractors {
   }
 
   /** A parameterized type built after substituting type variables. */
-  private record ResolvedParameterizedType(Class<?> rawType, Type[] actualTypeArguments, Type ownerType)
+  record ResolvedParameterizedType(Class<?> rawType, Type[] actualTypeArguments, Type ownerType)
       implements ParameterizedType {
     @Override
     public Type[] getActualTypeArguments() {
