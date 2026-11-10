@@ -60,6 +60,21 @@ class HttpResponseTest {
   }
 
   @Test
+  void anEmptyContentTypeCountsAsMissingLikeExpress() {
+    MemoryHttpResponse bytes = new MemoryHttpResponse();
+    bytes.setHeader("Content-Type", "").send(new byte[] {7});
+    assertThat(bytes.getHeader("Content-Type")).isEqualTo("application/octet-stream");
+
+    MemoryHttpResponse text = new MemoryHttpResponse();
+    text.setHeader("Content-Type", "").send("x");
+    assertThat(text.getHeader("Content-Type")).isEqualTo("text/html; charset=utf-8");
+
+    MemoryHttpResponse json = new MemoryHttpResponse();
+    json.setHeader("Content-Type", "").json(Map.of("a", 1));
+    assertThat(json.getHeader("Content-Type")).isEqualTo("application/json; charset=utf-8");
+  }
+
+  @Test
   void noContentResponsesDropTheBody() {
     MemoryHttpResponse response = new MemoryHttpResponse();
     response.status(204).send("ignored");
@@ -98,6 +113,37 @@ class HttpResponseTest {
         .hasMessage("Cannot set headers after they are sent to the client");
     assertThatThrownBy(() -> response.send("again")).isInstanceOf(IllegalStateException.class);
     assertThat(response.headersSent()).isTrue();
+  }
+
+  /** Messages computed with Node 24's {@code http.ServerResponse#setHeader}. */
+  @Test
+  void setHeaderValidatesNamesAndValuesLikeNode() {
+    MemoryHttpResponse response = new MemoryHttpResponse();
+
+    assertThatThrownBy(() -> response.setHeader("Bad Header", "x")).isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Header name must be a valid HTTP token [\"Bad Header\"]");
+    assertThatThrownBy(() -> response.setHeader("", "x"))
+        .hasMessage("Header name must be a valid HTTP token [\"\"]");
+    assertThatThrownBy(() -> response.setHeader("X:colon", "v"))
+        .hasMessage("Header name must be a valid HTTP token [\"X:colon\"]");
+    assertThatThrownBy(() -> response.setHeader("X-Ok", "a\r\nb")).isInstanceOf(IllegalArgumentException.class)
+        .hasMessage("Invalid character in header content [\"X-Ok\"]");
+    assertThatThrownBy(() -> response.setHeader("Content-Disposition", "attachment; filename=名.txt"))
+        .hasMessage("Invalid character in header content [\"Content-Disposition\"]");
+    assertThatThrownBy(() -> response.header("X-Arr", List.of("a", "b\n")))
+        .hasMessage("Invalid character in header content [\"X-Arr\"]");
+    assertThatThrownBy(() -> response.setHeader("X-Del", "a\u007fb"))
+        .hasMessage("Invalid character in header content [\"X-Del\"]");
+    assertThatThrownBy(() -> response.setHeader("X-Ctl", "a\u0001b"))
+        .hasMessage("Invalid character in header content [\"X-Ctl\"]");
+    assertThat(response.headers()).isEmpty();
+
+    response.setHeader("X-Latin", "café").setHeader("X-Tab", "a\tb").setHeader("X-Num", 5)
+        .setHeader("x-token_chars!#$%&'*+.^`|~", "ok");
+    assertThat(response.getHeader("X-Latin")).isEqualTo("café");
+    assertThat(response.getHeader("X-Tab")).isEqualTo("a\tb");
+    assertThat(response.getHeader("X-Num")).isEqualTo("5");
+    assertThat(response.getHeader("x-token_chars!#$%&'*+.^`|~")).isEqualTo("ok");
   }
 
   @Test

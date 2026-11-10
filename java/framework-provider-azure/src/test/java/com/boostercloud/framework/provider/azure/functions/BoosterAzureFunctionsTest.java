@@ -33,6 +33,7 @@ import com.microsoft.azure.functions.annotation.FunctionName;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -141,6 +142,24 @@ class BoosterAzureFunctionsTest {
     when(request.createResponseBuilder(any(HttpStatusType.class)))
         .thenAnswer(invocation -> new FakeResponse(invocation.getArgument(0)));
     return request;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static HttpRequestMessage<Optional<byte[]>> binaryRequest(HttpMethod method, String url,
+      Map<String, String> headers, byte[] body) {
+    HttpRequestMessage<Optional<byte[]>> request = mock(HttpRequestMessage.class);
+    when(request.getHttpMethod()).thenReturn(method);
+    when(request.getUri()).thenReturn(URI.create(url));
+    when(request.getHeaders()).thenReturn(headers);
+    when(request.getQueryParameters()).thenReturn(Map.of());
+    when(request.getBody()).thenReturn(Optional.ofNullable(body));
+    when(request.createResponseBuilder(any(HttpStatusType.class)))
+        .thenAnswer(invocation -> new FakeResponse(invocation.getArgument(0)));
+    return request;
+  }
+
+  private static byte[] utf8(String text) {
+    return text.getBytes(StandardCharsets.UTF_8);
   }
 
   @Nested
@@ -325,8 +344,8 @@ class BoosterAzureFunctionsTest {
 
     @Test
     void httpRocketsGetTheWebhookRequestShapeAndMapTheResult() {
-      HttpRequestMessage<Optional<String>> request =
-          httpRequest(HttpMethod.POST, "https://app/api/hooks/test?a=1", "{\"x\":1}");
+      HttpRequestMessage<Optional<byte[]>> request = binaryRequest(HttpMethod.POST, "https://app/api/hooks/test?a=1",
+          Map.of("Content-Type", "application/json", "Authorization", "Bearer t"), utf8("{\"x\":1}"));
       when(userApp.boosterRocketDispatcher(any())).thenReturn(obj("status", 201,
           "headers", obj("Content-Type", "application/json"), "body", obj("ok", true)));
 
@@ -340,6 +359,85 @@ class BoosterAzureFunctionsTest {
           "query", Map.of("a", "1"), "params", Map.of(), "rawBody", "{\"x\":1}", "body", obj("x", 1))));
       assertThat(response.getStatus().value()).isEqualTo(201);
       assertThat(response.getBody()).isEqualTo("{\"ok\":true}");
+    }
+
+    @Test
+    void httpRocketsBindTheBodyAsBytes() throws Exception {
+      Method entryPoint = BoosterAzureFunctions.class.getMethod("rocketHttp", HttpRequestMessage.class,
+          ExecutionContext.class);
+      com.microsoft.azure.functions.annotation.HttpTrigger trigger = entryPoint.getParameters()[0]
+          .getAnnotation(com.microsoft.azure.functions.annotation.HttpTrigger.class);
+
+      assertThat(trigger.dataType()).isEqualTo("binary");
+      assertThat(entryPoint.getGenericParameterTypes()[0].getTypeName())
+          .isEqualTo("com.microsoft.azure.functions.HttpRequestMessage<java.util.Optional<byte[]>>");
+    }
+
+    @Test
+    void multipartBodiesKeepTheirBytesAndRawBodyIsTheirUtf8Text() {
+      byte[] body = {'-', '-', 'b', '\r', '\n', 0, (byte) 0xFF, (byte) 0xC3, (byte) 0xA9};
+      Map<?, ?> req = (Map<?, ?>) FunctionMappings.rocketHttpRequest(binaryRequest(HttpMethod.POST,
+          "https://app/api/upload", Map.of("content-type", "Multipart/Form-Data; boundary=b"), body)).get("req");
+
+      assertThat((byte[]) req.get("body")).isEqualTo(body);
+      assertThat(req.get("rawBody")).isEqualTo(new String(body, StandardCharsets.UTF_8));
+    }
+
+    @Test
+    void otherBodiesAreParsedLikeJsonParseOrKeptAsText() {
+      assertThat(rocketBody("{\"a\":[1,2.5,null]}")).isEqualTo(obj("a", java.util.Arrays.asList(1, 2.5, null)));
+      assertThat(rocketBody(" 42 ")).isEqualTo(42);
+      assertThat(rocketBody("\"text\"")).isEqualTo("text");
+      assertThat(rocketBody("a=1&b=2")).isEqualTo("a=1&b=2");
+      assertThat(rocketBody("{} trailing")).isEqualTo("{} trailing");
+      assertThat(rocketBody("{'single': 1}")).isEqualTo("{'single': 1}");
+      assertThat(rocketBody("NaN")).isEqualTo("NaN");
+      assertThat(rocketBody("")).isEqualTo("");
+      assertThat(rocketBody(null)).isEqualTo("");
+      Map<?, ?> bom = (Map<?, ?>) FunctionMappings.rocketHttpRequest(binaryRequest(HttpMethod.POST, "https://app/api/x",
+          Map.of(), utf8("\uFEFF{\"a\":1}"))).get("req");
+      assertThat(bom.get("rawBody")).isEqualTo("{\"a\":1}");
+      assertThat(bom.get("body")).isEqualTo(obj("a", 1));
+    }
+
+    private Object rocketBody(String text) {
+      Map<?, ?> req = (Map<?, ?>) FunctionMappings.rocketHttpRequest(binaryRequest(HttpMethod.POST,
+          "https://app/api/x", Map.of("content-type", "text/plain"), text == null ? null : utf8(text))).get("req");
+      return req.get("body");
+    }
+
+    @Test
+    void theQueryIsTheUrlSearchParamsOfTheUrlAndHeadersAreSortedLikeFetchHeaders() {
+      Map<String, String> headers = new LinkedHashMap<>();
+      headers.put("X-Zeta", "z");
+      headers.put("Host", "app.azurewebsites.net");
+      headers.put("accept", "*/*");
+      Map<?, ?> req = (Map<?, ?>) FunctionMappings.rocketHttpRequest(binaryRequest(HttpMethod.GET,
+          "https://app/api/x?a=1&b=two+words&a=3&c=%E2%82%AC&d=%25&flag&=empty&&e=x=y", headers, null)).get("req");
+
+      assertThat(req.get("query")).isEqualTo(obj("a", "3", "b", "two words", "c", "€", "d", "%", "flag", "", "",
+          "empty", "e", "x=y"));
+      assertThat(FunctionMappings.searchParams("bad=%zz&half=%E2%82&plus=%2B")).isEqualTo(obj("bad", "%zz",
+          "half", "\uFFFD", "plus", "+"));
+      assertThat(List.<Object>copyOf(((Map<?, ?>) req.get("query")).keySet()))
+          .containsExactly("a", "b", "c", "d", "flag", "", "e");
+      assertThat(List.<Object>copyOf(((Map<?, ?>) req.get("headers")).keySet()))
+          .containsExactly("accept", "host", "x-zeta");
+      assertThat(req.get("method")).isEqualTo("GET");
+      assertThat(req.get("params")).isEqualTo(Map.of());
+    }
+
+    @Test
+    void bytesAndStringsAreSentAsTheyAreAndNoStatusIs200() {
+      byte[] file = {1, 2, 3};
+      when(userApp.boosterRocketDispatcher(any())).thenReturn(obj("headers", obj("X-Count", 2), "body", file));
+
+      FakeResponse response = (FakeResponse) functions.rocketHttp(binaryRequest(HttpMethod.GET, "https://app/api/f",
+          Map.of(), null), context);
+
+      assertThat(response.getStatus().value()).isEqualTo(200);
+      assertThat(response.getBody()).isSameAs(file);
+      assertThat(response.getHeader("X-Count")).isEqualTo("2");
     }
 
     @Test
