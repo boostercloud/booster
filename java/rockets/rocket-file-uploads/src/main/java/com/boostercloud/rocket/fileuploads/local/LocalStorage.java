@@ -8,6 +8,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.AccessDeniedException;
 import java.nio.file.DirectoryNotEmptyException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.FileSystemException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
@@ -69,8 +70,24 @@ public final class LocalStorage {
    * @return the unchecked exception to throw
    */
   public static UncheckedIOException nodeError(IOException e, String syscall, Path path) {
+    return nodeError(e, syscall, path.toString());
+  }
+
+  /**
+   * {@link #nodeError(IOException, String, Path)} with the path as Node prints it (the string given to the system
+   * call, for instance with the trailing separator of {@code path.join(..., 'client1/')}). Failures the JDK reports
+   * only through their reason ({@code Is a directory}, {@code Not a directory}) get Node's {@code EISDIR} and
+   * {@code ENOTDIR} codes.
+   *
+   * @param e the failure
+   * @param syscall the Node system call ({@code scandir}, {@code open}, {@code unlink}...)
+   * @param path the path
+   * @return the unchecked exception to throw
+   */
+  public static UncheckedIOException nodeError(IOException e, String syscall, String path) {
     String code;
     String description;
+    String reason = e instanceof FileSystemException failure ? failure.getReason() : null;
     if (e instanceof NoSuchFileException) {
       code = "ENOENT";
       description = "no such file or directory";
@@ -86,6 +103,12 @@ public final class LocalStorage {
     } else if (e instanceof FileAlreadyExistsException) {
       code = "EEXIST";
       description = "file already exists";
+    } else if ("Is a directory".equals(reason)) {
+      code = "EISDIR";
+      description = "illegal operation on a directory";
+    } else if ("Not a directory".equals(reason)) {
+      code = "ENOTDIR";
+      description = "not a directory";
     } else {
       return new UncheckedIOException(e.getMessage() == null ? e.toString() : e.getMessage(), e);
     }

@@ -161,6 +161,22 @@ class LocalFilesServerTest {
   }
 
   @Test
+  void writing_onto_a_directory_or_under_a_file_fails_with_the_node_errors() throws Exception {
+    Path directory = Files.createDirectories(project.resolve("clientst/rocketfiles/client1/sub"));
+    Files.writeString(project.resolve("clientst/rocketfiles/client2"), "a file where a directory is expected");
+
+    HttpResponse<byte[]> onDirectory = Http.put(url("/clientst/rocketfiles/client1/sub"), new byte[] {1});
+    HttpResponse<byte[]> underFile = Http.put(url("/clientst/rocketfiles/client2/a.txt"), new byte[] {1});
+
+    assertThat(onDirectory.statusCode()).isEqualTo(500);
+    assertThat(BoosterJson.parse(Http.text(onDirectory))).isEqualTo(Map.of("title", "Unchecked IO Exception",
+        "reason", "EISDIR: illegal operation on a directory, open '" + directory + "'"));
+    assertThat(underFile.statusCode()).isEqualTo(500);
+    assertThat(BoosterJson.parse(Http.text(underFile))).isEqualTo(Map.of("title", "Unchecked IO Exception",
+        "reason", "ENOTDIR: not a directory, open '" + project.resolve("clientst/rocketfiles/client2/a.txt") + "'"));
+  }
+
+  @Test
   void dot_files_are_not_served() throws Exception {
     Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
     Files.writeString(project.resolve("clientst/rocketfiles/client1/.env"), "secret");

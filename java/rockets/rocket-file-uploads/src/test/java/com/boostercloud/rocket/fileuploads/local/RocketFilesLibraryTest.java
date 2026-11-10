@@ -86,6 +86,9 @@ class RocketFilesLibraryTest {
     assertThatThrownBy(() -> library.list(config, CLIENT, "nope"))
         .isInstanceOf(UncheckedIOException.class)
         .hasMessage("ENOENT: no such file or directory, scandir '" + missing + "'");
+    // Node prints the path given to scandir: path.join keeps the trailing separator of the directory
+    assertThatThrownBy(() -> library.list(config, CLIENT, "nope/"))
+        .hasMessage("ENOENT: no such file or directory, scandir '" + missing + "/'");
   }
 
   @Test

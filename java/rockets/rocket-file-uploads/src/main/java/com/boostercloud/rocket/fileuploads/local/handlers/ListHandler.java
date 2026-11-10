@@ -46,13 +46,14 @@ public final class ListHandler {
    */
   public static List<ListItem> list(BoosterConfig config, RocketFilesUserConfiguration rocketFilesUserConfiguration,
       String directory) {
-    Path path = Path.of(NodePath.join(LocalStorage.projectDirectory(config).toString(),
-        rocketFilesUserConfiguration.storageName(), rocketFilesUserConfiguration.containerName(), directory));
+    String joined = NodePath.join(LocalStorage.projectDirectory(config).toString(),
+        rocketFilesUserConfiguration.storageName(), rocketFilesUserConfiguration.containerName(), directory);
+    Path path = Path.of(joined);
     List<String> files = new ArrayList<>();
     try (Stream<Path> entries = Files.list(path)) {
       entries.forEach(entry -> files.add(entry.getFileName().toString()));
     } catch (IOException e) {
-      throw LocalStorage.nodeError(e, "scandir", path);
+      throw LocalStorage.nodeError(e, "scandir", joined);
     }
     files.sort(STRCMP);
     List<ListItem> result = new ArrayList<>();
