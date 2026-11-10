@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeEach;
@@ -933,6 +934,101 @@ class ReadModelStoreTest extends BoosterTestSupport {
 
     verify(readModels, never()).search(any(), any(), any(), any(), any(), any(), any(), any());
     assertThat(callsOf("someObserverArray")).isEmpty();
+  }
+
+  // ---------------------------------------------------------------------------------------------------------------
+  // Optional join keys (Optional<T> is the Java form of `T | undefined`)
+  // ---------------------------------------------------------------------------------------------------------------
+
+  public record AnOptionalKeyEntity(UUID id, Optional<UUID> someKey, int count) {}
+
+  public record AnOptionalArrayKeyEntity(UUID id, Optional<List<UUID>> someKey, int count) {}
+
+  public record OptionalKeyReadModel(UUID id, int count) {
+    public static Object byKey(AnOptionalKeyEntity entity, OptionalKeyReadModel current) {
+      record("byKey", entity, current);
+      return Map.of("id", entity.someKey().orElseThrow(), "count", entity.count());
+    }
+
+    public static Object byKeys(AnOptionalArrayKeyEntity entity, UUID readModelID, OptionalKeyReadModel current) {
+      record("byKeys", entity, readModelID, current);
+      return Map.of("id", readModelID, "count", entity.count());
+    }
+  }
+
+  @Nested
+  class OptionalJoinKeys {
+    @BeforeEach
+    void registerOptionalKeys() {
+      for (Class<?> entity : List.of(AnOptionalKeyEntity.class, AnOptionalArrayKeyEntity.class)) {
+        config.entities.put(entity.getSimpleName(), new EntityMetadata(entity, BoosterAuthorizer.authorizeRoles(List.of())));
+      }
+      config.readModels.put("OptionalKeyReadModel",
+          new ReadModelMetadata(OptionalKeyReadModel.class, List.of(), BoosterAuthorizer.ALLOW_ACCESS, List.of()));
+      config.projections.put("AnOptionalKeyEntity", new ArrayList<>(List.of(
+          new ProjectionMetadata(OptionalKeyReadModel.class, "byKey", JoinKey.property("someKey")))));
+      config.projections.put("AnOptionalArrayKeyEntity", new ArrayList<>(List.of(
+          new ProjectionMetadata(OptionalKeyReadModel.class, "byKeys", JoinKey.property("someKey")))));
+    }
+
+    private EntitySnapshotEnvelope snapshot(String entityName, Object someKey) {
+      Map<String, Object> value = new LinkedHashMap<>();
+      value.put("id", "importantEntityID");
+      if (someKey != null) {
+        value.put("someKey", someKey);
+      }
+      value.put("count", 5);
+      return entitySnapshotEnvelopeFor(entityName).toBuilder().value(value).build();
+    }
+
+    private boolean warned(String text) {
+      return mockingDetails(config.logger).getInvocations().stream()
+          .filter(invocation -> invocation.getMethod().getName().equals("warn"))
+          .anyMatch(invocation -> Arrays.deepToString(invocation.getArguments()).contains(text));
+    }
+
+    @Test
+    void anEmptyOptionalJoinKeyIsSkippedWithAWarning() {
+      new ReadModelStore(config).project(snapshot("AnOptionalKeyEntity", null));
+
+      assertThat(callsOf("byKey")).isEmpty();
+      verify(readModels, never()).search(any(), any(), any(), any(), any(), any(), any(), any());
+      verify(readModels, never()).store(any(), any(), any(), any());
+      assertThat(warned("Couldn't find the joinKey")).isTrue();
+    }
+
+    @Test
+    void aPresentOptionalJoinKeyIsTheValueInside() {
+      new ReadModelStore(config).project(snapshot("AnOptionalKeyEntity", "cust-1"));
+
+      verify(readModels).search(eq(config), eq("OptionalKeyReadModel"),
+          eq(Map.of("id", Map.of("in", List.of("cust-1")))), any(), any(), any(), any(), any());
+      assertThat(callsOf("byKey")).containsExactly(Arrays.asList(
+          new AnOptionalKeyEntity(UUID.of("importantEntityID"), Optional.of(UUID.of("cust-1")), 5), null));
+      assertThat(storeCalls("OptionalKeyReadModel")).extracting(call -> (Object) ((Map<?, ?>) call.get(2)).get("id"))
+          .containsExactly("cust-1");
+    }
+
+    @Test
+    void anOptionalListJoinKeyIsAnArrayJoinKey() {
+      new ReadModelStore(config).project(snapshot("AnOptionalArrayKeyEntity", List.of("a", "b")));
+
+      assertThat(callsOf("byKeys")).extracting(call -> call.get(1)).containsExactlyInAnyOrder(UUID.of("a"), UUID.of("b"));
+      assertThat(storeCalls("OptionalKeyReadModel")).extracting(call -> (Object) ((Map<?, ?>) call.get(2)).get("id"))
+          .containsExactlyInAnyOrder("a", "b");
+    }
+
+    @Test
+    void anEmptyOptionalSequenceKeyIsNoSequenceKey() {
+      config.readModelSequenceKeys.put("OptionalKeyReadModel", "someKey");
+      ProjectionMetadata projection = new ProjectionMetadata(OptionalKeyReadModel.class, "byKey", JoinKey.property("id"));
+
+      assertThat(new ReadModelStore(config).sequenceKeyForProjection(
+          new AnOptionalKeyEntity(UUID.of("e"), Optional.empty(), 1), projection)).isNull();
+      assertThat(new ReadModelStore(config).sequenceKeyForProjection(
+          new AnOptionalKeyEntity(UUID.of("e"), Optional.of(UUID.of("t1")), 1), projection))
+          .isEqualTo(SequenceKey.of("someKey", "t1"));
+    }
   }
 
   @Test

@@ -339,6 +339,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   object. `getProjectionFunction` returns a `ProjectionFunction` that finds the static method by name when called
   (TypeScript returns the function); a missing method fails inside the projection error handling, like calling
   `undefined`. Join keys: an entity-property join key whose value is a collection or array is the TypeScript array case.
+  An `Optional` join key or sequence key (the Java form of `T | undefined`) is read as its value: an empty one skips the
+  projection with the `Couldn't find the joinKey` warning, like an undefined TypeScript key, and an `Optional` list is
+  an array join key.
 * Decisions on the TypeScript latent defects (spec 07 §7): an array join key with several existing read models
   schedules every id once — with its read model, or without one when none exists — instead of `existing × ids` tasks
   (D3; the pinned single-read-model case and the one-task-per-row behaviour of sequenced read models are unchanged);
@@ -468,7 +471,8 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   `'next' in result`). Over HTTP, `runGraphQLOperation` returns that publisher too.
 * Fields without resolver are read by `PropertyResolver`: map entries for raw documents, otherwise the
   `ClassMetadata` property (record components, fields of any visibility, calculated-field methods), falling back to
-  getters; `Optional`s are unwrapped. `getFields` (the `select` projection) is ported over graphql-java's AST with the
+  getters; `Optional`s are unwrapped (the `select` projection of list queries unwraps them too, at every level).
+  `getFields` (the `select` projection) is ported over graphql-java's AST with the
   same rules (aliases ignored, unknown fields skipped, fragments inlined, `[]` for lists of objects).
 * The event search arguments become `EventSearchParameters` (`fromMap`), by-id arguments a Booster `UUID` and a
   `TimeKey` sequence value (`null` when omitted); commands without input get a `null` value.

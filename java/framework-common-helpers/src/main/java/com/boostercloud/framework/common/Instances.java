@@ -239,24 +239,43 @@ public final class Instances {
     return root;
   }
 
+  /**
+   * The value of an {@code Optional} ({@code OptionalInt}, {@code OptionalLong} and {@code OptionalDouble} too), or
+   * {@code null} when it is empty; any other value is returned unchanged. {@code Optional<T>} is the Java form of a
+   * TypeScript {@code T | undefined}, so code that needs the plain value of a property (as TypeScript reads it) unwraps
+   * it first.
+   *
+   * @param value any value
+   * @return the plain value
+   */
+  public static Object unwrapOptional(Object value) {
+    return switch (value) {
+      case Optional<?> optional -> optional.orElse(null);
+      case OptionalInt optional -> optional.isPresent() ? optional.getAsInt() : null;
+      case OptionalLong optional -> optional.isPresent() ? optional.getAsLong() : null;
+      case OptionalDouble optional -> optional.isPresent() ? optional.getAsDouble() : null;
+      case null, default -> value;
+    };
+  }
+
   private static void processProperties(Object source, Map<String, Object> result, Map<String, PropertyNode> nodes) {
     for (Map.Entry<String, PropertyNode> entry : nodes.entrySet()) {
       String key = entry.getKey();
       PropertyNode node = entry.getValue();
       if (hasProperty(source, key)) {
+        // TypeScript reads the plain value: an Optional (`T | undefined`) is its value or null
+        Object value = unwrapOptional(await(readProperty(source, key)));
         if (node.array) {
           List<Object> items = new ArrayList<>();
           result.put(key, items);
-          Object value = await(readProperty(source, key));
           for (Object item : iterable(value, key)) {
             Map<String, Object> newItem = new LinkedHashMap<>();
-            processProperties(item, newItem, node.arrayChildren);
+            processProperties(unwrapOptional(item), newItem, node.arrayChildren);
             if (!newItem.isEmpty()) {
               items.add(newItem);
             }
           }
         } else if (!node.children.isEmpty()) {
-          Object value = await(readProperty(source, key));
           if (value == null) {
             result.put(key, null);
           } else {
@@ -265,7 +284,7 @@ public final class Instances {
             result.put(key, nested.isEmpty() ? null : nested);
           }
         } else {
-          result.put(key, await(readProperty(source, key)));
+          result.put(key, value);
         }
       } else if (node.hasChildren()) {
         result.put(key, null);
@@ -291,7 +310,8 @@ public final class Instances {
     return ClassMetadata.of(source.getClass()).field(key).orElseThrow().readValue(source);
   }
 
-  private static Iterable<?> iterable(Object value, String key) {
+  private static Iterable<?> iterable(Object rawValue, String key) {
+    Object value = unwrapOptional(rawValue);
     if (value instanceof Iterable<?> iterable) {
       return iterable;
     }

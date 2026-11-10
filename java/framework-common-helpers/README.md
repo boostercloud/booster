@@ -47,8 +47,11 @@ Promises.forEachAllSettledAndFulfilled(entityGroups, group -> process(group));  
 * `createInstanceWithCalculatedProperties` returns an ordered `Map` (TypeScript a plain object) and
   follows the same rules for absent/`null` paths; since nested values are hydrated, calculated fields
   of nested objects are evaluated too (TypeScript sees plain objects there). Calculated fields
-  returning `CompletionStage`/`Future` are waited for. Malformed selections raise
-  `IllegalArgumentException`s where TypeScript raises `TypeError`s.
+  returning `CompletionStage`/`Future` are waited for. `Optional`s (the Java form of `T | undefined`,
+  also `OptionalInt`/`OptionalLong`/`OptionalDouble`) are read as their value, `null` when empty, at
+  every level of the selection: nested objects, lists and leaves, like the plain values TypeScript
+  reads (`Instances.unwrapOptional`). Malformed selections raise `IllegalArgumentException`s where
+  TypeScript raises `TypeError`s.
 * `Promises`: futures replace promises. `allSettledAndFulfilled` joins already started futures; the
   `run*`/`map*`/`forEach*` variants start each task on a virtual thread. They return the values
   instead of the settled-result records. Tasks run in parallel (JavaScript interleaves on one

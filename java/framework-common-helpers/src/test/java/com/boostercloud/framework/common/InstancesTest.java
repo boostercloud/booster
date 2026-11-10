@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,24 @@ class InstancesTest {
     @CalculatedField
     public CompletableFuture<String> fullName() {
       return CompletableFuture.supplyAsync(() -> firstName + " " + lastName);
+    }
+  }
+
+  public record Address(String city, String street) {}
+
+  public record Tag(String name) {}
+
+  /** {@code Optional<T>} is the Java form of a TypeScript {@code T | undefined}. */
+  public record Profile(String id, Optional<Address> address, Optional<List<Tag>> tags, Optional<Address> none,
+      Optional<String> nickname, OptionalInt score, OptionalInt noScore, List<Optional<Tag>> maybeTags) {
+    @CalculatedField
+    public Optional<Address> home() {
+      return address;
+    }
+
+    @CalculatedField
+    public CompletableFuture<Optional<Address>> later() {
+      return CompletableFuture.supplyAsync(() -> address);
     }
   }
 
@@ -122,6 +141,41 @@ class InstancesTest {
       assertThatThrownBy(() -> project(Person.class, raw, "id.x")).hasMessageContaining("Cannot use 'in' operator");
       assertThatThrownBy(() -> Instances.buildPropertiesMap(List.of("items.a", "items[].b")))
           .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void unwrapsOptionalNestedObjectsListsAndLeaves() {
+      assertThat(project(Profile.class, profile(), "address.city"))
+          .isEqualTo(Map.of("address", Map.of("city", "Madrid")));
+      assertThat(project(Profile.class, profile(), "tags[].name")).isEqualTo(Map.of("tags", List.of(Map.of("name", "vip"))));
+      assertThat(project(Profile.class, profile(), "maybeTags[].name"))
+          .isEqualTo(Map.of("maybeTags", List.of(Map.of("name", "new"))));
+      assertThat(project(Profile.class, profile(), "nickname")).isEqualTo(Map.of("nickname", "ada"));
+      assertThat(project(Profile.class, profile(), "score")).isEqualTo(Map.of("score", 7));
+      // An empty optional is null, like a null property (a null array cannot be iterated, as in TypeScript)
+      assertThat(project(Profile.class, profile(), "none.city")).isEqualTo(nullValued("none"));
+      assertThat(project(Profile.class, profile(), "noScore")).isEqualTo(nullValued("noScore"));
+      assertThatThrownBy(() -> project(Profile.class, Map.of("id", "p2"), "tags[].name"))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("The property 'tags' is not iterable: null");
+    }
+
+    @Test
+    void unwrapsOptionalCalculatedFields() {
+      assertThat(project(Profile.class, profile(), "home.city")).isEqualTo(Map.of("home", Map.of("city", "Madrid")));
+      assertThat(project(Profile.class, profile(), "later.street")).isEqualTo(Map.of("later", Map.of("street", "Gran Via")));
+      assertThat(project(Profile.class, Map.of("id", "p2"), "home.city")).isEqualTo(nullValued("home"));
+    }
+
+    private Map<String, Object> profile() {
+      Map<String, Object> raw = new LinkedHashMap<>();
+      raw.put("id", "p1");
+      raw.put("address", Map.of("city", "Madrid", "street", "Gran Via"));
+      raw.put("tags", List.of(Map.of("name", "vip")));
+      raw.put("nickname", "ada");
+      raw.put("score", 7);
+      raw.put("maybeTags", List.of(Map.of("name", "new")));
+      return raw;
     }
 
     @Test
