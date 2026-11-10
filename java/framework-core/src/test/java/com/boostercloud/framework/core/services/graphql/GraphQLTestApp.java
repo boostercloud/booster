@@ -24,12 +24,12 @@ import java.util.concurrent.CompletableFuture;
  * A small application whose GraphQL schema exercises every generation rule (the Java form of the integration-test
  * fixtures {@code SchemaReadModel}, {@code ChangeCartItem}...).
  */
-final class GraphQLTestApp {
+public final class GraphQLTestApp {
 
   private GraphQLTestApp() {}
 
   /** The classes to register, in order. */
-  static final List<Class<?>> CLASSES = List.of(ProductCreated.class, Product.class, ProductReadModel.class,
+  public static final List<Class<?>> CLASSES = List.of(ProductCreated.class, Product.class, ProductReadModel.class,
       TimelineReadModel.class, CreateProduct.class, DeleteProduct.class, GetStock.class, FindProducts.class);
 
   @Event
