@@ -442,7 +442,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   dates (`Instant`, `Date`, `OffsetDateTime`, `ZonedDateTime`) are `Date`, `Map`s and JDK/Booster classes (`TimeKey`,
   `Duration`...) are `JSON`, sealed types of records/classes are unions (resolved by the value's simple class name),
   generic records are `JSON` with `<Name>_<arg>_PropertyFilter` filters, `@CalculatedField` methods are fields (not
-  filtered nor sorted).
+  filtered nor sorted). Because whole numbers are `Float` inputs too, a command, query or event input with a fraction
+  for an `int`/`long`/... property (`quantity: 2.5`) fails binding with `Invalid value for <Class>.<property>: Cannot
+  convert 2.5 to int: the number is not an integer` instead of being truncated (TypeScript keeps `2.5`).
 * Results handed to `handleResult` are raw JSON maps (`errors` first when present, then `data`) instead of
   `ExecutionResult` objects; websocket `data` payloads are the same maps. The websocket `error` message of a `start`
   without query carries `{message}` per error (framework-types `GraphQLErrorMessage`); TypeScript serialises its

@@ -61,7 +61,8 @@ import java.util.concurrent.Future;
  *   <li>classes through the constructor whose parameter names match their fields (compile with {@code -parameters}),
  *       else their no-argument constructor, then assigning the remaining non-final fields;
  *   <li>nested records/classes, {@code List}/{@code Set}/arrays, {@code Map}s, {@code Optional}s, enums, dates
- *       (ISO strings or epoch milliseconds), {@code UUID}s and numbers are converted to the declared (generic) types;
+ *       (ISO strings or epoch milliseconds), {@code UUID}s and numbers are converted to the declared (generic) types
+ *       (a number with a fraction is refused for whole-number types instead of being truncated);
  *   <li>sealed interfaces pick the permitted class that has every raw key and the fewest properties left unset;
  *   <li>types with Jackson annotations ({@code @JsonCreator}, {@code @JsonValue}, {@code @JsonTypeInfo}) are bound
  *       with {@link BoosterJson#mapper()}.
@@ -137,6 +138,11 @@ public final class Instances {
     if (target == Optional.class) {
       Object value = raw instanceof Optional<?> optional ? optional.orElse(null) : raw;
       return value == null ? Optional.empty() : Optional.ofNullable(convert(value, Types.typeArguments(targetType, Optional.class)[0]));
+    }
+    if (raw instanceof Number number && isIntegral(target) && !hasIntegralValue(number)) {
+      // Jackson would truncate it silently (every number is a GraphQL Float, so 2.5 is a valid input for an int)
+      throw new IllegalArgumentException("Cannot convert " + describe(raw) + " to " + targetType.getTypeName()
+          + ": the number is not an integer");
     }
     if (target == OptionalInt.class || target == OptionalLong.class || target == OptionalDouble.class) {
       return BoosterJson.convert(raw, target);
@@ -383,6 +389,27 @@ public final class Instances {
         || target.getPackageName().startsWith("com.fasterxml.jackson")
         || target.getName().startsWith("java.") && !target.isInterface() && !Modifier.isAbstract(target.getModifiers())
             && target.getClassLoader() == null && !isPlainJdkCollectionLike(target);
+  }
+
+  /** Whole-number targets, which cannot hold a fraction. */
+  private static boolean isIntegral(Class<?> target) {
+    return target == int.class || target == Integer.class
+        || target == long.class || target == Long.class
+        || target == short.class || target == Short.class
+        || target == byte.class || target == Byte.class
+        || target == OptionalInt.class || target == OptionalLong.class
+        || target == java.math.BigInteger.class
+        || target == java.util.concurrent.atomic.AtomicInteger.class
+        || target == java.util.concurrent.atomic.AtomicLong.class;
+  }
+
+  private static boolean hasIntegralValue(Number number) {
+    return switch (number) {
+      case Double value -> Double.isFinite(value) && Math.rint(value) == value;
+      case Float value -> Float.isFinite(value) && Math.rint(value) == value;
+      case java.math.BigDecimal value -> value.signum() == 0 || value.stripTrailingZeros().scale() <= 0;
+      default -> true;
+    };
   }
 
   private static boolean isPlainJdkCollectionLike(Class<?> target) {

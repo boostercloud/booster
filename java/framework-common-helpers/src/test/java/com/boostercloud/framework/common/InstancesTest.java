@@ -347,6 +347,35 @@ class InstancesTest {
     }
 
     @Test
+    void refusesNumbersWithAFractionForIntegralProperties() {
+      // GraphQL has one number type (every Java number is a Float input), so integral values arrive as doubles
+      record Counts(int count, long big, Integer boxed, short small, Optional<Integer> maybe, List<Long> many) {}
+      Map<String, Object> integral = new LinkedHashMap<>();
+      integral.put("count", 2.0);
+      integral.put("big", 3e10);
+      integral.put("boxed", 4.0f);
+      integral.put("small", new java.math.BigDecimal("5.000"));
+      integral.put("maybe", 6.0);
+      integral.put("many", List.of(7.0, 8));
+      assertThat(Instances.createInstance(Counts.class, integral))
+          .isEqualTo(new Counts(2, 30_000_000_000L, 4, (short) 5, Optional.of(6), List.of(7L, 8L)));
+
+      assertThatThrownBy(() -> Instances.createInstance(Counts.class, Map.of("count", 2.5)))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Invalid value for Counts.count: Cannot convert 2.5 to int: the number is not an integer");
+      assertThatThrownBy(() -> Instances.createInstance(Counts.class, Map.of("maybe", 3.9)))
+          .hasMessageContaining("Cannot convert 3.9 to java.lang.Integer: the number is not an integer");
+      assertThatThrownBy(() -> Instances.createInstance(Counts.class, Map.of("many", List.of(1, 1.5))))
+          .hasMessageContaining("Cannot convert 1.5 to java.lang.Long");
+      assertThatThrownBy(() -> Instances.convert(new java.math.BigDecimal("0.1"), java.math.BigInteger.class))
+          .hasMessageContaining("the number is not an integer");
+      assertThatThrownBy(() -> Instances.convert(Double.NaN, long.class)).hasMessageContaining("not an integer");
+      // Floating-point targets keep the fraction
+      assertThat(Instances.convert(2.5, double.class)).isEqualTo(2.5);
+      assertThat(Instances.convert(2.5, java.math.BigDecimal.class)).isEqualTo(new java.math.BigDecimal("2.5"));
+    }
+
+    @Test
     void reportsWhichPropertyCouldNotBeConverted() {
       assertThatThrownBy(() -> Instances.createInstance(Item.class, Map.of("quantity", "lots")))
           .isInstanceOf(IllegalArgumentException.class)

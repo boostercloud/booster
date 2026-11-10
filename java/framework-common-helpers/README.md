@@ -44,6 +44,12 @@ Promises.forEachAllSettledAndFulfilled(entityGroups, group -> process(group));  
   whose parameter names match their fields (`-parameters`) or their no-argument constructor;
   final fields that no constructor sets cannot be overwritten (an error explains how to fix the
   class). A raw value that already is an instance of the target class is returned unchanged.
+* A number with a fraction (or `NaN`/infinite) bound to a whole-number property (`int`, `long`,
+  `short`, `byte`, their boxes, `OptionalInt`/`OptionalLong`, `BigInteger`) fails with
+  `Cannot convert 2.5 to int: the number is not an integer`; integral doubles such as `2.0` are
+  accepted. TypeScript has one number type and keeps `2.5`; Jackson alone would truncate it silently,
+  and every Java number is a GraphQL `Float` input. Classes bound by Jackson (`@JsonCreator`,
+  `@JsonValue`, `@JsonTypeInfo`) keep Jackson's coercion.
 * `createInstanceWithCalculatedProperties` returns an ordered `Map` (TypeScript a plain object) and
   follows the same rules for absent/`null` paths; since nested values are hydrated, calculated fields
   of nested objects are evaluated too (TypeScript sees plain objects there). Calculated fields
