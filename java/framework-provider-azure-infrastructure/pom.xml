@@ -20,5 +20,18 @@
       <groupId>com.boostercloud</groupId>
       <artifactId>booster-framework-provider-azure</artifactId>
     </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-common-helpers</artifactId>
+    </dependency>
+    <!-- templates.policy and renderToFile are Mustache templates, as in TypeScript -->
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+    </dependency>
   </dependencies>
 </project>
