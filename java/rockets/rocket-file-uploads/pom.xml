@@ -46,5 +46,11 @@
       <groupId>com.boostercloud</groupId>
       <artifactId>booster-framework-provider-azure-infrastructure</artifactId>
     </dependency>
+    <!-- end-to-end tests: GraphQL clients and counters of the application tester -->
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-application-tester</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>
