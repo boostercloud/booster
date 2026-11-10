@@ -15,7 +15,8 @@ public final class TerraformStorageContainer {
   /**
    * {@code TerraformStorageContainer.build(...)}: a private {@code azurerm_storage_container} in the rocket's storage
    * account, construct id {@code toTerraformName(<storage account name>, rfsb<containerName>)} (TypeScript passes the
-   * unresolved name token; Java the name, which gives a deterministic id).
+   * unresolved name token; Java the name, which gives a deterministic id, made unique with {@link ConstructIds} when
+   * two storage names end alike).
    *
    * @param stack the stack bag
    * @param rocketStorageAccount the storage account
@@ -28,7 +29,8 @@ public final class TerraformStorageContainer {
    */
   public static TerraformResource build(ApplicationSynthStack stack, TerraformResource rocketStorageAccount,
       String storageAccountName, String containerName, RocketUtils utils) {
-    String id = utils.toTerraformName(storageAccountName, "rfsb" + (containerName == null ? "undefined" : containerName));
+    String id = ConstructIds.unique(stack.terraformStack, utils, storageAccountName,
+        "rfsb" + (containerName == null ? "undefined" : containerName));
     return new TerraformResource(stack.terraformStack, id, "azurerm_storage_container")
         .setAttributes(Attributes.of(
             "name", containerName,

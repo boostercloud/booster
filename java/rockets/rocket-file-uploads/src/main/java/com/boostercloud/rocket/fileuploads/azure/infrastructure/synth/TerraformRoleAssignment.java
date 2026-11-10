@@ -23,7 +23,8 @@ public final class TerraformRoleAssignment {
    * {@value #READER_AND_DATA_ACCESS} on a storage account to the system-assigned identity of a function app
    * ({@code principal_id = ${<function app>.identity.0.principal_id}}). The construct ids are
    * {@code toTerraformName(<storage name><function app suffix>, 'rfrlb' | 'rfrlr')}, where the suffix is the function
-   * app name without the resource group name (TypeScript uses unresolved tokens, so its ids are opaque).
+   * app name without the resource group name (TypeScript uses unresolved tokens, so its ids are opaque), made unique
+   * with {@link ConstructIds} when two storage names end alike.
    *
    * @param stack the stack bag
    * @param utils the rocket utilities
@@ -42,14 +43,14 @@ public final class TerraformRoleAssignment {
     String firstIdentity = functionAppResource.ref("identity.0.principal_id");
     String idBase = storageAccountName + functionAppKey(stack, functionAppResource);
     TerraformResource blobContributorRole = new TerraformResource(stack.terraformStack,
-        utils.toTerraformName(idBase, "rfrlb"), "azurerm_role_assignment")
+        ConstructIds.unique(stack.terraformStack, utils, idBase, "rfrlb"), "azurerm_role_assignment")
         .setAttributes(Attributes.of(
             "scope", rocketStorageAccount.ref("id"),
             "role_definition_name", STORAGE_BLOB_DATA_CONTRIBUTOR,
             "principal_id", firstIdentity))
         .provider(stack.azureProvider);
     TerraformResource readerAndDataRole = new TerraformResource(stack.terraformStack,
-        utils.toTerraformName(idBase, "rfrlr"), "azurerm_role_assignment")
+        ConstructIds.unique(stack.terraformStack, utils, idBase, "rfrlr"), "azurerm_role_assignment")
         .setAttributes(Attributes.of(
             "scope", rocketStorageAccount.ref("id"),
             "role_definition_name", READER_AND_DATA_ACCESS,
