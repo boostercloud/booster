@@ -347,8 +347,9 @@ public final class Booster {
 
   /**
    * Test hook: forgets the configuration (the next access creates a new one from the current environment), the
-   * configured environments, the imported classes and the registered application. The TypeScript tests delete and
-   * reassign fields of the singleton instead.
+   * configured environments, the imported classes, the registered application and the process-wide GraphQL schema
+   * ({@link com.boostercloud.framework.core.services.graphql.GraphQLGenerator#reset()}). The TypeScript tests delete
+   * and reassign fields of the singletons instead.
    */
   public static void reset() {
     synchronized (LOCK) {
@@ -356,6 +357,7 @@ public final class Booster {
       CONFIGURED_ENVIRONMENTS.clear();
       Importer.reset();
       UserAppRegistry.clear();
+      com.boostercloud.framework.core.services.graphql.GraphQLGenerator.reset();
     }
   }
 

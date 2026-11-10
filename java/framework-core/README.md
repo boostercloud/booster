@@ -3,8 +3,9 @@
 Java port of `packages/framework-core`: the annotations a Booster application is written with, the `Booster`
 facade that boots it, the dispatchers of commands, queries, scheduled commands and rockets, authorization and
 token verification, the global error handler, tracing and schema migrations — plus the entry points the providers
-call (`UserApp`). The event pipeline, the read models, the health sensor and the GraphQL layer are ported by later
-stages; their public signatures exist already as **skeletons** (see [Module layout](#module-layout)).
+call (`UserApp`) and the GraphQL API (schema generation, dispatcher, websocket protocol). The event pipeline, the
+read models and the health sensor are ported by later stages; their public signatures exist already as **skeletons**
+(see [Module layout](#module-layout)).
 
 ```java
 @Command(authorize = All.class)
@@ -42,7 +43,7 @@ way against this module, boots it and dispatches a command and a query.
 
 | `UserApp` method | Delegate | Stage |
 | --- | --- | --- |
-| `boosterServeGraphQL` | `new BoosterGraphQLDispatcher(config).dispatch(raw)` | core-3 |
+| `boosterServeGraphQL` | `new BoosterGraphQLDispatcher(config).dispatch(raw)` | done (core-3) |
 | `boosterEventDispatcher` | `BoosterEventDispatcher.dispatch(raw, config)` | core-2a |
 | `boosterConsumeEventStream` / `boosterProduceEventStream` | `BoosterEventStreamConsumer.consume` / `BoosterEventStreamProducer.produce` | core-2a |
 | `boosterNotifySubscribers` | `new BoosterSubscribersNotifier(config).dispatch(raw)` | core-2b |
@@ -54,6 +55,22 @@ way against this module, boots it and dispatches a command and a query.
 migration (`SchemaMigrator`), `before` hooks (`FilterHelpers`), instance creation (`Instances.createInstance`),
 static `handle(command, register)`, global error handler, `RegisterHandler.handle` (wraps the registered events and
 stores them with retry/backoff). Queries follow the same path without migration and register.
+
+**GraphQL** (`booster-graphql-dispatcher.ts`, `services/graphql/**`): `boosterServeGraphQL` creates a
+`BoosterGraphQLDispatcher` per request. It converts the request with `provider.graphQL().rawToEnvelope`, answers
+`CONNECT` with the `graphql-ws` sub-protocol header, deletes the connection data and subscriptions on `DISCONNECT`, and
+for `MESSAGE` verifies the token, hands websocket messages to `GraphQLWebsocketHandler` (the legacy
+`subscriptions-transport-ws` protocol: `connection_init`/`start`/`stop`/`connection_terminate`) and runs HTTP
+operations: parse, validate, introspection toggle, operation selection, then execution on graphql-java with a
+`GraphQLResolverContext` (whose `responseHeaders` reach `handleResult`). The schema is built once per process by
+`GraphQLGenerator.generateSchema(config)` from the registered metadata: `GraphQLQueryGenerator` (by id with sequence
+keys, deprecated plural filters, paginated `List*` queries with `*Connection`, `eventsByEntity`/`eventsByType`, user
+queries), `GraphQLMutationGenerator` (commands) and `GraphQLSubscriptionGenerator` (by id and filtered), sharing one
+`GraphQLTypeInformer` and one cache of filter types. The resolvers build the envelopes of the other layers
+(`BoosterReadModelsReader`, `BoosterCommandDispatcher`, `BoosterQueryDispatcher`, `BoosterEventsReader`). Results are
+JSON maps with graphql-js shapes: `{errors?, data?}`, errors `{message, locations?, path?, extensions: {code?,
+data?}}` (`GraphQLExecution`). `GraphQLSchemaSdlTest` pins the SDL of a representative application
+(`src/test/resources/graphql/test-app.graphql`).
 
 **Running** (`Booster.run(main, args)`, the contract of `java/cli/README.md`): `start [--port N]` (blocks while the
 local server runs), `synth`, `deploy`, `nuke` through `config.provider().infrastructure()`; with
@@ -86,7 +103,7 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
 | `services/event-store.ts`, `services/raw-events-parser.ts`, `booster-event-dispatcher.ts`, `booster-event-processor.ts`, `booster-event-stream-consumer.ts`, `booster-event-stream-producer.ts`, `booster-delete-event-dispatcher.ts`, `booster-touch-entity-handler.ts`, `booster-events-reader.ts`, `booster-event-search.ts` | `services.EventStore`, `services.RawEventsParser`, `BoosterEventDispatcher`, `BoosterEventProcessor`, `BoosterEventStreamConsumer`, `BoosterEventStreamProducer`, `BoosterDeleteEventDispatcher`, `BoosterTouchEntityHandler`, `BoosterEventsReader`, `BoosterEventSearch` | core-2a |
 | `services/read-model-store.ts`, `booster-read-models-reader.ts`, `booster-subscribers-notifier.ts`, `services/pub-sub/*`, `read-model-schema-migrator.ts`, `booster-data-migrations.ts` | `services.ReadModelStore`, `BoosterReadModelsReader`, `BoosterSubscribersNotifier`, `services.pubsub.*`, `ReadModelSchemaMigrator`, `BoosterDataMigrations` | core-2b |
 | `sensor/health/booster-health-service.ts`, `health-utils.ts`, the indicators, `booster-version.ts`, `os-info.ts` | `sensor.health.BoosterHealthService`, `sensor.health.HealthUtils`, `sensor.health.healthindicators.*` | core-2b |
-| `booster-graphql-dispatcher.ts`, `services/graphql/**` | `BoosterGraphQLDispatcher`, `services.graphql.*` (generators, type informer, `Common`, `TargetTypeMetadata`, `ResolverBuilder`), `services.graphql.querygenerators.*`, `services.graphql.queryhelpers.*`, `services.graphql.websocketprotocol.*` | core-3 |
+| `booster-graphql-dispatcher.ts`, `services/graphql/**` | `BoosterGraphQLDispatcher`, `services.graphql.*` (generators, type informer, `Common`, `TargetTypeMetadata`, `ResolverBuilder`; Java additions `GraphQLFieldResolver`, `GraphQLFieldConfig`, `GeneratedObjectType`, `GraphQLExecution`, `PropertyResolver`, `IteratorPublisher`, `Inflection`), `services.graphql.querygenerators.*`, `services.graphql.queryhelpers.*`, `services.graphql.websocketprotocol.*` | done (core-3) |
 | `injectable/index.ts` | `com.boostercloud.framework.types.injectable.Injectable` / `InjectableCommand` (foundation) | foundation |
 | `decorators/metadata.ts` (`getClassMetadata`, `getFunctionArguments`) | `com.boostercloud.metadata.ClassMetadata.of` (foundation); argument names come from reflection | not needed |
 
@@ -191,9 +208,65 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
   `IllegalStateException`/`IllegalArgumentException` (TypeScript plain `Error`s), `<SimpleClassName>: <message>`
   otherwise. JavaScript can throw strings; Java verifiers throw exceptions.
 
+**GraphQL**
+
+* graphql-java replaces graphql-js. graphql-java keeps resolvers in the schema's code registry, so the generators
+  return `GraphQLFieldConfig`s (graphql-js `GraphQLFieldConfig`) and the root generators a `GeneratedObjectType` (the
+  type plus its field configurations); resolvers are `GraphQLFieldResolver`s, graphql-java `DataFetcher`s callable as
+  `(parent, args, context, info)`. The `GraphQLResolverContext` travels in the `GraphQLContext` under the key
+  `GraphQLResolverContext.class` (and as local context). The self references of filter types (`and`/`or`/`not`, the
+  graphql-js field thunks) are `GraphQLTypeReference`s. Field, argument and type names and orders are those of
+  TypeScript, including the first-creation-wins type cache, `@NonExposed` honoured only for the class passed to
+  `generateGraphQLTypeForClass` (and looked up by property name for nested filters/sorts), the plural query replacing
+  the by-id query when the plural equals the name, and `inflected@2.1.0` pluralisation (`Inflection`).
+* graphql-java validates the schema when it is built (graphql-js on the first request): `generateSchema` throws (and
+  caches) graphql-java's `InvalidSchemaException` (empty enums, object or input types without fields...); the
+  dispatcher still answers `CONNECT`/`DISCONNECT`/websocket messages and returns the failure as the error of every
+  operation, like TypeScript. A union cached as an output type and reused in an input position fails generation
+  with `The GraphQL type <U> cannot be used as an input type` (TypeScript builds an invalid schema).
+* A class that refers to itself (directly or through other classes) is supported through type references in object,
+  input, filter and sort types; TypeScript overflows the stack.
+* Enum property filters type `eq`/`ne` with the nullable enum; TypeScript keeps the non-null wrapper of a non-nullable
+  property, which makes both operators mandatory.
+* A `void` `handle` maps to `JSON!` — what the current TypeScript metadata produces (`void` is not `never`), although
+  the docs say `Boolean` — and the mutation resolver returns `true` for `null` results (`result ?? true`). Queries
+  without `handle` fail with `Unexpected void return type for Query`.
+* Type mapping comes from `ClassMetadata` (TypeScript-compatible names): every Java number is `Float`, `UUID` is `ID`,
+  dates (`Instant`, `Date`, `OffsetDateTime`, `ZonedDateTime`) are `Date`, `Map`s and JDK/Booster classes (`TimeKey`,
+  `Duration`...) are `JSON`, sealed types of records/classes are unions (resolved by the value's simple class name),
+  generic records are `JSON` with `<Name>_<arg>_PropertyFilter` filters, `@CalculatedField` methods are fields (not
+  filtered nor sorted).
+* Results handed to `handleResult` are raw JSON maps (`errors` first when present, then `data`) instead of
+  `ExecutionResult` objects; websocket `data` payloads are the same maps. Unknown event types answer
+  `{errors: [{message: "Unknown message type <type>"}]}` (TypeScript: an `Error` object); `handleResult(undefined)` is
+  the one-argument `handleResult(null)`.
+* Resolver errors keep the thrown error's message (graphql-java's default handler would write `Exception while
+  fetching data ...`) with the field location and path. Syntax, validation, variable coercion and non-null errors keep
+  graphql-java's wording, which differs from graphql-js. Every error returned by an operation carries
+  `extensions` (`{code, data}` of a `BoosterError`, `{}` otherwise); the errors of a subscription that cannot be set
+  up have no `extensions`, as in TypeScript. Documents are parsed with graphql-java's default parser limits.
+* The validation errors graphql-js throws as an array travel in a private exception carrying the list.
+* `Date` scalar: values are written with milliseconds and `Z` from the Java date types and from ISO strings
+  (TypeScript only accepts `Date` objects); inputs parse with `Dates.parse` (ISO instants, offsets, local date-times
+  taken as UTC — JavaScript takes them as local time —, plain dates as UTC midnight; RFC 2822 is not accepted) and
+  become the normalised ISO **string** (TypeScript: a `Date` object), so filters and inputs stay raw values.
+  `JSON` is Booster's own scalar (graphql-scalars is not available): outputs go through `BoosterJson.toRaw`.
+* Subscription resolvers return a `Flow.Publisher` (`IteratorPublisher`) over the pub-sub's `Iterator`; graphql-java
+  uses each published item as the field value (TypeScript `resolve: (source) => source`). The websocket handler takes
+  a `Flow.Publisher`, a reactive-streams `Publisher` or an `Iterator` as the result of a subscription (TypeScript
+  `'next' in result`). Over HTTP, `runGraphQLOperation` returns that publisher too.
+* Fields without resolver are read by `PropertyResolver`: map entries for raw documents, otherwise the
+  `ClassMetadata` property (record components, fields of any visibility, calculated-field methods), falling back to
+  getters; `Optional`s are unwrapped. `getFields` (the `select` projection) is ported over graphql-java's AST with the
+  same rules (aliases ignored, unknown fields skipped, fragments inlined, `[]` for lists of objects).
+* The event search arguments become `EventSearchParameters` (`fromMap`), by-id arguments a Booster `UUID` and a
+  `TimeKey` sequence value (`null` when omitted); commands without input get a `null` value.
+* `GraphQLGenerator.reset()` (also called by `Booster.reset()`) forgets the process-wide schema; the static
+  collaborators are created by the first `generateSchema` and resolvers fail with an explicit error before it.
+
 ## Not implemented here
 
-Everything in the core-2a, core-2b and core-3 rows of the layout table (skeletons). The data-migration reducers
+Everything in the core-2a and core-2b rows of the layout table (skeletons). The data-migration reducers
 `BoosterDataMigrationEntity.started/finished` belong to core-2a.
 
 ## Tests
@@ -202,4 +275,6 @@ Everything in the core-2a, core-2b and core-3 rows of the layout table (skeleton
 `BOOSTER_ENV=test`); tests that touch the global state extend `BoosterTestSupport`. Test classes are named after the
 TypeScript test files (`booster-command-dispatcher.test.ts` → `BoosterCommandDispatcherTest`); `ImporterTest`
 compiles and scans a jar, `BoosterTokenVerifierTest` uses an in-process JWKS server (`JwtTestKeys`, replacing
-`mock-jwks`), and `UserFacingApiTest` compiles and boots an application written with the documented API.
+`mock-jwks`), and `UserFacingApiTest` compiles and boots an application written with the documented API. The GraphQL
+tests run real operations on graphql-java against `GraphQLTestApp` with the dispatchers and readers mocked
+(`mockConstruction`, the counterpart of the TypeScript prototype replacements).
