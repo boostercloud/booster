@@ -467,6 +467,10 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   (`GraphQLExecution.validate`, used by the dispatcher and the subscribers notifier): graphql-java's "good faith
   introspection" rule (which rejects a `__Type.fields`/`inputFields` selected inside another one, as the schema suites
   of the integration tests do) and its query complexity limits are not applied.
+* With `enableGraphQLIntrospection = false`, an operation that selects `__type` anywhere (aliases, fragments and inline
+  fragments included) is refused like a `__schema` one (`Instrospection queries are disabled...`, `InvalidProtocolError`);
+  `__typename` stays available. TypeScript only checks the `IntrospectionQuery` operation name and the `__schema` text,
+  so `{ __type(name: "Mutation") { fields { name args { name } } } }` still revealed the schema type by type.
 * `Date` scalar: values are written with milliseconds and `Z` from the Java date types and from ISO strings
   (TypeScript only accepts `Date` objects); inputs parse with `Dates.parse` (ISO instants, offsets, local date-times
   taken as UTC — JavaScript takes them as local time —, plain dates as UTC midnight; RFC 2822 is not accepted) and

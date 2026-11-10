@@ -23,7 +23,12 @@ import graphql.ExecutionResult;
 import graphql.GraphQLError;
 import graphql.language.Definition;
 import graphql.language.Document;
+import graphql.language.Field;
+import graphql.language.FragmentDefinition;
+import graphql.language.InlineFragment;
 import graphql.language.OperationDefinition;
+import graphql.language.Selection;
+import graphql.language.SelectionSet;
 import graphql.parser.Parser;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.validation.InvalidSchemaException;
@@ -224,8 +229,10 @@ public class BoosterGraphQLDispatcher {
         throw new GraphQLErrorsException(errors);
       }
       OperationDefinition operationData = getOperationAST(queryDocument, operation.operationName());
+      // TypeScript only checks the operation name and the "__schema" text; `__type` reveals the schema too
       boolean isIntrospectionQuery = "IntrospectionQuery".equals(operation.operationName())
-          || operation.query().contains("__schema");
+          || operation.query().contains("__schema")
+          || selectsIntrospectionFields(queryDocument);
       if (isIntrospectionQuery && !config.enableGraphQLIntrospection) {
         throw new InvalidProtocolError(
             "Instrospection queries are disabled. Check the configuration if you want to enable them.");
@@ -257,6 +264,42 @@ public class BoosterGraphQLDispatcher {
       result.put("errors", GraphQLExecution.formatErrors(errors, true));
       return result;
     }
+  }
+
+  /**
+   * Whether any operation or fragment of the document selects {@code __schema} or {@code __type} (at any depth, through
+   * inline fragments too); {@code __typename} is not introspection.
+   */
+  static boolean selectsIntrospectionFields(Document document) {
+    for (Definition<?> definition : document.getDefinitions()) {
+      SelectionSet selectionSet = switch (definition) {
+        case OperationDefinition operationDefinition -> operationDefinition.getSelectionSet();
+        case FragmentDefinition fragmentDefinition -> fragmentDefinition.getSelectionSet();
+        default -> null;
+      };
+      if (selectsIntrospectionFields(selectionSet)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean selectsIntrospectionFields(SelectionSet selectionSet) {
+    if (selectionSet == null) {
+      return false;
+    }
+    for (Selection<?> selection : selectionSet.getSelections()) {
+      boolean found = switch (selection) {
+        case Field field -> "__schema".equals(field.getName()) || "__type".equals(field.getName())
+            || selectsIntrospectionFields(field.getSelectionSet());
+        case InlineFragment inlineFragment -> selectsIntrospectionFields(inlineFragment.getSelectionSet());
+        default -> false; // fragment spreads: their definitions are checked on their own
+      };
+      if (found) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /** {@code graphql.validate(schema, document)}, which first asserts that the schema is valid. */

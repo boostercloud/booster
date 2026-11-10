@@ -495,7 +495,7 @@ modules and are not listed. "Integration" refers to `integration.*IntegrationTes
 | F231 | `{query, variables}` → `{data}` / `{errors}` | `BoosterGraphQLDispatcherTest#runsTheOperationWithTheResolverContext` | covered |
 | F232 | URL paths | — | elsewhere: providers |
 | F233 | queries and mutations over the websocket | Integration `SubscriptionsIntegrationTest#queriesAndMutationsThroughTheSocketAnswerDataAndComplete` | covered |
-| F234 | introspection enabled | `BoosterGraphQLDispatcherTest#isEnabledWithTheDefaultConfig` | covered |
+| F234 | introspection enabled (disabled: `__schema` and `__type` refused, see security-6) | `BoosterGraphQLDispatcherTest#isEnabledWithTheDefaultConfig`, `#canBeDisabled`, `#blocksTypeQueriesToo` | covered |
 | F235 | class-typed nested properties get nested filters and sorts; others `JSON` | `GraphQLQueryHelpersTest#nestsTheFiltersOfApplicationClasses`, `#sortsEveryStoredPropertyWithOrderPropertyExceptApplicationClasses` | covered |
 | F236 | `CommandName(input: {...})` → `true` for `void` | `GraphQLGeneratorTest#returnsTrueWhenTheCommandReturnsNothing` | covered |
 | F237 | read model by id | Integration `ReadModelQueriesIntegrationTest#findsAReadModelById` | covered |
@@ -629,3 +629,4 @@ divergence is also listed in README "Differences from TypeScript".
 | Ref | Java behaviour (TypeScript) | Java test | Status |
 | --- | --- | --- | --- |
 | security-1 | the subscription pub-sub evaluates every top-level property, operator and nested property, plus `and`/`or`/`not` and `isDefined` (TypeScript: the first property decides, so a validating before hook can be bypassed with a second filter property) | `services.pubsub.FilteredReadModelPubSubTest#aValidatingBeforeHookCannotBeBypassedWithAnotherFilterProperty`, `#filtersAddedByABeforeHookAfterTheClientOnesApplyToo`, `#everyTopLevelPropertyMustMatch`, `#everyNestedPropertyMustMatch`, `#andOrAndNotCombineFilters`, `#isDefinedChecksThatThePropertyHasAValue` | differs (security) |
+| security-6 | with introspection disabled, `__type` selections (aliases, fragments, inline fragments) are refused too; `__typename` is allowed (TypeScript: operation name `IntrospectionQuery` or the text `__schema` only) | `BoosterGraphQLDispatcherTest#blocksTypeQueriesToo`, `#stillAnswersTypeQueriesWhenEnabledAndTypenameWhenDisabled` | differs (security) |
