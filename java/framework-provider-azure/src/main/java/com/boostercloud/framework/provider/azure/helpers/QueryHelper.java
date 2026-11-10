@@ -34,7 +34,11 @@ import java.util.regex.Pattern;
  *
  * <p>The SQL text, the placeholder names and the parameter order are exactly the TypeScript ones (whitespace
  * included), and so are the quirks documented in the module README (two independent walks for the SQL and the
- * parameters, lower-case {@code and}/{@code or}, verbatim property names and sort directions).
+ * parameters, lower-case {@code and}/{@code or}, verbatim sort directions). One deliberate difference: filter property
+ * names are SQL data, never SQL text. They are written as escaped string literals in the {@code ["…"]} accessors and
+ * reduced to identifier characters in placeholder names, because the keys of a JSON-typed filter are chosen by the
+ * GraphQL client (TypeScript pastes them verbatim, an SQL injection). For identifier-like names the output is
+ * unchanged.
  */
 public final class QueryHelper {
 
@@ -43,6 +47,7 @@ public final class QueryHelper {
 
   private static final Pattern DISTINCT_QUERY = Pattern.compile("SELECT\\s+DISTINCT\\s+", Pattern.CASE_INSENSITIVE);
   private static final Pattern LEGACY_CURSOR = Pattern.compile("^\\d+$");
+  private static final Pattern PLACEHOLDER_UNSAFE = Pattern.compile("[^A-Za-z0-9_]");
 
   private QueryHelper() {}
 
@@ -310,7 +315,7 @@ public final class QueryHelper {
 
   private static String buildOperation(String propName, Object filter, List<String> usedPlaceholders, String nested) {
     BiFunction<Integer, Integer, String> holder = placeholderBuilderFor(propName, usedPlaceholders);
-    String property = nested != null ? nested + "[\"" + propName + "\"]" : "c[\"" + propName + "\"]";
+    String property = (nested != null ? nested : "c") + "[" + propertyLiteral(propName) + "]";
     List<String> parts = new ArrayList<>();
     int index = 0;
     for (Map.Entry<String, Object> entry : entries(filter)) {
@@ -352,14 +357,29 @@ public final class QueryHelper {
   }
 
   /**
+   * The property name as a Cosmos DB SQL string literal for the {@code ["…"]} accessor: JSON string escaping, which
+   * the Cosmos DB grammar accepts (escaped quote, backslash and control characters). For the names TypeScript
+   * handles correctly this is exactly {@code "<name>"}. TypeScript pastes the name verbatim, so a filter key chosen by
+   * a GraphQL client (the keys of a JSON-typed filter) could close the accessor and inject SQL (README, "Differences
+   * from TypeScript").
+   */
+  private static String propertyLiteral(String propName) {
+    return BoosterJson.toJson(propName);
+  }
+
+  /**
    * {@code placeholderBuilderFor}: {@code @<prop>_<index>[_<subIndex>]}; on a collision it retries with
-   * {@code index + 1} and no sub-index.
+   * {@code index + 1} and no sub-index. Every character of {@code <prop>} other than an ASCII letter, digit or
+   * {@code _} is written as {@code _} (TypeScript pastes the name verbatim: an injection point, and an invalid
+   * parameter name for any such character); collisions this creates are resolved by the retry rule, identically in
+   * the SQL walk and the parameter walk.
    */
   private static BiFunction<Integer, Integer, String> placeholderBuilderFor(String propName, List<String> used) {
+    String safeName = PLACEHOLDER_UNSAFE.matcher(propName).replaceAll("_");
     return new BiFunction<>() {
       @Override
       public String apply(Integer valueIndex, Integer valueSubIndex) {
-        String placeholder = "@" + propName + "_" + valueIndex + (valueSubIndex != null ? "_" + valueSubIndex : "");
+        String placeholder = "@" + safeName + "_" + valueIndex + (valueSubIndex != null ? "_" + valueSubIndex : "");
         if (used.contains(placeholder)) {
           return placeholderBuilderFor(propName, used).apply(valueIndex + 1, null);
         }

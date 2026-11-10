@@ -123,6 +123,17 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
   * Cross-partition queries support `VALUE` aggregates only: a non-`VALUE` aggregate (`SELECT COUNT(1) AS total`) or a
     `GROUP BY` is rejected with an `UnsupportedOperationException` instead of returning per-partition partial results
     (the JS SDK has a client-side `GROUP BY` pipeline for them; Booster's runtime queries use neither).
+* **Filter property names are data, not SQL text (security).** TypeScript's `query-helper.ts` pastes every filter key
+  into the query as `c["<key>"]` and into the placeholder name `@<key>_<n>`. The keys of a JSON-typed filter (map,
+  union, interface or external-class properties get the `JSON` scalar as their filter, for example
+  `ProductReadModel.productDetails`) are chosen by the GraphQL client through a variable, so a key such as
+  `x"]) OR (1=1) OR IS_DEFINED(c["x` turned the `WHERE` clause into `… AND IS_DEFINED(c["productDetails"]["x"]) OR
+  (1=1) OR …` and returned every document, defeating the row filters `before` hooks add. `QueryHelper` writes each
+  key as an escaped string literal (`c["productDetails"]["x\"]) OR …"]`) and replaces every character other than
+  ASCII letters, digits and `_` with `_` in placeholder names (`@a_OR_1_1_OR_c_x_0`; collisions get the next index,
+  identically in the SQL and parameter walks). Identifier-like keys, the only ones the TypeScript code handles
+  correctly, produce exactly the TypeScript SQL. Projections and sort keys still come only from GraphQL field names
+  (GraphQL `Name`s) or application code and are written as in TypeScript.
 * **Queries that pin the partition key pass it** (`readEntityEventsSince`, `readEntityLatestSnapshot`,
   `fetchSubscriptions`, connection queries), so they run as single-partition queries without a query plan. The SQL
   text and parameters are the TypeScript ones.
