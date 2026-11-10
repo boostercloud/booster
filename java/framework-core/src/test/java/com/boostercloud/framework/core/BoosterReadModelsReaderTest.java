@@ -226,10 +226,25 @@ class BoosterReadModelsReaderTest extends BoosterTestSupport {
       }
     }
 
+    /**
+     * TypeScript asserts a single {@code migrate} call here because {@code createInstance} turns the array into one
+     * object (spec 07, D1); the port returns every element of a sequenced read model migrated, as documented.
+     */
     @Test
-    void callsMigrateOnceWhenItGotAnArray() {
+    void migratesEveryElementWhenItGotAnArray() {
       try (MockedConstruction<ReadModelSchemaMigrator> migrators = identityMigrator()) {
         Object result = findById(List.of(raw("id", "1"), raw("id", "2")), request());
+
+        assertThat(migrators.constructed()).hasSize(1);
+        assertThat(migrateCalls(migrators)).isEqualTo(2);
+        assertThat(result).isEqualTo(List.of(new TestReadModel(UUID.of("1")), new TestReadModel(UUID.of("2"))));
+      }
+    }
+
+    @Test
+    void migratesOnceForASingleElementArray() {
+      try (MockedConstruction<ReadModelSchemaMigrator> migrators = identityMigrator()) {
+        Object result = findById(List.of(raw("id", "1")), request());
 
         assertThat(migrateCalls(migrators)).isEqualTo(1);
         assertThat(result).isEqualTo(List.of(new TestReadModel(UUID.of("1"))));

@@ -81,8 +81,8 @@ public class BoosterReadModelsReader {
    * {@code findById(readModelRequest)}: validates (including the sequence key name), applies the {@code before}
    * hooks, then looks the key of the <b>transformed</b> request up with {@code Booster.readModel(cls).findById(id,
    * sequenceKey)} (the global configuration, as in TypeScript). A found read model is schema-migrated and returned as
-   * an instance of the read model class; a list (sequenced read models) gives a one-element list with the first
-   * element migrated; nothing found returns {@code null}.
+   * an instance of the read model class; a list (sequenced read models) gives the list of every element migrated, in
+   * order; nothing found returns {@code null}.
    *
    * @param readModelRequest the request
    * @return the read model, or the list of read models for sequenced read models
@@ -108,8 +108,8 @@ public class BoosterReadModelsReader {
             ReadModelSchemaMigrator readModelSchemaMigrator = new ReadModelSchemaMigrator(config);
             if (currentReadModel instanceof List<?> readModels) {
               List<Object> migrated = new ArrayList<>();
-              if (!readModels.isEmpty()) {
-                migrated.add(migratedInstance(readModelSchemaMigrator, readModelClass, readModelName, readModels.get(0)));
+              for (Object readModel : readModels) {
+                migrated.add(migratedInstance(readModelSchemaMigrator, readModelClass, readModelName, readModel));
               }
               return migrated;
             }
