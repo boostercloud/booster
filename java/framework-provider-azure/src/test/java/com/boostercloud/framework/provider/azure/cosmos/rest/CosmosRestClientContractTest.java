@@ -510,6 +510,26 @@ class CosmosRestClientContractTest {
     }
 
     @Test
+    void nonValueAggregatesAndGroupByAreRejectedInsteadOfReturningPartialResults() {
+      String nonValuePlan = Fixtures.read("cosmos/query-plan-count.json")
+          .replace("\"hasSelectValue\": true", "\"hasSelectValue\": false");
+      server.enqueue(Response.json(200, nonValuePlan));
+      assertThatThrownBy(() -> events(client()).items()
+          .query(new SqlQuerySpec("SELECT COUNT(1) as total FROM c", List.of())).fetchAll())
+          .isInstanceOf(UnsupportedOperationException.class)
+          .hasMessage("Cross-partition aggregate queries must use SELECT VALUE with the Booster Cosmos DB REST client: "
+              + "SELECT COUNT(1) as total FROM c");
+
+      String groupByPlan = Fixtures.read("cosmos/query-plan-count.json")
+          .replace("\"groupByExpressions\": []", "\"groupByExpressions\": [\"c.kind\"]");
+      server.enqueue(Response.json(200, groupByPlan));
+      assertThatThrownBy(() -> events(client()).items()
+          .query(new SqlQuerySpec("SELECT VALUE COUNT(1) FROM c GROUP BY c.kind", List.of())).fetchAll())
+          .isInstanceOf(UnsupportedOperationException.class)
+          .hasMessageStartingWith("Cross-partition GROUP BY queries are not supported");
+    }
+
+    @Test
     void topIsAppliedAfterMergingTheRanges() {
       server.enqueue(Fixtures.response("cosmos/query-plan-top.json", 200))
           .enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
