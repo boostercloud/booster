@@ -6,7 +6,9 @@ generates resources and builds, runs, deploys and removes applications. It is bu
 (Maven and the application's own main class): it has no dependency on the framework modules.
 
 - Module: `java/cli` (artifact `com.boostercloud:booster-cli`), base package `com.boostercloud.cli`.
-- Entry point: `com.boostercloud.cli.Main` (`bin/run` in TypeScript).
+- Entry point: `com.boostercloud.cli.Main` (`bin/run` in TypeScript). The jar's `Main-Class` is
+  `com.boostercloud.cli.launcher.JavaVersionCheck` (`src/main/java8`, compiled with `--release 8`), which runs `Main`
+  after checking the Java version.
 - Executable: `target/booster-cli-<version>.jar` (shaded) and the launchers `bin/boost` / `bin/boost.cmd`. The
   shaded jar is the main artifact, and the pom installed or deployed with it is the dependency-reduced one
   (`target/dependency-reduced-pom.xml`), without picocli and Mustache, which are inside the jar.
@@ -21,8 +23,11 @@ boost --version                                          # booster-cli/4.1.0 dar
 
 `bin/boost` follows symbolic links and looks for the jar in `$BOOSTER_CLI_JAR`, then `../lib/booster-cli.jar`
 (an installed layout: copy `bin/` and the jar renamed to `lib/booster-cli.jar`), then `../target/booster-cli-*.jar`.
-It runs the jar with `$JAVA_HOME/bin/java` (or `java` from the `PATH`), which must be Java 27 or newer; extra JVM
-options go in `$BOOST_JAVA_OPTS`. New projects depend on `com.boostercloud` artifacts with the CLI's version, so
+It runs the jar with `$JAVA_HOME/bin/java` (or `java` from the `PATH`, with a warning when `JAVA_HOME` is set but
+has no `bin/java`), which must be Java 27 or newer; extra JVM options go in `$BOOST_JAVA_OPTS`. On an older Java the
+jar stops with `boost: Java 27 or newer is required, but found Java 21 at <java.home>...` and exit code 1: its entry
+point is compiled for Java 8, so the old JVM can load it (TypeScript's `bin/run` does not check the Node.js version
+at all). New projects depend on `com.boostercloud` artifacts with the CLI's version, so
 those artifacts must be resolvable (for the port: `mvn -B install` from `java/`).
 
 ## Commands

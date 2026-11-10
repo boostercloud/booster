@@ -13,5 +13,7 @@ if "%JAR%"=="" echo boost: cannot find the Booster CLI jar. Build it with "mvn -
 if "%JAR%"=="" exit /b 1
 set "JAVA=java"
 if not "%JAVA_HOME%"=="" if exist "%JAVA_HOME%\bin\java.exe" set "JAVA=%JAVA_HOME%\bin\java.exe"
+if not "%JAVA_HOME%"=="" if not exist "%JAVA_HOME%\bin\java.exe" echo boost: JAVA_HOME is set to "%JAVA_HOME%", which has no bin\java.exe; using java from the PATH. 1>&2
+rem The jar's entry point runs on Java 8+ and stops with a clear message when this Java is older than the CLI's release
 "%JAVA%" -XX:TieredStopAtLevel=1 -XX:+UseSerialGC %BOOST_JAVA_OPTS% -jar "%JAR%" %*
 exit /b %ERRORLEVEL%
