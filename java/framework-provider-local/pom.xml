@@ -28,5 +28,11 @@
       <groupId>org.eclipse.jetty.websocket</groupId>
       <artifactId>jetty-websocket-jetty-server</artifactId>
     </dependency>
+    <!-- Jetty logs through SLF4J; the tests route it to the no-op binding (the infrastructure module ships it) -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 </project>

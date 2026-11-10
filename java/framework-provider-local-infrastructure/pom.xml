@@ -13,7 +13,7 @@
 
   <artifactId>booster-framework-provider-local-infrastructure</artifactId>
   <name>Booster local provider infrastructure</name>
-  <description>Local HTTP/WebSocket server, scheduler and test helper.</description>
+  <description>Local HTTP server (GraphQL, health, rockets), scheduler and test helper.</description>
 
   <dependencies>
     <dependency>
@@ -21,12 +21,22 @@
       <artifactId>booster-framework-provider-local</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-common-helpers</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
     </dependency>
+    <!-- Jetty logs through SLF4J; Booster code does not, so Jetty's output goes to the no-op binding -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
 </project>

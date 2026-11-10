@@ -1,0 +1,5 @@
+{"$$indexCreated":{"fieldName":"uniqueKey","unique":true,"sparse":true}}
+{"typeName":"CartReadModel","value":{"id":"cart-1","cartItems":[{"productId":"p-1","quantity":2}],"checks":0,"boosterMetadata":{"version":1,"schemaVersion":1}},"uniqueKey":"CartReadModel_cart-1_1","_id":"Qw3eRt5yUi7oPa9s"}
+{"typeName":"CartReadModel","value":{"id":"cart-1","cartItems":[{"productId":"p-1","quantity":2},{"productId":"p-2","quantity":1}],"checks":1,"boosterMetadata":{"version":2,"schemaVersion":1,"lastUpdateAt":"2026-11-10T09:15:28.060Z"}},"uniqueKey":"CartReadModel_cart-1_2","_id":"Qw3eRt5yUi7oPa9s"}
+{"typeName":"CartReadModel","value":{"id":"cart-2","cartItems":[],"checks":3,"boosterMetadata":{"version":1,"schemaVersion":1}},"uniqueKey":"CartReadModel_cart-2_1","_id":"Aa1Bb2Cc3Dd4Ee5F"}
+{"typeName":"ProductReadModel","value":{"id":"p-1","price":{"cents":100,"currency":"EUR"},"tags":["new","eco"],"boosterMetadata":{"version":1,"schemaVersion":1}},"uniqueKey":"ProductReadModel_p-1_1","_id":"Pp1Pp1Pp1Pp1Pp1P"}
