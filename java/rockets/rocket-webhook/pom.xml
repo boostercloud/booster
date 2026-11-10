@@ -16,17 +16,53 @@
   <description>Webhook rocket (types, core, local and Azure infrastructure).</description>
 
   <dependencies>
+    <!-- types + core: what every application using the rocket needs at runtime -->
     <dependency>
       <groupId>com.boostercloud</groupId>
       <artifactId>booster-framework-core</artifactId>
     </dependency>
+
+    <!--
+      The provider parts (TypeScript: the separate -local-infrastructure / -azure-infrastructure npm packages) are
+      optional: an application already depends on the provider (and its infrastructure) it runs on, and does not get
+      the other provider's libraries through this rocket.
+    -->
     <dependency>
       <groupId>com.boostercloud</groupId>
       <artifactId>booster-framework-provider-local-infrastructure</artifactId>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-azure</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>com.boostercloud</groupId>
       <artifactId>booster-framework-provider-azure-infrastructure</artifactId>
+      <optional>true</optional>
+    </dependency>
+
+    <!-- Tests: the application tester drives the in-process end-to-end application -->
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-application-tester</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- The end-to-end application is configured for the 'test' environment -->
+          <systemPropertyVariables>
+            <booster.env>test</booster.env>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
