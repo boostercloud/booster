@@ -10,6 +10,7 @@ import com.boostercloud.framework.core.integration.app.entities.Cart;
 import com.boostercloud.framework.core.integration.app.notifications.CartAbandoned;
 import com.boostercloud.framework.core.integration.inmemory.InMemoryRequests.RocketRequest;
 import com.boostercloud.framework.core.integration.inmemory.InMemoryRequests.ScheduledTrigger;
+import com.boostercloud.framework.types.BoosterJson;
 import com.boostercloud.framework.types.concepts.UUID;
 import com.boostercloud.framework.types.envelope.EventDeleteParameters;
 import com.boostercloud.framework.types.envelope.EventEnvelope;
@@ -189,6 +190,28 @@ class EventsIntegrationTest extends IntegrationTestSupport {
     assertThat(second.items()).hasSize(2);
     assertThat(List.of(first.items(), second.items()).stream().flatMap(List::stream).map(item -> item.entityID().value()))
         .containsExactlyInAnyOrder("cart-0", "cart-1", "cart-2", "cart-3", "cart-4");
+  }
+
+  @Test
+  void eventsCanGoThroughAnEventStream() {
+    provider.events().autoDispatch(false);
+    changeCart("cart-1", "p1", 2, null);
+    changeCart("cart-2", "p1", 3, null);
+    List<EventEnvelope> stored = provider.events().events();
+
+    app.boosterProduceEventStream(stored);
+    List<Object> messages = provider.events().produced().stream().<Object>map(BoosterJson::toRawMap).toList();
+    assertThat(provider.events().produced()).extracting(EventEnvelope::entityID)
+        .containsExactlyInAnyOrder(UUID.of("cart-1"), UUID.of("cart-2"));
+    assertThat(provider.readModels().documents("CartReadModel")).isEmpty();
+
+    app.boosterConsumeEventStream(messages);
+    app.boosterConsumeEventStream(messages);
+
+    assertThat(AppState.EVENTS).containsExactlyInAnyOrder("CartItemChanged", "CartItemChanged");
+    assertThat(data(graphQL("{ CartReadModels(filter: {}) { id totalQuantity } }")).get("CartReadModels"))
+        .asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.LIST)
+        .containsExactlyInAnyOrder(map("id", "cart-1", "totalQuantity", 2.0), map("id", "cart-2", "totalQuantity", 3.0));
   }
 
   @Test

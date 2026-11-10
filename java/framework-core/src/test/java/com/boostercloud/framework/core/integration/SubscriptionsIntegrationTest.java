@@ -73,12 +73,16 @@ class SubscriptionsIntegrationTest extends IntegrationTestSupport {
     changeCart("cart-2", 5);
     changeCart("cart-1", 2);
 
-    assertThat(socketMessages(CONNECTION)).containsExactly(
-        Map.of("type", "connection_ack"),
-        Map.of("type", "data", "id", "sub-1", "payload",
-            Map.of("data", Map.of("CartReadModel", map("id", "cart-1", "checks", 0, "totalQuantity", 2)))),
-        Map.of("type", "data", "id", "sub-1", "payload",
-            Map.of("data", Map.of("CartReadModel", map("id", "cart-1", "checks", 1, "totalQuantity", 2)))));
+    // Two projections (after CartItemChanged, then after the CartChecked its handler registered): the first one may
+    // already include the check, since the handler and the projection of an event run concurrently
+    List<Map<String, Object>> messages = socketMessages(CONNECTION);
+    assertThat(messages).hasSize(3);
+    assertThat(messages.getFirst()).isEqualTo(Map.of("type", "connection_ack"));
+    assertThat(messages.get(1)).containsEntry("type", "data").containsEntry("id", "sub-1");
+    assertThat(mapAt(messages.get(1), "payload", "data", "CartReadModel"))
+        .containsEntry("id", "cart-1").containsEntry("totalQuantity", 2);
+    assertThat(messages.get(2)).isEqualTo(Map.of("type", "data", "id", "sub-1", "payload",
+        Map.of("data", Map.of("CartReadModel", map("id", "cart-1", "checks", 1, "totalQuantity", 2)))));
   }
 
   @Test
@@ -89,9 +93,11 @@ class SubscriptionsIntegrationTest extends IntegrationTestSupport {
     changeCart("cart-1", 1);
     changeCart("cart-2", 1);
 
+    // Each cart is projected twice; the first projection only matches when it already includes the check
     assertThat(socketMessages(CONNECTION)).filteredOn(message -> "data".equals(message.get("type")))
         .extracting(message -> at(message, "payload", "data", "CartReadModels"))
-        .containsExactly(map("id", "cart-1", "checks", 1), map("id", "cart-2", "checks", 1));
+        .containsOnly(map("id", "cart-1", "checks", 1), map("id", "cart-2", "checks", 1))
+        .contains(map("id", "cart-1", "checks", 1), map("id", "cart-2", "checks", 1));
   }
 
   @Test

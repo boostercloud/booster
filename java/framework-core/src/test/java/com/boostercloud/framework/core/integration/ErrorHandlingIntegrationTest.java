@@ -44,6 +44,24 @@ class ErrorHandlingIntegrationTest extends IntegrationTestSupport {
   }
 
   @Test
+  void aFailingReducerStopsTheReductionAndIsLoggedWhenTheHandlerHasNoReducerHook() {
+    Map<String, Object> result = graphQL(
+        "mutation { UpdateProduct(input: {productId: \"ghost\", displayName: \"Ghost\", price: 1}) }",
+        TestTokens.admin());
+
+    assertThat(data(result)).isEqualTo(Map.of("UpdateProduct", true));
+    assertThat(provider.events().events()).singleElement()
+        .satisfies(event -> assertThat(event.typeName()).isEqualTo("ProductUpdated"));
+    assertThat(provider.events().snapshots()).isEmpty();
+    assertThat(provider.readModels().documents("ProductReadModel")).isEmpty();
+    // As in TypeScript, a missing specific hook (onReducerError) rethrows the error, so onError is not called
+    assertThat(AppState.ERRORS).isEmpty();
+    assertThat(RecordingLogger.INSTANCE.errors()).extracting(RecordingLogger.Line::text).anySatisfy(line -> assertThat(line)
+        .contains("Unhandled error inside the global error handler. When handling error NullPointerException")
+        .contains("\"current\" is null"));
+  }
+
+  @Test
   void syntaxErrorsAreReported() {
     Map<String, Object> result = graphQL("{ CartReadModel(id: ");
 
