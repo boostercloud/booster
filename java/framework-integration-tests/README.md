@@ -243,6 +243,23 @@ Harness and suites:
 * The AWS gates of `delete.events`, `entities > Data migration`, `events > Query events ids` and `health` are
   `assumeFalse` in a `@BeforeAll`, after the TypeScript warning lines (AWS never runs here). Chai's `undefined` checks
   on JSON fields are key checks (`containsKey`/`doesNotContainKey`), so a `null` value counts as present, as in chai.
+* `ReadModelsIT` (`read-models.integration.ts`): `should return exceptions thrown by before functions` also only
+  asserts in a `catch` block in TypeScript; the port requires the error. The searches without `limit` (`projecting
+  fields > with paginatedVersion true`, `query with fragments > should retrieve list of items`, `projecting
+  calculated fields > ... via code`) expect `cursor.id === '100'` on Azure and Local, but only Azure's default page
+  size produces it: the local provider (TypeScript `read-model-adapter.ts` and Java alike) returns
+  `(limit ?? 1) + offset`, i.e. `'1'`. Those cursor assertions run on Azure only, and one additional local test per
+  context pins `{ id: '1' }`. The `query using pagination` context re-awaits, in TypeScript, the already settled
+  promises of earlier `beforeEach` runs; the port only runs the new mutations. The regex/iRegex/sort tests that
+  TypeScript ends with an early `return` on other providers are JUnit assumptions (reported as skipped).
+* Mocha runs the tests of a `describe` before its nested `describe`s (`read-models.integration.ts > projections`
+  declares its car-domain `it`s after two nested blocks); JUnit runs a class's methods before its `@Nested` classes
+  too, so the order is the TypeScript one.
+* Additional end-to-end tests not in TypeScript: `ReadModelConcurrencyIT > With concurrent events of the same entity`
+  (every concurrent event bumps the read model version once, no write lost to the optimistic concurrency check) and
+  `ReadModelsIT > Query read models > filters, sorting and pages the TypeScript suite leaves uncovered`
+  (`beginsWith`, `contains`/`in` on plain strings, `not`, `gt`/`gte`/`lt`/`lte`/`in` on numbers, ascending nested
+  sort, walking every page of a sorted search with its cursors, and the before hook rewriting a list filter).
 * `AppHelper` supports `AZURE` and `LOCAL` (AWS is not ported); `getProviderTestHelper(LocalTestHelper.Options)` lets
   the harness pass the ports and directory of the application it launched.
 * `Faker` is a small generator with faker 5's call names (the build allows no extra library): values have the
@@ -267,3 +284,7 @@ Harness and suites:
   `endtoend.CommandsIT` (§8.2), with the shared application.
 * `-Pe2e`: `endtoend.DeleteEventsIT` (§8.3), `endtoend.EntitiesIT` (§8.4), `endtoend.EventsIT` (§8.5),
   `endtoend.HealthIT` (§8.6) and `endtoend.QueriesIT` (§8.7), with the shared application.
+* `-Pe2e`: `endtoend.ReadModelConcurrencyIT` (§8.8) and `endtoend.ReadModelsIT` (§8.9: by-id and list queries,
+  before hooks, every filter operator, sorting, limits and cursors, field and calculated-field projections from GraphQL
+  and code, fragments, projections with entity, array and read-model join keys, read-model authorization), with the
+  shared application.
