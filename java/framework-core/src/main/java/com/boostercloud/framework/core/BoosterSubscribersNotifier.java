@@ -18,7 +18,6 @@ import com.boostercloud.framework.types.instrumentation.TraceActionTypes;
 import com.boostercloud.framework.core.services.graphql.GraphQLExecution;
 import graphql.ExecutionResult;
 import graphql.GraphQLError;
-import graphql.ParseAndValidate;
 import graphql.language.Document;
 import graphql.parser.Parser;
 import graphql.schema.GraphQLSchema;
@@ -185,7 +184,7 @@ public class BoosterSubscribersNotifier {
   private Document parseSubscriptionQuery(String query) {
     Document document = Parser.parse(query);
     // We probably don't need to validate this again, as it was validated before storing it. BUT! It's always better to fail early
-    List<ValidationError> errors = ParseAndValidate.validate(graphQLSchema, document);
+    List<ValidationError> errors = GraphQLExecution.validate(graphQLSchema, document);
     if (!errors.isEmpty()) {
       throw new GraphQLErrors(new ArrayList<>(errors));
     }

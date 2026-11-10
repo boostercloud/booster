@@ -16,12 +16,17 @@ import graphql.language.Document;
 import graphql.language.SourceLocation;
 import graphql.parser.InvalidSyntaxException;
 import graphql.schema.GraphQLSchema;
+import graphql.validation.OperationValidationRule;
+import graphql.validation.QueryComplexityLimits;
+import graphql.validation.ValidationError;
+import graphql.validation.Validator;
 import java.io.Serial;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -37,6 +42,10 @@ import java.util.concurrent.ExecutionException;
  *   <li>A resolver failure becomes an error whose message is the thrown error's message (graphql-java's default
  *       handler would write {@code Exception while fetching data (/path) : ...}), with the field location and path,
  *       keeping the thrown error as its original error.</li>
+ *   <li>{@link #validate(GraphQLSchema, Document) validate} applies the GraphQL specification's rules only, like
+ *       graphql-js {@code validate(schema, document)}: graphql-java's own additions, the "good faith introspection"
+ *       rule (which rejects, for instance, a {@code __Type.inputFields} selected inside another one) and the query
+ *       complexity limits, are left out.</li>
  *   <li>{@link #formatError(Object, boolean) formatError(error, true)} is the dispatcher's
  *       {@code toGraphQLErrorWithExtensions}: {@code { message, locations?, path?, extensions: { code?, data? } }}
  *       where {@code code}/{@code data} come from the original {@link BoosterError} (the error class name by default),
@@ -82,6 +91,21 @@ public final class GraphQLExecution {
       input.variables(variables);
     }
     return graphQL.execute(input.build());
+  }
+
+  /**
+   * graphql-js {@code validate(schema, document)}: the rules of the GraphQL specification ({@code specifiedRules}),
+   * with the messages in English. graphql-java also checks introspection queries in "good faith" (each of
+   * {@code __Type.fields}, {@code inputFields}, {@code interfaces}, {@code possibleTypes} at most once, limited depth
+   * and size) and applies query complexity limits; graphql-js has neither, so neither is applied.
+   *
+   * @param schema the schema
+   * @param document the parsed document
+   * @return the validation errors, empty when the document is valid
+   */
+  public static List<ValidationError> validate(GraphQLSchema schema, Document document) {
+    return new Validator().validateDocument(schema, document,
+        rule -> rule != OperationValidationRule.GOOD_FAITH_INTROSPECTION, Locale.ENGLISH, QueryComplexityLimits.NONE);
   }
 
   /**

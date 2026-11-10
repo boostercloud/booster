@@ -197,6 +197,24 @@ class BoosterGraphQLDispatcherTest extends BoosterTestSupport {
 
       assertThat(handledResult(Map.of())).isEqualTo(Map.of("data", Map.of("__type", Map.of("name", "Query"))));
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void answersTypeQueriesThatLookIntoNestedTypes() {
+      // graphql-js validates with the specification rules only; graphql-java's "good faith introspection" rule would
+      // reject a second __Type.fields (or inputFields) with "__Type.fields" (functionality/schema.filter.integration.ts)
+      BoosterGraphQLDispatcher dispatcher = dispatcherFor(message()
+          .value(operation("{ __type(name: \"Query\") { name fields { name type { name fields { name } } } } }"))
+          .build());
+
+      dispatcher.dispatch("raw request");
+
+      Map<String, Object> result = handledResult(Map.of());
+      assertThat(result).containsOnlyKeys("data");
+      Map<String, Object> type = (Map<String, Object>) ((Map<String, Object>) result.get("data")).get("__type");
+      assertThat(type.get("name")).isEqualTo("Query");
+      assertThat((List<?>) type.get("fields")).isNotEmpty();
+    }
   }
 
   @Nested
