@@ -1,0 +1,21 @@
+package {{{packageName}}};
+
+{{#imports}}
+import {{{fqn}}};
+{{/imports}}
+
+@Command(authorize = /* Specify authorized roles here. Use All.class to authorize anyone */)
+{{#hasFields}}
+public record {{{name}}}(
+{{#fields}}
+    {{{type}}} {{{name}}}{{^last}},{{/last}}
+{{/fields}}
+) {
+{{/hasFields}}
+{{^hasFields}}
+public record {{{name}}}() {
+{{/hasFields}}
+  public static void handle({{{name}}} command, Register register) {
+    register.events(/* YOUR EVENT HERE */);
+  }
+}

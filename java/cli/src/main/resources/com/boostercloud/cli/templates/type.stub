@@ -1,0 +1,18 @@
+package {{{packageName}}};
+{{#hasImports}}
+
+{{/hasImports}}
+{{#imports}}
+import {{{fqn}}};
+{{/imports}}
+
+{{#hasFields}}
+public record {{{name}}}(
+{{#fields}}
+    {{{type}}} {{{name}}}{{^last}},{{/last}}
+{{/fields}}
+) {}
+{{/hasFields}}
+{{^hasFields}}
+public record {{{name}}}() {}
+{{/hasFields}}

@@ -1,0 +1,14 @@
+package {{{packageName}}};
+
+{{#imports}}
+import {{{fqn}}};
+{{/imports}}
+
+@ScheduledCommand(
+    // Specify schedule settings here. By default, it will be triggered every 30 minutes
+    minute = "0/30")
+public class {{{name}}} {
+  public static void handle(Register register) {
+    /* YOUR CODE HERE */
+  }
+}

@@ -1,0 +1,50 @@
+#!/bin/sh
+# Booster CLI launcher (the Java counterpart of packages/cli/bin/run).
+#
+# Finds the executable CLI jar and runs it with Java 27 or newer:
+#   1. $BOOSTER_CLI_JAR, when set;
+#   2. ../lib/booster-cli.jar next to this script (installed layout);
+#   3. ../target/booster-cli-<version>.jar (after `mvn package` in java/cli).
+# Java comes from $JAVA_HOME when it is set, otherwise from the PATH.
+# Extra JVM options can be passed with $BOOST_JAVA_OPTS.
+set -e
+
+# Resolve the directory of this script, following symbolic links (e.g. a link in /usr/local/bin)
+script="$0"
+while [ -h "$script" ]; do
+  link=$(ls -ld "$script" | sed 's/.*-> //')
+  case "$link" in
+    /*) script="$link" ;;
+    *) script="$(dirname "$script")/$link" ;;
+  esac
+done
+bin_dir=$(cd "$(dirname "$script")" && pwd -P)
+cli_dir=$(dirname "$bin_dir")
+
+jar="${BOOSTER_CLI_JAR:-}"
+if [ -z "$jar" ] && [ -f "$cli_dir/lib/booster-cli.jar" ]; then
+  jar="$cli_dir/lib/booster-cli.jar"
+fi
+if [ -z "$jar" ]; then
+  for candidate in "$cli_dir"/target/booster-cli-*.jar; do
+    case "$candidate" in
+      */original-*|*-sources.jar|*-javadoc.jar|*-tests.jar) ;;
+      *) [ -f "$candidate" ] && jar="$candidate" ;;
+    esac
+  done
+fi
+if [ -z "$jar" ] || [ ! -f "$jar" ]; then
+  echo "boost: cannot find the Booster CLI jar." >&2
+  echo "Build it with 'mvn -B package' in $cli_dir, or point BOOSTER_CLI_JAR at it." >&2
+  exit 1
+fi
+
+if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+  java="$JAVA_HOME/bin/java"
+else
+  java=java
+fi
+
+# A short-lived tool: favour start-up time (the user's application runs in its own JVM)
+# shellcheck disable=SC2086
+exec "$java" -XX:TieredStopAtLevel=1 -XX:+UseSerialGC -Xshare:auto ${BOOST_JAVA_OPTS:-} -jar "$jar" "$@"
