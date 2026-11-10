@@ -141,6 +141,31 @@ class GraphQLExecutionTest extends BoosterTestSupport {
     assertThat(result).isEqualTo(Map.of("data", Map.of("ProductReadModel", expected)));
   }
 
+  /** Read model with an asynchronous calculated field (TypeScript {@code get x(): Promise<number>}). */
+  @com.boostercloud.framework.core.decorators.ReadModel(authorize = com.boostercloud.framework.core.decorators.All.class)
+  public record AsyncPriceReadModel(UUID id, double price) {
+    @com.boostercloud.framework.core.decorators.CalculatedField(dependsOn = {"price"})
+    public java.util.concurrent.CompletableFuture<Double> doublePrice() {
+      return java.util.concurrent.CompletableFuture.supplyAsync(() -> price * 2,
+          java.util.concurrent.CompletableFuture.delayedExecutor(50, java.util.concurrent.TimeUnit.MILLISECONDS));
+    }
+  }
+
+  @Test
+  void waitsForAsynchronousCalculatedFieldsAndTypesThemWithTheirResult() {
+    GraphQLGenerator.reset();
+    Decorators.registerClass(AsyncPriceReadModel.class);
+    schema = GraphQLGenerator.generateSchema(Booster.config());
+    when(readModelsReaders.constructed().getLast().findById(any()))
+        .thenReturn(new AsyncPriceReadModel(UUID.of("p-1"), 21));
+
+    Map<String, Object> result = run("{ AsyncPriceReadModel(id: \"p-1\") { id doublePrice } }");
+
+    assertThat(graphql.schema.GraphQLTypeUtil.simplePrint(
+        schema.getObjectType("AsyncPriceReadModel").getFieldDefinition("doublePrice").getType())).isEqualTo("Float!");
+    assertThat(result).isEqualTo(Map.of("data", Map.of("AsyncPriceReadModel", Map.of("id", "p-1", "doublePrice", 42.0))));
+  }
+
   @Test
   void readsTheValuesOfRawDocuments() {
     when(readModelsReaders.constructed().getFirst().findById(any())).thenReturn(Map.of("id", "product-1",
