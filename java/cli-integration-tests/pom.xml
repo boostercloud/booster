@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.boostercloud</groupId>
+    <artifactId>booster-parent</artifactId>
+    <version>4.1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>booster-cli-integration-tests</artifactId>
+  <name>Booster CLI integration tests</name>
+  <description>
+    End-to-end tests of the boost CLI (packages/framework-integration-tests/integration/provider-unaware/cli):
+    the real bin/boost launcher creates, generates, builds, starts and deploys projects that are built against the
+    framework artifacts of this reactor, installed into an isolated Maven repository.
+  </description>
+
+  <properties>
+    <!-- Where the profile 'e2e' installs the framework artifacts; generated projects resolve them from there -->
+    <booster.it.repository>${project.build.directory}/booster-repo</booster.it.repository>
+    <!-- Sandboxes, the generated settings.xml and gitconfig, and the log of every CLI invocation -->
+    <booster.it.work>${project.build.directory}/booster-it</booster.it.work>
+  </properties>
+
+  <!--
+    Test scope only: the tests talk to the CLI and to the applications through processes, files and HTTP. The
+    framework modules are listed so that 'mvn -pl cli-integration-tests -am' builds (and the profile installs) every
+    artifact a generated project needs; the CLI so that its executable jar exists for bin/boost.
+  -->
+  <dependencies>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-cli</artifactId>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-local-infrastructure</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-azure-infrastructure</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-application-tester</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- No unit tests here: the *IT classes run only in the profile 'e2e' (failsafe); a plain build compiles them -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>e2e</id>
+      <build>
+        <plugins>
+          <!--
+            Installs the framework artifacts built by this reactor into an isolated local repository
+            (target/booster-repo), never into ~/.m2. The generated projects are built by the CLI with
+            MAVEN_ARGS="-s target/booster-it/maven/settings.xml", whose localRepository is this directory and whose
+            remote repositories are the user's local repository (file://, read-only) and Maven Central.
+          -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-install-plugin</artifactId>
+            <configuration>
+              <localRepositoryPath>${booster.it.repository}</localRepositoryPath>
+            </configuration>
+            <executions>
+              <execution>
+                <id>isolated-booster-parent</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../pom.xml</file>
+                  <pomFile>${project.basedir}/../pom.xml</pomFile>
+                  <packaging>pom</packaging>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-metadata</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../metadata-booster/target/booster-metadata-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../metadata-booster/pom.xml</pomFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-framework-types</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../framework-types/target/booster-framework-types-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../framework-types/pom.xml</pomFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-framework-common-helpers</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../framework-common-helpers/target/booster-framework-common-helpers-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../framework-common-helpers/pom.xml</pomFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-framework-core</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../framework-core/target/booster-framework-core-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../framework-core/pom.xml</pomFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-framework-provider-local</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../framework-provider-local/target/booster-framework-provider-local-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../framework-provider-local/pom.xml</pomFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-framework-provider-local-infrastructure</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../framework-provider-local-infrastructure/target/booster-framework-provider-local-infrastructure-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../framework-provider-local-infrastructure/pom.xml</pomFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-framework-provider-azure</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../framework-provider-azure/target/booster-framework-provider-azure-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../framework-provider-azure/pom.xml</pomFile>
+                </configuration>
+              </execution>
+              <execution>
+                <id>isolated-booster-framework-provider-azure-infrastructure</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>install-file</goal>
+                </goals>
+                <configuration>
+                  <file>${project.basedir}/../framework-provider-azure-infrastructure/target/booster-framework-provider-azure-infrastructure-${project.version}.jar</file>
+                  <pomFile>${project.basedir}/../framework-provider-azure-infrastructure/pom.xml</pomFile>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>integration-test</goal>
+                  <goal>verify</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <systemPropertyVariables>
+                <booster.version>${project.version}</booster.version>
+                <booster.it.cliHome>${project.basedir}/../cli</booster.it.cliHome>
+                <booster.it.cliJar>${project.basedir}/../cli/target/booster-cli-${project.version}.jar</booster.it.cliJar>
+                <booster.it.repository>${booster.it.repository}</booster.it.repository>
+                <booster.it.userRepository>${settings.localRepository}</booster.it.userRepository>
+                <booster.it.mavenHome>${maven.home}</booster.it.mavenHome>
+                <booster.it.work>${booster.it.work}</booster.it.work>
+              </systemPropertyVariables>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

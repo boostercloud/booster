@@ -33,6 +33,7 @@
     <module>rockets/rocket-webhook</module>
     <module>rockets/rocket-file-uploads</module>
     <module>cli</module>
+    <module>cli-integration-tests</module>
     <module>framework-integration-tests</module>
   </modules>
 
