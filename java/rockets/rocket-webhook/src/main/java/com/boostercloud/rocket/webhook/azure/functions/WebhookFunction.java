@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * {
  *   "bindings": [
  *     { "type": "httpTrigger", "direction": "in", "name": "request", "methods": ["POST", "GET"],
- *       "authLevel": "anonymous", "route": "clients/other" },
+ *       "authLevel": "anonymous", "route": "clients/other", "dataType": "binary" },
  *     { "type": "http", "direction": "out", "name": "$return" }
  *   ],
  *   "scriptFile": "../<app>.jar",
@@ -39,6 +39,12 @@ public final class WebhookFunction {
 
   /** The binding name {@code BoosterAzureFunctions.rocketHttp} reads. */
   public static final String REQUEST_BINDING = "request";
+
+  /**
+   * The body is bound as bytes, so multipart uploads reach the rocket unchanged (TypeScript reads
+   * {@code request.arrayBuffer()}).
+   */
+  public static final String DATA_TYPE = "binary";
 
   private static final Pattern NON_NAME_CHARACTERS = Pattern.compile("[^a-zA-Z0-9_]");
 
@@ -60,7 +66,8 @@ public final class WebhookFunction {
       throw new IllegalArgumentException("Webhook endpoint must be a non-empty string");
     }
     return new FunctionDefinition(functionName(endpoint), new FunctionConfig(
-        List.of(Binding.httpTrigger(REQUEST_BINDING, METHODS, AUTH_LEVEL, endpoint), Binding.httpReturn()),
+        List.of(Binding.httpTrigger(REQUEST_BINDING, METHODS, AUTH_LEVEL, endpoint).with("dataType", DATA_TYPE),
+            Binding.httpReturn()),
         FunctionAppLayout.scriptFile(config),
         BoosterAzureFunctions.ROCKET_HTTP_ENTRY_POINT));
   }

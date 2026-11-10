@@ -1,0 +1,58 @@
+=== clients_other/function.json
+{
+  "bindings": [
+    {
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "request",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "authLevel": "anonymous",
+      "route": "clients/other",
+      "dataType": "binary"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    }
+  ],
+  "scriptFile": "../test.jar",
+  "entryPoint": "com.boostercloud.framework.provider.azure.functions.BoosterAzureFunctions.rocketHttp"
+}
+=== host.json
+{
+  "version": "2.0",
+  "extensionBundle": {
+    "id": "Microsoft.Azure.Functions.ExtensionBundle",
+    "version": "[4.*, 5.0.0)"
+  }
+}
+=== lib/booster-rocket-webhook-4.1.0.jar
+=== test.jar
+=== test/function.json
+{
+  "bindings": [
+    {
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "request",
+      "methods": [
+        "POST",
+        "GET"
+      ],
+      "authLevel": "anonymous",
+      "route": "test",
+      "dataType": "binary"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "$return"
+    }
+  ],
+  "scriptFile": "../test.jar",
+  "entryPoint": "com.boostercloud.framework.provider.azure.functions.BoosterAzureFunctions.rocketHttp"
+}
