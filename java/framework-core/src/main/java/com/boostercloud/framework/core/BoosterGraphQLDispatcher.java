@@ -21,7 +21,6 @@ import com.boostercloud.framework.types.graphql.GraphQLWebsocketMessages;
 import com.boostercloud.framework.types.instrumentation.TraceActionTypes;
 import graphql.ExecutionResult;
 import graphql.GraphQLError;
-import graphql.ParseAndValidate;
 import graphql.language.Definition;
 import graphql.language.Document;
 import graphql.language.OperationDefinition;
@@ -34,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Flow;
@@ -266,7 +264,7 @@ public class BoosterGraphQLDispatcher {
     if (schemaFailure != null) {
       throw schemaFailure;
     }
-    List<ValidationError> validationErrors = ParseAndValidate.validate(graphQLSchema, queryDocument, Locale.ENGLISH);
+    List<ValidationError> validationErrors = GraphQLExecution.validate(graphQLSchema, queryDocument);
     return new ArrayList<>(validationErrors);
   }
 

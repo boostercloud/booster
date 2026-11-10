@@ -203,6 +203,18 @@ class GraphQLExecutionTest extends BoosterTestSupport {
   }
 
   @Test
+  void validatesWithTheRulesOfTheSpecificationOnly() {
+    String nestedIntrospection = """
+        { __type(name: "ProductReadModel") { name fields { name type { name fields { name } inputFields { name }
+          ofType { fields { name type { fields { name } } } } } } } }""";
+
+    assertThat(GraphQLExecution.validate(schema, Parser.parse(nestedIntrospection))).isEmpty();
+    assertThat(GraphQLExecution.validate(schema, Parser.parse("{ nope }")))
+        .extracting(graphql.validation.ValidationError::getMessage)
+        .singleElement().asString().contains("'nope'");
+  }
+
+  @Test
   void formatsErrorsLikeGraphqlJs() {
     BoosterError withData = new BoosterError("Cart is full", "CART_FULL", Map.of("max", 10));
 
