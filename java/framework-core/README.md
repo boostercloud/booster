@@ -21,7 +21,9 @@ public class Main {
 ```
 
 The complete user-facing API is ARCHITECTURE.md §6b; `UserFacingApiTest` compiles an application written that
-way against this module, boots it and dispatches a command and a query.
+way against this module, boots it and dispatches a command and a query, and the integration tests
+(`src/test/java/.../integration`, see [Tests](#tests)) run a whole store application end to end on an in-memory
+provider.
 
 ## How it fits together
 
@@ -41,15 +43,15 @@ way against this module, boots it and dispatches a command and a query.
 
 **Entry points** (`index.ts` → `BoosterUserApp`, each a thin delegate on the global configuration):
 
-| `UserApp` method | Delegate | Stage |
-| --- | --- | --- |
-| `boosterServeGraphQL` | `new BoosterGraphQLDispatcher(config).dispatch(raw)` | done (core-3) |
-| `boosterEventDispatcher` | `BoosterEventDispatcher.dispatch(raw, config)` | done |
-| `boosterConsumeEventStream` / `boosterProduceEventStream` | `BoosterEventStreamConsumer.consume` / `BoosterEventStreamProducer.produce` | done |
-| `boosterNotifySubscribers` | `new BoosterSubscribersNotifier(config).dispatch(raw)` | done |
-| `boosterHealth` | `new BoosterHealthService(config).boosterHealth(raw)` | done |
-| `boosterTriggerScheduledCommands` (+ deprecated alias) | `new BoosterScheduledCommandDispatcher(config).dispatch(raw)` | done |
-| `boosterRocketDispatcher` | `new BoosterRocketDispatcher(config).dispatch(raw)` | done |
+| `UserApp` method | Delegate |
+| --- | --- |
+| `boosterServeGraphQL` | `new BoosterGraphQLDispatcher(config).dispatch(raw)` |
+| `boosterEventDispatcher` | `BoosterEventDispatcher.dispatch(raw, config)` |
+| `boosterConsumeEventStream` / `boosterProduceEventStream` | `BoosterEventStreamConsumer.consume` / `BoosterEventStreamProducer.produce` |
+| `boosterNotifySubscribers` | `new BoosterSubscribersNotifier(config).dispatch(raw)` |
+| `boosterHealth` | `new BoosterHealthService(config).boosterHealth(raw)` |
+| `boosterTriggerScheduledCommands` (+ deprecated alias) | `new BoosterScheduledCommandDispatcher(config).dispatch(raw)` |
+| `boosterRocketDispatcher` | `new BoosterRocketDispatcher(config).dispatch(raw)` |
 
 **Commands** (GraphQL mutation → `BoosterCommandDispatcher`): version check, handler lookup, authorizer, schema
 migration (`SchemaMigrator`), `before` hooks (`FilterHelpers`), instance creation (`Instances.createInstance`),
@@ -116,8 +118,9 @@ documents by `boosterMetadata.schemaVersion` and batch-migrates with `migrateAll
 
 **Subscriptions** (`BoosterSubscribersNotifier`, the provider's `boosterNotifySubscribers`): the changed read models
 from `rawToEnvelopes`, the stored subscriptions of their types, and every stored GraphQL document executed again with
-graphql-java against a `FilteredReadModelPubSub` of the changed read models; each event is sent as a `GraphQLData`
-message to the subscription's connection. Failures are logged, never thrown.
+`GraphQLExecution` (the dispatcher's execution, so resolver errors read the same) against a `FilteredReadModelPubSub` of
+the changed read models; each event is sent as a `GraphQLData` message to the subscription's connection. Failures are
+logged, never thrown.
 
 **Data migrations** (`BoosterDataMigrations.run()`, called by user code): the `@DataMigration` classes by `order`; a
 migration without `BoosterDataMigrationEntity` gets a `BoosterDataMigrationStarted` event and its static
@@ -151,8 +154,8 @@ does not support the operation), 2 usage error.
 
 ## Module layout
 
-TypeScript file → Java type. "done" = implemented in this stage; the other rows are skeletons whose methods throw
-`UnsupportedOperationException("not implemented yet: <Class#method>")`, owned by the named stage.
+TypeScript file → Java type. Every row is implemented; the area stages that ported them were merged into this
+module (core-1 registration and dispatch, core-2a events, core-2b read models and health, core-3 GraphQL).
 
 | TypeScript (`packages/framework-core/src`) | Java (`com.boostercloud.framework.core`) | Status |
 | --- | --- | --- |
@@ -173,14 +176,14 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
 | `sensor/health/health-indicators/default-booster-health-indicators.ts` | `sensor.health.healthindicators.DefaultBoosterHealthIndicators` | done |
 | `core-concepts/**` | `coreconcepts.datamigration.events.*`, `coreconcepts.touchentity.events.*`, `coreconcepts.datamigration.entities.BoosterDataMigrationEntity` | done |
 | `services/event-store.ts`, `services/raw-events-parser.ts`, `booster-event-dispatcher.ts`, `booster-event-processor.ts`, `booster-event-stream-consumer.ts`, `booster-event-stream-producer.ts`, `booster-delete-event-dispatcher.ts`, `booster-touch-entity-handler.ts`, `booster-events-reader.ts`, `booster-event-search.ts` | `services.EventStore`, `services.RawEventsParser`, `BoosterEventDispatcher`, `BoosterEventProcessor`, `BoosterEventStreamConsumer`, `BoosterEventStreamProducer`, `BoosterDeleteEventDispatcher`, `BoosterTouchEntityHandler`, `BoosterEventsReader`, `BoosterEventSearch` (+ Java addition `services.IgnoredReducerError`) | done |
-| `services/read-model-store.ts`, `booster-read-models-reader.ts`, `booster-subscribers-notifier.ts`, `read-model-schema-migrator.ts`, `booster-data-migrations.ts` | `services.ReadModelStore` (+ `ProjectionFunction`), `BoosterReadModelsReader`, `BoosterSubscribersNotifier` (+ `GraphQLErrors`), `ReadModelSchemaMigrator`, `BoosterDataMigrations` | done (core-2b) |
-| `services/pub-sub/read-model-pub-sub.ts`, `noop-read-model-pub-sub.ts` (`iterall.createAsyncIterator`) | `services.pubsub.ReadModelPubSub` (+ `toPublisher`), `FilteredReadModelPubSub`, `NoopReadModelPubSub`, package-private `IteratorPublisher` | done (core-2b) |
-| `sensor/health/booster-health-service.ts`, `health-utils.ts`, the indicators, `booster-version.ts`, `os-info.ts` | `sensor.health.BoosterHealthService`, `sensor.health.HealthUtils`, `sensor.health.healthindicators.*` (+ `RawHealthIndicatorResult`; `OsInfo.OsInfoResult`/`OsInfoCpuResult`/`OsInfoMemoryResult` records) | done (core-2b) |
-| `booster-graphql-dispatcher.ts`, `services/graphql/**` | `BoosterGraphQLDispatcher`, `services.graphql.*` (generators, type informer, `Common`, `TargetTypeMetadata`, `ResolverBuilder`; Java additions `GraphQLFieldResolver`, `GraphQLFieldConfig`, `GeneratedObjectType`, `GraphQLExecution`, `PropertyResolver`, `IteratorPublisher`, `Inflection`), `services.graphql.querygenerators.*`, `services.graphql.queryhelpers.*`, `services.graphql.websocketprotocol.*` | done (core-3) |
+| `services/read-model-store.ts`, `booster-read-models-reader.ts`, `booster-subscribers-notifier.ts`, `read-model-schema-migrator.ts`, `booster-data-migrations.ts` | `services.ReadModelStore` (+ `ProjectionFunction`), `BoosterReadModelsReader`, `BoosterSubscribersNotifier` (+ `GraphQLErrors`), `ReadModelSchemaMigrator`, `BoosterDataMigrations` | done |
+| `services/pub-sub/read-model-pub-sub.ts`, `noop-read-model-pub-sub.ts` (`iterall.createAsyncIterator`) | `services.pubsub.ReadModelPubSub` (+ `toPublisher`, which returns the GraphQL `IteratorPublisher`), `FilteredReadModelPubSub`, `NoopReadModelPubSub` | done |
+| `sensor/health/booster-health-service.ts`, `health-utils.ts`, the indicators, `booster-version.ts`, `os-info.ts` | `sensor.health.BoosterHealthService`, `sensor.health.HealthUtils`, `sensor.health.healthindicators.*` (+ `RawHealthIndicatorResult`; `OsInfo.OsInfoResult`/`OsInfoCpuResult`/`OsInfoMemoryResult` records) | done |
+| `booster-graphql-dispatcher.ts`, `services/graphql/**` | `BoosterGraphQLDispatcher`, `services.graphql.*` (generators, type informer, `Common`, `TargetTypeMetadata`, `ResolverBuilder`; Java additions `GraphQLFieldResolver`, `GraphQLFieldConfig`, `GeneratedObjectType`, `GraphQLExecution`, `PropertyResolver`, `IteratorPublisher`, `Inflection`), `services.graphql.querygenerators.*`, `services.graphql.queryhelpers.*`, `services.graphql.websocketprotocol.*` | done |
 | `injectable/index.ts` | `com.boostercloud.framework.types.injectable.Injectable` / `InjectableCommand` (foundation) | foundation |
 | `decorators/metadata.ts` (`getClassMetadata`, `getFunctionArguments`) | `com.boostercloud.metadata.ClassMetadata.of` (foundation); argument names come from reflection | not needed |
 
-### Facilities for the other areas (`internal`, `instrumentation`)
+### Internal contracts between the areas (`internal`, `instrumentation`)
 
 * `internal.UserCode` — calls user code like TypeScript's `cls[methodName](...)`: `invokeStatic`, `findStatic`,
   `findInstance`, `invoke(method, target, args)` (prefix-arity matching, `@Trace` wrapping, `CompletionStage`
@@ -198,10 +201,13 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
   for missing un-projections.
 * `BoosterReadModelsReader.findById`/`search`/`subscribe`/`unsubscribe`/`unsubscribeAll` for the GraphQL resolvers
   and websocket handler; `search` returns a `List` or, for `paginatedVersion`, a `ReadModelListResult`.
-* Subscription resolvers: read the `GraphQLResolverContext` from `environment.getGraphQlContext().get(
-  GraphQLResolverContext.class)` (the notifier also sets it as the legacy `environment.getContext()`) and return
-  `ReadModelPubSub.toPublisher(context.pubSub().asyncIterator(envelope, config))`. `NoopReadModelPubSub` instances are
-  equal to each other.
+* Resolvers read the `GraphQLResolverContext` with `Common.resolverContext(environment)` (local context, or the
+  `GraphQLContext` entry under `GraphQLResolverContext.class`); `GraphQLExecution.execute` sets both, and it is the only
+  way the dispatcher and the notifier run documents (it also keeps subscription events ordered). Subscription resolvers
+  return an `IteratorPublisher` over `context.pubSub().asyncIterator(envelope, config)` (`ReadModelPubSub.toPublisher`
+  returns the same class); `NoopReadModelPubSub` yields an empty iterator, and its instances are equal to each other.
+* The event pipeline calls `ReadModelStore.project` once per entity per page; GraphQL's event resolver calls the typed
+  `BoosterEventsReader.fetch(EventSearchRequest)` (the schema already makes `entity`/`type` exclusive).
 
 ## Differences from TypeScript
 
@@ -359,8 +365,11 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
 * The pub-sub keeps the TypeScript in-memory filter (first top-level property only, `includes` and nested filters decide
   alone, `isDefined` ignored, combinators fail); values are compared in their JSON form and regular expressions use the
   Java dialect. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
-* `BoosterSubscribersNotifier` executes the stored document with graphql-java (TypeScript: `graphql.subscribe`), with
-  `KEEP_SUBSCRIPTION_EVENTS_ORDERED`; a second constructor takes the schema (tests and embedders).
+* `BoosterSubscribersNotifier` executes the stored document with `GraphQLExecution` on graphql-java (TypeScript:
+  `graphql.subscribe`), with `KEEP_SUBSCRIPTION_EVENTS_ORDERED`; a second constructor takes the schema (tests and
+  embedders). As in TypeScript, searches with a selection (every GraphQL list query) return the stored properties
+  without schema migration: a property added by a migration is `null` there until the read model is stored again
+  (`MigrationsIntegrationTest` pins it); by-id queries and `Booster.readModel(...).search()` are migrated.
 
 **Data migrations and health**
 
@@ -445,7 +454,8 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
   become the normalised ISO **string** (TypeScript: a `Date` object), so filters and inputs stay raw values.
   `JSON` is Booster's own scalar (graphql-scalars is not available): outputs go through `BoosterJson.toRaw`.
 * Subscription resolvers return a `Flow.Publisher` (`IteratorPublisher`) over the pub-sub's `Iterator`; graphql-java
-  uses each published item as the field value (TypeScript `resolve: (source) => source`). The websocket handler takes
+  uses each published item as the field value (TypeScript `resolve: (source) => source`). An exhausted iterator
+  completes on subscription, without demand. The websocket handler takes
   a `Flow.Publisher`, a reactive-streams `Publisher` or an `Iterator` as the result of a subscription (TypeScript
   `'next' in result`). Over HTTP, `runGraphQLOperation` returns that publisher too.
 * Fields without resolver are read by `PropertyResolver`: map entries for raw documents, otherwise the
@@ -459,21 +469,43 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
 
 ## Not implemented here
 
-Nothing: every row of the layout table is implemented (see the `notImplemented` notes in the differences).
+Nothing in the layout table is left as a skeleton. The documented differences above are the deliberate ones; the
+graphql-js wording of syntax, validation and coercion errors is not reproduced (graphql-java's is used).
 
 ## Tests
 
 `mvn -B -pl framework-core -am verify` from `java/`. Surefire runs with `booster.env=test` (TypeScript:
-`BOOSTER_ENV=test`); tests that touch the global state extend `BoosterTestSupport`. Test classes are named after the
-TypeScript test files (`booster-command-dispatcher.test.ts` → `BoosterCommandDispatcherTest`); `ImporterTest`
-compiles and scans a jar, `BoosterTokenVerifierTest` uses an in-process JWKS server (`JwtTestKeys`, replacing
-`mock-jwks`), and `UserFacingApiTest` compiles and boots an application written with the documented API.
-The event tests have no TypeScript counterpart for the stream consumer/producer (`BoosterEventStreamTest`), deletion,
-touching and the data-migration reducers; `BoosterEventDispatcherTest` also runs the whole pipeline end to end with a
-mocked provider and `ReadModelStore`.
-`BoosterSubscribersNotifierTest` builds a small schema whose subscription resolvers follow the core-3 contract; the
-read model tests mock the provider and use Mockito construction mocks for the collaborators of other stages
-(`EventStore`).
-The GraphQL
-tests run real operations on graphql-java against `GraphQLTestApp` with the dispatchers and readers mocked
-(`mockConstruction`, the counterpart of the TypeScript prototype replacements).
+`BOOSTER_ENV=test`); tests that touch the global state extend `BoosterTestSupport`.
+
+**Unit tests** are named after the TypeScript test files (`booster-command-dispatcher.test.ts` →
+`BoosterCommandDispatcherTest`) and port them (Mockito replaces sinon). `ImporterTest` compiles and scans a jar,
+`BoosterTokenVerifierTest` uses an in-process JWKS server (`JwtTestKeys`, replacing `mock-jwks`), and
+`UserFacingApiTest` compiles and boots an application written with the documented API. Tests without a TypeScript
+counterpart cover the stream consumer/producer (`BoosterEventStreamTest`), event deletion, touching, the data-migration
+reducers and the notifier (`BoosterSubscribersNotifierTest`, with a small schema following the resolver contract).
+`BoosterEventDispatcherTest` runs the event pipeline with a mocked provider; the GraphQL tests run real operations on
+graphql-java against `GraphQLTestApp` with the dispatchers and readers mocked (`mockConstruction`, the counterpart of
+the TypeScript prototype replacements).
+
+**Integration tests** (`integration/*IntegrationTest`) drive the real core with nothing mocked:
+
+* `integration.inmemory.InMemoryProvider` is a complete `ProviderLibrary` in test sources (loaded through
+  `config.providerPackage`, `Provider.provider(rockets)`): events and snapshots stored as raw JSON with the local
+  provider's query rules (soft deletes, latest snapshot, searches newest first, entity id pages), dispatched-event
+  deduplication, read models with optimistic concurrency on `boosterMetadata.version` (and injectable conflicts),
+  filters/sorting/projections/cursors evaluated in memory, subscriptions, websocket connections and their messages,
+  scheduled, rocket, API and sensor adapters. Stored events are dispatched like a change feed: one page after another
+  on the storing thread, so a request returns when its events, the events registered by their handlers, the snapshots,
+  projections and notifications are all done.
+* `integration.app` is the fixture store application, started with `Booster.start(App.class)` for every test: carts and
+  products, roles, a notification, read models with a calculated field, a `@NonExposed` property, before hooks, a join
+  key shared by many entities, a sequenced read model, schema migrations of an event and a read model, two data
+  migrations, event handlers (one registering events, one global), a scheduled command, a global error handler, health
+  sensors, a `@Trace`d handler, and queries returning lists and unions. Tokens are real RS256 JWTs (`TestTokens`)
+  checked by a `PublicKeyTokenVerifier`.
+* The tests talk only through the `UserApp` entry points with the request records of `InMemoryRequests`: GraphQL over
+  HTTP and websockets, `boosterHealth`, scheduled triggers, event streams and rockets. They cover commands to read
+  models, queries by id/filtered/paginated with sort and cursor, authorization and token rejection, subscriptions,
+  migrations, the events API, touch and delete, health, error hooks, tracing, GraphQL type mapping and parallel
+  requests. Where handlers and projections of one event interleave (they run concurrently), the assertions accept both
+  orders.

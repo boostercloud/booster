@@ -1,6 +1,7 @@
 package com.boostercloud.framework.core.integration.app.commands;
 
 import com.boostercloud.framework.core.decorators.Command;
+import com.boostercloud.framework.core.decorators.Trace;
 import com.boostercloud.framework.core.integration.app.events.ProductCreated;
 import com.boostercloud.framework.core.integration.app.roles.Admin;
 import com.boostercloud.framework.types.concepts.Register;
@@ -21,6 +22,7 @@ public record CreateProduct(String sku, String displayName, double price, String
    * @param register the register
    * @return the new product id
    */
+  @Trace(value = "CREATE_PRODUCT", description = "Creates a product")
   public static UUID handle(CreateProduct command, Register register) {
     UUID productId = UUID.generate();
     register.events(new ProductCreated(productId, command.sku(), command.displayName(), command.price(),
