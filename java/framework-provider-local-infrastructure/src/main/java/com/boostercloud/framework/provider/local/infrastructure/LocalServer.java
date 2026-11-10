@@ -2,6 +2,7 @@ package com.boostercloud.framework.provider.local.infrastructure;
 
 import com.boostercloud.framework.common.Loggers;
 import com.boostercloud.framework.provider.local.LocalProviderRuntime;
+import com.boostercloud.framework.provider.local.Paths;
 import com.boostercloud.framework.provider.local.infrastructure.controllers.GraphQLController;
 import com.boostercloud.framework.provider.local.infrastructure.controllers.HealthController;
 import com.boostercloud.framework.provider.local.infrastructure.web.BodyParsers;
@@ -35,6 +36,9 @@ import java.util.concurrent.TimeUnit;
  *   <li>the port is bound (failing fast when it is taken), and {@code BOOSTER_INTERNAL_LOCAL_PORT} is set to it
  *       in-process when it differs (port 0);
  *   <li>each rocket's {@code mountStack(config, router, { port })}, in order, on the same router;
+ *   <li>Java-only: the existing data files are loaded ({@code LocalProviderRuntime.loadExistingDataFiles}): a torn
+ *       last line or a few corrupt lines are skipped with a warning, a file with more than 10 % of corrupt lines fails
+ *       the start ({@code CorruptDataFileException}, logged, the port released);
  *   <li>Java-only: {@code recoverUndispatchedEvents} re-dispatches the events a crash left undispatched (errors are
  *       logged and do not stop the start);
  *   <li>the provider's websocket server is started if it is not running yet ({@code ws://localhost:65529/websocket});
@@ -130,6 +134,14 @@ public final class LocalServer implements AutoCloseable {
     for (LocalInfrastructureRocket rocket : rockets) {
       rocket.mountStack(config, router, metadata);
       mountedRockets.add(rocket);
+    }
+    try {
+      runtime.loadExistingDataFiles();
+    } catch (RuntimeException e) {
+      logger.error("Could not load the data files of "
+          + Paths.resolve(runtime.baseDirectory(), Paths.BOOSTER_FOLDER).toAbsolutePath()
+          + "; the server does not start: " + e.getMessage());
+      throw e;
     }
     try {
       recoveredEvents = runtime.recoverUndispatchedEvents(config);
