@@ -15,7 +15,6 @@ import com.boostercloud.framework.types.errors.QueryHandlerGlobalError;
 import com.boostercloud.framework.types.errors.ReducerGlobalError;
 import com.boostercloud.framework.types.errors.ScheduleCommandGlobalError;
 import com.boostercloud.framework.types.errors.SnapshotPersistHandlerGlobalError;
-import java.lang.reflect.Method;
 import java.util.Optional;
 
 /**
@@ -99,23 +98,22 @@ public class BoosterGlobalErrorDispatcher {
     return newError;
   }
 
+  /** A hook that is declared but cannot take the arguments fails with an explanation (logged and returned). */
   private Throwable callHook(Hook hook, GlobalErrorContainer error, Object... args) {
-    Optional<Method> method = UserCode.findStatic(errorHandler, hook.methodName(), args);
-    if (method.isEmpty()) {
+    if (!UserCode.hasStaticMethod(errorHandler, hook.methodName())) {
       throw UserCode.rethrow(error.originalError());
     }
-    return asError(UserCode.invoke(method.get(), null, args));
+    return asError(UserCode.invokeStatic(errorHandler, hook.methodName(), args));
   }
 
   private Throwable handleGenericError(Throwable error) {
     if (error == null) {
       return null;
     }
-    Optional<Method> onError = UserCode.findStatic(errorHandler, Hook.ON_ERROR.methodName(), error);
-    if (onError.isEmpty()) {
+    if (!UserCode.hasStaticMethod(errorHandler, Hook.ON_ERROR.methodName())) {
       throw UserCode.rethrow(error);
     }
-    return asError(UserCode.invoke(onError.get(), null, error));
+    return asError(UserCode.invokeStatic(errorHandler, Hook.ON_ERROR.methodName(), error));
   }
 
   private static Throwable asError(Object result) {

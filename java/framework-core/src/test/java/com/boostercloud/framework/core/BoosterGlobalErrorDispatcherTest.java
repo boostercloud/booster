@@ -137,6 +137,12 @@ class BoosterGlobalErrorDispatcherTest {
 
   public static class Empty {}
 
+  public static class WrongSignature {
+    public static Throwable onError(String notAnError) {
+      return null;
+    }
+  }
+
   public static class ThrowingOnError {
     public static Throwable onError(Throwable error) {
       throw new IllegalStateException("onError failed");
@@ -252,6 +258,14 @@ class BoosterGlobalErrorDispatcherTest {
   void returnsTheOriginalErrorWhenThereIsNoHookAtAll() {
     assertThat(dispatcher(Empty.class).dispatch(new GlobalErrorContainer(ERROR))).isSameAs(ERROR);
     verify(logger).error(anyString(), anyString(), same(ERROR));
+  }
+
+  @Test
+  void aHookThatCannotTakeTheArgumentsIsReported() {
+    Throwable result = dispatcher(WrongSignature.class).dispatch(new GlobalErrorContainer(ERROR));
+
+    assertThat(result).isInstanceOf(IllegalStateException.class)
+        .hasMessage("No static method WrongSignature.onError accepts the arguments [IllegalStateException]");
   }
 
   @Test

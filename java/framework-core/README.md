@@ -161,7 +161,8 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
 * Handler failures are caught as `Exception` for the global error handler; `java.lang.Error`s are not routed to it.
 * `if (!envelope.version)` is `version == 0` (the envelope version is an `int`).
 * Global error handler hooks are static methods found by name (fewer parameters allowed); they return the `Throwable`
-  to propagate, `null` (or an empty `Optional`) to swallow it; any other return value is an error.
+  to propagate, `null` (or an empty `Optional`) to swallow it; any other return value is an error, and so is a hook
+  whose parameters cannot take the arguments (both are logged and returned like an error thrown by the hook).
 * `RegisterHandler`: the event's `entityID()` is looked up reflectively; when it is missing the friendly "has no
   specification for the entity ID" error is thrown (TypeScript fails with `entityID is not a function`). Entity ids are
   `UUID`s (other values are stringified); a partition key or `partitionId` must be a `String` or `UUID`.
