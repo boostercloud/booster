@@ -142,6 +142,40 @@ class FsWatchTest {
   }
 
   @Test
+  void a_failing_dispatch_is_logged_and_the_watch_goes_on() {
+    List<String> errors = Collections.synchronizedList(new ArrayList<>());
+    config.logger = new Logger() {
+      @Override
+      public void debug(Object message, Object... optionalParams) {}
+
+      @Override
+      public void info(Object message, Object... optionalParams) {}
+
+      @Override
+      public void warn(Object message, Object... optionalParams) {}
+
+      @Override
+      public void error(Object message, Object... optionalParams) {
+        errors.add(message + " " + java.util.Arrays.toString(optionalParams));
+      }
+    };
+    watch = FsWatch.fsWatch(config, project, "clientst", "rocketfiles", 4321, List.of("client1"), request -> {
+      if ("client1/bad.txt".equals(request.get("name"))) {
+        throw new IllegalStateException("Rocket function with ID \"rocket-files\" not found");
+      }
+      dispatched.add(request);
+    });
+
+    // Node: an unhandled promise rejection; Java: an error line, and later notifications are still dispatched
+    watch.onChange("client1/bad.txt");
+    watch.onChange("client1/good.txt");
+
+    await().atMost(TIMEOUT).until(() -> !errors.isEmpty() && names().contains("client1/good.txt"));
+    assertThat(errors.getFirst()).startsWith("[Booster]|RocketFiles#fsWatch: ")
+        .contains("Error dispatching the file notification").contains("client1/bad.txt").contains("Rocket function with ID \"rocket-files\" not found");
+  }
+
+  @Test
   void stops_on_close() throws Exception {
     Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
     start(List.of("client1"));
