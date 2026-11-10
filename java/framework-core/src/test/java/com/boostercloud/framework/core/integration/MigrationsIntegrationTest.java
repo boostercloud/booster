@@ -159,7 +159,11 @@ class MigrationsIntegrationTest extends IntegrationTestSupport {
         .extracting(EventEnvelope::typeName)
         .containsExactly("BoosterDataMigrationStarted", "BoosterDataMigrationFinished", "BoosterDataMigrationStarted",
             "BoosterDataMigrationFinished");
-    assertThat(provider.events().events()).allSatisfy(
-        event -> assertThat(Dates.parse(event.createdAt())).isBeforeOrEqualTo(Dates.now()));
+    // The in-memory store keeps createdAt strictly increasing (one millisecond after the previous event when several
+    // are stored in the same millisecond), so a stamp may be up to one millisecond per stored event ahead of the clock
+    List<EventEnvelope> stored = provider.events().events();
+    java.time.Instant latestPossible = Dates.now().plusMillis(stored.size());
+    assertThat(stored).allSatisfy(
+        event -> assertThat(Dates.parse(event.createdAt())).isBeforeOrEqualTo(latestPossible));
   }
 }
