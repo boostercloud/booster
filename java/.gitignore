@@ -1,5 +1,7 @@
-# Build output
-target/
+# Build output (anchored so that source packages named 'target' are not ignored)
+/target/
+/*/target/
+/rockets/*/target/
 *.class
 # Local Booster runtime data (local provider)
 .booster/
