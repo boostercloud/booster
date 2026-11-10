@@ -330,8 +330,27 @@ class AzureRuntimeContractIT {
     assertThat(services.failures()).isEmpty();
   }
 
-  @Nested
+  @Test
   @Order(6)
+  @DisplayName("the scheduleFunction-CheckCartCount timer function registers CartChecked for the-checked-cart")
+  void scheduledCommand() {
+    String timer = "{\"Schedule\":{\"AdjustForDST\":true},\"ScheduleStatus\":{\"Last\":\"2026-11-10T09:00:00\","
+        + "\"Next\":\"2026-11-10T09:01:00\",\"LastUpdated\":\"2026-11-10T09:00:00\"},\"IsPastDue\":false}";
+
+    functions.scheduledCommand(timer, FunctionsWorker.context("scheduleFunction-CheckCartCount"));
+
+    assertThat(services.requests("cosmos")).singleElement().satisfies(batch -> {
+      assertThat(batch.summary()).isEqualTo("POST /dbs/" + DATABASE + "/colls/" + EVENTS_STORE + "/docs (batch)");
+      assertThat(batch.header("x-ms-documentdb-partitionkey")).isEqualTo("[\"Cart-the-checked-cart-event\"]");
+    });
+    assertThat(services.documents(DATABASE, EVENTS_STORE)).filteredOn(event -> "CartChecked".equals(event.get("typeName")))
+        .singleElement().satisfies(event -> assertThat(event).containsEntry("entityID", "the-checked-cart")
+            .containsEntry("entityTypeName", "Cart").containsEntry("value", Map.of("cartId", "the-checked-cart")));
+    assertThat(services.failures()).isEmpty();
+  }
+
+  @Nested
+  @Order(7)
   @DisplayName("GraphQL subscriptions through Web PubSub")
   class Subscriptions {
 
@@ -422,7 +441,7 @@ class AzureRuntimeContractIT {
   }
 
   @Nested
-  @Order(7)
+  @Order(8)
   @DisplayName("the Azure test helper (TESTED_PROVIDER=AZURE)")
   class TheAzureTestHelper {
 
@@ -469,7 +488,8 @@ class AzureRuntimeContractIT {
     @Order(2)
     @DisplayName("counts and queries what the functions stored, across partitions")
     void countsAndQueries() {
-      assertThat(applicationUnderTest.count().events()).isEqualTo(1);
+      // ChangeCartItem's CartItemChanged and CheckCartCount's CartChecked (snapshots are not events)
+      assertThat(applicationUnderTest.count().events()).isEqualTo(2);
       assertThat(applicationUnderTest.count().subscriptions()).isZero();
       assertThat(applicationUnderTest.count().connections()).isZero();
       List<Map<String, Object>> events = applicationUnderTest.query().events("Cart-" + cartId + "-event");
