@@ -29,4 +29,19 @@
       <artifactId>graphql-java</artifactId>
     </dependency>
   </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <!-- The TypeScript unit tests run with BOOSTER_ENV=test -->
+          <systemPropertyVariables>
+            <booster.env>test</booster.env>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
