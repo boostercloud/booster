@@ -69,6 +69,13 @@ public final class FakeAzureServer implements AutoCloseable {
     }
 
     /**
+     * @return a "response" that closes the connection without answering (a connection reset as the client sees it)
+     */
+    public static Response dropConnection() {
+      return new Response(DROP_CONNECTION, Map.of(), "");
+    }
+
+    /**
      * @param name a header name
      * @param value its value
      * @return a copy with the header added
@@ -79,6 +86,8 @@ public final class FakeAzureServer implements AutoCloseable {
       return new Response(status, copy, body);
     }
   }
+
+  private static final int DROP_CONNECTION = -1;
 
   private final HttpServer server;
   private final List<RecordedRequest> requests = Collections.synchronizedList(new ArrayList<>());
@@ -145,6 +154,9 @@ public final class FakeAzureServer implements AutoCloseable {
       if (response == null) {
         response = Response.json(599, "{\"message\":\"Unexpected request " + exchange.getRequestMethod() + " "
             + uri + "\"}");
+      }
+      if (response.status() == DROP_CONNECTION) {
+        return; // closed without response headers: the server closes the connection
       }
       response.headers().forEach((name, value) -> exchange.getResponseHeaders().add(name, value));
       byte[] bytes = response.body() == null ? new byte[0] : response.body().getBytes(StandardCharsets.UTF_8);

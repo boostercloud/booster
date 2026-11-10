@@ -398,6 +398,135 @@ class CosmosRestClientContractTest {
     }
   }
 
+  /** The @azure/cosmos retry policies other than throttling: DefaultRetryPolicy, TimeoutFailoverRetryPolicy, 410. */
+  @Nested
+  class TransientFailures {
+
+    private final SqlQuerySpec query = new SqlQuerySpec("SELECT * FROM c", List.of());
+
+    @Test
+    void connectionFailuresOfQueriesAreRetriedOneSecondApart() {
+      server.enqueue(Response.dropConnection()).enqueue(Response.dropConnection())
+          .enqueue(Response.json(200, "{\"Documents\":[{\"id\":\"1\"}]}"));
+
+      FeedResponse response = events(client()).items().query(query, FeedOptions.forPartition("pk")).fetchAll();
+
+      assertThat(response.resources()).containsExactly(obj("id", "1"));
+      assertThat(server.requests()).hasSize(3);
+      assertThat(sleeps).containsExactly(1000L, 1000L);
+    }
+
+    @Test
+    void connectionFailuresOfPointReadsAreRetried() {
+      // The JDK client itself retries an idempotent GET whose connection closed without an answer, before the
+      // transport policy sees the failure; either way the read succeeds
+      server.enqueue(Response.dropConnection()).enqueue(Response.dropConnection())
+          .enqueue(Response.json(200, "{\"id\":\"1\"}"));
+
+      ItemResponse response = events(client()).item("1", "pk").read();
+
+      assertThat(response.statusCode()).isEqualTo(200);
+      assertThat(server.requests()).hasSize(3);
+    }
+
+    @Test
+    void connectionFailuresOfQueriesAreRetriedAndGiveUpAfterTenRetries() {
+      for (int i = 0; i < 11; i++) {
+        server.enqueue(Response.dropConnection());
+      }
+
+      assertThatThrownBy(() -> events(client()).items().query(query, FeedOptions.forPartition("pk")).fetchAll())
+          .isInstanceOf(java.io.UncheckedIOException.class);
+      assertThat(server.requests()).hasSize(11);
+      assertThat(sleeps).hasSize(10).containsOnly(1000L);
+    }
+
+    @Test
+    void connectionFailuresOfWritesAreNotRetriedAsTheSdkDoesNotRetryThem() {
+      server.enqueue(container(EVENTS, "/entityTypeName_entityID_kind")).enqueue(Response.dropConnection());
+
+      assertThatThrownBy(() -> events(client()).items().create(obj("entityTypeName_entityID_kind", "pk", "id", "1")))
+          .isInstanceOf(java.io.UncheckedIOException.class);
+      assertThat(server.requests()).hasSize(2);
+      assertThat(sleeps).isEmpty();
+    }
+
+    @Test
+    void serviceUnavailableAndRequestTimeoutOfReadsAreRetriedOnce() {
+      server.enqueue(Response.json(503, "{\"message\":\"busy\"}")).enqueue(Response.json(200, "{\"id\":\"1\"}"))
+          .enqueue(Response.json(408, "{\"message\":\"timeout\"}")).enqueue(Response.json(200, "{\"Documents\":[]}"))
+          .enqueue(Response.json(503, "{\"message\":\"busy\"}")).enqueue(Response.json(503, "{\"message\":\"busy\"}"));
+
+      assertThat(events(client()).item("1", "pk").read().statusCode()).isEqualTo(200);
+      assertThat(events(client()).items().query(query, FeedOptions.forPartition("pk")).fetchAll().resources()).isEmpty();
+      assertThatThrownBy(() -> events(client()).item("1", "pk").read())
+          .isInstanceOfSatisfying(CosmosException.class, error -> assertThat(error.code()).isEqualTo(503));
+      assertThat(server.requests()).hasSize(6);
+      assertThat(sleeps).isEmpty();
+    }
+
+    @Test
+    void serviceUnavailableOfWritesIsNotRetried() {
+      server.enqueue(Response.json(503, "{\"message\":\"busy\"}"));
+
+      assertThatThrownBy(() -> events(client()).item("1", "pk").replace(obj("id", "1")))
+          .isInstanceOfSatisfying(CosmosException.class, error -> assertThat(error.code()).isEqualTo(503));
+      assertThat(server.requests()).hasSize(1);
+    }
+
+    @Test
+    void aRangeGoneAfterASplitIsRepairedByReadingTheRangesAgain() {
+      String plan = Fixtures.read("cosmos/query-plan-order-by.json")
+          .replace("\"offset\": 0", "\"offset\": null").replace("\"limit\": 3", "\"limit\": null")
+          .replace("\\nOFFSET 0 LIMIT 3", "");
+      Map<String, Object> twoRanges = BoosterJson.parseObject(Fixtures.read("cosmos/pkranges-two.json"));
+      List<?> ranges = (List<?>) twoRanges.get("PartitionKeyRanges");
+      @SuppressWarnings("unchecked")
+      Map<String, Object> left = new java.util.LinkedHashMap<>((Map<String, Object>) ranges.get(0));
+      @SuppressWarnings("unchecked")
+      Map<String, Object> right = new java.util.LinkedHashMap<>((Map<String, Object>) ranges.get(1));
+      Map<String, Object> rightLow = new java.util.LinkedHashMap<>(right);
+      rightLow.putAll(obj("id", "3", "maxExclusive", "BFFFFFFFFFFFFFFF", "parents", List.of("0", "2")));
+      Map<String, Object> rightHigh = new java.util.LinkedHashMap<>(right);
+      rightHigh.putAll(obj("id", "4", "minInclusive", "BFFFFFFFFFFFFFFF", "parents", List.of("0", "2")));
+      server.enqueue(Response.json(200, plan)).enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          .enqueue(documents(orderByRow("a", 1)))
+          .enqueue(Response.json(410, "{\"message\":\"The requested partition key range is gone\"}")
+              .withHeader("x-ms-substatus", "1002"))
+          // the feed lists the split range itself next to its children: the children win
+          .enqueue(Response.json(200, BoosterJson.toJson(
+              obj("PartitionKeyRanges", List.of(left, right, rightLow, rightHigh)))))
+          .enqueue(documents(orderByRow("a", 1)))
+          .enqueue(documents(orderByRow("b", 2)))
+          .enqueue(documents(orderByRow("c", 3)));
+
+      FeedResponse response = events(client()).items().query(new SqlQuerySpec(
+          "SELECT * FROM c ORDER BY c.createdAt DESC", List.of())).fetchAll();
+
+      assertThat(response.resources()).containsExactly(obj("id", "c"), obj("id", "b"), obj("id", "a"));
+      assertThat(server.requests()).hasSize(8);
+      assertThat(server.request(6).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("3");
+      assertThat(server.request(7).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("4");
+    }
+
+    @Test
+    void otherGoneErrorsAreThrown() {
+      server.enqueue(Response.json(410, "{\"message\":\"gone\"}").withHeader("x-ms-substatus", "1000"));
+
+      assertThatThrownBy(() -> events(client()).item("1", "pk").read())
+          .isInstanceOfSatisfying(CosmosException.class, error -> assertThat(error.code()).isEqualTo(410));
+      assertThat(server.requests()).hasSize(1);
+    }
+
+    private Response documents(Object... documents) {
+      return Response.json(200, BoosterJson.toJson(obj("Documents", List.of(documents))));
+    }
+
+    private Object orderByRow(String id, int orderValue) {
+      return obj("orderByItems", List.of(obj("item", orderValue)), "payload", obj("id", id));
+    }
+  }
+
   @Nested
   class Queries {
 

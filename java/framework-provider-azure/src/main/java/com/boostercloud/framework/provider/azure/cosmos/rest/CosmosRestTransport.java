@@ -20,8 +20,9 @@ import java.util.Set;
 
 /**
  * Sends signed requests to the Cosmos DB REST API: adds {@code x-ms-date}, {@code x-ms-version} and the master-key
- * {@code authorization} header, retries throttled (429) requests with {@link ResourceThrottleRetryPolicy}, and turns
- * error statuses into {@link CosmosException}s.
+ * {@code authorization} header, retries throttled (429) requests with {@link ResourceThrottleRetryPolicy} and
+ * transient failures of reads and queries as the SDK does ({@link #send}), and turns error statuses into
+ * {@link CosmosException}s.
  */
 final class CosmosRestTransport {
 
@@ -87,26 +88,74 @@ final class CosmosRestTransport {
   }
 
   /**
-   * Sends the request, retrying throttled responses.
+   * Sends the request with the SDK's retry policies:
+   *
+   * <ul>
+   *   <li>429: {@link ResourceThrottleRetryPolicy} (every request);
+   *   <li>connection failures and request timeouts of reads and queries: up to {@value #MAX_CONNECTION_RETRIES}
+   *       retries {@value #CONNECTION_RETRY_DELAY_MS} ms apart ({@code DefaultRetryPolicy}, which retries the
+   *       connection error codes for {@code Read} and {@code Query} operations only);
+   *   <li>503 and 408 answers to reads and queries: one immediate retry ({@code TimeoutFailoverRetryPolicy} with a
+   *       single region: {@code maxServiceUnavailableRetryCount = 1}, no delay, never for single-region writes).
+   * </ul>
+   *
+   * Writes (create, upsert, replace, delete, batch) are retried only when throttled, as the SDK does on a
+   * single-write-region account.
    *
    * @param request the request
    * @param acceptedErrorStatuses error statuses returned instead of thrown (404 for reads)
    * @return the response
    * @throws CosmosException for other error statuses
+   * @throws UncheckedIOException when the request cannot be sent
    */
   Response send(Request request, Set<Integer> acceptedErrorStatuses) {
     ResourceThrottleRetryPolicy throttling = new ResourceThrottleRetryPolicy(retryOptions);
+    boolean readOrQuery = isReadOrQuery(request);
+    int connectionRetries = 0;
+    int unavailableRetries = 0;
     while (true) {
-      Response response = sendOnce(request);
+      Response response;
+      try {
+        response = sendOnce(request);
+      } catch (UncheckedIOException e) {
+        if (!readOrQuery || connectionRetries >= MAX_CONNECTION_RETRIES) {
+          throw e;
+        }
+        connectionRetries++;
+        sleeper.sleep(CONNECTION_RETRY_DELAY_MS);
+        continue;
+      }
       if (response.status() < 400 || acceptedErrorStatuses.contains(response.status())) {
         return response;
       }
       CosmosException error = toException(response);
-      if (!throttling.shouldRetry(error)) {
-        throw error;
+      if (throttling.shouldRetry(error)) {
+        sleeper.sleep(throttling.retryAfterInMs());
+        continue;
       }
-      sleeper.sleep(throttling.retryAfterInMs());
+      if (readOrQuery && (error.code() == 503 || error.code() == 408)
+          && unavailableRetries < MAX_SERVICE_UNAVAILABLE_RETRIES) {
+        unavailableRetries++;
+        continue;
+      }
+      throw error;
     }
+  }
+
+  /** {@code DefaultRetryPolicy.maxTries}. */
+  static final int MAX_CONNECTION_RETRIES = 10;
+  /** {@code DefaultRetryPolicy.retryAfterInMs}. */
+  static final long CONNECTION_RETRY_DELAY_MS = 1000;
+  /** {@code TimeoutFailoverRetryPolicy.maxServiceUnavailableRetryCount}. */
+  static final int MAX_SERVICE_UNAVAILABLE_RETRIES = 1;
+
+  /**
+   * @param request a request
+   * @return whether it is a {@code Read} or {@code Query} operation for the SDK's retry policies: a {@code GET}, a
+   *     query or a query plan request
+   */
+  static boolean isReadOrQuery(Request request) {
+    return request.method().equals("GET") || "True".equals(request.headers().get("x-ms-documentdb-isquery"));
   }
 
   private Response sendOnce(Request request) {

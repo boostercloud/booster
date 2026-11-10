@@ -107,8 +107,15 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
     entity and read model ids with non-ASCII characters work), a random UUID `id`
     for documents without one (`create`, `upsert`, batch `Create`), the partition key of `create`/`upsert` read from
     the document with the container's partition key definition (one `GET colls/<id>` per container, cached),
-    `read()` of a missing document returning a 404 response instead of throwing, `ResourceThrottleRetryPolicy` for
-    429, transactional batches returned (not thrown) when they fail (code 207).
+    `read()` of a missing document returning a 404 response instead of throwing, transactional batches returned (not
+    thrown) when they fail (code 207), and the SDK retry policies of a single-region account:
+    `ResourceThrottleRetryPolicy` for 429 (every request); `DefaultRetryPolicy` for connection failures and request
+    timeouts of reads and queries (up to 10 retries, 1 s apart; the SDK's timeout failover policy would allow more
+    immediate attempts against the same region); `TimeoutFailoverRetryPolicy` for 503 and 408 answers to reads and
+    queries (one immediate retry); writes are retried only when throttled, as in the SDK. A cross-partition query
+    whose partition key range split or moved (410 with substatus 1002, 1007 or 1008) lists the ranges again, dropping
+    ranges that are another range's parent, and re-runs (up to 3 times), where the SDK repairs the affected range
+    only. `SessionRetryPolicy` (404/1002) has no counterpart: the client sends no session tokens.
   * Cosmos DB queries: single-partition queries (with a partition key) go straight to the gateway. Cross-partition
     queries first ask for a **query plan**; plain queries are fanned out by the gateway and paged with its
     continuation tokens, the others (`ORDER BY`, `DISTINCT`, `OFFSET/LIMIT`, `TOP`, `VALUE` aggregates) run on every

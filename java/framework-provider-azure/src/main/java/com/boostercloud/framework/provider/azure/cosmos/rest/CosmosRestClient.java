@@ -41,7 +41,10 @@ import java.util.function.Supplier;
  *   <li>the partition key of {@code create}/{@code upsert} is read from the document with the container's partition
  *       key definition (fetched once per container and cached);
  *   <li>{@code item.read()} of a missing document returns a 404 response with no resource instead of throwing;
- *   <li>throttled requests (429) are retried with {@link ResourceThrottleRetryPolicy};
+ *   <li>throttled requests (429) are retried with {@link ResourceThrottleRetryPolicy}; connection failures, timeouts,
+ *       503 and 408 of reads and queries are retried as the SDK's default and timeout failover policies do (see
+ *       {@link CosmosRestTransport#send}); a partition key range gone during a client-side pipeline query (410/1002,
+ *       1007, 1008) makes the query run again on freshly listed ranges;
  *   <li>cross-partition queries ask the gateway for a query plan; queries the gateway can serve (plain filters and
  *       projections) are fanned out by the gateway and paged with its continuation tokens, the others
  *       ({@code ORDER BY}, {@code DISTINCT}, {@code OFFSET/LIMIT}, {@code TOP}, {@code VALUE} aggregates) run against
@@ -59,6 +62,19 @@ public final class CosmosRestClient implements CosmosClient {
   private static final int CROSS_PARTITION_QUERY_NOT_SERVABLE = 1004;
   /** Largest {@code x-ms-max-item-count} sent for a bounded partition key range read. */
   static final int MAX_ITEM_COUNT = 1000;
+  /** Times a pipeline query is re-run on freshly listed ranges after a range is gone. */
+  static final int MAX_PARTITION_KEY_RANGE_GONE_RETRIES = 3;
+  /** 410 substatuses of a range that split or moved: PartitionKeyRangeGone, CompletingSplit, CompletingMigration. */
+  private static final Set<Integer> PARTITION_KEY_RANGE_GONE_SUBSTATUSES = Set.of(1002, 1007, 1008);
+
+  /**
+   * @param error a Cosmos DB error
+   * @return whether it says the partition key range a request addressed is gone (split or moved)
+   */
+  static boolean isPartitionKeyRangeGone(CosmosException error) {
+    return error.code() == 410 && error.substatus() != null
+        && PARTITION_KEY_RANGE_GONE_SUBSTATUSES.contains(error.substatus());
+  }
 
   /**
    * @param plan a query plan
@@ -502,17 +518,27 @@ public final class CosmosRestClient implements CosmosClient {
       SqlQuerySpec rangeQuery = querySpec.withQuery(plan.queryForRanges(querySpec.query()));
       Integer budget = needed != null && isBoundable(plan) ? needed : null;
       boolean perRangeBudget = !plan.orderBy().isEmpty();
-      List<List<Object>> perRange = new ArrayList<>();
-      int collected = 0;
-      for (String rangeId : overlappingRangeIds(plan)) {
-        Integer rangeLimit = budget == null ? null : perRangeBudget ? budget : budget - collected;
-        List<Object> results = rangeLimit != null && rangeLimit <= 0
-            ? new ArrayList<>()
-            : queryRange(rangeQuery, rangeId, rangeLimit);
-        collected += results.size();
-        perRange.add(results);
+      for (int attempt = 1; ; attempt++) {
+        try {
+          List<List<Object>> perRange = new ArrayList<>();
+          int collected = 0;
+          for (String rangeId : overlappingRangeIds(plan)) {
+            Integer rangeLimit = budget == null ? null : perRangeBudget ? budget : budget - collected;
+            List<Object> results = rangeLimit != null && rangeLimit <= 0
+                ? new ArrayList<>()
+                : queryRange(rangeQuery, rangeId, rangeLimit);
+            collected += results.size();
+            perRange.add(results);
+          }
+          return CosmosQueryPipeline.combine(plan, perRange);
+        } catch (CosmosException e) {
+          if (!isPartitionKeyRangeGone(e) || attempt > MAX_PARTITION_KEY_RANGE_GONE_RETRIES) {
+            throw e;
+          }
+          // The range split or moved (as the SDK's parallel and order-by contexts repair it): the ranges are listed
+          // again and the query re-run on them.
+        }
       }
-      return CosmosQueryPipeline.combine(plan, perRange);
     }
 
     private List<Object> queryRange(SqlQuerySpec rangeQuery, String rangeId, Integer limit) {
@@ -536,7 +562,7 @@ public final class CosmosRestClient implements CosmosClient {
     }
 
     private List<String> overlappingRangeIds(CosmosQueryPlan queryPlan) {
-      List<String> ids = new ArrayList<>();
+      List<Map<?, ?>> all = new ArrayList<>();
       String rangesContinuation = null;
       do {
         Map<String, String> headers = new LinkedHashMap<>();
@@ -549,16 +575,29 @@ public final class CosmosRestClient implements CosmosClient {
         if (ranges instanceof List<?> list) {
           for (Object item : list) {
             if (item instanceof Map<?, ?> range) {
-              String min = String.valueOf(range.get("minInclusive"));
-              String max = String.valueOf(range.get("maxExclusive"));
-              if (queryPlan.queryRanges().stream().anyMatch(queryRange -> queryRange.overlaps(min, max))) {
-                ids.add(String.valueOf(range.get("id")));
-              }
+              all.add(range);
             }
           }
         }
         rangesContinuation = response.header("x-ms-continuation");
       } while (rangesContinuation != null);
+      // A range that is the parent of another one has been split (the feed may still list it next to its children).
+      Set<String> parents = new java.util.HashSet<>();
+      for (Map<?, ?> range : all) {
+        if (range.get("parents") instanceof List<?> rangeParents) {
+          rangeParents.forEach(parent -> parents.add(String.valueOf(parent)));
+        }
+      }
+      List<String> ids = new ArrayList<>();
+      for (Map<?, ?> range : all) {
+        String id = String.valueOf(range.get("id"));
+        String min = String.valueOf(range.get("minInclusive"));
+        String max = String.valueOf(range.get("maxExclusive"));
+        if (!parents.contains(id)
+            && queryPlan.queryRanges().stream().anyMatch(queryRange -> queryRange.overlaps(min, max))) {
+          ids.add(id);
+        }
+      }
       return ids;
     }
 
