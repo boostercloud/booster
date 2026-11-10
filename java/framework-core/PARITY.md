@@ -44,6 +44,11 @@ Commits of this audit:
 * `b403e1c3e` — not a parity gap: `integration.MigrationsIntegrationTest#theDataMigrationEventsAreNotReadableThroughTheApi`
   failed intermittently (it compared the in-memory store's strictly increasing `createdAt` with the clock); the
   assertion now allows that bump
+* `fix(framework-core): send the notifications of one subscription in order` — not a parity gap either:
+  `BoosterSubscribersNotifierTest#sendsOneMessagePerMatchingChangedReadModel` failed intermittently because the
+  notifications of one subscription ran concurrently, so a connection could get its results out of order (TypeScript
+  starts the `sendMessage` calls in the order of the stream). They now run one after the other, pinned by
+  `#sendsTheMessagesOfOneSubscriptionInTheOrderOfTheChangedReadModelsEvenWhenASendIsSlow`
 
 ---
 

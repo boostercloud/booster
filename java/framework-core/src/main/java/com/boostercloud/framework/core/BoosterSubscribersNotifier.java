@@ -197,6 +197,10 @@ public class BoosterSubscribersNotifier {
     CountDownLatch finished = new CountDownLatch(1);
     AtomicReference<Throwable> failure = new AtomicReference<>();
     iterator.subscribe(new Subscriber<>() {
+      // TypeScript starts every sendMessage in the order of the stream. Here each notification of the subscription
+      // starts once the previous one is done (onNext is signalled serially), so the connection gets them in order
+      private CompletableFuture<Void> previous = CompletableFuture.completedFuture(null);
+
       @Override
       public void onSubscribe(Subscription stream) {
         stream.request(Long.MAX_VALUE);
@@ -204,10 +208,13 @@ public class BoosterSubscribersNotifier {
 
       @Override
       public void onNext(ExecutionResult result) {
-        notificationPromises.add(Promises.start(() -> {
-          notifyWithGraphQLResult(subscription, result);
-          return null;
-        }));
+        CompletableFuture<Void> notification = previous.handle((ignored, error) -> null)
+            .thenCompose(ignored -> Promises.<Void>start(() -> {
+              notifyWithGraphQLResult(subscription, result);
+              return null;
+            }));
+        previous = notification;
+        notificationPromises.add(notification);
       }
 
       @Override
