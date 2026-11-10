@@ -218,7 +218,9 @@ TypeScript file → Java type. "done" = implemented in this stage; the other row
   graphql-js field thunks) are `GraphQLTypeReference`s. Field, argument and type names and orders are those of
   TypeScript, including the first-creation-wins type cache, `@NonExposed` honoured only for the class passed to
   `generateGraphQLTypeForClass` (and looked up by property name for nested filters/sorts), the plural query replacing
-  the by-id query when the plural equals the name, and `inflected@2.1.0` pluralisation (`Inflection`).
+  the by-id query when the plural equals the name, and `inflected@2.1.0` pluralisation (`Inflection`). The type aliases
+  of `common.ts` have no class of their own: `TargetTypesMap` is `Map<String, TargetTypeMetadata>` and
+  `GraphQLNonInputType` is graphql-java's `GraphQLOutputType`; `DateScalar` is `Common.dateScalar()`.
 * graphql-java validates the schema when it is built (graphql-js on the first request): `generateSchema` throws (and
   caches) graphql-java's `InvalidSchemaException` (empty enums, object or input types without fields...); the
   dispatcher still answers `CONNECT`/`DISCONNECT`/websocket messages and returns the failure as the error of every

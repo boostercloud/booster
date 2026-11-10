@@ -71,6 +71,48 @@ class GraphQLExecutionTest extends BoosterTestSupport {
   }
 
   @Test
+  @SuppressWarnings("unchecked")
+  void executesTheSelectionOfASubscriptionForEveryReadModelOfThePubSub() {
+    String query = "subscription { ProductReadModels(filter: { sku: { eq: \"SKU-1\" } }) { id sku } }";
+    com.boostercloud.framework.core.services.pubsub.ReadModelPubSub pubSub =
+        (request, config) -> List.<Object>of(product(), Map.of("id", "product-2", "sku", "SKU-1")).iterator();
+    GraphQLResolverContext context = new GraphQLResolverContext("connection-1", new LinkedHashMap<>(),
+        GraphQLOperation.builder().query(query).id("operation-1").build(), UUID.of("request-1"), null, false, pubSub,
+        null);
+
+    ExecutionResult result = GraphQLExecution.execute(schema, Parser.parse(query), query, context, null, null);
+
+    assertThat(result.getErrors()).isEmpty();
+    List<Map<String, Object>> events = new java.util.ArrayList<>();
+    ((org.reactivestreams.Publisher<ExecutionResult>) result.getData()).subscribe(
+        new org.reactivestreams.Subscriber<>() {
+          @Override
+          public void onSubscribe(org.reactivestreams.Subscription subscription) {
+            subscription.request(Long.MAX_VALUE);
+          }
+
+          @Override
+          public void onNext(ExecutionResult event) {
+            events.add(GraphQLExecution.toResultMap(event));
+          }
+
+          @Override
+          public void onError(Throwable throwable) {
+            throw new AssertionError(throwable);
+          }
+
+          @Override
+          public void onComplete() {}
+        });
+    org.awaitility.Awaitility.await().until(() -> events.size() == 2);
+    assertThat(events).containsExactly(
+        Map.of("data", Map.of("ProductReadModels", Map.of("id", "product-1", "sku", "SKU-1"))),
+        Map.of("data", Map.of("ProductReadModels", Map.of("id", "product-2", "sku", "SKU-1"))));
+    org.mockito.Mockito.verify(readModelsReaders.constructed().getFirst(), org.mockito.Mockito.never())
+        .subscribe(any(), any(), any());
+  }
+
+  @Test
   void readsTheValuesOfReadModelInstances() {
     when(readModelsReaders.constructed().getFirst().findById(any())).thenReturn(product());
 
