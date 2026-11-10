@@ -132,7 +132,7 @@ reads the same key from `assets/certs/public.key`).
   websocket client is closed, where the TypeScript client keeps reconnecting in the background.
 * **`disconnect()` always ends the client.** A forced close while the client is between reconnection attempts
   cancels the pending reconnection (the JavaScript client ignores `close()` when it has no socket and comes back
-  later).
+  later). As in TypeScript, a client is not unusable afterwards: a new `subscribe` opens a new socket.
 * **Errors are exceptions.** The `connection_error` rejection value is `SubscriptionConnectionException.payload()`;
   the `error` message delivered to a subscription observer is a `GraphQLClientException` whose message is the
   first error's message (TypeScript passes the raw first error object); malformed websocket messages are

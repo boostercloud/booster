@@ -118,6 +118,21 @@ class SubscriptionClientTest {
     }
 
     @Test
+    @DisplayName("reports an unusable URL as a socket error and stays closed without reconnection")
+    void invalidUrl() {
+      List<Throwable> errors = new CopyOnWriteArrayList<>();
+      SubscriptionClient client =
+          new SubscriptionClient("http://127.0.0.1:1/websocket", SubscriptionClientOptions.builder().lazy(true).build());
+      clients.add(client);
+      client.onError(errors::add);
+
+      client.request(operation("subscription S { a }")).subscribe(new Recorder());
+
+      await().atMost(WAIT).until(() -> !errors.isEmpty());
+      await().atMost(WAIT).until(() -> client.status() == SubscriptionClient.Status.CLOSED);
+    }
+
+    @Test
     @DisplayName("reports unparseable and unknown messages to the error listeners")
     void badMessages() {
       List<Throwable> errors = new CopyOnWriteArrayList<>();

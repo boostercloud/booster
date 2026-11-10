@@ -162,6 +162,7 @@ class SleepTest {
     long start = System.nanoTime();
     Sleep.sleep(20);
     assertThat((System.nanoTime() - start) / 1_000_000).isGreaterThanOrEqualTo(19);
+    Sleep.sleep(-5); // like setTimeout, a negative delay does not wait (nor fail)
     Thread.currentThread().interrupt();
     try {
       assertThatThrownBy(() -> Sleep.sleep(1000)).isInstanceOf(CancellationException.class);

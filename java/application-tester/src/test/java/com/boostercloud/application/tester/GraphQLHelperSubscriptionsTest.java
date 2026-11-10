@@ -555,6 +555,20 @@ class GraphQLHelperSubscriptionsTest {
     }
 
     @Test
+    @DisplayName("a subscription after disconnect opens a new socket, like the JavaScript client")
+    void subscribeAfterDisconnect() {
+      DisconnectableGraphQLClient client = connect();
+      client.disconnect();
+
+      cartSubscription(client, "c1").subscribe(result -> {});
+
+      FakeSocket renewed = socket(1);
+      awaitMessages(renewed, 2);
+      assertThat(renewed.types()).containsExactly("connection_init", "start");
+      assertThat(renewed.messages("start").getFirst()).containsEntry("id", "1");
+    }
+
+    @Test
     @DisplayName("reconnect cannot block inside a subscription callback")
     void reconnectFromCallback() throws Exception {
       DisconnectableGraphQLClient client = connect();

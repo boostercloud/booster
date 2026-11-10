@@ -53,13 +53,13 @@ public final class Sleep {
   private Sleep() {}
 
   /**
-   * {@code sleep(ms)}: blocks the current thread.
+   * {@code sleep(ms)}: blocks the current thread (negative values do not wait, like {@code setTimeout}).
    *
    * @param ms milliseconds to wait
    * @throws java.util.concurrent.CancellationException when the thread is interrupted (the interrupt flag is kept)
    */
   public static void sleep(long ms) {
-    Retrier.Sleeper.THREAD_SLEEP.sleep(ms);
+    Retrier.Sleeper.THREAD_SLEEP.sleep(Math.max(0, ms));
   }
 
   /**
@@ -136,7 +136,7 @@ public final class Sleep {
         String message = isTruthy(checkResultValue) ? ". " + jsString(checkResultValue) : "";
         throw new IllegalStateException("[waitForIt] Timeout reached" + message);
       }
-      sleeper.sleep(trialDelayMs);
+      sleeper.sleep(Math.max(0, trialDelayMs));
     }
   }
 
