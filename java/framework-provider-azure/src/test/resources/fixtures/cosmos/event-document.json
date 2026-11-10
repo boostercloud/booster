@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "kind": "event",
+  "superKind": "domain",
+  "entityID": "42",
+  "requestID": "7b0f1d7e-5a52-4f5e-9d0e-1f2a3b4c5d6e",
+  "entityTypeName": "Cart",
+  "typeName": "CartItemAdded",
+  "value": {
+    "cartId": "42",
+    "sku": "ABC-1",
+    "quantity": 2
+  },
+  "createdAt": "2026-11-10T09:15:02.123Z",
+  "entityTypeName_entityID_kind": "Cart-42-event",
+  "id": "3f6e1c2a-8b7d-4e5f-9a0b-1c2d3e4f5a6b",
+  "_rid": "PaYSAPH7qAoCAAAAAAAAAA==",
+  "_self": "dbs/PaYSAA==/colls/PaYSAPH7qAo=/docs/PaYSAPH7qAoCAAAAAAAAAA==/",
+  "_etag": "\"0800f1c2-0000-0d00-0000-65a000000000\"",
+  "_attachments": "attachments/",
+  "_ts": 1762766102
+}

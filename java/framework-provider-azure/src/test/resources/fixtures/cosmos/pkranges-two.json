@@ -1,0 +1,38 @@
+{
+  "_rid": "PaYSAPH7qAo=",
+  "PartitionKeyRanges": [
+    {
+      "_rid": "PaYSAPH7qAo1AAAAAAAAUA==",
+      "id": "1",
+      "_etag": "\"0000e06f-0000-0d00-0000-65a000000001\"",
+      "minInclusive": "",
+      "maxExclusive": "7FFFFFFFFFFFFFFF",
+      "ridPrefix": 1,
+      "_self": "dbs/PaYSAA==/colls/PaYSAPH7qAo=/pkranges/PaYSAPH7qAo1AAAAAAAAUA==/",
+      "throughputFraction": 0.5,
+      "status": "online",
+      "parents": [
+        "0"
+      ],
+      "_ts": 1762766000,
+      "_lsn": 12
+    },
+    {
+      "_rid": "PaYSAPH7qAo2AAAAAAAAUA==",
+      "id": "2",
+      "_etag": "\"0000e06f-0000-0d00-0000-65a000000002\"",
+      "minInclusive": "7FFFFFFFFFFFFFFF",
+      "maxExclusive": "FF",
+      "ridPrefix": 2,
+      "_self": "dbs/PaYSAA==/colls/PaYSAPH7qAo=/pkranges/PaYSAPH7qAo2AAAAAAAAUA==/",
+      "throughputFraction": 0.5,
+      "status": "online",
+      "parents": [
+        "0"
+      ],
+      "_ts": 1762766000,
+      "_lsn": 12
+    }
+  ],
+  "_count": 2
+}

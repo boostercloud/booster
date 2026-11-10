@@ -1,0 +1,26 @@
+{
+  "partitionedQueryExecutionInfoVersion": 2,
+  "queryInfo": {
+    "distinctType": "Unordered",
+    "top": null,
+    "offset": 1,
+    "limit": 2,
+    "orderBy": [],
+    "orderByExpressions": [],
+    "groupByExpressions": [],
+    "groupByAliases": [],
+    "aggregates": [],
+    "groupByAliasToAggregateType": {},
+    "rewrittenQuery": "SELECT DISTINCT c.entityID\nFROM c\nWHERE ((c[\"kind\"] = @kind_0) AND (c[\"entityTypeName\"] = @entityTypeName_0) AND NOT IS_DEFINED(c[\"deletedAt\"]))\nOFFSET 0 LIMIT 3",
+    "hasSelectValue": false,
+    "dCountInfo": null
+  },
+  "queryRanges": [
+    {
+      "min": "",
+      "max": "FF",
+      "isMinInclusive": true,
+      "isMaxInclusive": false
+    }
+  ]
+}
