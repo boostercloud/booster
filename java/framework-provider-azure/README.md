@@ -114,8 +114,14 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
     continuation tokens, the others (`ORDER BY`, `DISTINCT`, `OFFSET/LIMIT`, `TOP`, `VALUE` aggregates) run on every
     overlapping partition key range and are merged by the client, as the SDK's query pipeline does. Paginated
     pipeline queries use client tokens `booster-pipeline-skip:<n>` (opaque to Booster, which only passes them back);
-    each page re-runs the ranges. `GROUP BY` and non-`VALUE` aggregates are rejected (Booster issues neither). A
-    gateway refusal (400/1004) falls back to the pipeline.
+    each page re-runs the ranges, but a page of `p` rows after `n` rows of a plain `ORDER BY` query (or a plain query
+    the gateway refused) reads at most `n + p + 1` rows of each range (`x-ms-max-item-count`, continuations not
+    followed further; plain queries stop at the first ranges that give them), never the whole result set. The SDK
+    instead resumes each range from its own continuation with an order-by filter, so a deep page (`n` large) costs
+    the Java client up to `n + p + 1` rows per range where the SDK reads about `p`; queries with `DISTINCT`,
+    aggregates, `OFFSET/LIMIT` or `TOP` (bounded by their rewritten range query) still read every range in full.
+    `GROUP BY` and non-`VALUE` aggregates are rejected (Booster issues neither). A gateway refusal (400/1004) falls
+    back to the pipeline.
   * Event Hubs: the REST "send batch events" API with a SAS token; each message is
     `{"Body": "<JSON>", "BrokerProperties": {"PartitionKey": "<entity>-<id>-event"}}`; batches are limited to
     256 KiB of REST payload, the publication limit of the Basic namespace the infrastructure deploys (the JS SDK sizes

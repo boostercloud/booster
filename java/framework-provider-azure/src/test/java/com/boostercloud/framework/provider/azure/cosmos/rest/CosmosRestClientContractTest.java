@@ -620,6 +620,68 @@ class CosmosRestClientContractTest {
       assertThat(second.continuationToken()).isNull();
     }
 
+    private Response row(String id, int orderValue) {
+      return documents(null, obj("orderByItems", List.of(obj("item", orderValue)), "payload", obj("id", id)));
+    }
+
+    private Object orderByRow(String id, int orderValue) {
+      return obj("orderByItems", List.of(obj("item", orderValue)), "payload", obj("id", id));
+    }
+
+    @Test
+    void aPagedOrderByQueryReadsAtMostSkipPlusPagePlusOneItemsOfEachRange() {
+      SqlQuerySpec orderBy = new SqlQuerySpec("SELECT * FROM c ORDER BY c.createdAt DESC", List.of());
+      String plan = Fixtures.read("cosmos/query-plan-order-by.json")
+          .replace("\"offset\": 0", "\"offset\": null").replace("\"limit\": 3", "\"limit\": null")
+          .replace("\\nOFFSET 0 LIMIT 3", "");
+      server.enqueue(Response.json(200, plan)).enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          // range 1 holds 9, 7, 5, 3, 1 (more pages behind "r1-3"); range 2 holds 8 and nothing else
+          .enqueue(documents("r1-2", orderByRow("9", 9), orderByRow("7", 7)))
+          .enqueue(documents("r1-3", orderByRow("5", 5)))
+          .enqueue(documents(null, orderByRow("8", 8)))
+          .enqueue(Response.json(200, plan)).enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          .enqueue(documents("r1-3", orderByRow("9", 9), orderByRow("7", 7), orderByRow("5", 5)))
+          .enqueue(documents("r1-4", orderByRow("3", 3)))
+          .enqueue(documents(null, orderByRow("1", 1)))
+          .enqueue(row("8", 8));
+
+      FeedResponse first = events(client()).items().query(orderBy, new FeedOptions(null, 2, null)).fetchNext();
+      FeedResponse second = events(client()).items()
+          .query(orderBy, new FeedOptions(first.continuationToken(), 2, null)).fetchNext();
+
+      assertThat(first.resources()).containsExactly(obj("id", "9"), obj("id", "8"));
+      assertThat(first.continuationToken()).isEqualTo("booster-pipeline-skip:2");
+      assertThat(server.requests()).hasSize(11);
+      // first page: 0 + 2 + 1 = 3 items per range at most, asked with x-ms-max-item-count, "r1-3" never followed
+      assertThat(server.request(2).header("x-ms-max-item-count")).isEqualTo("3");
+      assertThat(server.request(3).header("x-ms-continuation")).isEqualTo("r1-2");
+      assertThat(server.request(3).header("x-ms-max-item-count")).isEqualTo("1");
+      assertThat(server.request(4).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("2");
+      assertThat(server.request(4).header("x-ms-max-item-count")).isEqualTo("3");
+      // second page: 2 + 2 + 1 = 5 per range
+      assertThat(server.request(7).header("x-ms-max-item-count")).isEqualTo("5");
+      assertThat(server.request(8).header("x-ms-max-item-count")).isEqualTo("2");
+      assertThat(server.request(9).header("x-ms-max-item-count")).isEqualTo("1");
+      assertThat(server.request(10).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("2");
+      assertThat(second.resources()).containsExactly(obj("id", "7"), obj("id", "5"));
+      assertThat(second.continuationToken()).isEqualTo("booster-pipeline-skip:4");
+    }
+
+    @Test
+    void aPagedPlainPipelineQueryStopsReadingRangesOnceThePageIsKnown() {
+      server.enqueue(Fixtures.response("cosmos/query-plan-gateway.json", 200))
+          .enqueue(Fixtures.response("cosmos/error-400-not-servable.json", 400).withHeader("x-ms-substatus", "1004"))
+          .enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          .enqueue(documents("more", obj("id", "1"), obj("id", "2"), obj("id", "3")));
+
+      FeedResponse first = events(client()).items().query(spec, new FeedOptions(null, 2, null)).fetchNext();
+
+      assertThat(first.resources()).containsExactly(obj("id", "1"), obj("id", "2"));
+      assertThat(first.continuationToken()).isEqualTo("booster-pipeline-skip:2");
+      assertThat(server.requests()).hasSize(4);
+      assertThat(server.request(3).header("x-ms-max-item-count")).isEqualTo("3");
+    }
+
     @Test
     void theGatewayRefusingAQueryFallsBackToThePipeline() {
       server.enqueue(Fixtures.response("cosmos/query-plan-gateway.json", 200))

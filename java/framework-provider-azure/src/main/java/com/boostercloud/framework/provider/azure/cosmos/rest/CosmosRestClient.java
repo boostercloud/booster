@@ -45,7 +45,9 @@ import java.util.function.Supplier;
  *   <li>cross-partition queries ask the gateway for a query plan; queries the gateway can serve (plain filters and
  *       projections) are fanned out by the gateway and paged with its continuation tokens, the others
  *       ({@code ORDER BY}, {@code DISTINCT}, {@code OFFSET/LIMIT}, {@code TOP}, {@code VALUE} aggregates) run against
- *       every overlapping partition key range and are merged by the client, as the SDK's query pipeline does.
+ *       every overlapping partition key range and are merged by the client, as the SDK's query pipeline does. Paged
+ *       pipeline queries ({@code fetchNext}) use {@code booster-pipeline-skip:<n>} tokens; plain {@code ORDER BY} and
+ *       concatenation merges read only the first {@code n + pageSize + 1} rows of each range.
  * </ul>
  */
 public final class CosmosRestClient implements CosmosClient {
@@ -55,6 +57,19 @@ public final class CosmosRestClient implements CosmosClient {
   static final String QUERY_VERSION = "1.4";
   static final String PIPELINE_TOKEN_PREFIX = "booster-pipeline-skip:";
   private static final int CROSS_PARTITION_QUERY_NOT_SERVABLE = 1004;
+  /** Largest {@code x-ms-max-item-count} sent for a bounded partition key range read. */
+  static final int MAX_ITEM_COUNT = 1000;
+
+  /**
+   * @param plan a query plan
+   * @return whether the first {@code n} merged results only depend on the first rows of each range (a plain
+   *     {@code ORDER BY} merge or a concatenation), so a paged pipeline query can stop reading early
+   */
+  static boolean isBoundable(CosmosQueryPlan plan) {
+    return plan.aggregates().isEmpty() && plan.groupByExpressions().isEmpty() && plan.top() == null
+        && plan.offset() == null && plan.limit() == null
+        && (plan.distinctType() == null || plan.distinctType().equals("None"));
+  }
 
   private final CosmosRestTransport transport;
   private final Supplier<String> idGenerator;
@@ -351,7 +366,7 @@ public final class CosmosRestClient implements CosmosClient {
           continuation = null;
         }
       }
-      List<Object> all = runPipeline();
+      List<Object> all = runPipeline(null);
       finished = true;
       return com.boostercloud.framework.provider.azure.cosmos.FeedResponse.of(skip(all, pipelineSkip()));
     }
@@ -380,8 +395,12 @@ public final class CosmosRestClient implements CosmosClient {
           continuation = null;
         }
       }
-      List<Object> all = runPipeline();
       int skip = pipelineSkip();
+      // A page needs the first skip + page size results; one more tells whether another page exists.
+      Integer needed = maxItemCount == null || maxItemCount <= 0
+          ? null
+          : (int) Math.min(Integer.MAX_VALUE, (long) skip + maxItemCount + 1);
+      List<Object> all = runPipeline(needed);
       List<Object> remaining = skip(all, skip);
       int pageSize = maxItemCount == null || maxItemCount < 0 ? remaining.size() : maxItemCount;
       List<Object> page = new ArrayList<>(remaining.subList(0, Math.min(pageSize, remaining.size())));
@@ -455,7 +474,18 @@ public final class CosmosRestClient implements CosmosClient {
       return CosmosQueryPlan.fromJson(response.json());
     }
 
-    private List<Object> runPipeline() {
+    /**
+     * Runs the plan's query on every overlapping partition key range and merges the results.
+     *
+     * @param needed how many merged results the caller needs (the first {@code needed}), or {@code null} for all.
+     *     When the merge is a plain {@code ORDER BY} merge or a concatenation (no aggregate, {@code DISTINCT},
+     *     {@code OFFSET/LIMIT} or {@code TOP}, whose results depend on rows beyond the first ones), each range is read
+     *     only until it has given {@code needed} rows ({@code ORDER BY}: the first {@code needed} merged rows are among
+     *     the first {@code needed} of every range) or until the ranges read so far gave {@code needed} rows
+     *     (concatenation), asking the gateway for no more than that with {@code x-ms-max-item-count}
+     * @return the merged results (at least the first {@code needed} ones)
+     */
+    private List<Object> runPipeline(Integer needed) {
       if (plan == null) {
         plan = fetchQueryPlan();
       }
@@ -470,24 +500,39 @@ public final class CosmosRestClient implements CosmosClient {
                 + querySpec.query());
       }
       SqlQuerySpec rangeQuery = querySpec.withQuery(plan.queryForRanges(querySpec.query()));
+      Integer budget = needed != null && isBoundable(plan) ? needed : null;
+      boolean perRangeBudget = !plan.orderBy().isEmpty();
       List<List<Object>> perRange = new ArrayList<>();
+      int collected = 0;
       for (String rangeId : overlappingRangeIds(plan)) {
-        List<Object> results = new ArrayList<>();
-        String rangeContinuation = null;
-        do {
-          Map<String, String> headers = queryHeaders();
-          headers.put("x-ms-documentdb-query-enablecrosspartition", "True");
-          headers.put("x-ms-documentdb-partitionkeyrangeid", rangeId);
-          if (rangeContinuation != null) {
-            headers.put("x-ms-continuation", rangeContinuation);
-          }
-          Page page = queryPage(rangeQuery, headers);
-          results.addAll(page.items());
-          rangeContinuation = page.continuation();
-        } while (rangeContinuation != null);
+        Integer rangeLimit = budget == null ? null : perRangeBudget ? budget : budget - collected;
+        List<Object> results = rangeLimit != null && rangeLimit <= 0
+            ? new ArrayList<>()
+            : queryRange(rangeQuery, rangeId, rangeLimit);
+        collected += results.size();
         perRange.add(results);
       }
       return CosmosQueryPipeline.combine(plan, perRange);
+    }
+
+    private List<Object> queryRange(SqlQuerySpec rangeQuery, String rangeId, Integer limit) {
+      List<Object> results = new ArrayList<>();
+      String rangeContinuation = null;
+      do {
+        Map<String, String> headers = queryHeaders();
+        headers.put("x-ms-documentdb-query-enablecrosspartition", "True");
+        headers.put("x-ms-documentdb-partitionkeyrangeid", rangeId);
+        if (limit != null) {
+          headers.put("x-ms-max-item-count", Integer.toString(Math.min(limit - results.size(), MAX_ITEM_COUNT)));
+        }
+        if (rangeContinuation != null) {
+          headers.put("x-ms-continuation", rangeContinuation);
+        }
+        Page page = queryPage(rangeQuery, headers);
+        results.addAll(page.items());
+        rangeContinuation = page.continuation();
+      } while (rangeContinuation != null && (limit == null || results.size() < limit));
+      return limit != null && results.size() > limit ? new ArrayList<>(results.subList(0, limit)) : results;
     }
 
     private List<String> overlappingRangeIds(CosmosQueryPlan queryPlan) {
