@@ -34,7 +34,9 @@ import com.boostercloud.framework.types.envelope.EventParametersFilterByType;
 import com.boostercloud.framework.types.envelope.EventSearchResponse;
 import com.boostercloud.framework.types.envelope.PaginatedEntitiesIdsResult;
 import com.boostercloud.framework.types.provider.ProviderEventsLibrary;
+import com.boostercloud.framework.types.envelope.ReadModelListResult;
 import com.boostercloud.framework.types.provider.ProviderLibrary;
+import com.boostercloud.framework.types.provider.ProviderReadModelsLibrary;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +152,25 @@ class BoosterTest extends BoosterTestSupport {
       verify(reader, times(1)).readModelSearch(eq(TestReadModel.class), eq(Map.of()), eq(Map.of()), isNull(), isNull(),
           eq(false), isNull());
     }
+  }
+
+  @Test
+  @SuppressWarnings("deprecation")
+  void theSearcherCallsTheProviderSearchOnceWithTheTypeScriptArgumentsAndReturnsInstances() {
+    ProviderLibrary provider = mock(ProviderLibrary.class);
+    ProviderReadModelsLibrary readModels = mock(ProviderReadModelsLibrary.class);
+    when(provider.readModels()).thenReturn(readModels);
+    when(readModels.search(any(), any(), any(), any(), any(), any(), any(), any()))
+        .thenReturn(ReadModelListResult.of(List.of(Map.of("id", "42"))));
+    Booster.config().setProvider(provider);
+
+    List<TestReadModel> results = Booster.readModel(TestReadModel.class).search();
+
+    // TypeScript: search(any, 'TestReadModel', any, {}, undefined, undefined, false, undefined), called once
+    verify(readModels, times(1)).search(eq(Booster.config()), eq("TestReadModel"), eq(Map.of()), eq(Map.of()), isNull(),
+        isNull(), eq(false), isNull());
+    assertThat(results).singleElement().isInstanceOf(TestReadModel.class)
+        .extracting(TestReadModel::getId).isEqualTo("42");
   }
 
   @Test
