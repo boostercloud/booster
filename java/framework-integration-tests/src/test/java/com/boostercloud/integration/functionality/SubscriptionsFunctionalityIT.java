@@ -51,6 +51,10 @@ import org.junit.jupiter.api.Test;
  *       subscription: in TypeScript (and here, faithfully) the second {@code promisifyNextSubscriptionResult} resolves
  *       at once with the result received before the reconnection, because an Apollo observable hands its latest
  *       result to every new observer.</li>
+ *   <li>Every block that disconnects clients waits until the server has deleted their connection and subscription
+ *       data ({@link #awaitCountsBackTo(Counts)}). The server deletes it asynchronously when a client terminates, so
+ *       without that wait the next test can count rows that are about to disappear and then wait forever for an
+ *       exact count (TypeScript's {@code terminate} tests swallow exactly that timeout).</li>
  * </ul>
  */
 @EndToEnd
@@ -145,20 +149,39 @@ class SubscriptionsFunctionalityIT {
     countConnections = applicationUnderTest.count()::connections;
   }
 
+  /** The stored subscriptions and connections at one moment. */
+  private record Counts(long subscriptions, long connections) {}
+
+  private Counts counts() {
+    return new Counts(countSubscriptions.get(), countConnections.get());
+  }
+
+  /**
+   * Waits (at most a minute) until the server has deleted the data of the clients disconnected since {@code counts}
+   * were taken, so that the next test starts from settled counts.
+   */
+  private void awaitCountsBackTo(Counts counts) {
+    waitForIt(this::counts, now -> now.equals(counts) ? Boolean.TRUE : "counts " + now + ", expected " + counts,
+        100, 60000);
+  }
+
   @Nested
   @Order(1)
   @DisplayName("the \"unsubscribe\" operation")
   class TheUnsubscribeOperation {
+    private Counts initialCounts;
     private DisconnectableGraphQLClient client;
 
     @BeforeAll
     void before() {
+      initialCounts = counts();
       client = applicationUnderTest.graphql().clientWithSubscriptions();
     }
 
     @AfterAll
     void after() {
       client.disconnect();
+      awaitCountsBackTo(initialCounts);
     }
 
     @Test
@@ -190,6 +213,7 @@ class SubscriptionsFunctionalityIT {
     @Order(1)
     @DisplayName("should delete all subscription of the connectionID when socket is disconnected")
     void shouldDeleteAllSubscriptionOfTheConnectionIdWhenSocketIsDisconnected() {
+      Counts initialCounts = counts();
       DisconnectableGraphQLClient clientA = applicationUnderTest.graphql().clientWithSubscriptions();
       DisconnectableGraphQLClient clientB = applicationUnderTest.graphql().clientWithSubscriptions();
       try {
@@ -217,12 +241,14 @@ class SubscriptionsFunctionalityIT {
         clientA.disconnect();
         clientB.disconnect();
       }
+      awaitCountsBackTo(initialCounts);
     }
 
     @Test
     @Order(2)
     @DisplayName("should delete connection data when socket is disconnected")
     void shouldDeleteConnectionDataWhenSocketIsDisconnected() {
+      Counts initialCounts = counts();
       long connectionsCount = countConnections.get();
       DisconnectableGraphQLClient client = applicationUnderTest.graphql().clientWithSubscriptions();
       try {
@@ -232,6 +258,7 @@ class SubscriptionsFunctionalityIT {
       } finally {
         client.disconnect();
       }
+      awaitCountsBackTo(initialCounts);
     }
   }
 
@@ -240,10 +267,12 @@ class SubscriptionsFunctionalityIT {
   @DisplayName("when socket reconnects ")
   class WhenSocketReconnects {
     private static final int CLIENT_COUNT = 2;
+    private Counts initialCounts;
     private List<DisconnectableGraphQLClient> clients;
 
     @BeforeAll
     void before() {
+      initialCounts = counts();
       clients = new ArrayList<>();
       for (int i = 0; i < CLIENT_COUNT; i++) {
         clients.add(applicationUnderTest.graphql().clientWithSubscriptions());
@@ -253,6 +282,7 @@ class SubscriptionsFunctionalityIT {
     @AfterAll
     void after() {
       clients.forEach(DisconnectableGraphQLClient::disconnect);
+      awaitCountsBackTo(initialCounts);
     }
 
     @Test
@@ -288,16 +318,19 @@ class SubscriptionsFunctionalityIT {
   @Order(4)
   @DisplayName("with filters")
   class WithFilters {
+    private Counts initialCounts;
     private DisconnectableGraphQLClient client;
 
     @BeforeAll
     void before() {
+      initialCounts = counts();
       client = applicationUnderTest.graphql().clientWithSubscriptions();
     }
 
     @AfterAll
     void after() {
       client.disconnect();
+      awaitCountsBackTo(initialCounts);
     }
 
     @Test
@@ -424,16 +457,19 @@ class SubscriptionsFunctionalityIT {
     @Order(1)
     @DisplayName("with an anonymous user")
     class WithAnAnonymousUser {
+      private Counts initialCounts;
       private DisconnectableGraphQLClient client;
 
       @BeforeEach
       void beforeEach() {
+        initialCounts = counts();
         client = applicationUnderTest.graphql().clientWithSubscriptions();
       }
 
       @AfterEach
       void afterEach() {
         client.disconnect();
+        awaitCountsBackTo(initialCounts);
       }
 
       @Nested
@@ -452,10 +488,12 @@ class SubscriptionsFunctionalityIT {
     @Order(2)
     @DisplayName("with a user without the required role")
     class WithAUserWithoutTheRequiredRole {
+      private Counts initialCounts;
       private DisconnectableGraphQLClient loggedClient;
 
       @BeforeEach
       void beforeEach() {
+        initialCounts = counts();
         String userToken = applicationUnderTest.token().forUser(internet.email(), "UserThatHasNoBusinesWithProducts");
         loggedClient = applicationUnderTest.graphql().clientWithSubscriptions(userToken);
       }
@@ -463,6 +501,7 @@ class SubscriptionsFunctionalityIT {
       @AfterEach
       void afterEach() {
         loggedClient.disconnect();
+        awaitCountsBackTo(initialCounts);
       }
 
       @Nested
@@ -481,10 +520,12 @@ class SubscriptionsFunctionalityIT {
     @Order(3)
     @DisplayName("with a user with the required role")
     class WithAUserWithTheRequiredRole {
+      private Counts initialCounts;
       private DisconnectableGraphQLClient loggedClient;
 
       @BeforeEach
       void beforeEach() {
+        initialCounts = counts();
         String userToken = applicationUnderTest.token().forUser(internet.email(), "UserWithEmail");
         loggedClient = applicationUnderTest.graphql().clientWithSubscriptions(userToken);
       }
@@ -492,6 +533,7 @@ class SubscriptionsFunctionalityIT {
       @AfterEach
       void afterEach() {
         loggedClient.disconnect();
+        awaitCountsBackTo(initialCounts);
       }
 
       @Nested
