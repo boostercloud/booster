@@ -741,6 +741,27 @@ public class Datastore implements AutoCloseable {
   }
 
   /**
+   * Java-only: builds the documents while holding the write lock, then inserts them like {@link #insert(List)}. Values
+   * the builder takes (a timestamp, a sequence number) therefore follow the order in which documents become visible:
+   * nothing else is written to this collection between building and inserting.
+   *
+   * @param builder returns the documents; it may be called again if the caller retries
+   * @return copies of the stored documents
+   */
+  public List<Map<String, Object>> insertBuilt(Supplier<? extends List<? extends Map<String, Object>>> builder) {
+    loadDatabaseIfNeeded();
+    Lock write = lock.writeLock();
+    write.lock();
+    try {
+      ensureOpen();
+      // the write lock is reentrant: insert(List) runs atomically with the builder
+      return insert(builder.get());
+    } finally {
+      write.unlock();
+    }
+  }
+
+  /**
    * {@code updateAsync(query, update, options)}: replaces the matching document(s) with {@code update}, or applies its
    * modifiers ({@code $set}, ...). Without {@code multi} only the first match is updated. With {@code upsert}, a
    * document is inserted when nothing matches.

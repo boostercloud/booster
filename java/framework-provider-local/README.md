@@ -102,7 +102,7 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   never touched, so recovery can run while the application serves requests.
 * **Atomic event batches** (not in TypeScript). `events.store` writes the events of one batch (what one command,
   event handler or scheduled command registered) with a single flushed append, framed by a `{"$$batch":<n>}` header
-  (`EventRegistry.storeAll`). A failed write is truncated away, and a crash that cuts the append at any byte
+  (`EventRegistry.storeEventBatch`). A failed write is truncated away, and a crash that cuts the append at any byte
   (a `SIGKILL` during a short write, a power loss before the flush completed) leaves a batch that the next load
   discards as a whole: all of the events are stored or none, a command is never half applied. TypeScript (and
   `EventsAdapter.storeEvents` without journal) inserts them one by one.
@@ -145,6 +145,13 @@ Provider:
   never finds anything, so websocket operations ran without the user, Q2); `readModels.deleteSubscription`
   matches `operation.id` (TypeScript filters on a `subscriptionID` field that does not exist, so `stop` never
   deleted anything, Q9).
+* `events.store` gives each event its `createdAt` while holding the events write lock, strictly increasing within
+  the process (the current time, or 1 ms after the previous event when the clock did not move on or went back), so
+  the `createdAt` order of the events is the order in which they become visible. Core reduces an entity from its
+  latest snapshot with the events created strictly after it, and on virtual threads an event stamped before the lock
+  could become visible after a newer one had been snapshotted, and be left out of its entity for good (TypeScript's
+  single-threaded executor keeps the order; there, events of the same millisecond share a `createdAt`). Under a burst
+  of more than one event per millisecond, `createdAt` can run a few milliseconds ahead of the clock.
 * `events.store` returns (and dispatches) the events with their database `id`, records them in the dispatch
   journal, stores the batch atomically (one append; TypeScript stores the events one by one, so a failure or a
   crash can leave the first ones stored), and `events.storeDispatched` deduplicates through that journal

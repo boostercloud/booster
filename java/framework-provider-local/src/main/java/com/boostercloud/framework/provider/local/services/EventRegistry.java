@@ -6,7 +6,11 @@ import com.boostercloud.framework.provider.local.store.Datastore;
 import com.boostercloud.framework.provider.local.store.DatastoreOptions;
 import com.boostercloud.framework.provider.local.store.Js;
 import com.boostercloud.framework.provider.local.store.UpdateOptions;
+import com.boostercloud.framework.types.Dates;
 import java.nio.file.Path;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,10 +24,18 @@ import java.util.Objects;
  * <p>Queries are NeDB queries over the stored documents ({@code Map<String, Object>} with the envelope fields plus
  * {@code _id}). Results are sorted by {@code createdAt} (ISO strings, so lexical order is chronological); documents
  * with the same {@code createdAt} come in insertion order (TypeScript: random {@code _id} order).
+ *
+ * <p>Java-only: {@link #storeEventBatch(List)} gives events their {@code createdAt} while holding the collection's
+ * write lock, from a clock that never goes back and never repeats within the registry, so the {@code createdAt} order
+ * of the events is the order in which they become visible. Core reduces an entity from its latest snapshot with the
+ * events created strictly after it, so an event that became visible after a snapshot but carried an older (or the
+ * same) {@code createdAt} would be left out of the entity forever.
  */
 public class EventRegistry {
 
   private final Datastore events;
+  /** The last {@code createdAt} given by {@link #storeEventBatch}, in epoch milliseconds; guarded by the write lock. */
+  private long lastCreatedAt = Long.MIN_VALUE;
 
   /** A registry on {@code .booster/events.json} in the working directory ({@code new EventRegistry()}). */
   public EventRegistry() {
@@ -170,6 +182,57 @@ public class EventRegistry {
     }
     loadDatabaseIfNeeded();
     events.insert(storableObjects);
+  }
+
+  /**
+   * Java-only: inserts the events of one batch atomically, like {@link #storeAll(List)}, setting their
+   * {@code createdAt} while holding the events write lock. Each event gets the current time of {@link Dates}, or one
+   * millisecond more than the previous event of this registry when the clock has not moved on (or went back), so
+   * {@code createdAt} grows strictly in the order in which events become visible. The first batch of the registry
+   * starts after the latest {@code createdAt} already stored.
+   *
+   * @param storableObjects the event documents; their {@code createdAt} entry is replaced (keeping its position)
+   * @return the {@code createdAt} given to each event, in order
+   */
+  public List<String> storeEventBatch(List<Map<String, Object>> storableObjects) {
+    if (storableObjects.isEmpty()) {
+      return List.of();
+    }
+    loadDatabaseIfNeeded();
+    List<String> createdAts = new ArrayList<>(storableObjects.size());
+    events.insertBuilt(() -> {
+      createdAts.clear();
+      for (Map<String, Object> event : storableObjects) {
+        String createdAt = nextCreatedAt();
+        event.put("createdAt", createdAt);
+        createdAts.add(createdAt);
+      }
+      return storableObjects;
+    });
+    return List.copyOf(createdAts);
+  }
+
+  /** Called with the write lock held. */
+  private String nextCreatedAt() {
+    if (lastCreatedAt == Long.MIN_VALUE) {
+      lastCreatedAt = latestStoredCreatedAt();
+    }
+    long now = Dates.nowEpochMillis();
+    lastCreatedAt = lastCreatedAt == Long.MIN_VALUE ? now : Math.max(now, lastCreatedAt + 1);
+    return Dates.toIso(lastCreatedAt);
+  }
+
+  private long latestStoredCreatedAt() {
+    List<Map<String, Object>> latest = events.find(Map.of(), Map.of("createdAt", 1))
+        .sort(Map.of("createdAt", -1)).limit(1).exec();
+    if (!latest.isEmpty() && latest.get(0).get("createdAt") instanceof String createdAt) {
+      try {
+        return Instant.parse(createdAt).toEpochMilli();
+      } catch (DateTimeParseException e) {
+        return Long.MIN_VALUE;
+      }
+    }
+    return Long.MIN_VALUE;
   }
 
   /**
