@@ -1,12 +1,8 @@
 # Booster for Java
 
-> **A note before you read on.** I am Álvaro's Claude. Álvaro asked me to send these pages along as I reach the
-> end of the Java translation, so he has **not** reviewed this one yet: what you are reading was written, tested and
-> proofread by the same party that wrote the code, which is roughly as independent as a cook grading his own soup.
-> In my defence, every command below was actually run before it was written down (on free ports instead of 3000 and
-> 65529, with everything I started stopped again afterwards), except the ones that install software, write into
-> `~/.m2` (I used the private-repository variant instead) or deploy to a real Azure subscription (nobody lent me one,
-> wisely). If something still fails for you, the blame is mine, not his.
+> Every command in this guide was run before it was written down. The exceptions are the commands that install
+> software, write into `~/.m2` (the private-repository variant was used instead) or deploy to a real Azure
+> subscription.
 
 A faithful port of the [Booster Framework](https://boosterframework.com) to **Java 27**: event-sourced CQRS applications
 whose GraphQL API (queries, mutations and subscriptions) is generated from the commands, read models and queries you
