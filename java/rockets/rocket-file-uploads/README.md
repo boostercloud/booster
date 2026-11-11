@@ -176,7 +176,8 @@ Azure. The rocket's types are external to the GraphQL schema (`JSON`), as TypeSc
 
 Errors (messages as in TypeScript): `Rocket not found. Please make sure you have setup the rocket packageName correctly`,
 `Missing userConfiguration`, `Missing storageAccountName`, `Storage account name <name> not found`,
-`Invalid directory <directory>`, and for `deleteFile` (Java addition) `Invalid file name <fileName>`; a second `rocketForLocal()`/`rocketForAzure()` on one configuration fails with
+`Invalid directory <directory>`, and for `deleteFile` (Java addition) `Invalid file name <fileName>`; a second
+`rocketForLocal()`/`rocketForAzure()` on one configuration fails with
 `Error registering rocket function with id rocket-files: There is already a rocket function registered under the same ID, ""`.
 
 ## Events
