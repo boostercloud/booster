@@ -200,6 +200,24 @@ class FilterOperatorSemanticsTest {
   }
 
   @Test
+  void aPatternThatBacktracksCatastrophicallyFailsTheSearchInsteadOfPinningTheThread() {
+    // client-supplied patterns run against every stored read model of the type (also through contains, beginsWith
+    // and includes, whose operands are regular-expression sources, as in TypeScript)
+    store("Product", map("id", "p5", "name", "a".repeat(40) + "!"));
+    org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(60), () -> {
+      assertThatThrownBy(() -> search(map("name", map("regex", "^(.*a){20}$"))))
+          .isInstanceOf(JsRegExp.TooComplexError.class)
+          .hasMessage("The regular expression /^(.*a){20}$/ is too complex to evaluate against a value of 41 "
+              + "characters; simplify it");
+      assertThatThrownBy(() -> search(map("name", map("iRegex", "^(.*A){20}$"))))
+          .isInstanceOf(JsRegExp.TooComplexError.class);
+      assertThatThrownBy(() -> search(map("name", map("contains", "(.*a){20}$"))))
+          .isInstanceOf(JsRegExp.TooComplexError.class);
+    });
+    assertThat(search(map("name", map("regex", "^a+!$")))).containsExactly("p5");
+  }
+
+  @Test
   void sortingFollowsNedbOrderAcrossTypesAndOnlyAscSortsAscending() {
     // numbers before strings; missing values first
     assertThat(ids(search(map(), map("price", "ASC"), null, null))).containsExactly("p2", "p4", "p1", "p3");

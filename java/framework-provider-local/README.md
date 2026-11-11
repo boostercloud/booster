@@ -136,6 +136,14 @@ Store (NeDB replacement):
   implementations instead of becoming a corrupt line for NeDB.
 * Memory-only lookup indexes (on `entityID`, `entityTypeName`, `typeName`, `value.id`, `connectionID`,
   `className`) narrow equality queries; they are never persisted and never change results or their order.
+* Regular-expression evaluation is bounded (security): filters hand client text to the store as patterns
+  (`regex`, `iRegex`, and the unescaped sources of `contains`/`beginsWith`/`includes`), and a backtracking engine can
+  take exponential time on a short value (`^(.*a){20}$`). An evaluation over a value of `n` characters may read
+  `max(10⁸, 4·n²)` characters of it (at most 10⁹: from about half a second to a few seconds of CPU), which keeps
+  quadratic patterns such as `.*x.*y` over long values working; beyond that, or deeper recursion than the stack
+  allows (a repeated alternation over a very long value), the search fails with `JsRegExp.TooComplexError`
+  (`The regular expression /…/ is too complex to evaluate against a value of N characters; simplify it`). TypeScript
+  has no limit.
 * Regular expressions keep JavaScript's syntax: `JsRegExp` translates the source (Annex B grammar, flags `i`, `m`,
   `s`, `u`) into an equivalent Java pattern, so a lone `{`, `\s` with Unicode spaces, `$` at the very end only,
   identity and octal escapes, `[]`/`[^]` and the like behave as in JavaScript, and invalid sources throw
@@ -220,7 +228,8 @@ ascending (Q5), the projection quirks of `select` (Q6, Q7), the TTL index never 
 `expirationTime`s and losing its TTL after a reload (Q8), event search returning soft-deleted events (Q16),
 soft-deleted events gaining an `id` field (Q17), the `.booster` files being created lazily so that the
 database health checks report `DOWN` until first use (Q19), unescaped regular-expression sources for
-`contains`/`beginsWith`/`includes`, and `deleteReadModel` swallowing registry errors.
+`contains`/`beginsWith`/`includes` (their evaluation is bounded like any pattern's, see above), and `deleteReadModel`
+swallowing registry errors.
 
 ## Not implemented
 

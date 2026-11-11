@@ -366,7 +366,11 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   `sendMessage` calls in that order).
 * The pub-sub keeps the TypeScript in-memory filter (first top-level property only, `includes` and nested filters decide
   alone, `isDefined` ignored, combinators fail); values are compared in their JSON form and regular expressions use the
-  Java dialect. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
+  Java dialect. A `regex`/`iRegex` evaluation is bounded (security: the subscriber's pattern runs on every change):
+  beyond `max(10⁸, 4·n²)` characters read over a value of `n` characters (at most 10⁹), or the stack, that
+  subscription fails with `The regular expression /…/ is too complex to evaluate ...` instead of pinning the thread
+  that stores the read model; TypeScript has no limit. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher`
+  adapts it for graphql-java.
 * `BoosterSubscribersNotifier` executes the stored document with `GraphQLExecution` on graphql-java (TypeScript:
   `graphql.subscribe`), with `KEEP_SUBSCRIPTION_EVENTS_ORDERED`; a second constructor takes the schema (tests and
   embedders). As in TypeScript, searches with a selection (every GraphQL list query) return the stored properties
