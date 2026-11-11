@@ -246,7 +246,7 @@ class GraphQLWebsocketHandlerTest {
         UserEnvelope user = UserEnvelope.builder().username("user@example.com").roles(List.of("User"))
             .claims(Map.of()).build();
         when(connectionsManager.fetchData(config, CONNECTION_ID))
-            .thenReturn(Optional.of(new ConnectionDataEnvelope(12345, user)));
+            .thenReturn(Optional.of(new ConnectionDataEnvelope(NOW.getEpochSecond() + 60, user)));
         when(callbacks.onStartOperation(any())).thenReturn(Map.of("data", "The result"));
         GraphQLRequestEnvelope startEnvelope = envelope.build();
 
@@ -256,6 +256,50 @@ class GraphQLWebsocketHandlerTest {
             .currentUser(user)
             .value(new GraphQLOperation("query { a }", "operation-1", "AnOperation", Map.of("aField", "value")))
             .build());
+      }
+
+      @Test
+      void refusesAnExpiredConnectionAndDeletesItsDataAndSubscriptions() {
+        // TypeScript reuses the stored user for as long as the socket stays open (AWS closed it after two hours)
+        UserEnvelope user = UserEnvelope.builder().username("user@example.com").roles(List.of("Admin")).build();
+        when(connectionsManager.fetchData(config, CONNECTION_ID))
+            .thenReturn(Optional.of(new ConnectionDataEnvelope(NOW.getEpochSecond(), user)));
+
+        handle(envelope.build());
+
+        verify(callbacks, never()).onStartOperation(any());
+        verify(callbacks).onTerminate(CONNECTION_ID);
+        verify(connectionsManager).sendMessage(config, CONNECTION_ID, new GraphQLInitError(
+            "The connection has expired: send connection_init to authenticate it again"));
+      }
+
+      @Test
+      void refusesAConnectionWhoseTokenHasExpired() {
+        UserEnvelope user = UserEnvelope.builder().username("user@example.com").roles(List.of("Admin"))
+            .claims(Map.of("exp", NOW.getEpochSecond())).build();
+        when(connectionsManager.fetchData(config, CONNECTION_ID))
+            .thenReturn(Optional.of(new ConnectionDataEnvelope(NOW.getEpochSecond() + 60, user)));
+
+        handle(envelope.build());
+
+        verify(callbacks, never()).onStartOperation(any());
+        verify(callbacks).onTerminate(CONNECTION_ID);
+        verify(connectionsManager).sendMessage(config, CONNECTION_ID, new GraphQLInitError(
+            "The token of the connection has expired: send connection_init with a new token"));
+      }
+
+      @Test
+      void acceptsATokenThatHasNotExpiredYet() {
+        UserEnvelope user = UserEnvelope.builder().username("user@example.com")
+            .claims(Map.of("exp", NOW.getEpochSecond() + 1)).build();
+        when(connectionsManager.fetchData(config, CONNECTION_ID))
+            .thenReturn(Optional.of(new ConnectionDataEnvelope(NOW.getEpochSecond() + 1, user)));
+        when(callbacks.onStartOperation(any())).thenReturn(Map.of("data", "The result"));
+
+        handle(envelope.build());
+
+        verify(callbacks).onStartOperation(any());
+        verify(callbacks, never()).onTerminate(any());
       }
 
       @Test

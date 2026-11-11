@@ -349,8 +349,8 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   handler swallows it the read model is skipped (D4; TypeScript then fails with a `TypeError`); a projection returning
   `null` fails with an explanation (TypeScript fails storing `undefined`); the warning for a missing join key prints
   the key (D7). Kept as in TypeScript: no id validation of the result (D11), the retry of a join-key function without
-  read model (D6), the stored operation name not passed to graphql-java (D9), no expiry/authorization check at
-  notification time (D10), `select: []` selecting nothing (D13).
+  read model (D6), the stored operation name not passed to graphql-java (D9), no authorizer check at notification
+  time (D10; expiry is checked, see the websocket identity note under GraphQL), `select: []` selecting nothing (D13).
 * `findById` with a list result (sequenced read models) returns every element migrated, in order — the documented
   behaviour (all the items of the id, or the exact match); TypeScript's `Object.assign` turns the array into one object
   and migrates it once, which its test pins (D1). Not found returns `null`.
@@ -478,6 +478,16 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   taken as UTC — JavaScript takes them as local time —, plain dates as UTC midnight; RFC 2822 is not accepted) and
   become the normalised ISO **string** (TypeScript: a `Date` object), so filters and inputs stay raw values.
   `JSON` is Booster's own scalar (graphql-scalars is not available): outputs go through `BoosterJson.toRaw`.
+* **Websocket identities expire (security).** TypeScript verifies the `connection_init` token once and reuses the
+  stored user for every later operation and notification, bounded only by the provider: AWS closes sockets after two
+  hours and DynamoDB's TTL deletes the records, while the local TTL index never fires on epoch seconds (local Q8), the
+  Azure `ttl` is the absolute epoch (Azure Q2) and the local socket has no idle timeout. Core now enforces the times
+  itself: a `start` on a connection whose stored `expirationTime` (`maxConnectionDurationInSeconds`) or whose user's
+  token `exp` has passed deletes the connection data and subscriptions (`onTerminate`) and answers `connection_error`
+  (`The connection has expired: send connection_init to authenticate it again` / `The token of the connection has
+  expired: send connection_init with a new token`); the notifier skips and deletes subscriptions whose
+  `expirationTime` (`maxDurationInSeconds`) or user's token `exp` has passed. A client re-authenticates with a new
+  `connection_init` on the same socket.
 * Subscription resolvers return a `Flow.Publisher` (`IteratorPublisher`) over the pub-sub's `Iterator`; graphql-java
   uses each published item as the field value (TypeScript `resolve: (source) => source`). An exhausted iterator
   completes on subscription, without demand. The websocket handler takes
