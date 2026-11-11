@@ -15,10 +15,20 @@ import com.boostercloud.framework.types.EnvironmentVariables;
 import com.boostercloud.framework.types.UserApp;
 import com.boostercloud.framework.types.UserAppRegistry;
 import com.boostercloud.framework.types.envelope.EventEnvelope;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -29,6 +39,9 @@ import java.util.function.Supplier;
  *
  * <p>The websocket server is created and started together with the first {@code LocalProvider} that uses the runtime
  * (TypeScript starts it in {@code Provider(...)}), at most once per runtime.
+ *
+ * <p>Java-only start-up steps, run by the local server: {@link #lockDataDirectory()} (one process per {@code .booster}
+ * directory), {@link #loadExistingDataFiles()} and {@link #removeStaleConnections()}.
  */
 public final class LocalProviderRuntime implements AutoCloseable {
 
@@ -97,6 +110,8 @@ public final class LocalProviderRuntime implements AutoCloseable {
   private final GraphQLService graphQLService;
   private final HealthService healthService;
   private WebSocketServerAdapter webSocketServerAdapter;
+  private FileChannel lockChannel;
+  private FileLock directoryLock;
 
   private LocalProviderRuntime(Options options) {
     this.options = Objects.requireNonNull(options, "options");
@@ -265,13 +280,100 @@ public final class LocalProviderRuntime implements AutoCloseable {
     }
   }
 
+  /**
+   * Java-only: takes the exclusive lock of the {@code .booster} directory ({@link Paths#LOCK_FILE}, an operating-system
+   * file lock) and keeps it until {@link #close()} or the end of the process, even a killed one. The store keeps one
+   * in-memory copy of each file per process and compacts files by replacing them, so two processes on the same files
+   * would each serve only their own writes and lose some of the other's. Idempotent.
+   *
+   * @throws IllegalStateException when another process, or another runtime of this process, holds the lock
+   */
+  public synchronized void lockDataDirectory() {
+    if (directoryLock != null) {
+      return;
+    }
+    Path lockFile = Paths.resolve(options.baseDirectory(), Paths.LOCK_FILE).toAbsolutePath();
+    Path folder = lockFile.getParent();
+    FileChannel channel = null;
+    try {
+      Files.createDirectories(folder);
+      channel = FileChannel.open(lockFile, StandardOpenOption.CREATE, StandardOpenOption.READ,
+          StandardOpenOption.WRITE);
+      FileLock lock;
+      try {
+        lock = channel.tryLock();
+      } catch (OverlappingFileLockException e) {
+        lock = null;
+      }
+      if (lock == null) {
+        String holder = holderOf(channel);
+        throw new IllegalStateException("Another Booster process" + (holder.isEmpty() ? "" : " (" + holder + ")")
+            + " is using the data files of " + folder + ". Stop it before starting this one: two processes on the "
+            + "same .booster directory would lose each other's writes.");
+      }
+      channel.truncate(0);
+      channel.write(StandardCharsets.UTF_8.encode("pid " + ProcessHandle.current().pid() + "\n"), 0);
+      lockChannel = channel;
+      directoryLock = lock;
+      channel = null;
+    } catch (IOException e) {
+      throw new UncheckedIOException("Could not lock the data files of " + folder + ": " + e.getMessage(), e);
+    } finally {
+      if (channel != null) {
+        try {
+          channel.close();
+        } catch (IOException ignored) {
+          // the lock was not taken
+        }
+      }
+    }
+  }
+
+  private static String holderOf(FileChannel channel) {
+    try {
+      ByteBuffer buffer = ByteBuffer.allocate(64);
+      channel.read(buffer, 0);
+      buffer.flip();
+      return StandardCharsets.UTF_8.decode(buffer).toString().trim();
+    } catch (IOException | RuntimeException e) {
+      return "";
+    }
+  }
+
+  /** The websocket connections and subscriptions {@link #removeStaleConnections()} removed. */
+  public record StaleConnections(int connections, int subscriptions) {}
+
+  /**
+   * Java-only: removes the websocket connections and subscriptions stored for connections that are not open in this
+   * process. Connections live in the process (the websocket server), so the rows of a process that died without
+   * processing their {@code DISCONNECT} (killed, out of memory, power loss) can never be used again, yet every change
+   * of their read models ran those subscriptions and logged a send error. Rows of the connections this process has
+   * open are kept, even while clients connect concurrently. Files that do not exist are not created.
+   *
+   * @return how many rows were removed
+   */
+  public StaleConnections removeStaleConnections() {
+    WebSocketServerAdapter server;
+    synchronized (this) {
+      server = webSocketServerAdapter;
+    }
+    // evaluated for each row under the collection's write lock: a row of an open connection was stored after the
+    // connection was registered, and the connection is unregistered only after its DISCONNECT deleted its rows
+    Predicate<Object> stale = document -> !(document instanceof Map<?, ?> row && server != null
+        && row.get("connectionID") instanceof String connectionId && server.hasConnection(connectionId));
+    Map<String, Object> query = Map.of("$where", stale);
+    int connections = hasDataFile(connectionRegistry.datastore()) ? connectionRegistry.delete(query) : 0;
+    int subscriptions = hasDataFile(subscriptionRegistry.datastore()) ? subscriptionRegistry.delete(query) : 0;
+    return new StaleConnections(connections, subscriptions);
+  }
+
   /** Whether the datastore's file, or the {@code <file>~} a crash during a compaction can leave, exists. */
   private static boolean hasDataFile(Datastore datastore) {
     Path file = datastore.filename();
     return file != null && (Files.exists(file) || Files.exists(Path.of(file + "~")));
   }
 
-  /** Stops the websocket server and releases the data files. */
+  /** Stops the websocket server, releases the data files and the lock of their directory. */
   @Override
   public synchronized void close() {
     if (webSocketServerAdapter != null) {
@@ -282,6 +384,16 @@ public final class LocalProviderRuntime implements AutoCloseable {
     connectionRegistry.datastore().close();
     subscriptionRegistry.datastore().close();
     dispatchJournal.datastore().close();
+    if (directoryLock != null) {
+      try {
+        directoryLock.release();
+        lockChannel.close();
+      } catch (IOException ignored) {
+        // closing the channel releases the lock anyway
+      }
+      directoryLock = null;
+      lockChannel = null;
+    }
     synchronized (LocalProviderRuntime.class) {
       if (shared == this) {
         shared = null;

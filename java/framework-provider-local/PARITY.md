@@ -80,6 +80,7 @@ No foundation module was changed.
 | Process-wide registries, user app, GraphQL service | diff: explicit `LocalProviderRuntime` (`shared()` / `create(Options)`) instead of module-load side effects; the application comes from `UserAppRegistry` instead of `require(dist/index.js)` (ARCHITECTURE §3) |
 | Websocket server starts when the provider is created, not at `start` | test `ProviderTest#coreLoadsTheProviderFromItsPackage` (same timing) |
 | Each `Provider()` call binds the port again (Q20) | diff: once per process; a taken port is logged, not a crash. test `WebSocketServerAdapterTest#aPortInUseIsReportedWithoutCrashing` |
+| Two processes can use the same `.booster` files (each serves its own in-memory copy; with the Java store, appends after the other's compaction went to a replaced file) | diff: the server locks `.booster/booster.lock` (`LocalProviderRuntime.lockDataDirectory`), so a second one does not start. test `DataDirectoryTest#onlyOneRuntimeAtATimeCanLockTheDataDirectory`, `#aDataDirectoryLockedByAnotherProcessIsRefusedUntilThatProcessEnds`, infra: `RestartTest#aSecondServerOnTheSameDataFilesDoesNotStart` |
 | `infrastructure()` loads the infrastructure package; error message | diff: names the Maven artifact instead of the npm commands, keeps the first sentence. test `LocalProviderTest#infrastructureNeedsTheInfrastructureModule` |
 
 ### 3.2 Paths
@@ -221,6 +222,7 @@ TTL index (`expirationTime`, 172800 s, not awaited, numbers never expire, Q8), `
 | First offered sub-protocol accepted; connections without one accepted | test `WebSocketServerAdapterTest#dispatchesConnectMessagesAndDisconnectInOrder` (`graphql-ws` echoed), `#connectionsAreIndependentAndHandlerFailuresAreLogged` (no sub-protocol), infra: `WebSocketTest`; same as `ws` (so docs acceptance item 17 does not hold for the local provider in TypeScript either) |
 | Listeners attached after CONNECT, frames lost (Q11); messages of a connection processed concurrently | diff: frames are queued and processed in order per connection |
 | Closed connections never removed (Q10) | diff: removed on close |
+| Connection and subscription rows of a process that died without `DISCONNECT` stay for ever and run on every change (send errors) | diff: removed at start-up (`LocalProviderRuntime.removeStaleConnections`), rows of open connections kept. test `DataDirectoryTest#connectionsAndSubscriptionsLeftByAProcessThatDiedAreRemovedAndLiveOnesKept`, `#removingStaleConnectionsCreatesNoFile`, infra: `RestartTest#connectionsAndSubscriptionsLeftByACrashAreRemovedAtStartUp` |
 | Unparsable message logged, nothing sent | test `WebSocketServerAdapterTest#connectionsAreIndependentAndHandlerFailuresAreLogged` |
 | `sendToConnection` to an unknown id → `TypeError` | diff: `IllegalStateException`; test `LocalProviderTest#subscriptionsAndConnections` |
 | Upgrade on another path → 400 | diff: 404 (Jetty); test `WebSocketServerAdapterTest#onlyTheWebSocketPathUpgrades` |

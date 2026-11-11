@@ -62,6 +62,7 @@ class ProviderTest {
     assertThat(Paths.REGISTERED_USERS_DATABASE).isEqualTo(".booster/registered_users.json");
     assertThat(Paths.AUTHENTICATED_USERS_DATABASE).isEqualTo(".booster/authenticated_users.json");
     assertThat(Paths.DISPATCH_JOURNAL_DATABASE).isEqualTo(".booster/dispatch_journal.json");
+    assertThat(Paths.LOCK_FILE).isEqualTo(".booster/booster.lock");
   }
 
   /** Spec 10, section 2.6: the constants of the TypeScript provider. */

@@ -50,6 +50,7 @@ Every file is relative to the project directory (the working directory of the pr
 | `.booster/connections.json` | websocket connections `{ expirationTime, user, connectionID }`, plus a TTL index on `expirationTime` |
 | `.booster/subscriptions.json` | `SubscriptionEnvelope`s, plus a TTL index on `expirationTime` |
 | `.booster/dispatch_journal.json` | Java-only: events whose dispatch has not finished (see below) |
+| `.booster/booster.lock` | Java-only: locked by the running server, holds its process id (see below) |
 
 The format is NeDB's, so files written by the TypeScript provider are read by the Java one and vice versa
 (pinned by `NedbFixtureCompatibilityTest` with files in the TypeScript format):
@@ -81,6 +82,18 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   `CorruptDataFileException` and NeDB's message
   (`40% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to prevent dataloss.`),
   leaving the file untouched.
+* **One process per `.booster` directory** (not in TypeScript). Each process keeps its own in-memory copy of the
+  files and compacts them by replacing them, so two processes on the same files would each serve only their own
+  writes, and the appends of one would go to a file the other had replaced. `LocalProviderRuntime.lockDataDirectory()`
+  (called by the local infrastructure at start-up) takes an operating-system lock on `.booster/booster.lock` until the
+  runtime closes or the process ends (also when it is killed); a second runtime fails with
+  `Another Booster process (pid N) is using the data files of <dir>. ...`.
+* **Connections and subscriptions left by a crash** (not in TypeScript). Connections live in the process, so the
+  connection and subscription rows of a process that died without processing their `DISCONNECT` can never be used
+  again; TypeScript keeps them for ever (the TTL index never expires them, Q8) and runs every one of those
+  subscriptions on each change of its read model, failing to send. `LocalProviderRuntime.removeStaleConnections()`
+  (called at start-up) deletes the rows of every connection that is not open in this process; rows of connections
+  that open meanwhile are kept.
 * `LocalProviderRuntime.loadExistingDataFiles()` (Java-only, called by the local infrastructure at start-up) loads
   every data file that exists, so a damaged file is found when the application starts (and refuses to start when it
   is beyond the threshold) instead of by the first request that touches it; missing files are still created on first
@@ -171,7 +184,9 @@ Provider:
   `notImplemented` returns `undefined`).
 * The provider state is a process-wide `LocalProviderRuntime` created on first use; the websocket server starts
   with the first `Provider.provider(...)` call, once per process (TypeScript binds the port again on every call,
-  Q20). If the port is taken, the error is logged instead of crashing the process.
+  Q20). If the port is taken, the error is logged instead of crashing the process. The server locks the `.booster`
+  directory, so a second process on the same project does not start (TypeScript lets both run on the same files), and
+  removes at start-up the connections and subscriptions a crashed process left (see "Durability and recovery").
 * The websocket server (Jetty) processes the events of each connection in order, on a virtual thread, including
   frames received before the `CONNECT` dispatch finished (TypeScript loses them and processes messages
   concurrently, Q11); handler failures are logged (TypeScript: unhandled rejections); closed connections are

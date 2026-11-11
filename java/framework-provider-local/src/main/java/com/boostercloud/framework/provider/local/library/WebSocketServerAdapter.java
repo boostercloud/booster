@@ -171,6 +171,18 @@ public class WebSocketServerAdapter implements AutoCloseable {
   }
 
   /**
+   * Whether a connection is open in this process. A connection is registered before its {@code CONNECT} is processed
+   * and unregistered after its {@code DISCONNECT} was, so every connection or subscription row stored for an open
+   * connection belongs to a registered one.
+   *
+   * @param connectionId a connection id
+   * @return whether that connection is open
+   */
+  public boolean hasConnection(String connectionId) {
+    return connectionId != null && clients.containsKey(connectionId);
+  }
+
+  /**
    * {@code sendToConnection(connectionId, data)}: sends {@code JSON.stringify(data)} as one text frame. Sending to a
    * connection that is closing is silently dropped, as {@code ws} does.
    *
