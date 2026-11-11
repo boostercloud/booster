@@ -29,8 +29,18 @@ public final class Constants {
    * {@code nodeVersion: '~22'}). Default {@value #DEFAULT_JAVA_VERSION}.
    */
   public static final String BOOSTER_AZURE_JAVA_VERSION = "BOOSTER_AZURE_JAVA_VERSION";
-  /** The default {@code java_version}: the newest one the azurerm {@code application_stack} accepts. */
+  /**
+   * The default {@code java_version}: the newest one the azurerm {@code application_stack} accepts. It cannot load the
+   * Java 27 class files of the Booster Java port, so {@code deploy} refuses packages it cannot run
+   * ({@link #BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK}; module README, "Java runtime of the function apps").
+   */
   public static final String DEFAULT_JAVA_VERSION = "21";
+
+  /**
+   * Java only: exactly {@code true} skips the check that the function apps' Java runtime ({@link #javaVersion()}) can
+   * load the packaged class files ({@code JavaRuntimeCompatibility}), for function apps that run another JVM.
+   */
+  public static final String BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK = "BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK";
 
   /** Java only: the Terraform executable (default {@code terraform}; e.g. {@code tofu}). */
   public static final String BOOSTER_TERRAFORM_BINARY = "BOOSTER_TERRAFORM_BINARY";
@@ -76,6 +86,13 @@ public final class Constants {
    */
   public static String javaVersion() {
     return EnvironmentVariables.getOrDefault(BOOSTER_AZURE_JAVA_VERSION, DEFAULT_JAVA_VERSION);
+  }
+
+  /**
+   * @return whether {@code BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK} is exactly {@code true}
+   */
+  public static boolean skipJavaVersionCheck() {
+    return "true".equals(EnvironmentVariables.get(BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK).orElse("false"));
   }
 
   /**

@@ -86,6 +86,9 @@ class AzureDeployNukeContractIT {
     variables.put("BOOSTER_AZURE_SERVICE_PLAN_BASIC", "false");
     variables.put("BOOSTER_USE_WAF", "false");
     variables.put("BOOSTER_AZURE_JAVA_VERSION", "21");
+    // The packaged classes are Java 27, which a Java 21 function app cannot load, so a real deploy is refused; this
+    // contract runs the deploy flow against a fake cloud (the refusal is pinned by the infrastructure module's tests)
+    variables.put("BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK", "true");
     variables.put("BOOSTER_TERRAFORM_BINARY", "terraform");
     variables.put("BOOSTER_APP_NAME", "");
     variables.put("BOOSTER_APP_CLASS", "");

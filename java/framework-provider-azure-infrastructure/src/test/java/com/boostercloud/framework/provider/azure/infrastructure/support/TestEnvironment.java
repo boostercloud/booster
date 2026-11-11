@@ -26,6 +26,7 @@ public final class TestEnvironment implements BeforeEachCallback, AfterEachCallb
     values.put("BOOSTER_AZURE_SERVICE_PLAN_BASIC", "false");
     values.put("BOOSTER_USE_WAF", "false");
     values.put("BOOSTER_AZURE_JAVA_VERSION", "21");
+    values.put("BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK", "false");
     values.put("BOOSTER_TERRAFORM_BINARY", "terraform");
     values.put("BOOSTER_APP_CLASS", "");
     values.put("AZURE_APP_ID", "app-id");
