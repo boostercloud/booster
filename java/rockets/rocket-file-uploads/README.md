@@ -215,7 +215,8 @@ rocket function.
 * The watcher (`FsWatch`) notifies every creation, change and deletion under the container whose path has no
   dot-segment and whose parent directory matches a pattern: `boosterRocketDispatcher({ BOOSTER_ROCKET_FUNCTION_ID:
   "rocket-files", uri: "http://localhost:<port>/<storage>/<container>/<name>", name: "<dir>/<file>" })`. A file
-  copied into the folder by hand is notified like an upload.
+  copied into the folder by hand is notified like an upload. The server also notifies each upload itself before
+  answering it, so an acknowledged upload is notified even when the server stops right after (see Differences).
 * `list(directory)`: the entries of the folder (not recursive; files, sub-folders and dot files), byte order of the
   names, `name = path.join(directory, entry)`, `properties.lastModified` = inode change time. A missing folder fails
   with `ENOENT: no such file or directory, scandir '<path>'`.
@@ -303,7 +304,15 @@ The connection is identity-based (`<storage>__serviceUri`). Names must match `^[
   directory (more than 512 pending, `OVERFLOW`) its entries are notified again, so a burst of uploads is not lost. On
   macOS the JDK polls every 2 seconds, so notifications come later than with Node; Node's event multiplicity is
   platform-specific anyway. A failing dispatch is logged (Node: an unhandled rejection, which ends the process). The
-  watchers stop when the server stops (`unmountStack`, which TypeScript does not have locally).
+  watchers stop when the server stops (`unmountStack`, which TypeScript does not have locally): the changes the JDK
+  already reported are handled first and the notifications in flight are awaited (up to 10 seconds).
+* **Uploads notified by the server too.** Because the JDK can report a write seconds after it (macOS) and a stop
+  discards what it has not reported, the `PUT` route notifies the written file itself before answering
+  (`FsWatch.changed`), and the stop waits for that notification: an upload the server acknowledged always gets its
+  `UploadedFileEvent`, also across a restart. The watch event still follows, so an upload is notified once more
+  (TypeScript does not debounce either). Changes made by other means (files copied by hand, `deleteFile`) that the
+  JDK has not reported when the server stops, the last 2 seconds on macOS, are not notified, and a start notifies
+  nothing, as in TypeScript (whose `fs.watch` reports within milliseconds).
 * **Envelope**: no `createdAt` before storing (the provider sets it in both implementations); a `null` metadata is
   stored as `{}`.
 * **Azure SDK replaced** by REST calls: `@azure/storage-blob` and `@azure/identity` are not available in Java without
@@ -366,7 +375,8 @@ every item of the rocket's specification and every TypeScript source to the Java
   (regenerate with `-Dbooster.golden.update=true`).
 * `e2e.LocalEndToEndTest`: core, the local provider and the local server in-process on free ports with the
   `e2e.app` application: presigned PUT, upload, the read model produced by the notification, presigned GET, list,
-  delete, restart on the same directory, files dropped by hand and the error messages.
+  delete, restart on the same directory, an upload acknowledged right before a restart, files dropped by hand and the
+  error messages.
 * `e2e.LocalServerProcessEndToEndTest`: the same application run as `boost start` runs it (a separate JVM,
   `java -cp target/classes:<dependencies> Main start --port N` from a project directory, free ports): concurrent
   presigned URL mutations, uploads, overwrites, downloads and listings, the events, snapshots and read models, SIGTERM,

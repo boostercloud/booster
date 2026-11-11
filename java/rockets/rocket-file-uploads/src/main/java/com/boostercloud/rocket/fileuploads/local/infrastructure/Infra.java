@@ -29,6 +29,8 @@ public final class Infra {
    * the presigned URLs), then for every user configuration starts a file watcher on
    * {@code <project>/<storage>/<container>} and mounts, for every directory pattern, a {@link FileController} at
    * {@code /<storage>/<container>} (in configuration order, then directory order: the first matching route wins).
+   * Java-only: the controllers notify their uploads to the storage's watcher themselves
+   * ({@link FsWatch#changed(java.nio.file.Path)}).
    *
    * @param rocketFilesConfiguration the rocket parameters
    * @param config the application configuration
@@ -44,12 +46,13 @@ public final class Infra {
     List<FsWatch> watchers = new ArrayList<>();
     try {
       for (RocketFilesUserConfiguration userConfiguration : rocketFilesConfiguration.userConfiguration()) {
-        watchers.add(FsWatch.fsWatch(config, projectDirectory, userConfiguration.storageName(),
-            userConfiguration.containerName(), port, userConfiguration.directories()));
+        FsWatch watch = FsWatch.fsWatch(config, projectDirectory, userConfiguration.storageName(),
+            userConfiguration.containerName(), port, userConfiguration.directories());
+        watchers.add(watch);
         for (String directory : userConfiguration.directories()) {
           router.use("/" + userConfiguration.storageName() + "/" + userConfiguration.containerName(),
               new FileController(projectDirectory, userConfiguration.storageName(), userConfiguration.containerName(),
-                  directory).router());
+                  directory, watch).router());
         }
       }
     } catch (RuntimeException e) {

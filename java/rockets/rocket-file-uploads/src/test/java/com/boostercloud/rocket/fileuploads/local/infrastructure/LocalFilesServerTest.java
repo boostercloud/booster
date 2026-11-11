@@ -282,6 +282,18 @@ class LocalFilesServerTest {
   }
 
   @Test
+  void an_upload_acknowledged_right_before_the_server_stops_is_notified() {
+    HttpResponse<byte[]> response = Http.put(url("/clientst/rocketfiles/client1/last.txt"), "last".getBytes());
+    assertThat(response.statusCode()).isEqualTo(200);
+
+    server.close();
+
+    // TypeScript's fs.watch reports the write within milliseconds; here the server notifies its own uploads and the
+    // stop waits for the notification, so an acknowledged upload never misses its UploadedFileEvent
+    assertThat(app.names()).contains("client1/last.txt");
+  }
+
+  @Test
   void the_watchers_stop_with_the_server() throws Exception {
     server.close();
     Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));

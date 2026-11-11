@@ -25,7 +25,7 @@ Every row names the Java test that pins the behaviour, as `Class#method` under
 | Part | Rows | covered | fixed | differs | inherited | n/a |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript tests (28 `it`) | 28 | 28 | 0 | 0 | 0 | 0 |
-| 2. Behaviour (spec §3) | 99 | 58 | 16 | 21 | 3 | 1 |
+| 2. Behaviour (spec §3) | 100 | 58 | 17 | 21 | 3 | 1 |
 | 3. Data shapes (spec §4) | 12 | 10 | 1 | 1 | 0 | 0 |
 | 4. Characterisation tests (spec §5.3) | 16 | 14 | 1 | 1 | 0 | 0 |
 | 5. Porting notes and hazards (spec §6) | 16 | 9 | 2 | 5 | 0 | 0 |
@@ -230,7 +230,8 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | Every change of a burst notified | `FsWatchTest#a_burst_larger_than_the_jdk_event_queue_is_fully_notified` | fixed `b633079cc` |
 | Every creation in a new folder notified, also those made while the watcher registers it | `FsWatchTest#a_file_created_while_a_new_folder_is_registered_is_notified` | fixed: the tree was listed before its folders were registered, so files created in between were never notified; each folder is now registered before it is listed |
 | Unhandled rejection of a failing dispatch | `FsWatchTest#a_failing_dispatch_is_logged_and_the_watch_goes_on` | differs: logged, the watch goes on |
-| Watchers never stop | `LocalFilesServerTest#the_watchers_stop_with_the_server` | differs: stopped by `unmountStack` when the server stops |
+| Watchers never stop | `LocalFilesServerTest#the_watchers_stop_with_the_server`, `FsWatchTest#close_handles_the_changes_already_reported` | differs: stopped by `unmountStack` when the server stops, after handling the changes already reported |
+| An acknowledged upload is notified (`fs.watch` reports it within milliseconds; TypeScript has no shutdown) | `LocalFilesServerTest#an_upload_acknowledged_right_before_the_server_stops_is_notified`, `e2e.LocalEndToEndTest#an_upload_acknowledged_right_before_a_restart_gets_its_read_model`, `FsWatchTest#changes_made_by_the_server_are_notified_right_away` | fixed: a stop discarded the changes the JDK had not reported or handled yet, so on macOS an upload acknowledged up to 2 s before a stop never got its `UploadedFileEvent` (start-up notifies nothing). The server now notifies its uploads itself before answering and the stop waits for it; differs: changes made by other means and not reported at the stop are still not notified |
 | macOS latency | `FsWatchTest` (timeouts) | differs: the JDK polls every 2 s on macOS |
 
 ### §3.8 Azure runtime → `azure.storage.*`, `azure.FileUploadedTest`

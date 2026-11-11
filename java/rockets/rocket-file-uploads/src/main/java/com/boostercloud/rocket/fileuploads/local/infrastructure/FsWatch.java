@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -54,9 +55,11 @@ import java.util.stream.Stream;
  * a file written right after its directory was created is not missed (each directory is registered before it is
  * listed, so nothing created meanwhile falls in between); when the JDK drops events of a busy directory
  * ({@code OVERFLOW}) its entries are notified again. The service is native on Linux and Windows and
- * polls every 2 seconds on macOS, so notifications may arrive that much later than with Node. A failing dispatch is
- * logged (TypeScript leaves an unhandled promise rejection). {@link #close()} stops watching and waits for the
- * dispatches in flight.
+ * polls every 2 seconds on macOS, so notifications may arrive that much later than with Node. That is why the local
+ * server also notifies its own uploads right away ({@link #changed(Path)}), so that an upload it acknowledged is never
+ * left to a watch event that a stop could discard. A failing dispatch is logged (TypeScript leaves an unhandled
+ * promise rejection). {@link #close()} first handles the changes the service already reported, then stops watching
+ * and waits for the dispatches in flight.
  */
 public final class FsWatch implements AutoCloseable {
 
@@ -66,8 +69,11 @@ public final class FsWatch implements AutoCloseable {
    */
   static final Pattern HIDDEN_SEGMENT = Pattern.compile("(^|[/\\\\])\\.[^\\n\\r\\u2028\\u2029]");
 
-  /** How long {@link #close()} waits for running dispatches. */
+  /** How long {@link #close()} waits for the reported changes and the running dispatches. */
   static final Duration CLOSE_TIMEOUT = Duration.ofSeconds(10);
+
+  /** How often the watch loop wakes up without changes (to see that {@link #close()} was called). */
+  private static final Duration LOOP_WAKE_UP = Duration.ofMillis(200);
 
   private final Path root;
   private final String storageName;
@@ -80,6 +86,9 @@ public final class FsWatch implements AutoCloseable {
   private final Map<WatchKey, Path> keys = new ConcurrentHashMap<>();
   private final Set<Thread> dispatches = ConcurrentHashMap.newKeySet();
   private final Thread loop;
+  /** Set by {@link #close()}: the loop handles what is already reported, then ends. */
+  private volatile boolean closing;
+  /** Set once the loop ended: no more dispatches (guarded by {@link #dispatches} for writes). */
   private volatile boolean closed;
   private volatile Consumer<Path> listed = directory -> {};
 
@@ -180,10 +189,32 @@ public final class FsWatch implements AutoCloseable {
     return request;
   }
 
-  private void dispatch(Map<String, Object> request) {
-    if (closed) {
-      return;
+  /**
+   * Java-only: notifies a change the caller made itself under the container, right away instead of when the
+   * {@link WatchService} reports it (up to 2 seconds later on macOS). The local server calls it for every upload
+   * before answering, so the notification is already running when the client is told the upload succeeded, and
+   * {@link #close()} waits for it: an acknowledged upload is notified even when the server stops right after. The
+   * path goes through the filters of {@link #onChange}; the watch event still comes later (no debouncing, as in
+   * TypeScript, so the upload gets one more notification). Nothing is dispatched once the watch is closed.
+   *
+   * @param file the file written or removed
+   * @return the dispatched request, or {@code null} when ignored (filtered out, outside the container, closed)
+   */
+  public Map<String, Object> changed(Path file) {
+    Path container = root.toAbsolutePath().normalize();
+    Path changed = file.toAbsolutePath().normalize();
+    if (closed || !changed.startsWith(container) || changed.equals(container)) {
+      return null;
     }
+    try {
+      return onChange(container.relativize(changed).toString());
+    } catch (RuntimeException e) {
+      logger.error("Error handling the file change", changed, e);
+      return null;
+    }
+  }
+
+  private void dispatch(Map<String, Object> request) {
     Thread thread = Thread.ofVirtual().name("rocket-files-dispatch").unstarted(() -> {
       try {
         dispatcher.accept(request);
@@ -193,8 +224,14 @@ public final class FsWatch implements AutoCloseable {
         dispatches.remove(Thread.currentThread());
       }
     });
-    dispatches.add(thread);
-    thread.start();
+    // started under the lock, so close() either refuses it or joins it
+    synchronized (dispatches) {
+      if (closed) {
+        return;
+      }
+      dispatches.add(thread);
+      thread.start();
+    }
   }
 
   private static String joinWithPlatformSeparator(String storageName, String containerName, String filename) {
@@ -202,13 +239,24 @@ public final class FsWatch implements AutoCloseable {
     return File.separatorChar == '/' ? joined : joined.replace('/', File.separatorChar);
   }
 
+  /**
+   * The watch loop. Once {@link #close()} was called it handles the keys the service already reported (without
+   * waiting for new ones) and ends, so that a change reported just before the stop is not thrown away with the
+   * service.
+   */
   private void run() {
-    while (!closed) {
+    while (true) {
       WatchKey key;
       try {
-        key = watchService.take();
+        key = closing ? watchService.poll() : watchService.poll(LOOP_WAKE_UP.toMillis(), TimeUnit.MILLISECONDS);
       } catch (InterruptedException | ClosedWatchServiceException e) {
         return;
+      }
+      if (key == null) {
+        if (closing) {
+          return;
+        }
+        continue;
       }
       Path directory = keys.get(key);
       if (directory != null) {
@@ -319,31 +367,52 @@ public final class FsWatch implements AutoCloseable {
     }
   }
 
-  /** Stops watching and waits (up to 10 seconds) for the dispatches in flight. */
+  /**
+   * Stops watching, within 10 seconds in all: the watch loop first handles the changes the service already reported
+   * (without waiting for new ones; closing the service would throw them away), then the service is closed, further
+   * notifications are refused and the dispatches in flight are awaited. Changes made by other means that the service
+   * has not reported yet (the last 2 seconds on macOS) are not notified, and the next start notifies nothing, as in
+   * TypeScript; the local server's own uploads do not depend on it ({@link #changed(Path)}).
+   */
   @Override
   public void close() {
-    if (closed) {
-      return;
+    synchronized (this) {
+      if (closing) {
+        return;
+      }
+      closing = true;
     }
-    closed = true;
+    long deadline = System.nanoTime() + CLOSE_TIMEOUT.toNanos();
+    boolean interrupted = false;
+    if (Thread.currentThread() != loop) {
+      try {
+        loop.join(Duration.ofNanos(Math.max(1, deadline - System.nanoTime())));
+      } catch (InterruptedException e) {
+        interrupted = true;
+      }
+    }
+    synchronized (dispatches) {
+      closed = true;
+    }
     try {
       watchService.close();
     } catch (IOException e) {
       logger.debug("Could not close the watch service", e);
     }
     loop.interrupt();
-    long deadline = System.nanoTime() + CLOSE_TIMEOUT.toNanos();
     for (Thread thread : List.copyOf(dispatches)) {
       long remaining = deadline - System.nanoTime();
-      if (remaining <= 0) {
+      if (interrupted || remaining <= 0) {
         break;
       }
       try {
         thread.join(Duration.ofNanos(remaining));
       } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return;
+        interrupted = true;
       }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
     }
   }
 }
