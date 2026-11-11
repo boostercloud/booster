@@ -314,7 +314,8 @@ class BoosterGraphQLDispatcherTest extends BoosterTestSupport {
     void storesSubscriptionsAndAnswersNothing() {
       UserEnvelope user = UserEnvelope.builder().username("user@example.com").build();
       when(connections.fetchData(config, "connection-1")).thenReturn(java.util.Optional.of(
-          new com.boostercloud.framework.types.envelope.ConnectionDataEnvelope(1, user)));
+          new com.boostercloud.framework.types.envelope.ConnectionDataEnvelope(
+              com.boostercloud.framework.types.Dates.nowEpochSeconds() + 3600, user)));
       BoosterGraphQLDispatcher dispatcher = dispatcherFor(message().connectionID("connection-1")
           .value(new GraphQLStart("operation-1", new GraphQLStart.Payload(
               "subscription { ProductReadModel(id: \"42\") { id sku } }", null, null)))
