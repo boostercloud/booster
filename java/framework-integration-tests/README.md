@@ -415,9 +415,10 @@ runs of the whole profile after the stages were merged: one full `mvn -B -Pe2e -
 verify` took **7 min 0 s** of wall-clock time (420, 420 and 421 s).
 About 2.5 minutes of it are the build and unit tests of the upstream modules (`framework-provider-local` 73 s, its
 infrastructure 33 s, `application-tester` 26 s); this module took 4 min 26 s to 4 min 29 s, of which the `*IT` classes
-264–267 s (the sum of their class times). By suite: `ScheduledCommandsAfterRestartIT` 149–153 s (it waits for three
-scheduler minutes), `RepeatedCrashCyclesIT` 23 s, `ScheduledCommandsFunctionalityIT` 20 s (it waits for the shared
-application's next `CheckCartCount`, at most 90 s), `SubscriptionsFunctionalityIT` 15–17 s, `EventsIT` 14 s,
+264–267 s (the sum of their class times). In the two final full-reactor `-Pe2e` runs after the review fixes
+(2026-11-11: 368 tests, 11 skipped) this module took 4 min 47 s and 4 min 7 s. By suite:
+`ScheduledCommandsAfterRestartIT` 149–153 s (it waits for three scheduler minutes), `RepeatedCrashCyclesIT` 23 s,
+`ScheduledCommandsFunctionalityIT` 20 s (it waits for the shared application's next `CheckCartCount`, at most 90 s), `SubscriptionsFunctionalityIT` 15–17 s, `EventsIT` 14 s,
 `CrashUnderLoadIT` 8 s, `TornWriteIT` 7 s, `GracefulRestartIT`, `TypeScriptDataFilesIT` and `ReadModelsIT` 5 s each,
 and every other suite under 2 s. A suite run alone with `-Dtest=NONE` takes seconds when the modules are already
 compiled (`-Dit.test=CartIT`: 5 s in all, the application start included), plus the compilation of whatever changed.

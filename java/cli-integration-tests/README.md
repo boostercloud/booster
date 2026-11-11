@@ -38,9 +38,9 @@ Every CLI invocation (arguments, directory, exit code, duration, both output str
 
 ### Durations
 
-On an Apple M-series laptop with a warm `~/.m2`: 75 to 85 s for the 83 tests, including the first fill of the
-isolated repository from `~/.m2`, plus the build of the upstream modules — with their unit tests, about 4.5 minutes
-for the whole `-am verify`. The slowest classes are `CliStartIT` and `CliDeployIT` (12 to 14 s each: two
+On an Apple M-series laptop with a warm `~/.m2`: 70 to 85 s for the 83 tests (72 and 70 s in the two final full
+`-Pe2e` runs of 2026-11-11), including the first fill of the isolated repository from `~/.m2`, plus the build of the
+upstream modules — with their unit tests, about 4.5 minutes for the whole `-am verify`. The slowest classes are `CliStartIT` and `CliDeployIT` (12 to 14 s each: two
 builds and two application starts, or three application launches); each generator class takes about 3 s, most of it
 one `boost build`.
 

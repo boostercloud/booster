@@ -226,7 +226,8 @@ Kept on purpose (TypeScript behaviour, documented in the Javadoc): offset cursor
 equal offset + requested limit (`parseInt` rules included, `NaN` cursors), only the first operator of an
 operator object being translated and array operands using their first element (Q3, Q4), only `"ASC"` sorting
 ascending (Q5), the projection quirks of `select` (Q6, Q7), the TTL index never expiring numeric
-`expirationTime`s and losing its TTL after a reload (Q8), event search returning soft-deleted events (Q16),
+`expirationTime`s and losing its TTL after a reload (Q8; core now refuses expired connections and skips expired
+subscriptions itself, see "Websocket identities expire" in the framework-core README), event search returning soft-deleted events (Q16),
 soft-deleted events gaining an `id` field (Q17), the `.booster` files being created lazily so that the
 database health checks report `DOWN` until first use (Q19), unescaped regular-expression sources for
 `contains`/`beginsWith`/`includes` (their evaluation is bounded like any pattern's, see above), and `deleteReadModel`

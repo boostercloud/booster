@@ -194,7 +194,7 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
 ### TypeScript quirks kept on purpose
 
 Q1 dead duplicate-snapshot guard (`c.partitionKey`/`c.sortKey` never match), Q2 per-item `ttl` = absolute
-`expirationTime`, Q3 unbalanced quote in the subscription validation message, Q4 `expectedCurrentVersion` and
+`expirationTime` (core enforces the expiry itself, see "Websocket identities expire" in the framework-core README), Q3 unbalanced quote in the subscription validation message, Q4 `expectedCurrentVersion` and
 `sequenceKey` ignored, Q5 `EVENTHUB_MODE` needs `EVENTHUB_MAX_RETRIES`, Q6 `bindingData` never provided by the
 consumer function, Q7 every search row gets a `boosterMetadata`, Q8/Q10 projection and nesting rules, Q9 the two
 independent SQL/parameter walks (e.g. `IN ()` for an empty list), Q11 legacy OFFSET cursors, Q12 `searchEvents`

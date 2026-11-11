@@ -63,12 +63,12 @@ Contents: [What is ported](#1-what-is-ported) · [Prerequisites](#2-prerequisite
 
 Every command runs from `java/` with `JAVA_HOME` pointing at JDK 27. Nothing is installed into `~/.m2` by these
 commands (only third-party dependencies are downloaded into it). Durations were measured on an Apple-silicon laptop on
-2026-11-10, with other builds running on the same machine.
+2026-11-11 (the final runs of section 9), with other builds running on the same machine.
 
 ```bash
 cd java
-mvn -B verify          # build everything, run unit and in-JVM integration tests   (4 min 23 s)
-mvn -B -Pe2e verify    # the same plus every end-to-end suite (*IT classes)        (11 min 11 s)
+mvn -B verify          # build everything, run unit and in-JVM integration tests   (5 min 21 s)
+mvn -B -Pe2e verify    # the same plus every end-to-end suite (*IT classes)        (10 min 30 s to 11 min 13 s)
 ```
 
 | To run | Command |
@@ -83,9 +83,9 @@ mvn -B -Pe2e verify    # the same plus every end-to-end suite (*IT classes)     
 `-am` also builds (and tests) the upstream modules; `-Dtest=...` with `-Dsurefire.failIfNoSpecifiedTests=false` keeps
 the other modules from failing because they have no such test. Measured: one test class 5 s, one method
 3 s, the Azure provider module 10 s, `CartIT` alone 8 s, `CliStartIT` alone
-15 s (each including the compilation of what changed). In the full `-Pe2e` run, `cli-integration-tests`
-took 1 min 22 s and `framework-integration-tests` 4 min 42 s, 2.5 minutes of which is `ScheduledCommandsAfterRestartIT`
-waiting for three scheduler minutes.
+15 s (each including the compilation of what changed; measured on 2026-11-10). In the full `-Pe2e` runs,
+`cli-integration-tests` took 1 min 10 s to 1 min 12 s and `framework-integration-tests` 4 min 7 s to 4 min 47 s, about
+2.5 minutes of which is `ScheduledCommandsAfterRestartIT` waiting for three scheduler minutes.
 
 Where the output goes:
 
@@ -157,6 +157,7 @@ provider is served as well:
 | `read_models.json` | read models (with a unique index on type, id and version) |
 | `connections.json`, `subscriptions.json` | websocket connections and GraphQL subscriptions |
 | `dispatch_journal.json` | Java only: stored events whose dispatch has not finished |
+| `booster.lock` | Java only: locked by the running server, holds its process id |
 
 **Stop and restart.** Ctrl-C (SIGINT) or SIGTERM stops the server gracefully: running requests and scheduled commands
 finish, websocket connections are closed, and the log ends with `Stopping the local server on http://localhost:3000`
@@ -164,13 +165,19 @@ and `Local server stopped` (exit code 143 for SIGTERM). Start it again with the 
 query above returns the same cart. Delete `.booster` to start from an empty store.
 
 **Crash recovery.** Every acknowledged write is on disk before the answer (`FileChannel.force`), and the events of one
-command are written with a single append, so after `kill -9` nothing acknowledged is lost and no command is half
-applied. On the next start the server, before serving:
+command are written with a single append framed as an atomic batch (a `{"$$batch":<n>}` header line, which NeDB
+ignores), so after `kill -9` nothing acknowledged is lost and no command is half applied. On the next start the
+server, before serving:
 
-1. loads every data file, discarding a torn last line and skipping a few corrupt lines with a warning; with more than
-   10 % of corrupt lines it refuses to start (exit code 1, NeDB's `... Cautiously refusing to start NeDB to prevent
-   dataloss.`) and leaves the file untouched;
-2. re-dispatches, from the dispatch journal, the stored events whose dispatch had not started
+1. locks `.booster/booster.lock`: a second server on the same project (another `boost start` on another port, an IDE
+   run next to it) stops at once with `Another Booster process (pid N) is using the data files of ...` and exit
+   code 1, instead of serving its own copy of the data;
+2. loads every data file, discarding a torn last line or an incomplete last batch (whole, never a part of it) and
+   skipping a few corrupt lines with a warning; with more than 10 % of corrupt lines it refuses to start (exit code 1,
+   NeDB's `... Cautiously refusing to start NeDB to prevent dataloss.`) and leaves the file untouched;
+3. deletes the websocket connections and subscriptions the dead process left (`Removed N websocket connection(s) and
+   M subscription(s) left by a previous run ...`); clients reconnect and subscribe again;
+4. re-dispatches, from the dispatch journal, the stored events whose dispatch had not started
    (`Re-dispatched N event(s) ...`; `No undispatched events to recover` when there are none). Events whose processing
    had already started are not processed twice (at most once, as on the cloud providers); their read models catch up
    with the entity's next event.
@@ -217,8 +224,9 @@ Without `--default`, `new:project` asks for each value. The other generators are
 --entity <Entity:joinKey>` and `stub:publish` (to customise the templates); see [`cli/README.md`](cli/README.md).
 
 The generated files leave placeholders to complete (as the TypeScript stubs do), for example
-`@Command(authorize = /* Specify authorized roles here. Use All.class to authorize anyone */)` and
-`register.events(/* YOUR EVENT HERE */)`. Completed, the application is (files under
+`@Command(authorize = /* Specify authorized roles here. Use All.class to authorize anyone */)`,
+`register.events(/* YOUR EVENT HERE */)` and, in projections, `return ProjectionResult.of(/* NEW CartReadModel HERE */);`
+(write `new CartReadModel(...)` in place of the comment). Completed, the application is (files under
 `src/main/java/com/example/mystore/`; `common/CartItem.java` is generated complete):
 
 ```java
@@ -379,6 +387,7 @@ export REGION="East US" AZURE_SUBSCRIPTION_ID=<subscription id>
 boost synth -e production       # cdktf.out/stacks/my-storeproduction/cdk.tf.json, functionApp.zip, baseWebPubSubBinding.zip
 export AZURE_APP_ID=<client id> AZURE_SECRET=<client secret> AZURE_TENANT_ID=<tenant id>
 boost deploy -e production      # synth, terraform init/plan/apply in the stack directory, Kudu zip deploys, Web PubSub hub
+                                # (refused by default today: see "Known blocker" below)
 boost nuke -e production        # asks for the application name (-f skips it) and deletes the resource group
 ```
 
@@ -389,8 +398,9 @@ boost nuke -e production        # asks for the application name (-f skips it) an
   `BOOSTER_TERRAFORM_BINARY`, e.g. `tofu`) and authenticated by its own means (`ARM_*` variables or `az login`), as with
   the TypeScript provider.
 * Optional: `BOOSTER_AZURE_SERVICE_PLAN_BASIC=true` (B1 plan), `BOOSTER_USE_WAF=true`, `AZURE_MAX_CONTAINER_THROUGHPUT`,
-  `AZURE_MAX_DATABASE_THROUGHPUT`, `BOOSTER_AZURE_JAVA_VERSION` (default `21`), `BOOSTER_APP_CLASS` (default: the main
-  class). The function apps' app settings are listed in
+  `AZURE_MAX_DATABASE_THROUGHPUT`, `BOOSTER_AZURE_JAVA_VERSION` (default `21`), `BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK`
+  (see the known blocker below), `BOOSTER_APP_CLASS` (default: the main class). The function apps' app settings are
+  listed in
   [`framework-provider-azure-infrastructure/README.md`](framework-provider-azure-infrastructure/README.md).
 * With the local provider, `boost deploy`, `synth` and `nuke` fail with the TypeScript message (`... with a provider
   that does not support this feature ...`) and exit code 1.
@@ -413,14 +423,31 @@ cached the two commands took 23 s and 42 s). The three offline Azure suites of t
 BOOSTER_TERRAFORM_VALIDATE=true mvn -B -Pe2e -pl framework-integration-tests -am verify -Dtest=NONE \
     -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=AzureTerraformValidateIT          # the sample app's stack
 BOOSTER_TERRAFORM_VALIDATE=true mvn -B -pl framework-provider-azure-infrastructure -am verify \
-    -Dtest=TerraformValidateTest -Dsurefire.failIfNoSpecifiedTests=false                 # two provider-level stacks
+    -Dtest=TerraformValidateTest -Dsurefire.failIfNoSpecifiedTests=false   # 3 synthesized stacks + every golden stack
 ```
 
+The second command validates three synthesized stacks (one with test rockets, WAF and the basic plan) and every golden
+stack of the infrastructure module and of both rockets (`rockets/*/src/test/resources/golden`), 9 in all. Offline,
+point `TF_CLI_CONFIG_FILE` at a `provider_installation { filesystem_mirror { … } }` configuration whose path is a
+plugin cache directory.
+
+**Known blocker: Java 27 on Azure Functions.** The framework and the applications `boost new` generates are compiled
+for Java 27 (class file version 71), while the function apps are created with `java_version =
+BOOSTER_AZURE_JAVA_VERSION` (default `21`; the azurerm 5.x provider accepts `1.8`, `11`, `17` and `21`), and a Java 21
+worker cannot load those classes. This is decided offline,
+not left to a deployment to find out: `boost deploy` checks the packaged class files against `java_version` before
+building or creating anything and refuses with an error naming the first class the runtime cannot load; `boost synth`
+only logs that as a warning, so stacks and packages can still be inspected. `BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK=true`
+skips the check, for function apps that run a JVM shipped by the application (selected with the
+`languageWorkers__java__defaultExecutablePath` app setting; not verified). Running the port on Azure therefore needs a
+Java stack Azure does not offer yet, such a custom JVM, or building the framework and the application for
+`--release 21`, which [`ARCHITECTURE.md`](ARCHITECTURE.md) §2 does not allow today. The details are in
+[`framework-provider-azure-infrastructure/README.md`](framework-provider-azure-infrastructure/README.md) ("Known
+blocker").
+
 What cannot be verified without deploying: that Azure accepts the deployment (`terraform apply`), the real Kudu,
-Functions host, Java worker bindings and Web PubSub extension, and the live Cosmos DB gateway conventions. Above all,
-**the framework is compiled for Java 27 and Azure Functions offers no Java 27 runtime** (the function apps are
-created with `java_version = BOOSTER_AZURE_JAVA_VERSION`, default `21`): until Azure offers a Java 27 worker, a deployed
-application cannot start.
+Functions host, Java worker bindings and Web PubSub extension, and the live Cosmos DB, Event Hubs and Blob Storage
+service conventions.
 
 ## 7. Rockets
 
@@ -492,8 +519,9 @@ $ curl -s http://localhost:3000/graphql -H 'Content-Type: application/json' -d '
 ```
 
 The file is stored in `files/uploads/photos/cat.txt` under the project directory, and a `GET` of the presigned URL
-downloads it. The upload event reaches the read model through the file watcher (on macOS the JDK polls every 2 s, so
-query it a few seconds later). For Azure use `rocketForAzure()` in the Azure environment: the webhook rocket adds a
+downloads it. The server notifies the upload itself before answering the `PUT`, so the read model appears moments
+later (also when the server stops right after the upload); files copied into the folder by hand reach it through the
+file watcher (on macOS the JDK polls every 2 s, so query it a few seconds later). For Azure use `rocketForAzure()` in the Azure environment: the webhook rocket adds a
 function app and gateway rules, the file-uploads rocket storage accounts, containers, a function app with blob
 triggers and role assignments. Every option, the request and response shapes and the error statuses are in
 [`rockets/rocket-webhook/README.md`](rockets/rocket-webhook/README.md) and
@@ -544,32 +572,33 @@ Where to read more:
 | Unit tests | every module, `*Test` (surefire) | ports of the TypeScript unit tests, one Java class per `*.test.ts` file (JUnit 6, AssertJ; Mockito replaces sinon), plus tests of what TypeScript leaves untested |
 | In-JVM integration | `framework-core` `integration/*IntegrationTest` | the real core with nothing mocked on a complete in-memory provider (`InMemoryProvider`): GraphQL over HTTP and WebSocket, authorization with real RS256 tokens, migrations, events API, health, error hooks, tracing, concurrency |
 | Differential tests | `framework-provider-local`, both rockets, `application-tester` | expectations generated by the real JavaScript implementations: NeDB 4.0.2 queries, cursors, modifiers and data files (`NedbDifferentialTest`, 996 cases), V8 regular expressions (`JsRegExpDifferentialTest`, 1500 patterns), minimatch and brace-expansion (about 10 500 cases), Busboy's own test vectors, Node's WHATWG URL parser, a JWT signed by `jsonwebtoken` |
-| Stress | `framework-provider-local` | concurrent writers on virtual threads, a writer JVM killed with `SIGKILL` mid-write, truncation at every offset, 100k-document collections |
+| Stress and fault injection | `framework-provider-local` | concurrent writers on virtual threads, a writer JVM killed with `SIGKILL` mid-write, truncation at every offset (of single lines and of atomic batches), injected write and truncate failures and recorded flushes, deterministic interleavings of recovery and live dispatches, 100k-document collections |
 | Azure contract tests | `framework-provider-azure`, `framework-provider-azure-infrastructure`, both rockets | the production REST clients against in-JVM fake services (requests, signatures recomputed independently and against OpenSSL known answers, paging, retries, error mapping), golden Terraform files, function definitions and packages, the deploy/nuke command and HTTP sequences |
 | End-to-end | `framework-integration-tests`, `*IT` (failsafe, `-Pe2e`) | the sample app launched as a real JVM exactly as the CLI launches it, driven over HTTP and WebSocket by the ported TypeScript end-to-end and functionality suites |
-| Durability and recovery | `framework-integration-tests` `providerspecific.local.durability` | graceful restarts, `SIGKILL` under load, repeated crash cycles, torn and corrupt data files, TypeScript-written `.booster` files, scheduled commands across restarts |
+| Durability and recovery | `framework-integration-tests` `providerspecific.local.durability` | graceful restarts, `SIGKILL` under load, repeated crash cycles, torn and corrupt data files, TypeScript-written `.booster` files, scheduled commands across restarts (and, in `framework-provider-local-infrastructure`'s `RestartTest`, a second server on the same data files and the connections a crash left) |
 | Azure end to end, offline | `framework-integration-tests` `azurecontract` | `synth` of the sample app compared with the TypeScript synthesis, `deploy`/`nuke` against a stateful fake subscription, the function entry points against fake Cosmos DB / Event Hubs / Web PubSub |
 | CLI | `cli` (unit), `cli-integration-tests` (`-Pe2e`) | the real `boost` launcher: `new:project`, every generator compared byte for byte with fixtures and compiled, `build`, `clean`, `start` with a mutation, a query and a restart, `deploy`/`synth`/`nuke`, rocket commands |
 
-Test counts of the run of `mvn -B -Pe2e verify` on 2026-11-10 (commit `b53ee4cca`, all green, 11 min 11 s):
+Test counts of the final phase-4 runs on 2026-11-11 (all fix branches merged, all green; `mvn -B verify` 5 min 21 s,
+then `mvn -B -Pe2e verify` twice with identical counts, 11 min 13 s and 10 min 30 s):
 
 | Module | Unit and in-JVM tests (`mvn -B verify`) | End-to-end tests (`-Pe2e` only) |
 | --- | ---: | ---: |
 | `metadata-booster` | 44 | |
-| `framework-types` | 144 | |
-| `framework-common-helpers` | 81 | |
-| `framework-core` | 922 | |
-| `framework-provider-local` | 3 043 | |
-| `framework-provider-local-infrastructure` | 177 | |
-| `framework-provider-azure` | 255 | |
-| `framework-provider-azure-infrastructure` | 176 (2 skipped: the opt-in Terraform validation) | |
+| `framework-types` | 148 | |
+| `framework-common-helpers` | 84 | |
+| `framework-core` | 944 | |
+| `framework-provider-local` | 3 071 | |
+| `framework-provider-local-infrastructure` | 179 | |
+| `framework-provider-azure` | 272 | |
+| `framework-provider-azure-infrastructure` | 185 (4 skipped: the opt-in Terraform validation) | |
 | `application-tester` | 124 | |
 | `rockets/rocket-webhook` | 406 | |
-| `rockets/rocket-file-uploads` | 210 | |
-| `cli` | 503 | |
-| `cli-integration-tests` | | 82 |
+| `rockets/rocket-file-uploads` | 220 | |
+| `cli` | 530 | |
+| `cli-integration-tests` | | 83 |
 | `framework-integration-tests` | 99 | 368 (11 skipped) |
-| **Total** | **6 184** | **450** |
+| **Total** | **6 306** | **451** |
 
 The 11 skipped end-to-end tests are the ones TypeScript itself disables (`LocalAuthIT`, the local `commands` and
 `read-models` suites), the assertions only a real Azure deployment can satisfy (each with a local replacement test),
@@ -598,6 +627,16 @@ ones, each with the reason.
   really run in parallel: state they share must be thread-safe (JavaScript interleaves on one thread).
 * `createInstance` binds recursively into typed records and classes and drops unknown keys (TypeScript's
   `Object.assign` is shallow and keeps them): Java needs typed objects.
+* A number with a fraction (or `NaN`/infinite) bound to a whole-number property (`int`, `long`, `short`, `byte`,
+  their boxes, `OptionalInt`/`OptionalLong`, `BigInteger`) fails with `Cannot convert 2.5 to int: the number is not
+  an integer` (a mutation input answers with that error); TypeScript has one number type and keeps `2.5`, and Jackson
+  alone would truncate it silently. Whole doubles such as `2.0` are accepted. The rule also applies when stored
+  documents are bound to events, entities and read models: a stored `2.5` in an `int` field fails to bind instead of
+  being truncated.
+* `Booster.readModel(X.class).select(...)` is read with `searchSelected()`, `searchOneSelected()` or
+  `searchSelectedPaginated()` (plain maps of the selected paths) or `searchRaw()`; the typed `search()`, `searchOne()`
+  and `searchPaginated()` throw an `IllegalStateException` naming the right method when a selection is set.
+  TypeScript retypes the builder to `Partial<T>`, which Java cannot do.
 * Where TypeScript throws a plain `Error`, Java throws `IllegalStateException`/`IllegalArgumentException` with the same
   message, so HTTP error titles read `Illegal State Exception` instead of `Error`: there is no JavaScript `Error`
   class to reuse. Error names used for retry matching are simple class names (Booster errors never set `error.name`).
@@ -615,17 +654,44 @@ ones, each with the reason.
   answers `true`, as the current TypeScript code does.
 * The `Date` scalar also accepts ISO strings and keeps them as normalised ISO strings (local date-times are read as
   UTC); `JSON` is Booster's own scalar (graphql-scalars is not available).
+* Security fixes, each a deliberate divergence from TypeScript:
+  * Subscription filters are evaluated whole: every top-level property, operator and nested property must match,
+    `and`/`or`/`not` combine filters and `isDefined` is implemented. TypeScript decides on the first property only, so
+    `{id: {ne: ""}, userId: {eq: <me>}}` passed a `before` hook that checks `userId` and still delivered every user's
+    changes over the websocket. A subscriber's `regex`/`iRegex` evaluation is bounded (`max(10⁸, 4·n²)` characters
+    read, at most 10⁹) and fails with `The regular expression /…/ is too complex to evaluate ...` instead of pinning
+    the thread.
+  * Websocket identities expire: a `start` on a connection past its `expirationTime` or its token's `exp` deletes the
+    connection and answers `connection_error` (the client sends a new `connection_init` on the same socket), and the
+    notifier skips and deletes subscriptions past theirs. TypeScript checks the token once at `connection_init`.
+  * With `enableGraphQLIntrospection = false`, `__type` selections are refused like `__schema` ones (aliases and
+    fragments included); `__typename` stays available. TypeScript only checks the operation name and `__schema`.
 
 **Local provider and server**
 
 * Every acknowledged write is flushed (`FileChannel.force`): about 4 ms per write and roughly 250 single-document
   writes per second per collection on a laptop. NeDB never flushes, which loses data on a crash.
-* Java-only durability: the events of one command are stored with one atomic append, a dispatch journal re-dispatches
-  events a crash left undispatched, a torn last line is discarded on start, and more than 10 % of corrupt lines stop
-  the start (NeDB's message) instead of failing the first request. Events whose processing had started are not
-  processed twice (core's at-most-once rule), so a read model may miss such an event until the entity's next event.
+* Java-only durability: the events of one command (and every other write of several lines) are stored with one
+  append framed by a `{"$$batch":<n>}` header line, which NeDB ignores, so a crash that cuts the append at any byte
+  leaves all of them or none; a dispatch journal re-dispatches events a crash left undispatched, a torn last line or
+  batch is discarded on start, and more than 10 % of corrupt lines stop the start (NeDB's message) instead of failing
+  the first request. Events whose processing had started are not processed twice (core's at-most-once rule), so a
+  read model may miss such an event until the entity's next event. That a flushed write survives a power loss
+  depends on the device and is not tested (write failures and flushes are, with injected faults).
+* One process per project: the server locks `.booster/booster.lock`, and a second one on the same files does not
+  start (TypeScript lets two processes share the files, each serving only its own writes).
+* `createdAt` is taken under the events write lock and is strictly increasing within the process (the current time,
+  or 1 ms after the previous event), so its order is the order in which events become visible to snapshots; under a
+  burst of more than one event per millisecond it runs a few milliseconds ahead of the clock (TypeScript gives events
+  of the same millisecond the same `createdAt`).
+* Regular expressions from filters (`regex`, `iRegex` and the unescaped sources of `contains`/`beginsWith`/`includes`)
+  are evaluated with a budget of `max(10⁸, 4·n²)` characters read over a value of `n` characters (at most 10⁹);
+  beyond it the search fails with `The regular expression /…/ is too complex to evaluate ...` (security: a pattern
+  such as `^(.*a){20}$` backtracks for an exponential time on a short value; TypeScript has no limit).
 * Fixed TypeScript bugs: connection data is found by `connectionID`, GraphQL `stop` deletes the subscription, a race
-  that stored two documents for one new read model, frames received before `CONNECT` finished are no longer lost.
+  that stored two documents for one new read model, frames received before `CONNECT` finished are no longer lost, and
+  the connections and subscriptions a crashed process left are deleted at start-up (TypeScript keeps them for ever and
+  runs those subscriptions on every change).
 * Generated `_id`s are monotonic, so ties (same-millisecond events) come in insertion order instead of random order.
 * Regular expressions in filters keep JavaScript syntax (translated to Java patterns, pinned against V8); not emulated:
   JavaScript's non-Unicode case folding of a few characters, code-unit matching outside the BMP, back references to
@@ -644,18 +710,32 @@ ones, each with the reason.
 
 * Cosmos DB, Event Hubs, Web PubSub and Resource Manager are reached through small `java.net.http` REST clients instead
   of the Azure SDKs (excluded by the architecture); cross-partition non-`VALUE` aggregates and `GROUP BY` are rejected
-  (Booster issues neither). Event Hubs uses the REST "send batch" API instead of AMQP.
+  (Booster issues neither). Event Hubs uses the REST "send batch" API instead of AMQP, with batches of at most
+  256 KiB, the publication limit of the Basic namespace the infrastructure deploys.
+* Cosmos DB follows the SDK's single-region retry policies (429 for every request; connection failures, timeouts, 503
+  and 408 for reads and queries only). Where it differs: a partition split or move (410 with substatus 1002, 1007 or
+  1008) during a cross-partition query lists the ranges again and re-runs the query (up to 3 times) where the SDK
+  repairs the affected range only; a page of `p` rows after `n` rows of a paged cross-partition `ORDER BY` query
+  reads up to `n + p + 1` rows of each range where the SDK resumes each range from its own continuation (about `p`);
+  there is no session-token retry policy (the client sends no session tokens).
+* Filter property names are written into the Cosmos DB SQL as escaped string literals and sanitised placeholder names
+  (security): TypeScript pastes the keys of a `JSON`-typed filter, which the GraphQL client chooses, into the query
+  text, so a key such as `x"]) OR (1=1) OR IS_DEFINED(c["x` returned every document. Identifier-like keys give exactly
+  the TypeScript SQL.
 * Terraform JSON is emitted by the port itself (no cdktn, no Node) and `deploy` runs `terraform init/plan/apply`; the
   key order and the `"//"` metadata of cdktn could not be compared byte for byte.
 * Function apps use the Java worker: one `function.json` per function instead of a generated `functions.js`, a Java
   stack instead of `node_version`, and the new app setting `BOOSTER_APP_CLASS`.
 * `rawToEnvelopes` drops snapshot documents (Java envelopes have a constant `kind`); the original documents are kept
   aside so that streaming and deletion send exactly what TypeScript sends.
-* **Known limitation: Java 27 on Azure Functions.** The framework is compiled for Java 27, while Azure Functions offers
-  no Java 27 runtime (`BOOSTER_AZURE_JAVA_VERSION`, default `21`): a deployment cannot start the application until
-  Azure offers a Java 27 worker. Also not verifiable without deploying: `terraform apply`,
-  Kudu, the Functions host and the Java worker's bindings (Web PubSub return value, binding data types), the Web PubSub
-  extension and the live Cosmos DB gateway conventions.
+* **Known blocker: Java 27 on Azure Functions.** The framework is compiled for Java 27 and the function apps run Java
+  `BOOSTER_AZURE_JAVA_VERSION` (default `21`), which cannot load it, so `boost deploy` refuses before creating anything
+  and names the first class the runtime cannot load (`synth` only warns; `BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK=true`
+  skips the check for a custom JVM). TypeScript has no counterpart: Node runs any JavaScript it deploys. See section 6
+  for the ways out. Also not verifiable without deploying: `terraform apply`, Kudu, the Functions host and the Java
+  worker's bindings (Web PubSub return value, binding data types), the Web PubSub extension and the live Cosmos DB,
+  Event Hubs and Blob Storage conventions (for example, whether Blob Storage would refuse a one-digit day in
+  `x-ms-date`; the port sends the SDK's two-digit form).
 
 **CLI**
 
@@ -666,17 +746,34 @@ ones, each with the reason.
   <main> <action>`), so environment and `appName` checks are static, and there is no `.deploy` sandbox (Maven already
   separates the runtime class path).
 * Prompts read numbered answers from standard input (inquirer uses arrow keys); parse errors (picocli) exit with code 2.
+* Projection stubs (`new:read-model --projects`, `add:projection`) generate
+  `return ProjectionResult.of(/* NEW X HERE */);`: TypeScript's `ProjectionResult<T>` is `T | ReadModelAction`, so a TypeScript projection may return the read
+  model itself, while Java needs the wrapper. Writing `new X(...)` in place of the comment compiles in both.
+* The generated `.gitignore` anchors `/target/`, `/tmp/` and `/coverage` to the project root (TypeScript leaves `tmp/`
+  and `coverage` unanchored): Java packages are directories, so a package named `target`, `tmp` or `coverage`, or the
+  group `com.target`, would otherwise be left out of git.
+* On a Java older than 27 the CLI stops with `boost: Java 27 or newer is required, but found Java 21 at ...` (exit
+  code 1) instead of an `UnsupportedClassVersionError`: the jar's entry point is compiled for Java 8 and checks the
+  version first. TypeScript's `bin/run` does not check the Node.js version.
 
 **Rockets**
 
 * Webhook: Java error titles (see above); a malformed multipart body answers `500` with Busboy's message (TypeScript
   never answers); Busboy's urlencoded parser (only reachable with a contrived content type) is not ported because no
   verified copy of it was available to pin against.
-* File uploads: `deleteFile` exists for both providers (TypeScript documents it as a TODO); a path outside the
-  container is refused with `400` (TypeScript reads or writes any file); the macOS `WatchService` polls every 2 s, so
-  local upload events arrive later than with Node; the Azure credential chain is environment, managed identity and
-  Azure CLI only; the Java blob trigger passes only `blobTrigger` and `uri` as metadata, so entity ids (an md5 of the
-  metadata) differ from a Node deployment.
+* File uploads: `deleteFile` exists for both providers (TypeScript documents it as a TODO), and its file name must be
+  a plain name of the checked directory (not empty, `.` or `..`, no `/` or `\`), otherwise `Invalid file name
+  <fileName>` (security: `../admin/secret.txt` deleted a file of a folder the patterns do not allow; the presigned
+  URLs keep TypeScript's unvalidated file names); a path outside the container is refused with `400` (TypeScript
+  reads or writes any file); the Azure credential chain is environment, managed identity and Azure CLI only; the Java
+  blob trigger passes only `blobTrigger` and `uri` as metadata, so entity ids (an md5 of the metadata) differ from a
+  Node deployment.
+* File uploads, local watcher: the server notifies each upload itself before answering the `PUT`, and a stop waits
+  for the notifications in flight, so an acknowledged upload always gets its `UploadedFileEvent`, across a restart
+  too; the watch event still follows, so each upload is notified once more (TypeScript does not debounce either).
+  Other changes (files copied by hand, `deleteFile`) come from the JDK `WatchService`, which polls every 2 s on macOS:
+  they arrive later than with Node, and those not yet reported when the server stops are not notified (a start
+  notifies nothing, as in TypeScript).
 
 **Tests and tooling**
 
@@ -687,3 +784,6 @@ ones, each with the reason.
 * Not ported, with their reason in the module READMEs: AWS (provider, environments, gates, rockets), the Artillery
   load suites (AWS only and disabled in TypeScript), the Effect-TS module of the TypeScript CLI, and the suites
   TypeScript itself disables (`LocalAuthIT`, the local `commands`/`read-models` suites).
+* Verified only partly: `boost.cmd` was run under Wine (no Windows `cmd.exe` was available), the `$$batch` framing was
+  not re-read by a real `@seald-io/nedb` (not in the local npm cache; NeDB skips lines without `_id` by its own rule),
+  and the opt-in Terraform validation needs `terraform` and the azurerm provider.
