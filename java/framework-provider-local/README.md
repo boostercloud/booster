@@ -99,7 +99,8 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   had started are dropped too (core's at-most-once rule once `storeDispatched` returned `true`), so
   `storeDispatched` answers `false` for a re-dispatched event core already saw, which makes re-dispatching safe.
   A failed recovery keeps the pending entries for the next one. Dispatches running in the current process are
-  never touched, so recovery can run while the application serves requests.
+  never touched, not even one that finishes while the recovery reads the journal, so recovery can run while the
+  application serves requests (the websocket server is already serving when the start-up recovery runs).
 * **Atomic event batches** (not in TypeScript). `events.store` writes the events of one batch (what one command,
   event handler or scheduled command registered) with a single flushed append, framed by a `{"$$batch":<n>}` header
   (`EventRegistry.storeEventBatch`). A failed write is truncated away, and a crash that cuts the append at any byte
