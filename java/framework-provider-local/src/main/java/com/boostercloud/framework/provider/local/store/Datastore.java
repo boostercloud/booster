@@ -24,14 +24,16 @@ import java.util.function.Supplier;
  * <h2>Storage format</h2>
  * One JSON document per line ({@link Serialization}). Every insert and update appends the full new version of the
  * document; a removal appends {@code {"$$deleted":true,"_id":"…"}}; index definitions are lines
- * {@code {"$$indexCreated":{…}}} (and {@code {"$$indexRemoved":"field"}}). On load the file is replayed (the last line
- * of each {@code _id} wins) and rewritten compacted, crash-safely ({@code <file>~} then an atomic rename).
+ * {@code {"$$indexCreated":{…}}} (and {@code {"$$indexRemoved":"field"}}). A write of several lines (an insert of
+ * several documents, a multi update or remove) is preceded by {@code {"$$batch":<n>}}, which makes it atomic on load
+ * (NeDB ignores that line). On load the file is replayed (the last line of each {@code _id} wins) and rewritten
+ * compacted, crash-safely ({@code <file>~} then an atomic rename).
  *
  * <h2>Durability and recovery</h2>
  * A write method returns only after its lines were written and flushed with {@code FileChannel.force}; if the write
- * fails, the in-memory state is rolled back and the error is thrown. On load an incomplete last line (a write
- * interrupted by a crash) is discarded; other corrupt lines are skipped, and loading fails with
- * {@link CorruptDataFileException} when they exceed {@code corruptAlertThreshold} (NeDB's rule). See
+ * fails, the in-memory state is rolled back and the error is thrown. On load an incomplete last line, or an
+ * incomplete last batch (a write interrupted by a crash), is discarded; other corrupt lines are skipped, and loading
+ * fails with {@link CorruptDataFileException} when they exceed {@code corruptAlertThreshold} (NeDB's rule). See
  * {@link Persistence}.
  *
  * <h2>Semantics</h2>
@@ -47,13 +49,19 @@ import java.util.function.Supplier;
  * threads. The datastore loads itself lazily on the first operation; {@link #loadDatabase()} reloads it from disk.
  *
  * <h2>Differences from NeDB</h2>
- * Callbacks/promises become blocking calls; appends are flushed; a torn last line is not counted as corruption; lines
- * are split on {@code \n} only; U+0085, U+2028, U+2029 and surrogates are written escaped; ids are monotonic; failed
- * loads can be retried; memory-only lookup indexes ({@link #ensureLookupIndex(String)}) speed up equality queries
- * without changing results; growth-triggered compaction is available
- * ({@link DatastoreOptions#autocompactionLineThreshold()}).
+ * Callbacks/promises become blocking calls; appends are flushed; multi-line appends are atomic batches; a torn last
+ * line or batch is not counted as corruption; lines are split on {@code \n} only; U+0085, U+2028, U+2029 and
+ * surrogates are written escaped; ids are monotonic; failed loads can be retried; memory-only lookup indexes
+ * ({@link #ensureLookupIndex(String)}) speed up equality queries without changing results; growth-triggered
+ * compaction is available ({@link DatastoreOptions#autocompactionLineThreshold()}).
  */
 public class Datastore implements AutoCloseable {
+
+  /**
+   * The key of the header line of an atomic batch, {@code {"$$batch":<n>}}: the {@code n} lines that follow belong to
+   * one write and are applied on load only when all of them are present.
+   */
+  public static final String BATCH_HEADER_KEY = "$$batch";
 
   private final DatastoreOptions options;
   private final Persistence persistence;
@@ -679,7 +687,8 @@ public class Datastore implements AutoCloseable {
   }
 
   /**
-   * {@code insertAsync([documents])}: stores several documents atomically in memory and with a single flushed append.
+   * {@code insertAsync([documents])}: stores several documents atomically, in memory and on disk: a single flushed
+   * append whose lines are applied on load only when all of them are present.
    *
    * @param newDocuments the documents
    * @return copies of the stored documents
@@ -896,7 +905,7 @@ public class Datastore implements AutoCloseable {
       return;
     }
     persistence.append(lines);
-    obsoleteLines += newlyObsoleteLines;
+    obsoleteLines += newlyObsoleteLines + Persistence.framingLines(lines.size());
     int threshold = options.autocompactionLineThreshold();
     if (threshold > 0 && obsoleteLines >= threshold && obsoleteLines > documents.size()) {
       try {

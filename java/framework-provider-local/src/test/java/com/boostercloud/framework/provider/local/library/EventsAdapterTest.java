@@ -272,8 +272,37 @@ class EventsAdapterTest {
         List<EventEnvelope> stored = EventsAdapter.storeEvents(mockUserApp, registry, journal,
             List.of(mockEventEnvelop, Mocks.nonPersistedEvent(), Mocks.nonPersistedEvent()), mockConfig);
         assertThat(registry.count()).isEqualTo(3);
-        assertThat(Files.readAllLines(eventsFile)).hasSize(3);
+        // one append: the batch header and the three events
+        assertThat(Files.readAllLines(eventsFile)).hasSize(4).first().isEqualTo("{\"$$batch\":3}");
         assertThat(stored).extracting(EventEnvelope::id).doesNotContainNull().doesNotHaveDuplicates();
+      } finally {
+        registry.events().close();
+        journal.datastore().close();
+      }
+    }
+
+    @Test
+    void aCrashThatCutsTheAppendOfABatchLeavesNoneOfItsEvents(@TempDir Path directory) throws IOException {
+      // a power loss, or a short write killed halfway, can leave any prefix of the append on disk
+      Path eventsFile = directory.resolve("events.json");
+      EventRegistry registry = new EventRegistry(eventsFile);
+      DispatchJournal journal = new DispatchJournal(directory.resolve("dispatch_journal.json"));
+      try {
+        EventsAdapter.storeEvents(mockUserApp, registry, journal, List.of(Mocks.nonPersistedEvent()), mockConfig);
+        int before = Files.readAllBytes(eventsFile).length;
+        EventsAdapter.storeEvents(mockUserApp, registry, journal,
+            List.of(Mocks.nonPersistedEvent(), Mocks.nonPersistedEvent(), Mocks.nonPersistedEvent()), mockConfig);
+        byte[] complete = Files.readAllBytes(eventsFile);
+        for (int cut = before; cut < complete.length; cut += 7) {
+          Path crashed = directory.resolve("crashed-" + cut + ".json");
+          Files.write(crashed, java.util.Arrays.copyOf(complete, cut));
+          EventRegistry restarted = new EventRegistry(crashed);
+          try {
+            assertThat(restarted.count()).as("cut at byte %d", cut).isIn(1, 4);
+          } finally {
+            restarted.events().close();
+          }
+        }
       } finally {
         registry.events().close();
         journal.datastore().close();

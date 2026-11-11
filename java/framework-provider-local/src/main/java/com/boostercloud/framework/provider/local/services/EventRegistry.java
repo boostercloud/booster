@@ -159,8 +159,8 @@ public class EventRegistry {
 
   /**
    * Java-only: inserts several event documents atomically, with one flushed append (all of them are stored, or none
-   * is). A process killed during the call leaves either every line or, at most, a torn last line that the next load
-   * discards; never part of the batch.
+   * is). The append is framed as an atomic batch ({@code {"$$batch":<n>}} header): a crash that cuts it at any byte
+   * leaves lines that the next load discards as a whole, so it never finds part of the batch.
    *
    * @param storableObjects the documents (an {@code _id} may be given; otherwise one is generated)
    */

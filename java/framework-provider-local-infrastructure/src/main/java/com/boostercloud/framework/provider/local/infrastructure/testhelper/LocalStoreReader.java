@@ -19,9 +19,9 @@ import java.util.Map;
 
 /**
  * Reads the data files of a local application ({@code .booster/*.json}) without opening them as a store: the file
- * is read as it is on disk, its lines are replayed the way NeDB loads them (the last version of each {@code _id}
- * wins, {@code $$deleted} lines remove documents, index lines are skipped) and the result is queried in memory with
- * the store's matching and sorting rules.
+ * is read as it is on disk, its lines are replayed the way the store loads them (the last version of each {@code _id}
+ * wins, {@code $$deleted} lines remove documents, index lines are skipped, the lines of an atomic batch count only
+ * when the whole batch is there) and the result is queried in memory with the store's matching and sorting rules.
  *
  * <p>Nothing is written, so the files can be read while the application (possibly another process) writes them: an
  * unparsable line (the tail of a write in progress) is skipped, and a file being compacted is read from
@@ -117,9 +117,10 @@ public final class LocalStoreReader {
     return "";
   }
 
-  @SuppressWarnings("unchecked")
   private static List<Map<String, Object>> replay(String content) {
     Map<String, Map<String, Object>> byId = new LinkedHashMap<>();
+    List<Object> batch = null;
+    int batchSize = 0;
     for (String rawLine : content.split("\n", -1)) {
       String line = rawLine.endsWith("\r") ? rawLine.substring(0, rawLine.length() - 1) : rawLine;
       if (line.isBlank()) {
@@ -129,18 +130,39 @@ public final class LocalStoreReader {
       try {
         document = Serialization.deserialize(line);
       } catch (IOException | RuntimeException e) {
+        document = null;
+      }
+      if (document instanceof Map<?, ?> header && header.size() == 1
+          && header.get(Datastore.BATCH_HEADER_KEY) instanceof Number size && size.intValue() >= 1) {
+        // an unfinished batch before this header is dropped, as the store drops it
+        batch = new ArrayList<>();
+        batchSize = size.intValue();
         continue;
       }
-      if (!(document instanceof Map<?, ?> map) || !(map.get("_id") instanceof String id) || id.isEmpty()) {
+      if (batch != null) {
+        batch.add(document);
+        if (batch.size() == batchSize) {
+          if (batch.stream().allMatch(parsed -> parsed instanceof Map<?, ?>)) {
+            batch.forEach(parsed -> apply(byId, parsed));
+          }
+          batch = null;
+        }
         continue;
       }
-      if (Boolean.TRUE.equals(map.get("$$deleted"))) {
-        byId.remove(id);
-      } else {
-        byId.remove(id);
-        byId.put(id, (Map<String, Object>) map);
-      }
+      apply(byId, document);
     }
+    // a batch still incomplete here is a write in progress (or interrupted): none of it counts yet
     return new ArrayList<>(byId.values());
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void apply(Map<String, Map<String, Object>> byId, Object document) {
+    if (!(document instanceof Map<?, ?> map) || !(map.get("_id") instanceof String id) || id.isEmpty()) {
+      return;
+    }
+    byId.remove(id);
+    if (!Boolean.TRUE.equals(map.get("$$deleted"))) {
+      byId.put(id, (Map<String, Object>) map);
+    }
   }
 }

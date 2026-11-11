@@ -58,6 +58,9 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
 * inserts and updates append the full new version of the document, removals append
   `{"$$deleted":true,"_id":"…"}`, index definitions are `{"$$indexCreated":{…}}` lines
   (`{"$$indexRemoved":"field"}` removes one); dates are `{"$$date": <epoch millis>}`;
+* Java-only: a write of several lines (a batch of events, a multi update or remove) starts with a header line
+  `{"$$batch":<n>}` that makes it atomic on load (see below). NeDB ignores that line, like every line without `_id`,
+  so the files stay readable by the TypeScript provider;
 * when a file is loaded it is replayed (the last line of each `_id` wins) and rewritten compacted:
   `<file>~` is written and flushed, then renamed over the file atomically, then the directory is flushed
   (NeDB's `crashSafeWriteFileLines`); a missing file is restored from `<file>~` if a crash interrupted that
@@ -69,7 +72,11 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   with `FileChannel.force`. A failed write is rolled back in memory and the file is truncated back to its
   previous length, so no acknowledged write is lost and no partial line is left for the next append.
 * On load, an unparsable last line without a terminating newline is a write interrupted by a crash: it is
-  discarded (with a warning) and does not count as corruption. Other unparsable lines are skipped; if they are
+  discarded (with a warning) and does not count as corruption. So is a batch at the end of the file whose lines are
+  not all there or not all readable (a crash cut its append short, or a power loss wrote its pages out of order): the
+  whole batch is discarded, never a part of it. A damaged batch followed by more lines was complete when it was
+  acknowledged: none of its lines is applied and all of them count as corrupt. Other unparsable lines are skipped; if
+  they are
   more than 10 % of the non-empty lines (NeDB's `corruptAlertThreshold`), loading fails with
   `CorruptDataFileException` and NeDB's message
   (`40% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to prevent dataloss.`),
@@ -94,17 +101,19 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   A failed recovery keeps the pending entries for the next one. Dispatches running in the current process are
   never touched, so recovery can run while the application serves requests.
 * **Atomic event batches** (not in TypeScript). `events.store` writes the events of one batch (what one command,
-  event handler or scheduled command registered) with a single flushed append (`EventRegistry.storeAll`), so a
-  crash or a failed write leaves all of them stored or none: a command is never half applied. TypeScript (and
+  event handler or scheduled command registered) with a single flushed append, framed by a `{"$$batch":<n>}` header
+  (`EventRegistry.storeAll`). A failed write is truncated away, and a crash that cuts the append at any byte
+  (a `SIGKILL` during a short write, a power loss before the flush completed) leaves a batch that the next load
+  discards as a whole: all of the events are stored or none, a command is never half applied. TypeScript (and
   `EventsAdapter.storeEvents` without journal) inserts them one by one.
 
 ## Differences from TypeScript
 
 Store (NeDB replacement):
 
-* Writes are flushed (NeDB does not flush appends) and rolled back on failure; a torn last line is recovered
-  instead of counting as corruption; a failed load can be retried (NeDB never retries); the datastore loads
-  itself on first use.
+* Writes are flushed (NeDB does not flush appends) and rolled back on failure; a write of several lines is an
+  atomic batch (`{"$$batch":<n>}` header); a torn last line or batch is recovered instead of counting as corruption;
+  a failed load can be retried (NeDB never retries); the datastore loads itself on first use.
 * Generated `_id`s start with a clock-based monotonic counter, so unsorted results and sort ties (for example
   events created in the same millisecond, TypeScript quirk Q1) come in insertion order instead of random order.
   The order rule itself is NeDB's (ascending `_id` unless a persistent index supplies the candidates).

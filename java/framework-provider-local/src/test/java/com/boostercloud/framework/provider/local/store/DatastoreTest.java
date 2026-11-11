@@ -484,6 +484,83 @@ class DatastoreTest {
     }
 
     @Test
+    void writesOfSeveralLinesStartWithABatchHeader() throws IOException {
+      Datastore datastore = open();
+      datastore.insert(map("_id", "a", "v", 1));
+      datastore.insert(List.of(map("_id", "b", "v", 1), map("_id", "c", "v", 1)));
+      datastore.update(map("v", 1), map("$set", map("v", 2)), UpdateOptions.MULTI);
+      datastore.remove(map("_id", map("$in", list("a", "b"))), true);
+      assertThat(lines()).containsExactly(
+          "{\"_id\":\"a\",\"v\":1}",
+          "{\"$$batch\":2}",
+          "{\"_id\":\"b\",\"v\":1}",
+          "{\"_id\":\"c\",\"v\":1}",
+          "{\"$$batch\":3}",
+          "{\"_id\":\"a\",\"v\":2}",
+          "{\"_id\":\"b\",\"v\":2}",
+          "{\"_id\":\"c\",\"v\":2}",
+          "{\"$$batch\":2}",
+          "{\"$$deleted\":true,\"_id\":\"a\"}",
+          "{\"$$deleted\":true,\"_id\":\"b\"}");
+      // the headers are obsolete lines too (they never describe the live state): 1 + (1 + 3 replaced versions)
+      // + (1 + 2 deletion markers + 2 removed versions)
+      assertThat(datastore.obsoleteLines()).isEqualTo(10);
+      Datastore reopened = open();
+      assertThat(reopened.find(map()).exec()).containsExactly(map("_id", "c", "v", 2));
+      assertThat(warnings).isEmpty();
+    }
+
+    @Test
+    void aBatchCutShortByACrashIsDiscardedAsAWhole() throws IOException {
+      Datastore datastore = open();
+      datastore.insert(map("_id", "before", "v", 0));
+      int batchStart = Files.readAllBytes(file).length;
+      datastore.insert(List.of(map("_id", "e0", "payload", "x".repeat(40)), map("_id", "e1", "payload", "y".repeat(40))));
+      datastore.close();
+      byte[] complete = Files.readAllBytes(file);
+      // every place a crash can cut the append: the batch is all there, or not there at all
+      for (int cut = batchStart; cut < complete.length; cut++) {
+        Files.write(file, java.util.Arrays.copyOf(complete, cut));
+        warnings.clear();
+        Datastore reloaded = open();
+        List<Object> ids = reloaded.find(map()).exec().stream().map(d -> d.get("_id")).toList();
+        assertThat(ids).as("cut at byte %d", cut).isIn(List.of("before"), List.of("before", "e0", "e1"));
+        assertThat(warnings).as("cut at byte %d", cut).noneMatch(w -> w.contains("corrupt"));
+        reloaded.close();
+      }
+    }
+
+    @Test
+    void aBatchWhoseLineIsUnreadableAtTheEndOfTheFileIsAnInterruptedWriteToo() throws IOException {
+      // a power loss can write the pages of an append out of order: a garbled line followed by intact ones
+      writeFile("{\"_id\":\"before\"}\n{\"$$batch\":3}\n{\"_id\":\"e0\"}\n\u0000\u0000\u0000\u0000\n{\"_id\":\"e2\"}\n");
+      Datastore datastore = open();
+      assertThat(datastore.find(map()).exec()).containsExactly(map("_id", "before"));
+      assertThat(warnings).anyMatch(w -> w.contains("incomplete batch of 3 line(s)"))
+          .noneMatch(w -> w.contains("corrupt"));
+      assertThat(lines()).containsExactly("{\"_id\":\"before\"}");
+    }
+
+    @Test
+    void aDamagedBatchThatMoreLinesFollowIsLostAndCountsAsCorrupt() throws IOException {
+      String content = "{\"_id\":\"before\"}\n{\"$$batch\":2}\n{\"_id\":\"e0\"}\ngarbage\n{\"_id\":\"after\"}\n";
+      writeFile(content);
+      assertThatThrownBy(() -> open().loadDatabase()).isInstanceOf(CorruptDataFileException.class)
+          .satisfies(e -> assertThat(((CorruptDataFileException) e).corruptItems()).isEqualTo(2));
+      Datastore lenient = open(DatastoreOptions.of(file).withCorruptAlertThreshold(0.5));
+      assertThat(lenient.find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("after", "before");
+      assertThat(warnings).anyMatch(w -> w.contains("Skipped 2 corrupt line(s)"));
+    }
+
+    @Test
+    void aBatchHeaderBeforeThePreviousBatchEndedLosesThatBatch() throws IOException {
+      writeFile("{\"$$batch\":3}\n{\"_id\":\"lost\"}\n{\"$$batch\":2}\n{\"_id\":\"a\"}\n{\"_id\":\"b\"}\n");
+      Datastore lenient = open(DatastoreOptions.of(file).withCorruptAlertThreshold(0.5));
+      assertThat(lenient.find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("a", "b");
+      assertThat(warnings).anyMatch(w -> w.contains("Skipped 1 corrupt line(s)"));
+    }
+
+    @Test
     void aRemovalThatTriggersTheGrowthCompactionIsOnDiskToo() {
       // the dispatch journal's lifecycle: insert, $set, remove. The remove that crosses the threshold compacts the
       // file; the compacted file must already be without the removed document (and stay so after a reload)

@@ -151,8 +151,9 @@ public final class EventsAdapter {
    * {@link #recoverUndispatchedEvents}.
    *
    * <p>The events of the batch (the events one command, event handler or scheduled command registered) are stored
-   * atomically, with one flushed append ({@link EventRegistry#storeAll}): a crash leaves all of them stored or none,
-   * never part of the batch. Each still gets its own {@code createdAt}, in order.
+   * atomically, with one flushed append framed as an atomic batch ({@link EventRegistry#storeAll}): a failed write is
+   * truncated away and a crash that cuts the append is discarded as a whole on the next load, so all of them are
+   * stored or none, never part of the batch. Each still gets its own {@code createdAt}, in order.
    *
    * @param userApp the application
    * @param eventRegistry the registry
