@@ -342,6 +342,49 @@ class LocalProviderTest {
   }
 
   @Test
+  void theConversionsHealthProbeAndDedupAreWiredToTheirAdapters() throws Exception {
+    // read-model notifications (core's BoosterSubscribersNotifier converts them with readModels.rawToEnvelopes)
+    ReadModelEnvelope typed = new ReadModelEnvelope("CartReadModel", map("id", "c1", "n", 1));
+    assertThat(provider.readModels().rawToEnvelopes(config, list(typed, map("typeName", "OtherReadModel",
+        "value", map("id", "o1")))))
+        .containsExactly(typed, new ReadModelEnvelope("OtherReadModel", map("id", "o1")));
+    assertThatThrownBy(() -> provider.readModels().rawToEnvelopes(config, "nope"))
+        .isInstanceOf(IllegalArgumentException.class);
+
+    assertThat(provider.api().requestSucceeded(map("data", 1), Map.of("h", "v")))
+        .isEqualTo(new ApiAdapter.Success(map("data", 1), Map.of("h", "v")));
+
+    List<EventEnvelope> stored = provider.events().store(List.of(event("Cart", "c1", "A", map())), config);
+    assertThat(provider.events().rawToEnvelopes(stored)).isEqualTo(stored);
+    // no journal entry left: processed, as TypeScript's storeDispatched always answers
+    assertThat(provider.events().storeDispatched(stored.get(0), config)).isTrue();
+    runtime.dispatchJournal().addPending(List.of(map("_id", stored.get(0).id(), "entityTypeName", "Cart",
+        "entityID", "c1")));
+    assertThat(provider.events().storeDispatched(stored.get(0), config)).isTrue();
+    assertThat(provider.events().storeDispatched(stored.get(0), config)).isFalse();
+
+    // the booster/function health status (core's BoosterFunctionHealthIndicator) probes the local GraphQL endpoint
+    com.sun.net.httpserver.HttpServer server =
+        com.sun.net.httpserver.HttpServer.create(new java.net.InetSocketAddress("localhost", 0), 0);
+    server.createContext("/graphql", exchange -> {
+      exchange.getRequestBody().readAllBytes();
+      exchange.sendResponseHeaders(200, -1);
+      exchange.close();
+    });
+    server.start();
+    try {
+      com.boostercloud.framework.types.InternalInfo.setBoosterLocalPort(server.getAddress().getPort());
+      assertThat(provider.sensor().isGraphQLFunctionUp(config)).isTrue();
+      server.stop(0);
+      assertThat(provider.sensor().isGraphQLFunctionUp(config)).isFalse();
+    } finally {
+      server.stop(0);
+      com.boostercloud.framework.types.EnvironmentVariables.unset(
+          com.boostercloud.framework.types.InternalInfo.BOOSTER_LOCAL_PORT);
+    }
+  }
+
+  @Test
   void infrastructureNeedsTheInfrastructureModule() {
     assertThatThrownBy(provider::infrastructure)
         .isInstanceOf(IllegalStateException.class)

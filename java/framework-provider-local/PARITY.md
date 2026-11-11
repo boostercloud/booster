@@ -52,7 +52,7 @@ No foundation module was changed.
 | --- | --- | --- |
 | `Provider(rocketDescriptors?)` | `Provider.provider(List<RocketDescriptor>)` → `LocalProvider` (`ProviderLibrary`) | test `ProviderTest#coreLoadsTheProviderFromItsPackage` |
 | `loadInfrastructurePackage(name)` | `Provider.loadInfrastructurePackage(String)` | test `ProviderTest#loadsTheInfrastructurePackageByName` |
-| `ProviderLibrary` wiring (§2.1 table, 40 members) | `LocalProvider.*` | test `LocalProviderTest` (every member is called at least once) |
+| `ProviderLibrary` wiring (§2.1 table, 40 members) | `LocalProvider.*` | test `LocalProviderTest` (every member is called through the provider at least once, with an assertion on its result; `events.rawToEnvelopes`, `events.storeDispatched`, `readModels.rawToEnvelopes`, `api.requestSucceeded` and `sensor.isGraphQLFunctionUp`, which core uses for notifications and the `booster/function` health status, by `#theConversionsHealthProbeAndDedupAreWiredToTheirAdapters`) |
 | `events.rawStreamToEnvelopes` / `dedupEventStream` / `produce` = `notImplemented` | empty lists / no-op | diff: the Java SPI returns typed values; TypeScript returns `undefined` |
 | `readModels.fetch(..., sequenceKey)` | `sequenceKey` ignored | test `ReadModelAdapterTest.FetchReadModel#*`; see A2 |
 | `paths.ts` (6 constants) | `Paths` (+ `DISPATCH_JOURNAL_DATABASE`) | test `ProviderTest#pathsAreTheTypeScriptOnes` |
