@@ -30,6 +30,7 @@ Core loads it from `config.providerPackage = "com.boostercloud.framework.provide
 | `library.GraphQLAdapter` | `library/graphql-adapter.ts` | `rawGraphQLRequestToEnvelope` |
 | `library.ApiAdapter` (`APIResult`, `Success`, `Failure`) | `library/api-adapter.ts` | `requestSucceeded`, `requestFailed`, `healthRequestResult` |
 | `library.WebSocketServerAdapter`, `ConnectionContext`, `ExpressWebSocketMessage` | `library/web-socket-server-adapter.ts` | the Jetty websocket server |
+| `library.JettyLogging` | (Java-only) | Jetty logs through SLF4J; no provider is shipped, and without one SLF4J's fallback notice is kept quiet |
 | `library.ConnectionsAdapter`, `library.SubscriptionAdapter` | `library/connections-adapter.ts`, `library/subscription-adapter.ts` | connection data, messages, subscriptions |
 | `library.ScheduledAdapter`, `library.RocketAdapter`, `library.HealthAdapter` | `library/scheduled-adapter.ts`, `library/rocket-adapter.ts`, `library/health-adapter.ts` | scheduled triggers, rockets, sensor |
 | `library.LocalHttpRequest` | (Express `Request`) | the raw HTTP request the infrastructure hands to core |

@@ -32,11 +32,12 @@
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-server</artifactId>
     </dependency>
-    <!-- Jetty logs through SLF4J; Booster code does not, so Jetty's output goes to the no-op binding -->
+    <!-- Jetty logs through SLF4J. A library must not choose the application's SLF4J provider, so none is shipped
+         (JettyLogging keeps SLF4J's no-provider notice quiet); the tests use the no-op one. -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-nop</artifactId>
-      <scope>runtime</scope>
+      <scope>test</scope>
     </dependency>
   </dependencies>
 </project>

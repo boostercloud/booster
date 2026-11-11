@@ -113,6 +113,7 @@ public class WebSocketServerAdapter implements AutoCloseable {
     }
     Logger logger = logger("WebSocketServerAdapter#constructor#handleUpgrade");
     logger.info("Starting websocket server on ws://localhost:" + wsPort + PATH);
+    JettyLogging.prepare();
     QueuedThreadPool threadPool = new QueuedThreadPool();
     threadPool.setName("booster-websocket");
     threadPool.setDaemon(true);

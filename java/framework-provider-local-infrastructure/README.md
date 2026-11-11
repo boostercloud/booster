@@ -97,6 +97,11 @@ own port (`LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT`, default `65529`), path `/we
 Requests run on virtual threads (Jetty 12 `QueuedThreadPool` with a virtual-thread executor), so handlers block
 freely. Jetty is configured like Node: no `Server` header, 16 KiB of request headers, lenient URI checks.
 
+Jetty logs through SLF4J (Booster logs through `config.logger`). The module ships no SLF4J provider, so the
+application chooses: with none, SLF4J uses its no-operation logger and the framework keeps SLF4J's notice about that
+quiet (`JettyLogging` in `framework-provider-local`); an application that adds one (logback, slf4j-simple...) gets
+Jetty's logs through it, with no "multiple SLF4J providers" warning and no doubt about which provider wins.
+
 ### Graceful shutdown
 
 `LocalServer.close()` (run by a JVM shutdown hook on SIGINT/SIGTERM when started with `start`) logs
