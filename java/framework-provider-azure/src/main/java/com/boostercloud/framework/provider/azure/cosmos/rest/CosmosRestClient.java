@@ -41,11 +41,16 @@ import java.util.function.Supplier;
  *   <li>the partition key of {@code create}/{@code upsert} is read from the document with the container's partition
  *       key definition (fetched once per container and cached);
  *   <li>{@code item.read()} of a missing document returns a 404 response with no resource instead of throwing;
- *   <li>throttled requests (429) are retried with {@link ResourceThrottleRetryPolicy};
+ *   <li>throttled requests (429) are retried with {@link ResourceThrottleRetryPolicy}; connection failures, timeouts,
+ *       503 and 408 of reads and queries are retried as the SDK's default and timeout failover policies do (see
+ *       {@link CosmosRestTransport#send}); a partition key range gone during a client-side pipeline query (410/1002,
+ *       1007, 1008) makes the query run again on freshly listed ranges;
  *   <li>cross-partition queries ask the gateway for a query plan; queries the gateway can serve (plain filters and
  *       projections) are fanned out by the gateway and paged with its continuation tokens, the others
  *       ({@code ORDER BY}, {@code DISTINCT}, {@code OFFSET/LIMIT}, {@code TOP}, {@code VALUE} aggregates) run against
- *       every overlapping partition key range and are merged by the client, as the SDK's query pipeline does.
+ *       every overlapping partition key range and are merged by the client, as the SDK's query pipeline does. Paged
+ *       pipeline queries ({@code fetchNext}) use {@code booster-pipeline-skip:<n>} tokens; plain {@code ORDER BY} and
+ *       concatenation merges read only the first {@code n + pageSize + 1} rows of each range.
  * </ul>
  */
 public final class CosmosRestClient implements CosmosClient {
@@ -55,6 +60,32 @@ public final class CosmosRestClient implements CosmosClient {
   static final String QUERY_VERSION = "1.4";
   static final String PIPELINE_TOKEN_PREFIX = "booster-pipeline-skip:";
   private static final int CROSS_PARTITION_QUERY_NOT_SERVABLE = 1004;
+  /** Largest {@code x-ms-max-item-count} sent for a bounded partition key range read. */
+  static final int MAX_ITEM_COUNT = 1000;
+  /** Times a pipeline query is re-run on freshly listed ranges after a range is gone. */
+  static final int MAX_PARTITION_KEY_RANGE_GONE_RETRIES = 3;
+  /** 410 substatuses of a range that split or moved: PartitionKeyRangeGone, CompletingSplit, CompletingMigration. */
+  private static final Set<Integer> PARTITION_KEY_RANGE_GONE_SUBSTATUSES = Set.of(1002, 1007, 1008);
+
+  /**
+   * @param error a Cosmos DB error
+   * @return whether it says the partition key range a request addressed is gone (split or moved)
+   */
+  static boolean isPartitionKeyRangeGone(CosmosException error) {
+    return error.code() == 410 && error.substatus() != null
+        && PARTITION_KEY_RANGE_GONE_SUBSTATUSES.contains(error.substatus());
+  }
+
+  /**
+   * @param plan a query plan
+   * @return whether the first {@code n} merged results only depend on the first rows of each range (a plain
+   *     {@code ORDER BY} merge or a concatenation), so a paged pipeline query can stop reading early
+   */
+  static boolean isBoundable(CosmosQueryPlan plan) {
+    return plan.aggregates().isEmpty() && plan.groupByExpressions().isEmpty() && plan.top() == null
+        && plan.offset() == null && plan.limit() == null
+        && (plan.distinctType() == null || plan.distinctType().equals("None"));
+  }
 
   private final CosmosRestTransport transport;
   private final Supplier<String> idGenerator;
@@ -351,7 +382,7 @@ public final class CosmosRestClient implements CosmosClient {
           continuation = null;
         }
       }
-      List<Object> all = runPipeline();
+      List<Object> all = runPipeline(null);
       finished = true;
       return com.boostercloud.framework.provider.azure.cosmos.FeedResponse.of(skip(all, pipelineSkip()));
     }
@@ -380,8 +411,12 @@ public final class CosmosRestClient implements CosmosClient {
           continuation = null;
         }
       }
-      List<Object> all = runPipeline();
       int skip = pipelineSkip();
+      // A page needs the first skip + page size results; one more tells whether another page exists.
+      Integer needed = maxItemCount == null || maxItemCount <= 0
+          ? null
+          : (int) Math.min(Integer.MAX_VALUE, (long) skip + maxItemCount + 1);
+      List<Object> all = runPipeline(needed);
       List<Object> remaining = skip(all, skip);
       int pageSize = maxItemCount == null || maxItemCount < 0 ? remaining.size() : maxItemCount;
       List<Object> page = new ArrayList<>(remaining.subList(0, Math.min(pageSize, remaining.size())));
@@ -455,7 +490,18 @@ public final class CosmosRestClient implements CosmosClient {
       return CosmosQueryPlan.fromJson(response.json());
     }
 
-    private List<Object> runPipeline() {
+    /**
+     * Runs the plan's query on every overlapping partition key range and merges the results.
+     *
+     * @param needed how many merged results the caller needs (the first {@code needed}), or {@code null} for all.
+     *     When the merge is a plain {@code ORDER BY} merge or a concatenation (no aggregate, {@code DISTINCT},
+     *     {@code OFFSET/LIMIT} or {@code TOP}, whose results depend on rows beyond the first ones), each range is read
+     *     only until it has given {@code needed} rows ({@code ORDER BY}: the first {@code needed} merged rows are among
+     *     the first {@code needed} of every range) or until the ranges read so far gave {@code needed} rows
+     *     (concatenation), asking the gateway for no more than that with {@code x-ms-max-item-count}
+     * @return the merged results (at least the first {@code needed} ones)
+     */
+    private List<Object> runPipeline(Integer needed) {
       if (plan == null) {
         plan = fetchQueryPlan();
       }
@@ -470,28 +516,53 @@ public final class CosmosRestClient implements CosmosClient {
                 + querySpec.query());
       }
       SqlQuerySpec rangeQuery = querySpec.withQuery(plan.queryForRanges(querySpec.query()));
-      List<List<Object>> perRange = new ArrayList<>();
-      for (String rangeId : overlappingRangeIds(plan)) {
-        List<Object> results = new ArrayList<>();
-        String rangeContinuation = null;
-        do {
-          Map<String, String> headers = queryHeaders();
-          headers.put("x-ms-documentdb-query-enablecrosspartition", "True");
-          headers.put("x-ms-documentdb-partitionkeyrangeid", rangeId);
-          if (rangeContinuation != null) {
-            headers.put("x-ms-continuation", rangeContinuation);
+      Integer budget = needed != null && isBoundable(plan) ? needed : null;
+      boolean perRangeBudget = !plan.orderBy().isEmpty();
+      for (int attempt = 1; ; attempt++) {
+        try {
+          List<List<Object>> perRange = new ArrayList<>();
+          int collected = 0;
+          for (String rangeId : overlappingRangeIds(plan)) {
+            Integer rangeLimit = budget == null ? null : perRangeBudget ? budget : budget - collected;
+            List<Object> results = rangeLimit != null && rangeLimit <= 0
+                ? new ArrayList<>()
+                : queryRange(rangeQuery, rangeId, rangeLimit);
+            collected += results.size();
+            perRange.add(results);
           }
-          Page page = queryPage(rangeQuery, headers);
-          results.addAll(page.items());
-          rangeContinuation = page.continuation();
-        } while (rangeContinuation != null);
-        perRange.add(results);
+          return CosmosQueryPipeline.combine(plan, perRange);
+        } catch (CosmosException e) {
+          if (!isPartitionKeyRangeGone(e) || attempt > MAX_PARTITION_KEY_RANGE_GONE_RETRIES) {
+            throw e;
+          }
+          // The range split or moved (as the SDK's parallel and order-by contexts repair it): the ranges are listed
+          // again and the query re-run on them.
+        }
       }
-      return CosmosQueryPipeline.combine(plan, perRange);
+    }
+
+    private List<Object> queryRange(SqlQuerySpec rangeQuery, String rangeId, Integer limit) {
+      List<Object> results = new ArrayList<>();
+      String rangeContinuation = null;
+      do {
+        Map<String, String> headers = queryHeaders();
+        headers.put("x-ms-documentdb-query-enablecrosspartition", "True");
+        headers.put("x-ms-documentdb-partitionkeyrangeid", rangeId);
+        if (limit != null) {
+          headers.put("x-ms-max-item-count", Integer.toString(Math.min(limit - results.size(), MAX_ITEM_COUNT)));
+        }
+        if (rangeContinuation != null) {
+          headers.put("x-ms-continuation", rangeContinuation);
+        }
+        Page page = queryPage(rangeQuery, headers);
+        results.addAll(page.items());
+        rangeContinuation = page.continuation();
+      } while (rangeContinuation != null && (limit == null || results.size() < limit));
+      return limit != null && results.size() > limit ? new ArrayList<>(results.subList(0, limit)) : results;
     }
 
     private List<String> overlappingRangeIds(CosmosQueryPlan queryPlan) {
-      List<String> ids = new ArrayList<>();
+      List<Map<?, ?>> all = new ArrayList<>();
       String rangesContinuation = null;
       do {
         Map<String, String> headers = new LinkedHashMap<>();
@@ -504,16 +575,29 @@ public final class CosmosRestClient implements CosmosClient {
         if (ranges instanceof List<?> list) {
           for (Object item : list) {
             if (item instanceof Map<?, ?> range) {
-              String min = String.valueOf(range.get("minInclusive"));
-              String max = String.valueOf(range.get("maxExclusive"));
-              if (queryPlan.queryRanges().stream().anyMatch(queryRange -> queryRange.overlaps(min, max))) {
-                ids.add(String.valueOf(range.get("id")));
-              }
+              all.add(range);
             }
           }
         }
         rangesContinuation = response.header("x-ms-continuation");
       } while (rangesContinuation != null);
+      // A range that is the parent of another one has been split (the feed may still list it next to its children).
+      Set<String> parents = new java.util.HashSet<>();
+      for (Map<?, ?> range : all) {
+        if (range.get("parents") instanceof List<?> rangeParents) {
+          rangeParents.forEach(parent -> parents.add(String.valueOf(parent)));
+        }
+      }
+      List<String> ids = new ArrayList<>();
+      for (Map<?, ?> range : all) {
+        String id = String.valueOf(range.get("id"));
+        String min = String.valueOf(range.get("minInclusive"));
+        String max = String.valueOf(range.get("maxExclusive"));
+        if (!parents.contains(id)
+            && queryPlan.queryRanges().stream().anyMatch(queryRange -> queryRange.overlaps(min, max))) {
+          ids.add(id);
+        }
+      }
       return ids;
     }
 
@@ -604,13 +688,40 @@ public final class CosmosRestClient implements CosmosClient {
 
   /**
    * @param value a partition key value
-   * @return the {@code x-ms-documentdb-partitionkey} header: a JSON array with the value, {@code [{}]} when undefined
+   * @return the {@code x-ms-documentdb-partitionkey} header: a JSON array with the value, {@code [{}]} when undefined.
+   *     Like the SDK's {@code jsonStringifyAndEscapeNonASCII}, every UTF-16 unit from U+007F up is written as a JSON
+   *     unicode escape ({@link #escapeNonAscii}), so the header is ASCII (the JDK client rejects header values above
+   *     U+00FF and would send U+0080 to U+00FF as single ISO-8859-1 bytes)
    */
   static String partitionKeyHeader(Object value) {
     if (value == PartitionKeyValue.UNDEFINED) {
       return "[{}]";
     }
-    return BoosterJson.toJson(java.util.Collections.singletonList(value));
+    return escapeNonAscii(BoosterJson.toJson(java.util.Collections.singletonList(value)));
+  }
+
+  /**
+   * {@code jsonStringifyAndEscapeNonASCII}'s replacement step: every UTF-16 unit from U+007F to U+FFFF becomes a
+   * backslash, {@code u} and its code as four lower-case hexadecimal digits. Outside strings JSON text is ASCII, so the
+   * result is the same JSON value.
+   *
+   * @param json JSON text
+   * @return the text with every character from U+007F up escaped
+   */
+  static String escapeNonAscii(String json) {
+    StringBuilder escaped = null;
+    for (int i = 0; i < json.length(); i++) {
+      char c = json.charAt(i);
+      if (c >= 0x7F) {
+        if (escaped == null) {
+          escaped = new StringBuilder(json.length() + 16).append(json, 0, i);
+        }
+        escaped.append(String.format("\\u%04x", (int) c));
+      } else if (escaped != null) {
+        escaped.append(c);
+      }
+    }
+    return escaped == null ? json : escaped.toString();
   }
 
   static Map<String, String> requestOptionHeaders(RequestOptions options) {

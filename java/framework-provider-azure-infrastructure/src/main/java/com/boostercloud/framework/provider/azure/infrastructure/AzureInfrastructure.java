@@ -7,6 +7,7 @@ import com.boostercloud.framework.provider.azure.infrastructure.azure.ResourceMa
 import com.boostercloud.framework.provider.azure.infrastructure.azure.WebPubSubManagementClient;
 import com.boostercloud.framework.provider.azure.infrastructure.azure.WebSiteManagementClient;
 import com.boostercloud.framework.provider.azure.infrastructure.helper.FunctionZip;
+import com.boostercloud.framework.provider.azure.infrastructure.helper.JavaRuntimeCompatibility;
 import com.boostercloud.framework.provider.azure.infrastructure.helper.Utils;
 import com.boostercloud.framework.provider.azure.infrastructure.process.Command;
 import com.boostercloud.framework.provider.azure.infrastructure.rockets.InfrastructureRocket;
@@ -23,6 +24,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 /**
@@ -86,13 +88,28 @@ public final class AzureInfrastructure implements ProviderInfrastructure {
 
   @Override
   public void synth(BoosterConfig config) {
-    new ApplicationBuilder(config, rockets, contextFactory.apply(config)).buildApplication();
+    InfrastructureContext context = contextFactory.apply(config);
+    javaRuntimeIncompatibility(config, context).ifPresent(problem ->
+        Loggers.getLogger(config, "index#synth").warn(problem));
+    new ApplicationBuilder(config, rockets, context).buildApplication();
   }
 
+  /**
+   * {@inheritDoc}
+   *
+   * <p>Java only: before anything is built or deployed, the packaged class files are checked against the function
+   * apps' Java runtime ({@link JavaRuntimeCompatibility}); a package the runtime cannot load is refused (unless
+   * {@code BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK=true}), since every function would fail. {@code synth} only warns.
+   *
+   * @throws IllegalStateException when the function apps' Java runtime cannot load the package
+   */
   @Override
   public void deploy(BoosterConfig config) {
     InfrastructureContext context = contextFactory.apply(config);
     Logger logger = Loggers.getLogger(config, "index#deployApp");
+    javaRuntimeIncompatibility(config, context).ifPresent(problem -> {
+      throw new IllegalStateException(problem);
+    });
     logger.info("Deploying app " + config.appName);
     ApplicationBuild applicationBuild = new ApplicationBuilder(config, rockets, context).buildApplication();
 
@@ -124,6 +141,13 @@ public final class AzureInfrastructure implements ProviderInfrastructure {
       String webPubSubName = resourceGroupName + "wps";
       updateWebPubSubHub(config, context, resourceGroupName, functionAppName, webPubSubName, "booster");
     }
+  }
+
+  private static Optional<String> javaRuntimeIncompatibility(BoosterConfig config, InfrastructureContext context) {
+    if (Constants.skipJavaVersionCheck()) {
+      return Optional.empty();
+    }
+    return JavaRuntimeCompatibility.incompatibility(context.deploySources(config), Constants.javaVersion());
   }
 
   /**

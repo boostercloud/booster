@@ -271,6 +271,33 @@ class AzureProviderContractTest {
   }
 
   @Test
+  void anEntityWhoseEventsExceedTheBasicTierLimitIsStreamedInSeveralPublications() {
+    String template = Fixtures.read("cosmos/event-document.json");
+    List<Object> documents = new java.util.ArrayList<>();
+    for (int i = 0; i < 100; i++) {
+      @SuppressWarnings("unchecked")
+      Map<String, Object> document = (Map<String, Object>) BoosterJson.parse(template);
+      document.put("id", "event-" + i);
+      document.put("value", obj("blob", "x".repeat(3000)));
+      documents.add(document);
+    }
+    for (int i = 0; i < 3; i++) {
+      server.enqueue(Response.empty(201));
+    }
+
+    List<EventEnvelope> envelopes = provider.events().rawToEnvelopes(
+        new AzureCosmosDBFunctionInput(documents, AzureInvocationContext.of("i")));
+    provider.events().produce("Cart", UUID.of("42"), envelopes, config);
+
+    List<RecordedRequest> sends = server.requests();
+    assertThat(sends).hasSizeGreaterThan(1).allSatisfy(send -> {
+      assertThat(send.path()).isEqualTo("/booster_events/messages");
+      assertThat(send.body().getBytes(java.nio.charset.StandardCharsets.UTF_8).length).isLessThanOrEqualTo(256 * 1024);
+    });
+    assertThat(sends.stream().mapToInt(send -> ((List<?>) send.json()).size()).sum()).isEqualTo(100);
+  }
+
+  @Test
   void subscriptionsAndWebsocketMessages() {
     EnvironmentVariables.set("WebPubSubConnectionString", "Endpoint=" + server.baseUrl() + ";AccessKey=key;Version=1.0;");
     server.enqueue(container("new-booster-app-app-subscriptions-store", "/className"))

@@ -161,6 +161,67 @@ class AzureInfrastructureTest {
     assertThat(sleeper.sleeps()).isEmpty();
   }
 
+  private void addClassFile(int major) throws java.io.IOException {
+    Path file = root.resolve("target/classes/com/example/store/Modern.class");
+    java.nio.file.Files.createDirectories(file.getParent());
+    java.nio.file.Files.write(file,
+        new byte[] {(byte) 0xCA, (byte) 0xFE, (byte) 0xBA, (byte) 0xBE, 0, 0, (byte) (major >> 8), (byte) major});
+  }
+
+  @Test
+  void deploy_refuses_class_files_the_function_apps_java_runtime_cannot_load() throws Exception {
+    addClassFile(71);
+
+    assertThatThrownBy(() -> infrastructure(null).deploy(Fixtures.config()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageStartingWith("The function apps run Java 21 (BOOSTER_AZURE_JAVA_VERSION), which loads class files"
+            + " up to version 65, but ")
+        .hasMessageContaining("Modern.class has class file version 71 (Java 27)");
+    assertThat(commands.commands()).isEmpty();
+    assertThat(http.requests()).isEmpty();
+    assertThat(root.resolve("cdktf.out")).doesNotExist();
+  }
+
+  @Test
+  void deploy_proceeds_with_loadable_class_files_or_when_the_check_is_skipped() throws Exception {
+    addClassFile(65);
+    scriptPublishingCredentials("mystoreproductionrgfpr");
+    infrastructure(null).deploy(Fixtures.noSubscriptionsConfig());
+    assertThat(commands.commands()).hasSize(3);
+
+    addClassFile(71);
+    com.boostercloud.framework.types.EnvironmentVariables.set("BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK", "true");
+    infrastructure(null).deploy(Fixtures.noSubscriptionsConfig());
+    assertThat(commands.commands()).hasSize(6);
+  }
+
+  @Test
+  void synth_only_warns_about_class_files_the_runtime_cannot_load() throws Exception {
+    addClassFile(71);
+    BoosterConfig config = Fixtures.config();
+    List<String> warnings = new java.util.ArrayList<>();
+    config.logger = new com.boostercloud.framework.types.Logger() {
+      @Override
+      public void debug(Object message, Object... optionalParams) {}
+
+      @Override
+      public void info(Object message, Object... optionalParams) {}
+
+      @Override
+      public void warn(Object message, Object... optionalParams) {
+        warnings.add(message + " " + java.util.Arrays.toString(optionalParams));
+      }
+
+      @Override
+      public void error(Object message, Object... optionalParams) {}
+    };
+
+    infrastructure(null).synth(config);
+
+    assertThat(root.resolve("functionApp.zip")).isRegularFile();
+    assertThat(warnings).singleElement().asString().contains("has class file version 71 (Java 27)");
+  }
+
   @Test
   void deploy_reports_terraform_failures_and_stops() {
     commands.failing("terraform plan", "Error: Invalid provider configuration");

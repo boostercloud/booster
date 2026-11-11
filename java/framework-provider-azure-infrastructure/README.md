@@ -26,7 +26,7 @@ the exact commands and requests.
 | `AzureInfrastructure` | `infrastructure/index.ts` (`synth`, `deploy`, `nuke`, `updateWebPubSubHub`, `triggerColdStart`) | `ProviderInfrastructure`; `start` throws, `supports(START)` is false |
 | `ApplicationBuilder`, `ApplicationBuild` | `application-builder.ts` | |
 | `AzureStack` | `azure-stack.ts` | `addAppSettingsToFunctionApp` (rocket settings) |
-| `Constants` | `constants.ts` | + Java-only `BOOSTER_AZURE_JAVA_VERSION`, `BOOSTER_TERRAFORM_BINARY` |
+| `Constants` | `constants.ts` | + Java-only `BOOSTER_AZURE_JAVA_VERSION`, `BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK`, `BOOSTER_TERRAFORM_BINARY` |
 | `InfrastructureContext` | (`process.cwd()`, the SDK clients, `runCommand`, timers) | the injectable outside world |
 | `terraform.*` | `cdktn` (`App`, `TerraformStack`, `TerraformResource`, `TerraformOutput`, `Fn`, `addOverride`) | a Terraform JSON emitter, see below |
 | `synth.ApplicationSynth`, `synth.Terraform*`, `synth.gateway.*` | `synth/*.ts`, `synth/gateway/*.ts` | one builder per resource, same construct ids, names and attributes |
@@ -34,6 +34,7 @@ the exact commands and requests.
 | `functions.*` | `functions/*.ts` | the legacy v3 definitions, pinned by the TypeScript tests |
 | `helper.FunctionsCodeGenerator` | `helper/functions-code-generator.ts` | `function.json` definitions for the Java worker (see below) |
 | `helper.FunctionZip`, `helper.FunctionAppLayout`, `helper.DeploySources`, `helper.BaseWebPubSubBinding` | `helper/function-zip.ts` | packages and Kudu upload |
+| `helper.JavaRuntimeCompatibility` | (none) | whether the function apps' `java_version` loads the packaged class files |
 | `helper.Utils`, `helper.Params`, `helper.AzCliHelper`, `helper.JsonText` | `helper/utils.ts`, `helper/params.ts`, `helper/az-cli-helper.ts` | naming rules, settings, `az` wrappers, `JSON.stringify` |
 | `azure.*` | `@azure/identity`, `@azure/arm-appservice`, `@azure/arm-webpubsub`, `@azure/arm-resources`, `needle`, `fetch` | `ClientSecretCredential`, `ArmClient` (+ long-running operations), the three management clients, `HttpTransport` |
 | `process.*` | `runCommand` | `Command`, `CommandRunner`, `ProcessCommandRunner` |
@@ -53,7 +54,8 @@ the exact commands and requests.
 6. `<project>/functionApp.zip` and, with event streaming, `<project>/consumerFunctionApp.zip`;
 7. the rocket packages `<project>/rocket_<functionApp>.zip` (rockets concurrently).
 
-**deploy** = synth, then in the stack directory (environment `TF_IN_AUTOMATION=true` added to the inherited one):
+**deploy** = (Java only: the Java runtime check of "Known blocker: the Java runtime of the function apps" below) synth,
+then in the stack directory (environment `TF_IN_AUTOMATION=true` added to the inherited one):
 
 ```
 terraform init -input=false
@@ -110,7 +112,12 @@ Every resource has the TypeScript type, construct id, name and attribute values;
 (`src/test/resources/golden/*.cdk.tf.json`) pin four configurations: no subscriptions, subscriptions with read models
 and a scheduled command, event streaming, and rockets with WAF and the basic plan. With
 `BOOSTER_TERRAFORM_VALIDATE=true` the opt-in `TerraformValidateTest` runs `terraform init -backend=false` and
-`terraform validate` on synthesized stacks (it needs the azurerm provider, downloaded or cached).
+`terraform validate` on three synthesized stacks (streaming with subscriptions, no subscriptions, and rockets with WAF
+and the basic plan, whose test rockets override the gateway's pools, path rules and rewrite rules) and on every golden
+stack of this module and of the rocket modules (`../rockets/*/src/test/resources/golden/*.cdk.tf.json`, pinned to the
+real webhook and file-uploads rockets' synthesis by their golden tests). It needs the azurerm provider, downloaded or
+cached; offline, point `TF_CLI_CONFIG_FILE` at a `provider_installation { filesystem_mirror { … } }` configuration
+whose path is a plugin cache directory.
 
 ## Function apps for the Java worker
 
@@ -158,6 +165,27 @@ Function apps are `azurerm_windows_function_app` with `functions_extension_versi
 gets the Java-only app setting `BOOSTER_APP_CLASS` (the application class: `BOOSTER_APP_CLASS` of the deploying
 process, else its main class), which `BoosterAzureFunctions` passes to `Booster.start`.
 
+### Known blocker: the Java runtime of the function apps
+
+The Booster Java port, and the applications `boost new` generates, are compiled for Java 27 (`--release 27`, class
+file version 71; `ARCHITECTURE.md`). Azure Functions' Java stacks end at 21 (`java_version` accepts `1.8`, `11`, `17`,
+`21`), and a Java 21 worker loads class files up to version 65: with the default settings every deployed function
+(GraphQL, event handlers, Web PubSub, timers, rockets) would fail with `UnsupportedClassVersionError`. Only the
+bootstrap `baseWebPubSubBinding` class, generated for Java 8, would load. This is decided offline from the class files,
+so it is not left to a deployment to find out:
+
+* `deploy` checks the packaged class files (`helper.JavaRuntimeCompatibility`: class path directories and jars in
+  order, multi-release `META-INF/versions/` entries and `module-info.class` ignored) against `java_version` before
+  anything is built or created, and refuses with an `IllegalStateException` naming the first class too new for the
+  runtime;
+* `synth` only logs that message as a warning, so stacks and packages can still be inspected;
+* `BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK=true` skips the check, for function apps that run another JVM (for example a
+  JDK shipped by the application and selected with the `languageWorkers__java__defaultExecutablePath` app setting in
+  `config.env`; not verified).
+
+Running the port on Azure Functions needs either a Java stack Azure does not offer yet, a custom JVM as above, or
+building the packaged modules and the application for `--release 21`, which `ARCHITECTURE.md` does not allow today.
+
 ## App settings
 
 Main (`func`) and consumer (`fhub`) apps, in this order (`config.env` can override only the first two):
@@ -174,8 +202,8 @@ Deploying machine settings: `REGION` (required), `AZURE_*`, `AZURE_MAX_CONTAINER
 `AZURE_MAX_DATABASE_THROUGHPUT` (`parseInt`, default 1000; non-numeric = `null`), `BOOSTER_AZURE_SERVICE_PLAN_BASIC`
 (`true` = B1 with 2 workers, else Y1), `BOOSTER_USE_WAF` (`true` = `WAF_v2` with a detection WAF), `BOOSTER_ENV`
 (gateway paths and outputs, default `azure`), `BOOSTER_APP_NAME`; Java only: `BOOSTER_APP_CLASS`,
-`BOOSTER_AZURE_JAVA_VERSION`, `BOOSTER_TERRAFORM_BINARY` (default `terraform`, e.g. `tofu`). All are read through
-`EnvironmentVariables`.
+`BOOSTER_AZURE_JAVA_VERSION`, `BOOSTER_AZURE_SKIP_JAVA_VERSION_CHECK` (exactly `true` skips the runtime check above),
+`BOOSTER_TERRAFORM_BINARY` (default `terraform`, e.g. `tofu`). All are read through `EnvironmentVariables`.
 
 ## Rockets
 
@@ -224,6 +252,8 @@ backed by the Cosmos DB REST client of `framework-provider-azure`. The counters 
   `package.json`; `application_stack.java_version` replaces `node_version: '~22'`; Cosmos DB and Event Hub triggers
   add `dataType: string` and the Java binding names (`request`, `documents`, `messages`, `timer`); the Web PubSub
   triggers have no `$return` binding (as the Node v4 registration). The `BOOSTER_APP_CLASS` app setting is new.
+  `deploy` refuses packages whose class files the function apps' Java runtime cannot load (see "Known blocker"
+  above; TypeScript has no counterpart, Node runs any JavaScript it deploys).
 * **One configuration**: TypeScript re-reads `<cwd>/dist/index.js` for the resources; Java uses the configuration it is
   given (`readProjectConfig` is not ported).
 * **Project root**: `config.userProjectRootPath()` (set by `Booster.start`) or the working directory, instead of
@@ -269,8 +299,9 @@ helper.
 
 Not verifiable without deploying: that Terraform and the azurerm 5.x provider accept the JSON (run the opt-in
 `TerraformValidateTest`), the Java worker's handling of the generated `function.json` files (binding data types, the
-Web PubSub return value without `$return`), that Azure Functions runs a Java 27 application (the runtime currently
-offers up to Java 21; see `BOOSTER_AZURE_JAVA_VERSION`), and the live API versions and long-running operation headers.
+Web PubSub return value without `$return`), and the live API versions and long-running operation headers. That the
+default Java 21 function apps cannot load the Java 27 classes is not in this list: it is decided offline and `deploy`
+refuses it (`JavaRuntimeCompatibilityTest`, `AzureInfrastructureTest#deploy_refuses_class_files_the_function_apps_java_runtime_cannot_load`).
 
 The parity ledger of both Azure modules (item -> Java test, audit fixes, intentional differences, unverifiable
 items, and a hand walk of the TypeScript synthesis compared with the golden files) is

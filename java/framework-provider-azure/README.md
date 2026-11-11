@@ -102,27 +102,56 @@ The application is booted once per worker: `BOOSTER_APP_CLASS` is loaded and
 * **REST instead of the Azure SDKs.** `@azure/cosmos`, `@azure/event-hubs` (AMQP) and `@azure/web-pubsub` are replaced
   by small ports with `java.net.http` REST adapters (no Azure SDK, as the architecture requires). The adapters keep
   the SDK behaviour the TypeScript code relies on:
-  * Cosmos DB: master-key HMAC authorization, `x-ms-version 2020-07-15`, partition key headers, a random UUID `id`
+  * Cosmos DB: master-key HMAC authorization, `x-ms-version 2020-07-15`, partition key headers (JSON with every
+    character from U+007F up written as a `\uXXXX` escape, as the SDK's `jsonStringifyAndEscapeNonASCII` does, so
+    entity and read model ids with non-ASCII characters work), a random UUID `id`
     for documents without one (`create`, `upsert`, batch `Create`), the partition key of `create`/`upsert` read from
     the document with the container's partition key definition (one `GET colls/<id>` per container, cached),
-    `read()` of a missing document returning a 404 response instead of throwing, `ResourceThrottleRetryPolicy` for
-    429, transactional batches returned (not thrown) when they fail (code 207).
+    `read()` of a missing document returning a 404 response instead of throwing, transactional batches returned (not
+    thrown) when they fail (code 207), and the SDK retry policies of a single-region account:
+    `ResourceThrottleRetryPolicy` for 429 (every request); `DefaultRetryPolicy` for connection failures and request
+    timeouts of reads and queries (up to 10 retries, 1 s apart; the SDK's timeout failover policy would allow more
+    immediate attempts against the same region); `TimeoutFailoverRetryPolicy` for 503 and 408 answers to reads and
+    queries (one immediate retry); writes are retried only when throttled, as in the SDK. A cross-partition query
+    whose partition key range split or moved (410 with substatus 1002, 1007 or 1008) lists the ranges again, dropping
+    ranges that are another range's parent, and re-runs (up to 3 times), where the SDK repairs the affected range
+    only. `SessionRetryPolicy` (404/1002) has no counterpart: the client sends no session tokens.
   * Cosmos DB queries: single-partition queries (with a partition key) go straight to the gateway. Cross-partition
     queries first ask for a **query plan**; plain queries are fanned out by the gateway and paged with its
     continuation tokens, the others (`ORDER BY`, `DISTINCT`, `OFFSET/LIMIT`, `TOP`, `VALUE` aggregates) run on every
     overlapping partition key range and are merged by the client, as the SDK's query pipeline does. Paginated
     pipeline queries use client tokens `booster-pipeline-skip:<n>` (opaque to Booster, which only passes them back);
-    each page re-runs the ranges. `GROUP BY` and non-`VALUE` aggregates are rejected (Booster issues neither). A
-    gateway refusal (400/1004) falls back to the pipeline.
+    each page re-runs the ranges, but a page of `p` rows after `n` rows of a plain `ORDER BY` query (or a plain query
+    the gateway refused) reads at most `n + p + 1` rows of each range (`x-ms-max-item-count`, continuations not
+    followed further; plain queries stop at the first ranges that give them), never the whole result set. The SDK
+    instead resumes each range from its own continuation with an order-by filter, so a deep page (`n` large) costs
+    the Java client up to `n + p + 1` rows per range where the SDK reads about `p`; queries with `DISTINCT`,
+    aggregates, `OFFSET/LIMIT` or `TOP` (bounded by their rewritten range query) still read every range in full.
+    `GROUP BY` and non-`VALUE` aggregates are rejected (Booster issues neither). A gateway refusal (400/1004) falls
+    back to the pipeline.
   * Event Hubs: the REST "send batch events" API with a SAS token; each message is
-    `{"Body": "<JSON>", "BrokerProperties": {"PartitionKey": "<entity>-<id>-event"}}`; batches are limited to 1 MiB of
-    REST payload (the JS SDK measures AMQP size); transient failures use the core-amqp policy (30 s base, 90 s cap).
+    `{"Body": "<JSON>", "BrokerProperties": {"PartitionKey": "<entity>-<id>-event"}}`; batches are limited to
+    256 KiB of REST payload, the publication limit of the Basic namespace the infrastructure deploys (the JS SDK sizes
+    batches with the AMQP link's maximum message size, which is that limit; the REST payload, with JSON-escaped
+    bodies, is never smaller than the message the service measures, so Java batches are at most as large); transient
+    failures use the core-amqp policy (30 s base, 90 s cap).
   * Web PubSub: `sendToConnection` with the access-key JWT the JS SDK signs (`aud` = the request URL with its
     `api-version` query and without port, as `webPubSubKeyCredentialPolicy`; 1 h; HS256 with the UTF-8 key), API
     version `2021-10-01`, and the core-rest-pipeline default retry policy.
   * Cross-partition queries support `VALUE` aggregates only: a non-`VALUE` aggregate (`SELECT COUNT(1) AS total`) or a
     `GROUP BY` is rejected with an `UnsupportedOperationException` instead of returning per-partition partial results
     (the JS SDK has a client-side `GROUP BY` pipeline for them; Booster's runtime queries use neither).
+* **Filter property names are data, not SQL text (security).** TypeScript's `query-helper.ts` pastes every filter key
+  into the query as `c["<key>"]` and into the placeholder name `@<key>_<n>`. The keys of a JSON-typed filter (map,
+  union, interface or external-class properties get the `JSON` scalar as their filter, for example
+  `ProductReadModel.productDetails`) are chosen by the GraphQL client through a variable, so a key such as
+  `x"]) OR (1=1) OR IS_DEFINED(c["x` turned the `WHERE` clause into `… AND IS_DEFINED(c["productDetails"]["x"]) OR
+  (1=1) OR …` and returned every document, defeating the row filters `before` hooks add. `QueryHelper` writes each
+  key as an escaped string literal (`c["productDetails"]["x\"]) OR …"]`) and replaces every character other than
+  ASCII letters, digits and `_` with `_` in placeholder names (`@a_OR_1_1_OR_c_x_0`; collisions get the next index,
+  identically in the SQL and parameter walks). Identifier-like keys, the only ones the TypeScript code handles
+  correctly, produce exactly the TypeScript SQL. Projections and sort keys still come only from GraphQL field names
+  (GraphQL `Name`s) or application code and are written as in TypeScript.
 * **Queries that pin the partition key pass it** (`readEntityEventsSince`, `readEntityLatestSnapshot`,
   `fetchSubscriptions`, connection queries), so they run as single-partition queries without a query plan. The SQL
   text and parameters are the TypeScript ones.

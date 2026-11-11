@@ -187,6 +187,30 @@ class CosmosRestClientContractTest {
     }
 
     @Test
+    void nonAsciiPartitionKeysAreSentEscapedLikeJsonStringifyAndEscapeNonAscii() throws Exception {
+      server.enqueue(container(EVENTS, "/entityTypeName_entityID_kind"))
+          .enqueue(Response.json(201, "{}"))
+          .enqueue(Response.json(201, "{}"))
+          .enqueue(Fixtures.response("cosmos/read-model-document.json", 200));
+      CosmosRestClient client = client();
+
+      events(client).items().create(obj("entityTypeName_entityID_kind", "Product-日本-event", "id", "1"));
+      events(client).items().create(obj("entityTypeName_entityID_kind", "Product-ñ\u007f-event", "id", "2"));
+      client.database(DB).container("new-booster-app-app-CartReadModel").item("日本", "日本").read();
+
+      assertThat(server.request(1).header("x-ms-documentdb-partitionkey"))
+          .isEqualTo("[\"Product-\\u65e5\\u672c-event\"]");
+      assertThat(server.request(1).json())
+          .isEqualTo(obj("entityTypeName_entityID_kind", "Product-日本-event", "id", "1"));
+      assertThat(server.request(2).header("x-ms-documentdb-partitionkey"))
+          .isEqualTo("[\"Product-\\u00f1\\u007f-event\"]");
+      RecordedRequest read = server.request(3);
+      assertSigned(read, "GET", "docs", "dbs/" + DB + "/colls/new-booster-app-app-CartReadModel/docs/日本");
+      assertThat(read.header("x-ms-documentdb-partitionkey")).isEqualTo("[\"\\u65e5\\u672c\"]");
+      assertThat(CosmosRestClient.partitionKeyHeader("😀\"")).isEqualTo("[\"\\ud83d\\ude00\\\"\"]");
+    }
+
+    @Test
     void conflictsAreCosmosExceptionsWithTheServiceMessage() {
       server.enqueue(container("dispatched", "/eventId")).enqueue(Fixtures.response("cosmos/error-409.json", 409));
 
@@ -371,6 +395,135 @@ class CosmosRestClientContractTest {
             assertThat(options.fixedRetryIntervalInMilliseconds()).isZero();
             assertThat(options.maxWaitTimeInSeconds()).isNaN();
           });
+    }
+  }
+
+  /** The @azure/cosmos retry policies other than throttling: DefaultRetryPolicy, TimeoutFailoverRetryPolicy, 410. */
+  @Nested
+  class TransientFailures {
+
+    private final SqlQuerySpec query = new SqlQuerySpec("SELECT * FROM c", List.of());
+
+    @Test
+    void connectionFailuresOfQueriesAreRetriedOneSecondApart() {
+      server.enqueue(Response.dropConnection()).enqueue(Response.dropConnection())
+          .enqueue(Response.json(200, "{\"Documents\":[{\"id\":\"1\"}]}"));
+
+      FeedResponse response = events(client()).items().query(query, FeedOptions.forPartition("pk")).fetchAll();
+
+      assertThat(response.resources()).containsExactly(obj("id", "1"));
+      assertThat(server.requests()).hasSize(3);
+      assertThat(sleeps).containsExactly(1000L, 1000L);
+    }
+
+    @Test
+    void connectionFailuresOfPointReadsAreRetried() {
+      // The JDK client itself retries an idempotent GET whose connection closed without an answer, before the
+      // transport policy sees the failure; either way the read succeeds
+      server.enqueue(Response.dropConnection()).enqueue(Response.dropConnection())
+          .enqueue(Response.json(200, "{\"id\":\"1\"}"));
+
+      ItemResponse response = events(client()).item("1", "pk").read();
+
+      assertThat(response.statusCode()).isEqualTo(200);
+      assertThat(server.requests()).hasSize(3);
+    }
+
+    @Test
+    void connectionFailuresOfQueriesAreRetriedAndGiveUpAfterTenRetries() {
+      for (int i = 0; i < 11; i++) {
+        server.enqueue(Response.dropConnection());
+      }
+
+      assertThatThrownBy(() -> events(client()).items().query(query, FeedOptions.forPartition("pk")).fetchAll())
+          .isInstanceOf(java.io.UncheckedIOException.class);
+      assertThat(server.requests()).hasSize(11);
+      assertThat(sleeps).hasSize(10).containsOnly(1000L);
+    }
+
+    @Test
+    void connectionFailuresOfWritesAreNotRetriedAsTheSdkDoesNotRetryThem() {
+      server.enqueue(container(EVENTS, "/entityTypeName_entityID_kind")).enqueue(Response.dropConnection());
+
+      assertThatThrownBy(() -> events(client()).items().create(obj("entityTypeName_entityID_kind", "pk", "id", "1")))
+          .isInstanceOf(java.io.UncheckedIOException.class);
+      assertThat(server.requests()).hasSize(2);
+      assertThat(sleeps).isEmpty();
+    }
+
+    @Test
+    void serviceUnavailableAndRequestTimeoutOfReadsAreRetriedOnce() {
+      server.enqueue(Response.json(503, "{\"message\":\"busy\"}")).enqueue(Response.json(200, "{\"id\":\"1\"}"))
+          .enqueue(Response.json(408, "{\"message\":\"timeout\"}")).enqueue(Response.json(200, "{\"Documents\":[]}"))
+          .enqueue(Response.json(503, "{\"message\":\"busy\"}")).enqueue(Response.json(503, "{\"message\":\"busy\"}"));
+
+      assertThat(events(client()).item("1", "pk").read().statusCode()).isEqualTo(200);
+      assertThat(events(client()).items().query(query, FeedOptions.forPartition("pk")).fetchAll().resources()).isEmpty();
+      assertThatThrownBy(() -> events(client()).item("1", "pk").read())
+          .isInstanceOfSatisfying(CosmosException.class, error -> assertThat(error.code()).isEqualTo(503));
+      assertThat(server.requests()).hasSize(6);
+      assertThat(sleeps).isEmpty();
+    }
+
+    @Test
+    void serviceUnavailableOfWritesIsNotRetried() {
+      server.enqueue(Response.json(503, "{\"message\":\"busy\"}"));
+
+      assertThatThrownBy(() -> events(client()).item("1", "pk").replace(obj("id", "1")))
+          .isInstanceOfSatisfying(CosmosException.class, error -> assertThat(error.code()).isEqualTo(503));
+      assertThat(server.requests()).hasSize(1);
+    }
+
+    @Test
+    void aRangeGoneAfterASplitIsRepairedByReadingTheRangesAgain() {
+      String plan = Fixtures.read("cosmos/query-plan-order-by.json")
+          .replace("\"offset\": 0", "\"offset\": null").replace("\"limit\": 3", "\"limit\": null")
+          .replace("\\nOFFSET 0 LIMIT 3", "");
+      Map<String, Object> twoRanges = BoosterJson.parseObject(Fixtures.read("cosmos/pkranges-two.json"));
+      List<?> ranges = (List<?>) twoRanges.get("PartitionKeyRanges");
+      @SuppressWarnings("unchecked")
+      Map<String, Object> left = new java.util.LinkedHashMap<>((Map<String, Object>) ranges.get(0));
+      @SuppressWarnings("unchecked")
+      Map<String, Object> right = new java.util.LinkedHashMap<>((Map<String, Object>) ranges.get(1));
+      Map<String, Object> rightLow = new java.util.LinkedHashMap<>(right);
+      rightLow.putAll(obj("id", "3", "maxExclusive", "BFFFFFFFFFFFFFFF", "parents", List.of("0", "2")));
+      Map<String, Object> rightHigh = new java.util.LinkedHashMap<>(right);
+      rightHigh.putAll(obj("id", "4", "minInclusive", "BFFFFFFFFFFFFFFF", "parents", List.of("0", "2")));
+      server.enqueue(Response.json(200, plan)).enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          .enqueue(documents(orderByRow("a", 1)))
+          .enqueue(Response.json(410, "{\"message\":\"The requested partition key range is gone\"}")
+              .withHeader("x-ms-substatus", "1002"))
+          // the feed lists the split range itself next to its children: the children win
+          .enqueue(Response.json(200, BoosterJson.toJson(
+              obj("PartitionKeyRanges", List.of(left, right, rightLow, rightHigh)))))
+          .enqueue(documents(orderByRow("a", 1)))
+          .enqueue(documents(orderByRow("b", 2)))
+          .enqueue(documents(orderByRow("c", 3)));
+
+      FeedResponse response = events(client()).items().query(new SqlQuerySpec(
+          "SELECT * FROM c ORDER BY c.createdAt DESC", List.of())).fetchAll();
+
+      assertThat(response.resources()).containsExactly(obj("id", "c"), obj("id", "b"), obj("id", "a"));
+      assertThat(server.requests()).hasSize(8);
+      assertThat(server.request(6).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("3");
+      assertThat(server.request(7).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("4");
+    }
+
+    @Test
+    void otherGoneErrorsAreThrown() {
+      server.enqueue(Response.json(410, "{\"message\":\"gone\"}").withHeader("x-ms-substatus", "1000"));
+
+      assertThatThrownBy(() -> events(client()).item("1", "pk").read())
+          .isInstanceOfSatisfying(CosmosException.class, error -> assertThat(error.code()).isEqualTo(410));
+      assertThat(server.requests()).hasSize(1);
+    }
+
+    private Response documents(Object... documents) {
+      return Response.json(200, BoosterJson.toJson(obj("Documents", List.of(documents))));
+    }
+
+    private Object orderByRow(String id, int orderValue) {
+      return obj("orderByItems", List.of(obj("item", orderValue)), "payload", obj("id", id));
     }
   }
 
@@ -594,6 +747,68 @@ class CosmosRestClientContractTest {
       assertThat(first.continuationToken()).isEqualTo("booster-pipeline-skip:2");
       assertThat(second.resources()).containsExactly(obj("id", "1"));
       assertThat(second.continuationToken()).isNull();
+    }
+
+    private Response row(String id, int orderValue) {
+      return documents(null, obj("orderByItems", List.of(obj("item", orderValue)), "payload", obj("id", id)));
+    }
+
+    private Object orderByRow(String id, int orderValue) {
+      return obj("orderByItems", List.of(obj("item", orderValue)), "payload", obj("id", id));
+    }
+
+    @Test
+    void aPagedOrderByQueryReadsAtMostSkipPlusPagePlusOneItemsOfEachRange() {
+      SqlQuerySpec orderBy = new SqlQuerySpec("SELECT * FROM c ORDER BY c.createdAt DESC", List.of());
+      String plan = Fixtures.read("cosmos/query-plan-order-by.json")
+          .replace("\"offset\": 0", "\"offset\": null").replace("\"limit\": 3", "\"limit\": null")
+          .replace("\\nOFFSET 0 LIMIT 3", "");
+      server.enqueue(Response.json(200, plan)).enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          // range 1 holds 9, 7, 5, 3, 1 (more pages behind "r1-3"); range 2 holds 8 and nothing else
+          .enqueue(documents("r1-2", orderByRow("9", 9), orderByRow("7", 7)))
+          .enqueue(documents("r1-3", orderByRow("5", 5)))
+          .enqueue(documents(null, orderByRow("8", 8)))
+          .enqueue(Response.json(200, plan)).enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          .enqueue(documents("r1-3", orderByRow("9", 9), orderByRow("7", 7), orderByRow("5", 5)))
+          .enqueue(documents("r1-4", orderByRow("3", 3)))
+          .enqueue(documents(null, orderByRow("1", 1)))
+          .enqueue(row("8", 8));
+
+      FeedResponse first = events(client()).items().query(orderBy, new FeedOptions(null, 2, null)).fetchNext();
+      FeedResponse second = events(client()).items()
+          .query(orderBy, new FeedOptions(first.continuationToken(), 2, null)).fetchNext();
+
+      assertThat(first.resources()).containsExactly(obj("id", "9"), obj("id", "8"));
+      assertThat(first.continuationToken()).isEqualTo("booster-pipeline-skip:2");
+      assertThat(server.requests()).hasSize(11);
+      // first page: 0 + 2 + 1 = 3 items per range at most, asked with x-ms-max-item-count, "r1-3" never followed
+      assertThat(server.request(2).header("x-ms-max-item-count")).isEqualTo("3");
+      assertThat(server.request(3).header("x-ms-continuation")).isEqualTo("r1-2");
+      assertThat(server.request(3).header("x-ms-max-item-count")).isEqualTo("1");
+      assertThat(server.request(4).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("2");
+      assertThat(server.request(4).header("x-ms-max-item-count")).isEqualTo("3");
+      // second page: 2 + 2 + 1 = 5 per range
+      assertThat(server.request(7).header("x-ms-max-item-count")).isEqualTo("5");
+      assertThat(server.request(8).header("x-ms-max-item-count")).isEqualTo("2");
+      assertThat(server.request(9).header("x-ms-max-item-count")).isEqualTo("1");
+      assertThat(server.request(10).header("x-ms-documentdb-partitionkeyrangeid")).isEqualTo("2");
+      assertThat(second.resources()).containsExactly(obj("id", "7"), obj("id", "5"));
+      assertThat(second.continuationToken()).isEqualTo("booster-pipeline-skip:4");
+    }
+
+    @Test
+    void aPagedPlainPipelineQueryStopsReadingRangesOnceThePageIsKnown() {
+      server.enqueue(Fixtures.response("cosmos/query-plan-gateway.json", 200))
+          .enqueue(Fixtures.response("cosmos/error-400-not-servable.json", 400).withHeader("x-ms-substatus", "1004"))
+          .enqueue(Fixtures.response("cosmos/pkranges-two.json", 200))
+          .enqueue(documents("more", obj("id", "1"), obj("id", "2"), obj("id", "3")));
+
+      FeedResponse first = events(client()).items().query(spec, new FeedOptions(null, 2, null)).fetchNext();
+
+      assertThat(first.resources()).containsExactly(obj("id", "1"), obj("id", "2"));
+      assertThat(first.continuationToken()).isEqualTo("booster-pipeline-skip:2");
+      assertThat(server.requests()).hasSize(4);
+      assertThat(server.request(3).header("x-ms-max-item-count")).isEqualTo("3");
     }
 
     @Test

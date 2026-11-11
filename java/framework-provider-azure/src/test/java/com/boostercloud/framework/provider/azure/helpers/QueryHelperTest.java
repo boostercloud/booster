@@ -483,6 +483,63 @@ class QueryHelperTest {
     }
   }
 
+  /**
+   * Keys of JSON-typed filters (maps, unions, interfaces, external classes) are chosen by the GraphQL client: they are
+   * written as escaped string literals and reduced to identifier characters in placeholder names, so they can never
+   * change the shape of the SQL text (TypeScript pastes them verbatim, which allows SQL injection).
+   */
+  @Nested
+  class PropertyNamesAreData {
+
+    @Test
+    void aClientChosenKeyCannotEscapeItsPropertyAccessor() {
+      Map<String, Object> filters = obj(
+          "userId", obj("eq", "alice"),
+          "productDetails", obj("x\"]) OR (1=1) OR IS_DEFINED(c[\"x", obj("isDefined", true)));
+
+      QueryHelper.search(cosmos.client, config, readModelName, filters);
+
+      assertThat(cosmos.querySpec()).isEqualTo(new SqlQuerySpec(
+          "SELECT * FROM c WHERE c[\"userId\"] = @userId_0 AND "
+              + "IS_DEFINED(c[\"productDetails\"][\"x\\\"]) OR (1=1) OR IS_DEFINED(c[\\\"x\"])",
+          List.of(p("@userId_0", "alice"))));
+    }
+
+    @Test
+    void aClientChosenKeyCannotEscapeItsPlaceholder() {
+      Map<String, Object> filters = obj(
+          "userId", obj("eq", "alice"),
+          "productDetails", obj("a OR 1=1 OR c.x", obj("eq", 1), "b\\", obj("in", List.of(2, 3))));
+
+      QueryHelper.search(cosmos.client, config, readModelName, filters);
+
+      assertThat(cosmos.querySpec()).isEqualTo(new SqlQuerySpec(
+          "SELECT * FROM c WHERE c[\"userId\"] = @userId_0 AND "
+              + "c[\"productDetails\"][\"a OR 1=1 OR c.x\"] = @a_OR_1_1_OR_c_x_0 AND "
+              + "c[\"productDetails\"][\"b\\\\\"] IN (@b__0_0,@b__0_1)",
+          List.of(p("@userId_0", "alice"), p("@a_OR_1_1_OR_c_x_0", 1), p("@b__0_0", 2), p("@b__0_1", 3))));
+    }
+
+    @Test
+    void keysThatSanitiseToTheSamePlaceholderGetDistinctOnesInBothWalks() {
+      Map<String, Object> filters = obj("meta", obj("a-b", obj("eq", 1), "a_b", obj("eq", 2), "a.b", obj("eq", 3)));
+
+      QueryHelper.search(cosmos.client, config, readModelName, filters);
+
+      assertThat(cosmos.querySpec()).isEqualTo(new SqlQuerySpec(
+          "SELECT * FROM c WHERE c[\"meta\"][\"a-b\"] = @a_b_0 AND c[\"meta\"][\"a_b\"] = @a_b_1 AND "
+              + "c[\"meta\"][\"a.b\"] = @a_b_2",
+          List.of(p("@a_b_0", 1), p("@a_b_1", 2), p("@a_b_2", 3))));
+    }
+
+    @Test
+    void controlCharactersAreEscapedAndNonAsciiCharactersKept() {
+      assertThat(QueryHelper.buildFilterExpression(obj("meta", obj("tab\there", obj("isDefined", false),
+          "café", obj("isDefined", true))), new java.util.ArrayList<>()))
+          .isEqualTo("NOT IS_DEFINED(c[\"meta\"][\"tab\\there\"]) AND IS_DEFINED(c[\"meta\"][\"café\"])");
+    }
+  }
+
   @Nested
   class ReplaceOrDeleteItem {
 
