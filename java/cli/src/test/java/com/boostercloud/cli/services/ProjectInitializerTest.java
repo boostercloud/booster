@@ -10,7 +10,9 @@ import com.boostercloud.cli.services.project.ProjectLayout;
 import com.boostercloud.cli.testing.TestCli;
 import com.boostercloud.cli.testing.TestProjects;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -147,6 +149,71 @@ class ProjectInitializerTest {
       assertThat(text).contains("<name>Jane O&#39;Hara</name>");
       assertThat(pom.groupId()).isEqualTo("org.acme");
       assertThat(TestProjects.read(project.resolve("README.md"))).contains("Cats & \"dogs\" <3");
+    }
+
+    /**
+     * In Java, packages are directories: an unanchored {@code target/}, {@code tmp/} or {@code coverage} would
+     * leave packages with those names (or the whole tree, with the group {@code com.target}) out of git, initial
+     * commit included. Checked with the real git when it is installed.
+     */
+    @Test
+    void theGitignoreOnlyIgnoresTheRootBuildDirectories() throws Exception {
+      Assumptions.assumeTrue(gitIsInstalled(), "git is not installed");
+      ProjectInitializerConfig targetGroup =
+          new ProjectInitializerConfig(
+              "test-project", "", "0.1.0", "", "", "MIT", "", "", "4.1.0", true, false, false, "com.target");
+      ProjectInitializer.generateConfigFiles(new TestCli(dir).context(), targetGroup);
+      Path project = dir.resolve("test-project");
+      String base = "src/main/java/com/target/testproject/";
+      List<String> kept =
+          List.of(
+              base + "Main.java",
+              base + "target/Target.java",
+              base + "tmp/Scratch.java",
+              base + "coverage/Report.java",
+              "src/test/java/com/target/testproject/target/TargetTest.java");
+      List<String> ignored =
+          List.of("target/classes/Main.class", "tmp/scratch.txt", "coverage/index.html", "errors.log", ".booster/data.json");
+      for (String file : kept) {
+        TestProjects.write(project.resolve(file), "");
+      }
+      for (String file : ignored) {
+        TestProjects.write(project.resolve(file), "");
+      }
+      assertThat(git(project, "init", "-q")).isZero();
+
+      assertThat(kept).allSatisfy(file -> assertThat(git(project, "check-ignore", "-q", file)).as(file).isEqualTo(1));
+      assertThat(ignored).allSatisfy(file -> assertThat(git(project, "check-ignore", "-q", file)).as(file).isZero());
+    }
+  }
+
+  private static boolean gitIsInstalled() {
+    try {
+      return new ProcessBuilder("git", "--version").redirectErrorStream(true).start().waitFor() == 0;
+    } catch (java.io.IOException e) {
+      return false;
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    }
+  }
+
+  /** Runs git without the machine's configuration (and so without its global excludes file). */
+  private int git(Path directory, String... arguments) {
+    List<String> command = new java.util.ArrayList<>(List.of("git", "-c", "core.excludesFile=" + dir.resolve("no-excludes")));
+    command.addAll(List.of(arguments));
+    ProcessBuilder builder = new ProcessBuilder(command).directory(directory.toFile()).redirectErrorStream(true);
+    builder.environment().put("GIT_CONFIG_GLOBAL", dir.resolve("no-gitconfig").toString());
+    builder.environment().put("GIT_CONFIG_NOSYSTEM", "1");
+    try {
+      Process process = builder.start();
+      process.getInputStream().transferTo(java.io.OutputStream.nullOutputStream());
+      return process.waitFor();
+    } catch (java.io.IOException e) {
+      throw new java.io.UncheckedIOException(e);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new IllegalStateException(e);
     }
   }
 

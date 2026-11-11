@@ -50,18 +50,49 @@
     </resources>
 
     <plugins>
+      <!--
+        The jar's Main-Class, com.boostercloud.cli.launcher.JavaVersionCheck (src/main/java8), is compiled for Java 8
+        so that an older JVM can load it and print that the CLI needs Java 27, instead of an UnsupportedClassVersionError.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>java-version-check</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <release>8</release>
+              <compileSourceRoots>
+                <compileSourceRoot>${project.basedir}/src/main/java8</compileSourceRoot>
+              </compileSourceRoots>
+              <compilerArgs>
+                <!-- no "release 8 is obsolete" warnings -->
+                <arg>-Xlint:all,-options</arg>
+              </compilerArgs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.boostercloud.cli.Main</mainClass>
+              <mainClass>com.boostercloud.cli.launcher.JavaVersionCheck</mainClass>
             </manifest>
           </archive>
         </configuration>
       </plugin>
-      <!-- Executable fat jar used by bin/boost: target/booster-cli-<version>.jar -->
+      <!--
+        Executable fat jar used by bin/boost: target/booster-cli-<version>.jar. It replaces the main artifact, so the
+        pom that is installed or deployed with it is the dependency-reduced one (written under target/): picocli and
+        the mustache compiler are inside the jar and must not reach consumers a second time as dependencies.
+      -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -72,7 +103,8 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
               <filters>
                 <filter>
                   <artifact>*:*</artifact>
@@ -87,7 +119,7 @@
               </filters>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.boostercloud.cli.Main</mainClass>
+                  <mainClass>com.boostercloud.cli.launcher.JavaVersionCheck</mainClass>
                   <manifestEntries>
                     <Implementation-Title>${project.name}</Implementation-Title>
                     <Implementation-Version>${project.version}</Implementation-Version>

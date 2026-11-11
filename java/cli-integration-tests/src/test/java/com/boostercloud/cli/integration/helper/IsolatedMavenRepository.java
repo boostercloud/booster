@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.function.Supplier;
 
 /**
  * The Maven repository the generated projects are built against: the Java counterpart of
@@ -48,21 +49,60 @@ public final class IsolatedMavenRepository {
   /**
    * Writes the settings file (once per test JVM) after checking that the profile installed the framework.
    *
-   * @return {@code <work>/maven/settings.xml}
+   * @return {@code <work>/maven/settings.xml}, or a file in a temporary directory when that path contains whitespace
+   *     (see {@link #settingsLocation})
    * @throws IllegalStateException when a framework artifact is missing from the isolated repository
    */
   public static synchronized Path settingsFile() {
     if (settings == null) {
       checkFrameworkIsInstalled();
-      Path file = CliTestEnvironment.workDirectory().resolve("maven").resolve("settings.xml");
-      if (file.toString().chars().anyMatch(Character::isWhitespace)) {
-        throw new IllegalStateException(
-            "MAVEN_ARGS is split on spaces, so the path of the settings file cannot contain any: " + file);
-      }
+      Path file = settingsLocation(CliTestEnvironment.workDirectory(), IsolatedMavenRepository::temporaryDirectory);
       write(file, settingsXml(CliTestEnvironment.isolatedRepository(), CliTestEnvironment.userRepository()));
       settings = file;
     }
     return settings;
+  }
+
+  /**
+   * Where the settings file goes. {@code bin/mvn} expands {@code MAVEN_ARGS} unquoted, so the shell splits it on
+   * whitespace and {@code -s} must get a path without any. The work directory is inside the checkout, which may
+   * contain spaces ({@code /Users/ann/My Projects/booster}): then the file goes to a new directory under
+   * {@code java.io.tmpdir}, removed when the test JVM exits. Only this file moves; the paths written inside it (the
+   * repositories) may contain whitespace.
+   *
+   * @param workDirectory the work directory of the suite
+   * @param temporaryDirectory creates the fallback directory
+   * @return the settings file to write
+   * @throws IllegalStateException when the fallback contains whitespace too
+   */
+  static Path settingsLocation(Path workDirectory, Supplier<Path> temporaryDirectory) {
+    Path file = workDirectory.resolve("maven").resolve("settings.xml");
+    if (!containsWhitespace(file)) {
+      return file;
+    }
+    Path fallback = temporaryDirectory.get().resolve("settings.xml");
+    if (containsWhitespace(fallback)) {
+      throw new IllegalStateException(
+          "bin/mvn splits MAVEN_ARGS on whitespace, so the settings file needs a path without any, but both "
+              + file + " and " + fallback + " have some. Pass -Dbooster.it.work=<a directory without whitespace>"
+              + " (or -Djava.io.tmpdir=...) to the build.");
+    }
+    return fallback;
+  }
+
+  private static boolean containsWhitespace(Path path) {
+    return path.toString().chars().anyMatch(Character::isWhitespace);
+  }
+
+  private static Path temporaryDirectory() {
+    try {
+      Path directory = Files.createTempDirectory("booster-it-maven-");
+      directory.toFile().deleteOnExit();
+      directory.resolve("settings.xml").toFile().deleteOnExit();
+      return directory;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
   }
 
   /**

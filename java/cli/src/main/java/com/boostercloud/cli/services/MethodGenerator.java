@@ -87,9 +87,13 @@ public final class MethodGenerator {
    * <pre>{@code
    * @Projects(entity = Post.class, joinKey = "id")
    * public static ProjectionResult<PostReadModel> projectPost(Post entity, PostReadModel currentPostReadModel) {
-   *   return /* NEW PostReadModel HERE * /;
+   *   return ProjectionResult.of(/* NEW PostReadModel HERE * /);
    * }
    * }</pre>
+   *
+   * <p>TypeScript returns {@code /* NEW PostReadModel HERE * /} directly, because its {@code ProjectionResult<T>} is
+   * {@code T | ReadModelAction}; in Java the read model must be wrapped, so the placeholder sits inside
+   * {@code ProjectionResult.of(...)} and completing it with {@code new PostReadModel(...)} compiles.
    *
    * @param readModel the read model class name
    * @param projection the entity and join key
@@ -108,6 +112,6 @@ public final class MethodGenerator {
             new Parameter("entity", projection.entityName(), false),
             new Parameter("current" + readModel, readModel, true)),
         "ProjectionResult<" + readModel + ">",
-        List.of("return /* NEW " + readModel + " HERE */"));
+        List.of("return ProjectionResult.of(/* NEW " + readModel + " HERE */)"));
   }
 }

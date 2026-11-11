@@ -119,8 +119,8 @@ class CliReadModelIT {
     JavaSources.edit(
         fileCartWithProjectionReadModel,
         READ_MODEL_PROJECTION_PLACEHOLDER,
-        "ProjectionResult.of(new CartWithProjectionReadModel(entity.id(), entity.cartItems().stream()"
-            + ".map(item -> new Item(item.productId(), item.quantity())).toList()))",
+        "new CartWithProjectionReadModel(entity.id(), entity.cartItems().stream()"
+            + ".map(item -> new Item(item.productId(), item.quantity())).toList())",
         ITEM);
   }
 

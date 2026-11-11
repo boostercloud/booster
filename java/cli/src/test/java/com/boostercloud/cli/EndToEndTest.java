@@ -186,7 +186,7 @@ class EndToEndTest {
           Map.entry("com/boostercloud/framework/types/concepts/UUID", "package com.boostercloud.framework.types.concepts; public final class UUID {}"),
           Map.entry("com/boostercloud/framework/types/concepts/Register", "package com.boostercloud.framework.types.concepts; public final class Register { public Register events(Object... events) { return this; } }"),
           Map.entry("com/boostercloud/framework/types/concepts/QueryInfo", "package com.boostercloud.framework.types.concepts; public final class QueryInfo {}"),
-          Map.entry("com/boostercloud/framework/types/concepts/ProjectionResult", "package com.boostercloud.framework.types.concepts; public interface ProjectionResult<T> {}"),
+          Map.entry("com/boostercloud/framework/types/concepts/ProjectionResult", "package com.boostercloud.framework.types.concepts; public interface ProjectionResult<T> { static <T> ProjectionResult<T> of(T readModel) { return null; } }"),
           Map.entry("com/boostercloud/framework/core/decorators/Command", "package com.boostercloud.framework.core.decorators; public @interface Command { Class<?>[] authorize() default {}; }"),
           Map.entry("com/boostercloud/framework/core/decorators/Query", "package com.boostercloud.framework.core.decorators; public @interface Query { Class<?>[] authorize() default {}; }"),
           Map.entry("com/boostercloud/framework/core/decorators/ReadModel", "package com.boostercloud.framework.core.decorators; public @interface ReadModel { Class<?>[] authorize() default {}; }"),
@@ -205,10 +205,12 @@ class EndToEndTest {
     List<String> files = new ArrayList<>();
     try (Stream<Path> generated = Files.walk(project.resolve("src/main/java"))) {
       for (Path file : generated.filter(p -> p.toString().endsWith(".java")).toList()) {
-        // fill in the placeholders the user is expected to complete (as in TypeScript, they do not compile as-is)
+        // fill in the placeholders the user is expected to complete (as in TypeScript, they do not compile as-is),
+        // literally: '/* NEW X HERE */' becomes an X, as the 'new X(...)' a user writes there would
         String source =
             TestProjects.read(file)
                 .replace("authorize = /* Specify authorized roles here. Use All.class to authorize anyone */", "authorize = {}")
+                .replaceAll("/\\* NEW (\\w+) HERE \\*/", "($1) null")
                 .replaceAll("return /\\* [^*]+ \\*/;", "return null;");
         if (file.getParent().endsWith("queries")) {
           source = source.replace("/* YOUR CODE HERE */", "return null;");

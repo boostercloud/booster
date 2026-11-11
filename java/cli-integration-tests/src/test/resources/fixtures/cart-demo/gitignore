@@ -1,10 +1,10 @@
 *-debug.log
 *-error.log
 errors.log
-target/
-tmp/
+/target/
+/tmp/
 .idea
 *.iml
 .vscode
-coverage
+/coverage
 .booster

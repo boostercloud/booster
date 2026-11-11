@@ -27,7 +27,10 @@ mvn ... -Dbooster.it.keepSandboxes=true
 ```
 
 Requirements: JDK 27, Maven 3.9 or newer (the suite relies on `MAVEN_ARGS`), `git` on the `PATH`, and a free
-range of local TCP ports. Network access is only needed for third-party artifacts that are not already in the local
+range of local TCP ports. The checkout may be in a path with spaces: `bin/mvn` splits `MAVEN_ARGS` on whitespace, so
+the generated `settings.xml` then goes to a new directory under `java.io.tmpdir` (removed when the tests end)
+instead of `target/booster-it/maven`. If that directory has whitespace too, the tests stop and ask for
+`-Dbooster.it.work=<a directory without whitespace>`. Network access is only needed for third-party artifacts that are not already in the local
 repository of the Maven running the build (`~/.m2/repository`).
 
 Every CLI invocation (arguments, directory, exit code, duration, both output streams) is appended to
@@ -35,7 +38,7 @@ Every CLI invocation (arguments, directory, exit code, duration, both output str
 
 ### Durations
 
-On an Apple M-series laptop with a warm `~/.m2`: 75 to 85 s for the 82 tests, including the first fill of the
+On an Apple M-series laptop with a warm `~/.m2`: 75 to 85 s for the 83 tests, including the first fill of the
 isolated repository from `~/.m2`, plus the build of the upstream modules — with their unit tests, about 4.5 minutes
 for the whole `-am verify`. The slowest classes are `CliStartIT` and `CliDeployIT` (12 to 14 s each: two
 builds and two application starts, or three application launches); each generator class takes about 3 s, most of it
@@ -132,7 +135,8 @@ copies.
   `^BOOSTER_VERSION`) becomes the exact `pom.xml` comparison, which includes `<booster.version>` = the CLI version.
   The `.eslint*`, `.prettierrc.yaml`, `.mocharc.yml` and `tsconfig*.json` fixtures have no counterpart.
 - **Placeholders.** The completed placeholders are Java (`authorize = All.class` plus its import,
-  `UUID.of("some-id")`, `postId`, `new PostWithReducer(event.postId(), ...)`, `ProjectionResult.of(...)`). Where
+  `UUID.of("some-id")`, `postId`, `new PostWithReducer(event.postId(), ...)`, `new CartWithProjectionReadModel(...)`
+  inside the generated `ProjectionResult.of(...)`). Where
   TypeScript prepends `import { Item } from '../common/item'` (to a file that then does not compile), the Java test
   adds the import and, before compiling, creates `Item` with `boost new:type`. Each generator class ends with a
   Java-only test that builds the completed sandbox against the framework (TypeScript never compiles them).

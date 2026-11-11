@@ -5,7 +5,7 @@
 #   1. $BOOSTER_CLI_JAR, when set;
 #   2. ../lib/booster-cli.jar next to this script (installed layout);
 #   3. ../target/booster-cli-<version>.jar (after `mvn package` in java/cli).
-# Java comes from $JAVA_HOME when it is set, otherwise from the PATH.
+# Java comes from $JAVA_HOME when it is set (with a warning when it has no bin/java), otherwise from the PATH.
 # Extra JVM options can be passed with $BOOST_JAVA_OPTS.
 set -e
 
@@ -39,11 +39,15 @@ if [ -z "$jar" ] || [ ! -f "$jar" ]; then
   exit 1
 fi
 
-if [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/java" ]; then
-  java="$JAVA_HOME/bin/java"
-else
-  java=java
+java=java
+if [ -n "${JAVA_HOME:-}" ]; then
+  if [ -x "$JAVA_HOME/bin/java" ]; then
+    java="$JAVA_HOME/bin/java"
+  else
+    echo "boost: JAVA_HOME is set to '$JAVA_HOME', which has no bin/java; using java from the PATH." >&2
+  fi
 fi
+# The jar's entry point runs on Java 8+ and stops with a clear message when this Java is older than the CLI's release
 
 # A short-lived tool: favour start-up time (the user's application runs in its own JVM)
 # shellcheck disable=SC2086

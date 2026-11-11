@@ -87,7 +87,7 @@ class AddCommandsTest {
               public record PostReadModel(UUID id, String title, String author) {
                 @Projects(entity = Post.class, joinKey = "id")
                 public static ProjectionResult<PostReadModel> projectPost(Post entity, PostReadModel currentPostReadModel) {
-                  return /* NEW PostReadModel HERE */;
+                  return ProjectionResult.of(/* NEW PostReadModel HERE */);
                 }
               }
               """);

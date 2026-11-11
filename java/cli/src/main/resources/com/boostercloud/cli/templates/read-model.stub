@@ -13,7 +13,7 @@ public record {{{name}}}(
 
   @Projects(entity = {{{entityName}}}.class, joinKey = "{{{entityId}}}")
   public static ProjectionResult<{{{name}}}> project{{{entityName}}}({{{entityName}}} entity, {{{name}}} current{{{name}}}) {
-    return /* NEW {{name}} HERE */;
+    return ProjectionResult.of(/* NEW {{name}} HERE */);
   }
 {{/projections}}
 }

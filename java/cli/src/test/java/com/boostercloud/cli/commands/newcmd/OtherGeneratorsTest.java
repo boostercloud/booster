@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * Ports of {@code test/commands/new/{event,event-handler,read-model,scheduled-command,type}.test.ts}.
+ * Ports of {@code test/commands/new/{event,event-handler,scheduled-command,type}.test.ts} ({@code read-model.test.ts}
+ * is {@link ReadModelTest}).
  */
 class OtherGeneratorsTest extends GeneratorCommandTestBase {
   @Nested
@@ -107,66 +108,6 @@ class OtherGeneratorsTest extends GeneratorCommandTestBase {
           cli.run("new:event-handler", "ExampleEventHandler", "--event", "CommentPosted", "ArticlePosted"),
           "Unexpected argument: ArticlePosted");
       assertThat(nothingGeneratedIn("eventhandlers")).isTrue();
-    }
-  }
-
-  @Nested
-  class ReadModels {
-    private Map<String, Object> expected(List<String> imports, List<String[]> fields, List<String[]> projections) {
-      Map<String, Object> view = view("com.example.mock.readmodels", "ExampleReadModel", imports, fields);
-      view.put("projections", projections.stream().map(p -> Map.of("entityName", p[0], "entityId", p[1])).toList());
-      return view;
-    }
-
-    @Test
-    void initCallsCheckCurrentDirBoosterVersion() {
-      assertThatCode(() -> new ReadModel(cli.context()).init()).doesNotThrowAnyException();
-    }
-
-    @Test
-    void withNoFieldsAndNoProjects() {
-      cli.run("new:read-model", "ExampleReadModel");
-      assertThat(read("readmodels/ExampleReadModel"))
-          .isEqualTo(
-              render(
-                  TemplateType.READ_MODEL,
-                  expected(
-                      List.of("com.boostercloud.framework.core.decorators.ReadModel", "com.boostercloud.framework.types.concepts.UUID"),
-                      List.of(),
-                      List.of())));
-    }
-
-    @Test
-    void withAStringFieldProjectingPostAndComment() {
-      cli.run("new:read-model", "ExampleReadModel", "--fields", "title:string", "--projects", "Post:id", "Comment:postId");
-      assertThat(read("readmodels/ExampleReadModel"))
-          .isEqualTo(
-              render(
-                  TemplateType.READ_MODEL,
-                  expected(
-                      List.of(
-                          "com.boostercloud.framework.core.decorators.Projects",
-                          "com.boostercloud.framework.core.decorators.ReadModel",
-                          "com.boostercloud.framework.types.concepts.ProjectionResult",
-                          "com.boostercloud.framework.types.concepts.UUID",
-                          "com.example.mock.entities.Comment",
-                          "com.example.mock.entities.Post"),
-                      List.<String[]>of(new String[] {"title", "String"}),
-                      List.of(new String[] {"Post", "id"}, new String[] {"Comment", "postId"}))))
-          .contains("  @Projects(entity = Comment.class, joinKey = \"postId\")\n");
-    }
-
-    @Test
-    void displaysErrors() {
-      assertThat(cli.run("new:read-model").stderr()).contains("You haven't provided a read model name");
-      assertParseError(cli.run("new:read-model", "ExampleReadModel", "--fields"), "Flag --fields expects a value");
-      assertParseError(cli.run("new:read-model", "ExampleReadModel", "--fields", "title:string", "--projects"), "--projects expects a value");
-      assertRuntimeError(cli.run("new:read-model", "ExampleReadModel", "--fields", "title"), "Error parsing field title");
-      assertRuntimeError(
-          cli.run("new:read-model", "ExampleReadModel", "--projects", "Post"), "Error parsing projection Post");
-      assertRuntimeError(
-          cli.run("new:read-model", "ExampleReadModel", "--projects", "Post:"), "Error parsing projection Post:");
-      assertThat(nothingGeneratedIn("readmodels")).isTrue();
     }
   }
 

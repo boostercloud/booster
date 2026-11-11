@@ -122,6 +122,20 @@ class HelpersIT {
   }
 
   @Test
+  @DisplayName("the settings file (passed in MAVEN_ARGS, split on whitespace) moves to a temporary directory when the"
+      + " work directory has whitespace")
+  void settingsLocation() {
+    assertThat(IsolatedMavenRepository.settingsLocation(Path.of("/work/booster-it"), () -> Path.of("/tmp/unused")))
+        .isEqualTo(Path.of("/work/booster-it/maven/settings.xml"));
+    assertThat(IsolatedMavenRepository.settingsLocation(Path.of("/My Projects/booster-it"), () -> Path.of("/tmp/x1")))
+        .isEqualTo(Path.of("/tmp/x1/settings.xml"));
+    assertThatThrownBy(
+            () -> IsolatedMavenRepository.settingsLocation(Path.of("/My Projects/w"), () -> Path.of("/C:/Temp Dir/x")))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("-Dbooster.it.work=");
+  }
+
+  @Test
   @DisplayName("free ports are distinct and not listening")
   void freePorts() {
     int first = Ports.freePort();
