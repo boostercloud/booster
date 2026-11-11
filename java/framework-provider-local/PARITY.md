@@ -41,8 +41,18 @@ Test classes without a module prefix are in `framework-provider-local`; `infra:`
 | `b31432b83` and this ledger's commit | Missing pins: provider-level concurrency, persisted document shapes, health counts, TypeScript constants. |
 | `fb4e83b8d` | Found by the integrated end-to-end run (`ReadModelConcurrencyIT > With concurrent events of the same entity`, about 1 run in 4): five concurrent events of a new entity made ten concurrent projections of `OtherConcurrencyReadModel`; one that had found no read model inserted its version 1 after the first one had been updated to version 2 (its unique key was then `..._2`), so two documents shared the id, both were projected, and the read model ended at version 14 instead of 12. TypeScript has the same race. |
 | `c1ad2886e` | Flaky test (found by the Azure contract stage): `ReadModelAdapterTest#shouldReturnAnArrayOfEnvelopes` compared Java numbers, and the mock's random `bar` is sometimes an integral double that the JSON conversion of a raw envelope turns into an integral number (JavaScript semantics, not a provider change). It compares the JSON forms; `#convertsTheNumbersOfRawEnvelopesLikeJavaScript` pins the conversion. |
+| `d0ba83068` | Found by review: a removal whose append triggered the growth compaction rewrote the file from the documents still in memory, so the removed documents came back after a restart (the dispatch journal, with multi-event batches, then reported finished events as interrupted). |
+| `322d101e7` | Found by review: the flush of every write and the on-disk rollback of a failed append were listed as tested but no test observed them; fault injection (`FaultInjectingChannels`) pins both now. |
+| `e96073b48` | Found by review: a crash that cut the append of a batch (power loss before the flush completed, a short write) kept its first lines, so a command was half applied. Multi-line appends are framed by a `{"$$batch":<n>}` header and applied on load only as a whole. |
+| `2e862caed` | Found by review: `createdAt` was taken before the events write lock, so an older event could become visible after a newer one of the same entity had been snapshotted, and was never reduced. It is now taken under the lock, strictly increasing. |
+| `bbf95e7e7` | Found by review: the start-up recovery could re-dispatch an event whose live dispatch finished while the recovery read the journal (the websocket server already serves then). |
+| `9e9858237` | Found by review: two processes could serve the same `.booster` files (each with its own copy, losing some of the other's writes); the connections and subscriptions of a crashed process stayed for ever and ran on every change. The server now locks the directory and removes those rows at start-up. |
+| `6238d5abd` | Found by review (security): client-supplied regular expressions ran without limit (catastrophic backtracking, stack overflows); their evaluation is bounded now, also in core's subscription filter. |
+| `3b0f3b8a3` | Found by review: `LocalProviderTest` did not call `readModels.rawToEnvelopes`, `api.requestSucceeded` and `sensor.isGraphQLFunctionUp`, although the ledger said every member was called. |
+| `993c3e3fb` | Found by review: the infrastructure shipped `slf4j-nop` at runtime, so applications adding their own SLF4J provider got two, and the class path order decided which one won. |
 
-No foundation module was changed.
+No foundation module was changed. The regular-expression bound of `6238d5abd` also touches `framework-core`
+(`FilteredReadModelPubSub`, the subscription filter); `993c3e3fb` updates ARCHITECTURE §7 (SLF4J).
 
 ---
 
