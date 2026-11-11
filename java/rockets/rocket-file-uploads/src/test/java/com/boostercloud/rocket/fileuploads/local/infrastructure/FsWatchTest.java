@@ -5,6 +5,8 @@ import static org.awaitility.Awaitility.await;
 
 import com.boostercloud.framework.types.BoosterConfig;
 import com.boostercloud.framework.types.Logger;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
@@ -13,6 +15,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 class FsWatchTest {
 
   private static final Duration TIMEOUT = Duration.ofSeconds(30);
+  private static final Duration QUIET = Duration.ofSeconds(3);
 
   @TempDir
   Path project;
@@ -73,6 +78,10 @@ class FsWatchTest {
     expected.put("name", "client1/myfile.txt");
     assertThat(request).containsExactlyEntriesOf(expected);
     await().atMost(TIMEOUT).until(() -> dispatched.contains(expected));
+    // no debouncing: every change is dispatched, even the same one right again
+    watch.onChange("client1/myfile.txt");
+    await().atMost(TIMEOUT).until(() -> dispatched.size() == 2);
+    assertThat(dispatched).containsExactly(expected, expected);
   }
 
   @Test
@@ -102,12 +111,37 @@ class FsWatchTest {
     Path file = project.resolve("clientst/rocketfiles/client1/myfile.txt");
 
     Files.writeString(file, "one");
-    await().atMost(TIMEOUT).until(() -> names().contains("client1/myfile.txt"));
-    int afterCreation = dispatched.size();
-
+    int afterCreation = awaitNotificationsBeyond(0);
+    // rewriting an existing file (a second upload of the same name): Node's 'change' event
+    Files.writeString(file, "two, a different content");
+    int afterModification = awaitNotificationsBeyond(afterCreation);
     Files.delete(file);
-    await().atMost(TIMEOUT).until(() -> dispatched.size() > afterCreation);
+    awaitNotificationsBeyond(afterModification);
+
     assertThat(names()).containsOnly("client1/myfile.txt");
+  }
+
+  /**
+   * Waits for a notification after the first {@code count} ones, then until none has arrived for {@link #QUIET}
+   * (longer than the 2-second polling of macOS), so that the notifications of the next step are not those of this one
+   * (a creation can be reported as a creation and then a modification).
+   *
+   * @return the number of notifications once quiet
+   */
+  private int awaitNotificationsBeyond(int count) {
+    await().atMost(TIMEOUT).until(() -> dispatched.size() > count);
+    int[] last = {dispatched.size()};
+    long[] since = {System.nanoTime()};
+    await().atMost(TIMEOUT).pollInterval(Duration.ofMillis(100)).until(() -> {
+      int now = dispatched.size();
+      if (now != last[0]) {
+        last[0] = now;
+        since[0] = System.nanoTime();
+        return false;
+      }
+      return System.nanoTime() - since[0] >= QUIET.toNanos();
+    });
+    return last[0];
   }
 
   @Test
@@ -120,6 +154,29 @@ class FsWatchTest {
     await().atMost(TIMEOUT).until(() -> names().contains("client1/a/b/deep.txt"));
     Files.writeString(nested.resolve("later.txt"), "later");
     await().atMost(TIMEOUT).until(() -> names().contains("client1/a/b/later.txt"));
+  }
+
+  @Test
+  void a_file_created_while_a_new_folder_is_registered_is_notified() throws Exception {
+    Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
+    start(List.of("client1/**"));
+    Path folder = project.resolve("clientst/rocketfiles/client1/new");
+    Path racer = folder.resolve("racer.txt");
+    // a file written into the new folder right after the watcher listed it (a concurrent upload into a new folder)
+    watch.afterListing(directory -> {
+      if (directory.equals(folder) && Files.notExists(racer)) {
+        try {
+          Files.writeString(racer, "racer");
+        } catch (IOException e) {
+          throw new UncheckedIOException(e);
+        }
+      }
+    });
+
+    Files.createDirectories(folder);
+
+    // Node's recursive watch reports every creation; the folder must be watched before it is listed
+    await().atMost(Duration.ofSeconds(15)).until(() -> names().contains("client1/new/racer.txt"));
   }
 
   @Test
@@ -173,6 +230,55 @@ class FsWatchTest {
     await().atMost(TIMEOUT).until(() -> !errors.isEmpty() && names().contains("client1/good.txt"));
     assertThat(errors.getFirst()).startsWith("[Booster]|RocketFiles#fsWatch: ")
         .contains("Error dispatching the file notification").contains("client1/bad.txt").contains("Rocket function with ID \"rocket-files\" not found");
+  }
+
+  @Test
+  void changes_made_by_the_server_are_notified_right_away() {
+    start(List.of("client1"));
+    Path upload = project.resolve("clientst/rocketfiles/client1/upload.txt");
+
+    assertThat(watch.changed(upload)).containsEntry("name", "client1/upload.txt")
+        .containsEntry("uri", "http://localhost:4321/clientst/rocketfiles/client1/upload.txt");
+    // filtered as the watch events: other folders, the container itself, outside the container
+    assertThat(watch.changed(project.resolve("clientst/rocketfiles/client2/x.txt"))).isNull();
+    assertThat(watch.changed(project.resolve("clientst/rocketfiles"))).isNull();
+    assertThat(watch.changed(project.resolve("clientst/elsewhere/client1/x.txt"))).isNull();
+    await().atMost(TIMEOUT).until(() -> names().equals(List.of("client1/upload.txt")));
+
+    watch.close();
+    assertThat(watch.changed(upload)).isNull();
+  }
+
+  @Test
+  void close_handles_the_changes_already_reported() throws Exception {
+    Files.createDirectories(project.resolve("clientst/rocketfiles/client1"));
+    start(List.of("client1"));
+    // keep the watch loop busy (registering a new folder) while a change of client1 is reported
+    CountDownLatch busy = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+    Path folder = project.resolve("clientst/rocketfiles/client1/slow");
+    watch.afterListing(directory -> {
+      if (directory.equals(folder)) {
+        busy.countDown();
+        try {
+          release.await();
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
+      }
+    });
+    Files.createDirectories(folder);
+    assertThat(busy.await(TIMEOUT.toSeconds(), TimeUnit.SECONDS)).isTrue();
+    Files.writeString(project.resolve("clientst/rocketfiles/client1/reported.txt"), "reported");
+    Thread.sleep(3000); // reported by now, also by the 2-second polling of macOS, but not handled yet
+
+    Thread closing = Thread.ofVirtual().start(watch::close);
+    Thread.sleep(200);
+    release.countDown();
+    closing.join(TIMEOUT);
+
+    assertThat(closing.isAlive()).isFalse();
+    assertThat(names()).contains("client1/slow", "client1/reported.txt");
   }
 
   @Test

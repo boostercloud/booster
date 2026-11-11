@@ -25,7 +25,7 @@ Every row names the Java test that pins the behaviour, as `Class#method` under
 | Part | Rows | covered | fixed | differs | inherited | n/a |
 | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript tests (28 `it`) | 28 | 28 | 0 | 0 | 0 | 0 |
-| 2. Behaviour (spec §3) | 96 | 59 | 12 | 21 | 3 | 1 |
+| 2. Behaviour (spec §3) | 100 | 58 | 17 | 21 | 3 | 1 |
 | 3. Data shapes (spec §4) | 12 | 10 | 1 | 1 | 0 | 0 |
 | 4. Characterisation tests (spec §5.3) | 16 | 14 | 1 | 1 | 0 | 0 |
 | 5. Porting notes and hazards (spec §6) | 16 | 9 | 2 | 5 | 0 | 0 |
@@ -44,6 +44,16 @@ Gaps found and fixed by this audit:
 | `33c2b3788` | Not pinned before: Terraform and `function.json` compared with what the TypeScript rocket produces (hand walk of the synth code; `functions.js` from the TypeScript generator itself), the TypeScript name-validation messages, SAS tokens re-derived independently from the public specification. |
 | `402dac5f6` | Not exercised before: the application as `boost start` runs it (a separate JVM over a real project layout) with concurrent clients, SIGTERM and a restart over the same project directory. |
 | `0a3f90c46`, `c9f5cd0e0` | Not pinned before: Express routing details of the local routes (query string in `req.url`, raw folder vs decoded file name, trailing slash, case-insensitive match), the directory fall-through of `res.download` and `HEAD`. |
+
+Found later by review (2026-11-10, `port/fix-rockets`); each test failed before its fix:
+
+| Commit | Gap |
+| --- | --- |
+| `1a85980da` | Security: `deleteFile` (a Java addition) checked only the directory against the patterns and kept the target in the container, so `deleteFile("client1", "../admin/secret.txt")` deleted a file of a folder the patterns never allowed. File names must now be plain names (`Invalid file name <fileName>`), in `FileHandler` and both libraries. |
+| `e1276f9c3` | Azure: `x-ms-date` was written with a one-digit day (`Tue, 3 Nov 2026`) on the 1st to the 9th of each month; the SDK sends `Date.toUTCString()` (`Tue, 03 Nov 2026`). |
+| `7ca302f78` | Not pinned before: no test rewrote an existing file, so dropping `ENTRY_MODIFY` from the watcher passed every test (the deletion step could also be satisfied by the creation's own modification event). |
+| `e274e057e` | Local watcher: a new folder's tree was listed before its folders were registered, so files created in between were never notified. Folders are now registered before they are listed. |
+| `86dd293ae` | Local watcher: a stop discarded the changes the JDK had reported but not handled, or not reported yet (2 s on macOS), so an upload acknowledged just before a stop or restart never got its `UploadedFileEvent`. The server now notifies its own uploads before answering and the stop handles what was already reported. |
 
 ## Cross-checks made for this audit
 
@@ -165,9 +175,10 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | Parameters read as `RocketFilesConfiguration` (also raw JSON) | `types.RocketFilesConfigurationTest#raw_parameters_are_read_back` | covered |
 | Library from `rocketProviderPackage`, storage from `getUserConfiguration` | `#the_storage_is_selected_by_name`, `azure.storage.BlobServiceContractTest#the_file_handler_uses_the_azure_library_of_the_descriptor` | covered |
 | `presignedGet` / `presignedPut` / `list`: directory checked first (`Invalid directory <d>`, before any provider call), then delegated with the selected storage | `#every_method_checks_the_directory_first`, `#presigned_urls_of_the_local_library`, `#list_and_delete_go_to_the_library` | covered |
-| File names never validated | `#presigned_urls_of_the_local_library` | covered |
+| File names never validated | `#presigned_urls_of_the_local_library`, `#delete_only_removes_a_file_of_the_checked_directory` | covered for the presigned URLs (`deleteFile`: next rows) |
 | `presignedPut: Promise<string> \| Promise<any>` | `#presigned_urls_of_the_local_library` | differs: generic `<T> T` |
 | No `deleteFile` | `#list_and_delete_go_to_the_library` | differs: Java addition `deleteFile(directory, fileName)` (documented as a TODO in TypeScript) |
+| `deleteFile` file name (Java addition, so no TypeScript rule): only the directory is checked against the patterns | `#delete_only_removes_a_file_of_the_checked_directory`, `local.RocketFilesLibraryTest#delete_stays_in_the_given_directory`, `azure.storage.BlobServiceContractTest#delete_refuses_file_names_that_leave_the_directory` | fixed `1a85980da` (security): a plain name is required (`Invalid file name <fileName>`), so `../admin/secret.txt` cannot delete outside the allowed folders |
 
 ### §3.4 `isValidDirectory`
 
@@ -223,12 +234,14 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | Directory → `next()` → Express 404; `HEAD` | `#a_directory_falls_through_to_not_found_and_head_answers_the_headers_only` | fixed `c9f5cd0e0` (test) |
 | `Range` requests and `304` of `send` | — | inherited: not emitted by the framework's `download` |
 | No authentication | `#a_put_writes_the_raw_body_and_answers_the_typescript_result` | covered |
-| Watcher: recursive, both event kinds, no debounce, deletions notified | `FsWatchTest#notifies_creations_modifications_and_deletions`, `#watches_directories_created_later_and_their_first_files` | covered |
+| Watcher: recursive, both event kinds, no debounce, deletions notified | `FsWatchTest#notifies_creations_modifications_and_deletions` (create, rewrite, delete: one more notification each), `#dispatches_the_typescript_request` (no debounce), `#watches_directories_created_later_and_their_first_files`, `LocalFilesServerTest#a_second_put_of_the_same_name_is_notified_again` | fixed `7ca302f78` (test): no test rewrote an existing file, so dropping `ENTRY_MODIFY` passed every test |
 | Hidden-segment regex `/(^\|[/\\])\../` and parent-directory filter | `FsWatchTest#ignores_hidden_segments_and_other_directories` | covered |
 | Request `{BOOSTER_ROCKET_FUNCTION_ID, uri, name}` in that order, `uri` with the mount port | `FsWatchTest#dispatches_the_typescript_request`, `LocalFilesServerTest#uploads_are_notified_to_the_rocket_function` | covered |
 | Every change of a burst notified | `FsWatchTest#a_burst_larger_than_the_jdk_event_queue_is_fully_notified` | fixed `b633079cc` |
+| Every creation in a new folder notified, also those made while the watcher registers it | `FsWatchTest#a_file_created_while_a_new_folder_is_registered_is_notified` | fixed `e274e057e`: the tree was listed before its folders were registered, so files created in between were never notified; each folder is now registered before it is listed |
 | Unhandled rejection of a failing dispatch | `FsWatchTest#a_failing_dispatch_is_logged_and_the_watch_goes_on` | differs: logged, the watch goes on |
-| Watchers never stop | `LocalFilesServerTest#the_watchers_stop_with_the_server` | differs: stopped by `unmountStack` when the server stops |
+| Watchers never stop | `LocalFilesServerTest#the_watchers_stop_with_the_server`, `FsWatchTest#close_handles_the_changes_already_reported` | differs: stopped by `unmountStack` when the server stops, after handling the changes already reported |
+| An acknowledged upload is notified (`fs.watch` reports it within milliseconds; TypeScript has no shutdown) | `LocalFilesServerTest#an_upload_acknowledged_right_before_the_server_stops_is_notified`, `e2e.LocalEndToEndTest#an_upload_acknowledged_right_before_a_restart_gets_its_read_model`, `FsWatchTest#changes_made_by_the_server_are_notified_right_away` | fixed `86dd293ae`: a stop discarded the changes the JDK had not reported or handled yet, so on macOS an upload acknowledged up to 2 s before a stop never got its `UploadedFileEvent` (start-up notifies nothing). The server now notifies its uploads itself before answering and the stop waits for it; differs: changes made by other means and not reported at the stop are still not notified |
 | macOS latency | `FsWatchTest` (timeouts) | differs: the JDK polls every 2 s on macOS |
 
 ### §3.8 Azure runtime → `azure.storage.*`, `azure.FileUploadedTest`
@@ -244,6 +257,7 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | New `BlobServiceClient` + `DefaultAzureCredential` per call | `DefaultAzureCredentialTest` | differs: one credential per process with a token cache |
 | `DefaultAzureCredential` chain | `DefaultAzureCredentialTest` (8 tests) | differs: environment, managed identity, Azure CLI only (README "Not implemented") |
 | REST `x-ms-version` | `BlobServiceContractTest` | differs: `2025-11-05` (the SDK's own version); the SAS keeps `2018-11-09` |
+| REST `x-ms-date`: the SDK's `Date.toUTCString()` (`Tue, 03 Nov 2026 08:05:01 GMT`, two-digit day) | `BlobServiceContractTest#the_date_header_has_a_two_digit_day_like_the_sdk` | fixed `e1276f9c3`: `RFC_1123_DATE_TIME` wrote a one-digit day (`Tue, 3 Nov`) on the 1st to the 9th of each month |
 | `listBlobFolder`: prefix, flat, every page, `include=metadata`, item mapping | `BlobServiceContractTest#list_follows_the_markers_and_maps_the_blobs`, `#an_empty_directory_lists_the_whole_container` | covered |
 | Storage failures | `#a_refused_key_request_is_a_storage_error`, `#transport_failures_are_storage_errors` | covered (`StorageError` for the SDK's `RestError`) |
 | `getMetadataFromRequest`: `context.triggerMetadata`, else `InvocationContext.triggerMetadata is missing for the blob upload request` | `azure.FileUploadedTest#extracts_triggerMetadata_from_Azure_Functions_v4_InvocationContext`, `#fails_without_trigger_metadata` | covered |
@@ -334,7 +348,7 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | 13 | in-place mutation of user input | copies | differs |
 | 14 | `ctime`, `strcmp` order | `ListHandler` | covered |
 | 15 | `path.parse` / `path.join` | `NodePath` | covered (`types.NodePathTest`, Node-computed) |
-| 16 | security hazards | traversal refused (400); `https,http` SAS and no local auth kept | differs (traversal) / covered |
+| 16 | security hazards | traversal refused (400); `deleteFile` takes plain file names only; `https,http` SAS and no local auth kept | differs (traversal) / covered |
 
 ## 6. TypeScript sources
 
@@ -360,7 +374,7 @@ Beyond the TypeScript tests: `#ignored_blobs_are_logged_like_console_info`,
 | `local/src/file-uploaded.ts` | `local.FileUploaded` (`LocalBindingData` is a type only) | covered |
 | `local-infrastructure/src/index.ts` | `local.infrastructure.Rocket`, `LocalRocketFiles` | covered |
 | `local-infrastructure/src/infra.ts` | `Infra` | covered |
-| `local-infrastructure/src/fs-watch.ts` | `FsWatch` | fixed `b633079cc` |
+| `local-infrastructure/src/fs-watch.ts` | `FsWatch` | fixed `b633079cc`, `e274e057e`, `86dd293ae` |
 | `local-infrastructure/src/controllers/file-controller.ts` | `controllers.FileController` | covered (`APIResult` failure variant never produced, as in TypeScript) |
 | `local-infrastructure/src/http.ts` | the framework's `Http.requestFailed` (the same code; `HttpCodes` unused) | covered |
 | `azure/src/index.ts` | `azure.RocketFilesLibrary` | covered |

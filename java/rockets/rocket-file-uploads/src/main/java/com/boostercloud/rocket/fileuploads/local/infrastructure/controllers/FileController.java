@@ -8,6 +8,7 @@ import com.boostercloud.framework.provider.local.infrastructure.web.Router;
 import com.boostercloud.framework.types.errors.InvalidParameterError;
 import com.boostercloud.framework.types.errors.NotFoundError;
 import com.boostercloud.rocket.fileuploads.local.LocalStorage;
+import com.boostercloud.rocket.fileuploads.local.infrastructure.FsWatch;
 import com.boostercloud.rocket.fileuploads.types.NodePath;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,7 +35,8 @@ import java.util.Map;
  * several segments), the directory part of the target comes from the raw request URL and the file name is the decoded
  * route parameter; nothing is authenticated. A failed upload answers {@code requestFailed} (status of the error class,
  * {@code {"title","reason"}}) and passes the error on. Java hardening: a target outside the container directory (for
- * instance a file name {@code ..%2F..%2Fx}) is refused with {@code 400 Invalid Parameter Error}.
+ * instance a file name {@code ..%2F..%2Fx}) is refused with {@code 400 Invalid Parameter Error}. Java-only: with the
+ * storage's watcher, every written file is notified before the answer ({@link FsWatch#changed(Path)}).
  */
 public final class FileController {
 
@@ -48,20 +50,40 @@ public final class FileController {
   private final String containerName;
   private final String directory;
   private final Path path;
+  private final FsWatch watch;
 
   /**
+   * A controller whose uploads are left to the file watcher (TypeScript's constructor).
+   *
    * @param projectDirectory the project directory
    * @param storageName the storage
    * @param containerName the container
    * @param directory the directory pattern (an Express route path)
    */
   public FileController(Path projectDirectory, String storageName, String containerName, String directory) {
+    this(projectDirectory, storageName, containerName, directory, null);
+  }
+
+  /**
+   * Java-only: a controller that also notifies every upload to the storage's watcher before answering
+   * ({@link FsWatch#changed(Path)}), so an acknowledged upload is notified even if the server stops before the watch
+   * service reports it.
+   *
+   * @param projectDirectory the project directory
+   * @param storageName the storage
+   * @param containerName the container
+   * @param directory the directory pattern (an Express route path)
+   * @param watch the watcher of the storage's container, or {@code null}
+   */
+  public FileController(Path projectDirectory, String storageName, String containerName, String directory,
+      FsWatch watch) {
     this.storageName = storageName;
     this.containerName = containerName;
     this.directory = directory;
     this.router.put("/" + directory + "/:fileName", this::uploadFile);
     this.router.get("/" + directory + "/:fileName", this::getFile);
     this.path = LocalStorage.containerDirectory(projectDirectory, storageName, containerName);
+    this.watch = watch;
   }
 
   /**
@@ -141,6 +163,9 @@ public final class FileController {
         body.transferTo(writeStream);
       } catch (IOException e) {
         throw LocalStorage.nodeError(e, "open", filePath);
+      }
+      if (watch != null) {
+        watch.changed(filePath);
       }
       Map<String, Object> data = new LinkedHashMap<>();
       data.put("name", fileName);

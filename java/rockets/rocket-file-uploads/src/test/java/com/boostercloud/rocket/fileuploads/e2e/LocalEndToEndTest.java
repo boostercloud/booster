@@ -242,6 +242,21 @@ class LocalEndToEndTest {
   }
 
   @Test
+  void an_upload_acknowledged_right_before_a_restart_gets_its_read_model() {
+    String putUrl = mutate(PUT, variables("directory", "client1", "fileName", "invoice.pdf", "storageName",
+        "clientst"), "FileUploadPut");
+    int oldPort = server.port();
+    assertThat(Http.put(putUrl, randomBytes(20_000, 9)).statusCode()).isEqualTo(200);
+
+    // stopped right after the acknowledgement (the macOS watch service would report the file up to 2 s later)
+    restartServer();
+
+    Map<String, Object> metadata = LocalApplications.localMetadata(oldPort, "clientst", "client1/invoice.pdf");
+    assertThat(awaitReadModel(metadata)).containsEntry("metadata", metadata);
+    assertThat(project.resolve("clientst/rocketfiles/client1/invoice.pdf")).exists();
+  }
+
+  @Test
   void files_dropped_into_the_storage_folder_are_notified_after_a_restart_too() throws Exception {
     restartServer();
     Path folder = Files.createDirectories(project.resolve("cmsst/rocketfiles/cms2"));

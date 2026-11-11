@@ -114,6 +114,33 @@ class FileHandlerTest {
   }
 
   @Test
+  void delete_only_removes_a_file_of_the_checked_directory() throws Exception {
+    Path secret = Files.createDirectories(project.resolve("clientst/rocketfiles/admin")).resolve("secret.txt");
+    Files.writeString(secret, "secret");
+    Path nested = Files.createDirectories(project.resolve("clientst/rocketfiles/client1/sub")).resolve("x.txt");
+    Files.writeString(nested, "x");
+    FileHandler handler = new FileHandler(config, "clientst");
+
+    // 'admin' is not an allowed directory, so a file name must not climb into it from 'client1'
+    assertThatThrownBy(() -> handler.deleteFile("admin", "secret.txt")).hasMessage("Invalid directory admin");
+    assertThatThrownBy(() -> handler.deleteFile("client1", "../admin/secret.txt"))
+        .isInstanceOf(IllegalArgumentException.class).hasMessage("Invalid file name ../admin/secret.txt");
+    // nor go down into a folder the patterns do not allow ('client1/sub' does not match 'client1')
+    assertThatThrownBy(() -> handler.deleteFile("client1", "sub/x.txt")).hasMessage("Invalid file name sub/x.txt");
+    assertThatThrownBy(() -> handler.deleteFile("client1", "..\\admin\\secret.txt"))
+        .hasMessage("Invalid file name ..\\admin\\secret.txt");
+    for (String notAFileName : List.of("", ".", "..")) {
+      assertThatThrownBy(() -> handler.deleteFile("client1", notAFileName))
+          .hasMessage("Invalid file name " + notAFileName);
+    }
+    assertThat(secret).hasContent("secret");
+    assertThat(nested).hasContent("x");
+    // file names of the presigned URLs are not validated, as in TypeScript
+    assertThat(handler.<String>presignedPut("client1", "sub/x.txt"))
+        .isEqualTo("http://localhost:4000/clientst/rocketfiles/client1/sub/x.txt");
+  }
+
+  @Test
   void the_provider_library_must_exist() {
     assertThatThrownBy(() -> RocketFilesProviders.load(null)).isInstanceOf(IllegalStateException.class)
         .hasMessageStartingWith("Cannot find module 'undefined'");

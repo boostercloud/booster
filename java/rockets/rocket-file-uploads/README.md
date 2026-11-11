@@ -176,7 +176,8 @@ Azure. The rocket's types are external to the GraphQL schema (`JSON`), as TypeSc
 
 Errors (messages as in TypeScript): `Rocket not found. Please make sure you have setup the rocket packageName correctly`,
 `Missing userConfiguration`, `Missing storageAccountName`, `Storage account name <name> not found`,
-`Invalid directory <directory>`; a second `rocketForLocal()`/`rocketForAzure()` on one configuration fails with
+`Invalid directory <directory>`, and for `deleteFile` (Java addition) `Invalid file name <fileName>`; a second
+`rocketForLocal()`/`rocketForAzure()` on one configuration fails with
 `Error registering rocket function with id rocket-files: There is already a rocket function registered under the same ID, ""`.
 
 ## Events
@@ -215,11 +216,13 @@ rocket function.
 * The watcher (`FsWatch`) notifies every creation, change and deletion under the container whose path has no
   dot-segment and whose parent directory matches a pattern: `boosterRocketDispatcher({ BOOSTER_ROCKET_FUNCTION_ID:
   "rocket-files", uri: "http://localhost:<port>/<storage>/<container>/<name>", name: "<dir>/<file>" })`. A file
-  copied into the folder by hand is notified like an upload.
+  copied into the folder by hand is notified like an upload. The server also notifies each upload itself before
+  answering it, so an acknowledged upload is notified even when the server stops right after (see Differences).
 * `list(directory)`: the entries of the folder (not recursive; files, sub-folders and dot files), byte order of the
   names, `name = path.join(directory, entry)`, `properties.lastModified` = inode change time. A missing folder fails
   with `ENOENT: no such file or directory, scandir '<path>'`.
-* `deleteFile(directory, fileName)`: removes the file (`false` when it did not exist); the watcher notifies it.
+* `deleteFile(directory, fileName)`: removes the file (`false` when it did not exist); the watcher notifies it. The
+  file name must be a plain name of that directory (see Differences).
 
 The local server has no authentication: the presigned URLs work for anyone who can reach the port.
 
@@ -234,7 +237,8 @@ Runtime (`…azure`, used by the main function app when commands call `FileHandl
 * `list(directory)`: `List Blobs` with `prefix=<directory>` and `include=metadata`, every page (a prefix: `client1`
   also lists `client10/...`).
 * `deleteFile`: `Delete Blob` (with its snapshots); `false` for `BlobNotFound`.
-* Calls use the Blob REST API (`x-ms-version: 2025-11-05`) over `java.net.http`, with an Azure AD token from
+* Calls use the Blob REST API (`x-ms-version: 2025-11-05`, `x-ms-date` written as the SDK does, two-digit day:
+  `Tue, 03 Nov 2026 08:05:01 GMT`) over `java.net.http`, with an Azure AD token from
   `storage.DefaultAzureCredential`: environment service principal (`AZURE_TENANT_ID`, `AZURE_CLIENT_ID`,
   `AZURE_CLIENT_SECRET`), managed identity (App Service `IDENTITY_ENDPOINT`/`IDENTITY_HEADER`, else IMDS;
   `AZURE_CLIENT_ID` picks a user-assigned identity), Azure CLI. The caller needs `Storage Blob Data Contributor` on the
@@ -282,7 +286,11 @@ The connection is identity-based (`<storage>__serviceUri`). Names must match `^[
 * **No mutation of the caller's configuration.** Records are immutable: the descriptor holds lower-cased copies.
 * **`deleteFile` exists** for both providers (the TypeScript documentation lists it as AWS-only/TODO). Locally the
   deletion is notified by the watcher like any change (an `UploadedFileEvent` is stored, as TypeScript does for any
-  deletion in the folder); on Azure blob triggers do not fire on deletions.
+  deletion in the folder); on Azure blob triggers do not fire on deletions. Only the directory is checked against the
+  patterns, so the file name must be a plain name of it (not empty, `.` or `..`, no `/` or `\`), otherwise
+  `Invalid file name <fileName>`: a command such as the `DeleteFile` example passes the client's file name through,
+  and `../admin/secret.txt` would otherwise delete a file of a folder the patterns do not allow. The presigned URLs
+  keep TypeScript's unvalidated file names.
 * **`presignedPut` is generic** (`String url = handler.presignedPut(...)`) for TypeScript's `Promise<string> |
   Promise<any>`.
 * **Project directory**: `config.userProjectRootPath()` (or the working directory) instead of `process.cwd()`.
@@ -292,11 +300,20 @@ The connection is identity-based (`<storage>__serviceUri`). Names must match `^[
   error). Error titles of I/O failures come from Java classes (`Unchecked IO Exception` instead of `Error`, same
   status and Node-like reason). The dot-file `404` and the directory fall-through of `res.download` are emulated.
 * **Watcher**: the JDK `WatchService` with every folder registered (Node's recursive `fs.watch`); new folders are
-  registered when they appear and the entries already in them are notified; when the JDK drops the events of a busy
+  registered when they appear and the entries already in them are notified (each folder is registered before it is
+  listed, so a file created meanwhile is not missed); when the JDK drops the events of a busy
   directory (more than 512 pending, `OVERFLOW`) its entries are notified again, so a burst of uploads is not lost. On
   macOS the JDK polls every 2 seconds, so notifications come later than with Node; Node's event multiplicity is
   platform-specific anyway. A failing dispatch is logged (Node: an unhandled rejection, which ends the process). The
-  watchers stop when the server stops (`unmountStack`, which TypeScript does not have locally).
+  watchers stop when the server stops (`unmountStack`, which TypeScript does not have locally): the changes the JDK
+  already reported are handled first and the notifications in flight are awaited (up to 10 seconds).
+* **Uploads notified by the server too.** Because the JDK can report a write seconds after it (macOS) and a stop
+  discards what it has not reported, the `PUT` route notifies the written file itself before answering
+  (`FsWatch.changed`), and the stop waits for that notification: an upload the server acknowledged always gets its
+  `UploadedFileEvent`, also across a restart. The watch event still follows, so an upload is notified once more
+  (TypeScript does not debounce either). Changes made by other means (files copied by hand, `deleteFile`) that the
+  JDK has not reported when the server stops, the last 2 seconds on macOS, are not notified, and a start notifies
+  nothing, as in TypeScript (whose `fs.watch` reports within milliseconds).
 * **Envelope**: no `createdAt` before storing (the provider sets it in both implementations); a `null` metadata is
   stored as `{}`.
 * **Azure SDK replaced** by REST calls: `@azure/storage-blob` and `@azure/identity` are not available in Java without
@@ -359,7 +376,8 @@ every item of the rocket's specification and every TypeScript source to the Java
   (regenerate with `-Dbooster.golden.update=true`).
 * `e2e.LocalEndToEndTest`: core, the local provider and the local server in-process on free ports with the
   `e2e.app` application: presigned PUT, upload, the read model produced by the notification, presigned GET, list,
-  delete, restart on the same directory, files dropped by hand and the error messages.
+  delete, restart on the same directory, an upload acknowledged right before a restart, files dropped by hand and the
+  error messages.
 * `e2e.LocalServerProcessEndToEndTest`: the same application run as `boost start` runs it (a separate JVM,
   `java -cp target/classes:<dependencies> Main start --port N` from a project directory, free ports): concurrent
   presigned URL mutations, uploads, overwrites, downloads and listings, the events, snapshots and read models, SIGTERM,
