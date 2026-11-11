@@ -61,7 +61,8 @@ import java.util.concurrent.Future;
  *   <li>classes through the constructor whose parameter names match their fields (compile with {@code -parameters}),
  *       else their no-argument constructor, then assigning the remaining non-final fields;
  *   <li>nested records/classes, {@code List}/{@code Set}/arrays, {@code Map}s, {@code Optional}s, enums, dates
- *       (ISO strings or epoch milliseconds), {@code UUID}s and numbers are converted to the declared (generic) types;
+ *       (ISO strings or epoch milliseconds), {@code UUID}s and numbers are converted to the declared (generic) types
+ *       (a number with a fraction is refused for whole-number types instead of being truncated);
  *   <li>sealed interfaces pick the permitted class that has every raw key and the fewest properties left unset;
  *   <li>types with Jackson annotations ({@code @JsonCreator}, {@code @JsonValue}, {@code @JsonTypeInfo}) are bound
  *       with {@link BoosterJson#mapper()}.
@@ -137,6 +138,11 @@ public final class Instances {
     if (target == Optional.class) {
       Object value = raw instanceof Optional<?> optional ? optional.orElse(null) : raw;
       return value == null ? Optional.empty() : Optional.ofNullable(convert(value, Types.typeArguments(targetType, Optional.class)[0]));
+    }
+    if (raw instanceof Number number && isIntegral(target) && !hasIntegralValue(number)) {
+      // Jackson would truncate it silently (every number is a GraphQL Float, so 2.5 is a valid input for an int)
+      throw new IllegalArgumentException("Cannot convert " + describe(raw) + " to " + targetType.getTypeName()
+          + ": the number is not an integer");
     }
     if (target == OptionalInt.class || target == OptionalLong.class || target == OptionalDouble.class) {
       return BoosterJson.convert(raw, target);
@@ -239,24 +245,43 @@ public final class Instances {
     return root;
   }
 
+  /**
+   * The value of an {@code Optional} ({@code OptionalInt}, {@code OptionalLong} and {@code OptionalDouble} too), or
+   * {@code null} when it is empty; any other value is returned unchanged. {@code Optional<T>} is the Java form of a
+   * TypeScript {@code T | undefined}, so code that needs the plain value of a property (as TypeScript reads it) unwraps
+   * it first.
+   *
+   * @param value any value
+   * @return the plain value
+   */
+  public static Object unwrapOptional(Object value) {
+    return switch (value) {
+      case Optional<?> optional -> optional.orElse(null);
+      case OptionalInt optional -> optional.isPresent() ? optional.getAsInt() : null;
+      case OptionalLong optional -> optional.isPresent() ? optional.getAsLong() : null;
+      case OptionalDouble optional -> optional.isPresent() ? optional.getAsDouble() : null;
+      case null, default -> value;
+    };
+  }
+
   private static void processProperties(Object source, Map<String, Object> result, Map<String, PropertyNode> nodes) {
     for (Map.Entry<String, PropertyNode> entry : nodes.entrySet()) {
       String key = entry.getKey();
       PropertyNode node = entry.getValue();
       if (hasProperty(source, key)) {
+        // TypeScript reads the plain value: an Optional (`T | undefined`) is its value or null
+        Object value = unwrapOptional(await(readProperty(source, key)));
         if (node.array) {
           List<Object> items = new ArrayList<>();
           result.put(key, items);
-          Object value = await(readProperty(source, key));
           for (Object item : iterable(value, key)) {
             Map<String, Object> newItem = new LinkedHashMap<>();
-            processProperties(item, newItem, node.arrayChildren);
+            processProperties(unwrapOptional(item), newItem, node.arrayChildren);
             if (!newItem.isEmpty()) {
               items.add(newItem);
             }
           }
         } else if (!node.children.isEmpty()) {
-          Object value = await(readProperty(source, key));
           if (value == null) {
             result.put(key, null);
           } else {
@@ -265,7 +290,7 @@ public final class Instances {
             result.put(key, nested.isEmpty() ? null : nested);
           }
         } else {
-          result.put(key, await(readProperty(source, key)));
+          result.put(key, value);
         }
       } else if (node.hasChildren()) {
         result.put(key, null);
@@ -291,7 +316,8 @@ public final class Instances {
     return ClassMetadata.of(source.getClass()).field(key).orElseThrow().readValue(source);
   }
 
-  private static Iterable<?> iterable(Object value, String key) {
+  private static Iterable<?> iterable(Object rawValue, String key) {
+    Object value = unwrapOptional(rawValue);
     if (value instanceof Iterable<?> iterable) {
       return iterable;
     }
@@ -363,6 +389,27 @@ public final class Instances {
         || target.getPackageName().startsWith("com.fasterxml.jackson")
         || target.getName().startsWith("java.") && !target.isInterface() && !Modifier.isAbstract(target.getModifiers())
             && target.getClassLoader() == null && !isPlainJdkCollectionLike(target);
+  }
+
+  /** Whole-number targets, which cannot hold a fraction. */
+  private static boolean isIntegral(Class<?> target) {
+    return target == int.class || target == Integer.class
+        || target == long.class || target == Long.class
+        || target == short.class || target == Short.class
+        || target == byte.class || target == Byte.class
+        || target == OptionalInt.class || target == OptionalLong.class
+        || target == java.math.BigInteger.class
+        || target == java.util.concurrent.atomic.AtomicInteger.class
+        || target == java.util.concurrent.atomic.AtomicLong.class;
+  }
+
+  private static boolean hasIntegralValue(Number number) {
+    return switch (number) {
+      case Double value -> Double.isFinite(value) && Math.rint(value) == value;
+      case Float value -> Float.isFinite(value) && Math.rint(value) == value;
+      case java.math.BigDecimal value -> value.signum() == 0 || value.stripTrailingZeros().scale() <= 0;
+      default -> true;
+    };
   }
 
   private static boolean isPlainJdkCollectionLike(Class<?> target) {

@@ -266,7 +266,8 @@ public class Main {
 ```
 
 Reading from code: `Booster.readModel(CartReadModel.class).filter(Map.of("id", Map.of("eq", id))).search()`
-(filters are the same JSON shape as TypeScript `FilterFor`), `Booster.entity(Cart.class, id)`,
+(filters are the same JSON shape as TypeScript `FilterFor`; with `select(paths)` the results are plain maps, read with
+`searchSelected()`/`searchOneSelected()`/`searchSelectedPaginated()`), `Booster.entity(Cart.class, id)`,
 `Booster.events(parameters)`, `Booster.entitiesIDs(...)`, `Booster.deleteEvent(...)`.
 
 ## 7. Errors and logging

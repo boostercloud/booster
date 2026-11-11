@@ -19,6 +19,7 @@ import com.boostercloud.framework.core.services.graphql.GraphQLResolverContext;
 import com.boostercloud.framework.core.services.pubsub.FilteredReadModelPubSub;
 import com.boostercloud.framework.core.services.pubsub.ReadModelPubSub;
 import com.boostercloud.framework.types.BoosterConfig;
+import com.boostercloud.framework.types.Dates;
 import com.boostercloud.framework.types.Logger;
 import com.boostercloud.framework.types.concepts.ReadModelMetadata;
 import com.boostercloud.framework.types.concepts.UUID;
@@ -122,7 +123,8 @@ class BoosterSubscribersNotifierTest extends BoosterTestSupport {
   private static SubscriptionEnvelope subscription(String className, String connectionID, String operationID, String query,
       Map<String, Object> variables) {
     return SubscriptionEnvelope.builder().className(className).connectionID(connectionID).requestID(UUID.of("request-" + operationID))
-        .currentUser(UserEnvelope.builder().username("user@example.com").build()).version(1).expirationTime(1)
+        .currentUser(UserEnvelope.builder().username("user@example.com").build()).version(1)
+        .expirationTime(Dates.nowEpochSeconds() + 3600)
         .operation(GraphQLOperation.builder().id(operationID).query(query).variables(variables).build()).build();
   }
 
@@ -152,6 +154,46 @@ class BoosterSubscribersNotifierTest extends BoosterTestSupport {
         new GraphQLData("op-1", data("TestReadModel", Map.of("id", "1", "count", 5))));
     verify(connections, never()).sendMessage(eq(config), eq("connection-2"), any());
     verify(config.logger, never()).error(any(), any());
+  }
+
+  @Test
+  void skipsAndDeletesExpiredSubscriptionsAndSubscriptionsWhoseTokenHasExpired() {
+    // TypeScript notifies every stored subscription (on AWS, the DynamoDB TTL removed the expired ones)
+    changed(new ReadModelEnvelope("TestReadModel", Map.of("id", "1", "count", 5)));
+    String query = "subscription { TestReadModel(id: \"1\") { id } }";
+    long now = Dates.nowEpochSeconds();
+    SubscriptionEnvelope live = subscription("TestReadModel", "connection-1", "op-1", query, null);
+    SubscriptionEnvelope expired = subscription("TestReadModel", "connection-2", "op-2", query, null).toBuilder()
+        .expirationTime(now).build();
+    SubscriptionEnvelope tokenExpired = subscription("TestReadModel", "connection-3", "op-3", query, null).toBuilder()
+        .currentUser(UserEnvelope.builder().username("user@example.com").claims(Map.of("exp", now - 1)).build()).build();
+    when(readModels.fetchSubscriptions(config, "TestReadModel")).thenReturn(List.of(live, expired, tokenExpired));
+
+    notifier().dispatch("raw request");
+
+    verify(connections).sendMessage(config, "connection-1", new GraphQLData("op-1", data("TestReadModel", Map.of("id", "1"))));
+    verify(connections, never()).sendMessage(eq(config), eq("connection-2"), any());
+    verify(connections, never()).sendMessage(eq(config), eq("connection-3"), any());
+    verify(readModels).deleteSubscription(config, "connection-2", "op-2");
+    verify(readModels).deleteSubscription(config, "connection-3", "op-3");
+    verify(readModels, never()).deleteSubscription(config, "connection-1", "op-1");
+    assertThat(contexts).hasSize(1);
+  }
+
+  @Test
+  void aFailureToDeleteAnExpiredSubscriptionIsLoggedAndTheOthersAreNotified() {
+    changed(new ReadModelEnvelope("TestReadModel", Map.of("id", "1", "count", 5)));
+    String query = "subscription { TestReadModel(id: \"1\") { id } }";
+    SubscriptionEnvelope expired = subscription("TestReadModel", "connection-2", "op-2", query, null).toBuilder()
+        .expirationTime(1).build();
+    when(readModels.fetchSubscriptions(config, "TestReadModel"))
+        .thenReturn(List.of(expired, subscription("TestReadModel", "connection-1", "op-1", query, null)));
+    doThrow(new IllegalStateException("database down")).when(readModels).deleteSubscription(any(), any(), any());
+
+    notifier().dispatch("raw request");
+
+    verify(connections).sendMessage(config, "connection-1", new GraphQLData("op-1", data("TestReadModel", Map.of("id", "1"))));
+    verify(connections, never()).sendMessage(eq(config), eq("connection-2"), any());
   }
 
   @Test

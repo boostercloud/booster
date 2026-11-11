@@ -75,6 +75,11 @@ envelope with a non-null `id`), `SensorBoosterHealthConfigurationDetails` (→
   errors). Plain TypeScript `Error`s are `IllegalStateException`s with the same messages.
 * `Searcher.search()` returns `List<T>`, `searchPaginated()` the page, `searchRaw()` exactly what
   the backend returned, `searchOne()` an `Optional`; the builder state is visible through `state()`.
+  TypeScript's `select()` changes the result type to `Partial<T>`; Java cannot retype the builder,
+  so a search with `select(...)` runs with `searchSelected()`, `searchOneSelected()` or
+  `searchSelectedPaginated()` (plain `Map`s of the selected paths) or `searchRaw()`, and the typed
+  `search()`/`searchOne()`/`searchPaginated()` throw an `IllegalStateException` naming the right
+  method instead of returning maps typed as `T` (a `ClassCastException` on first access).
 * `UserApp` flattens TypeScript's nested `Booster` object (`config()`, `configureCurrentEnv`,
   `configuredEnvironments`); the running app is registered in `UserAppRegistry` (TypeScript
   `require(dist/index.js)`).

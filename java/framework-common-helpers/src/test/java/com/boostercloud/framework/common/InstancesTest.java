@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +35,24 @@ class InstancesTest {
     @CalculatedField
     public CompletableFuture<String> fullName() {
       return CompletableFuture.supplyAsync(() -> firstName + " " + lastName);
+    }
+  }
+
+  public record Address(String city, String street) {}
+
+  public record Tag(String name) {}
+
+  /** {@code Optional<T>} is the Java form of a TypeScript {@code T | undefined}. */
+  public record Profile(String id, Optional<Address> address, Optional<List<Tag>> tags, Optional<Address> none,
+      Optional<String> nickname, OptionalInt score, OptionalInt noScore, List<Optional<Tag>> maybeTags) {
+    @CalculatedField
+    public Optional<Address> home() {
+      return address;
+    }
+
+    @CalculatedField
+    public CompletableFuture<Optional<Address>> later() {
+      return CompletableFuture.supplyAsync(() -> address);
     }
   }
 
@@ -122,6 +141,41 @@ class InstancesTest {
       assertThatThrownBy(() -> project(Person.class, raw, "id.x")).hasMessageContaining("Cannot use 'in' operator");
       assertThatThrownBy(() -> Instances.buildPropertiesMap(List.of("items.a", "items[].b")))
           .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void unwrapsOptionalNestedObjectsListsAndLeaves() {
+      assertThat(project(Profile.class, profile(), "address.city"))
+          .isEqualTo(Map.of("address", Map.of("city", "Madrid")));
+      assertThat(project(Profile.class, profile(), "tags[].name")).isEqualTo(Map.of("tags", List.of(Map.of("name", "vip"))));
+      assertThat(project(Profile.class, profile(), "maybeTags[].name"))
+          .isEqualTo(Map.of("maybeTags", List.of(Map.of("name", "new"))));
+      assertThat(project(Profile.class, profile(), "nickname")).isEqualTo(Map.of("nickname", "ada"));
+      assertThat(project(Profile.class, profile(), "score")).isEqualTo(Map.of("score", 7));
+      // An empty optional is null, like a null property (a null array cannot be iterated, as in TypeScript)
+      assertThat(project(Profile.class, profile(), "none.city")).isEqualTo(nullValued("none"));
+      assertThat(project(Profile.class, profile(), "noScore")).isEqualTo(nullValued("noScore"));
+      assertThatThrownBy(() -> project(Profile.class, Map.of("id", "p2"), "tags[].name"))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("The property 'tags' is not iterable: null");
+    }
+
+    @Test
+    void unwrapsOptionalCalculatedFields() {
+      assertThat(project(Profile.class, profile(), "home.city")).isEqualTo(Map.of("home", Map.of("city", "Madrid")));
+      assertThat(project(Profile.class, profile(), "later.street")).isEqualTo(Map.of("later", Map.of("street", "Gran Via")));
+      assertThat(project(Profile.class, Map.of("id", "p2"), "home.city")).isEqualTo(nullValued("home"));
+    }
+
+    private Map<String, Object> profile() {
+      Map<String, Object> raw = new LinkedHashMap<>();
+      raw.put("id", "p1");
+      raw.put("address", Map.of("city", "Madrid", "street", "Gran Via"));
+      raw.put("tags", List.of(Map.of("name", "vip")));
+      raw.put("nickname", "ada");
+      raw.put("score", 7);
+      raw.put("maybeTags", List.of(Map.of("name", "new")));
+      return raw;
     }
 
     @Test
@@ -290,6 +344,35 @@ class InstancesTest {
       assertThatThrownBy(() -> Instances.convert(List.of(1), Item.class))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessageContaining("an object was expected");
+    }
+
+    @Test
+    void refusesNumbersWithAFractionForIntegralProperties() {
+      // GraphQL has one number type (every Java number is a Float input), so integral values arrive as doubles
+      record Counts(int count, long big, Integer boxed, short small, Optional<Integer> maybe, List<Long> many) {}
+      Map<String, Object> integral = new LinkedHashMap<>();
+      integral.put("count", 2.0);
+      integral.put("big", 3e10);
+      integral.put("boxed", 4.0f);
+      integral.put("small", new java.math.BigDecimal("5.000"));
+      integral.put("maybe", 6.0);
+      integral.put("many", List.of(7.0, 8));
+      assertThat(Instances.createInstance(Counts.class, integral))
+          .isEqualTo(new Counts(2, 30_000_000_000L, 4, (short) 5, Optional.of(6), List.of(7L, 8L)));
+
+      assertThatThrownBy(() -> Instances.createInstance(Counts.class, Map.of("count", 2.5)))
+          .isInstanceOf(IllegalArgumentException.class)
+          .hasMessage("Invalid value for Counts.count: Cannot convert 2.5 to int: the number is not an integer");
+      assertThatThrownBy(() -> Instances.createInstance(Counts.class, Map.of("maybe", 3.9)))
+          .hasMessageContaining("Cannot convert 3.9 to java.lang.Integer: the number is not an integer");
+      assertThatThrownBy(() -> Instances.createInstance(Counts.class, Map.of("many", List.of(1, 1.5))))
+          .hasMessageContaining("Cannot convert 1.5 to java.lang.Long");
+      assertThatThrownBy(() -> Instances.convert(new java.math.BigDecimal("0.1"), java.math.BigInteger.class))
+          .hasMessageContaining("the number is not an integer");
+      assertThatThrownBy(() -> Instances.convert(Double.NaN, long.class)).hasMessageContaining("not an integer");
+      // Floating-point targets keep the fraction
+      assertThat(Instances.convert(2.5, double.class)).isEqualTo(2.5);
+      assertThat(Instances.convert(2.5, java.math.BigDecimal.class)).isEqualTo(new java.math.BigDecimal("2.5"));
     }
 
     @Test

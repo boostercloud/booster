@@ -88,6 +88,20 @@ class ErrorHandlingIntegrationTest extends IntegrationTestSupport {
   }
 
   @Test
+  void aWholeNumberInputWithAFractionIsRejectedInsteadOfTruncated() {
+    // Every Java number is a GraphQL Float, so the schema accepts 2.5 for the `int quantity` of a cart line
+    Map<String, Object> result = graphQL("mutation { ChangeCartItems(input: {cartId: \"c\", "
+        + "items: [{productId: \"p\", quantity: 2.5}]}) { lines } }");
+
+    assertThat(errorMessage(result)).isEqualTo("Invalid value for ChangeCartItems.items: Invalid value for "
+        + "CartItem.quantity: Cannot convert 2.5 to int: the number is not an integer");
+    assertThat(provider.events().events()).isEmpty();
+    assertThat(data(graphQL("mutation { ChangeCartItems(input: {cartId: \"c\", "
+        + "items: [{productId: \"p\", quantity: 2}]}) { items { quantity } } }")))
+        .isEqualTo(Map.of("ChangeCartItems", Map.of("items", List.of(Map.of("quantity", 2.0)))));
+  }
+
+  @Test
   void emptyRequestsAreRejected() {
     GraphQLResponse noBody = (GraphQLResponse) app.boosterServeGraphQL(new GraphQLHttpRequest(Map.of(), null));
     GraphQLResponse noQuery = (GraphQLResponse) app.boosterServeGraphQL(new GraphQLHttpRequest(Map.of(), Map.of()));

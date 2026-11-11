@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.boostercloud.framework.core.integration.inmemory.InMemoryRequests.GraphQLResponse;
 import com.boostercloud.framework.types.Dates;
+import java.time.Clock;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -49,6 +51,44 @@ class SubscriptionsIntegrationTest extends IntegrationTestSupport {
       assertThat(data.user().username()).isEqualTo("customer@store.test");
       assertThat(data.expirationTime()).isBetween(Dates.nowEpochSeconds() + 604790, Dates.nowEpochSeconds() + 604810);
     });
+  }
+
+  @Test
+  void aConnectionStopsActingAsItsUserOnceItsTokenExpires() {
+    init(CONNECTION, TestTokens.customer());
+    start(CONNECTION, "sub-1", "subscription { CartReadModel(id: \"cart-1\") { id } }");
+    changeCart("cart-1", 1);
+    int notifiedWhileValid = socketMessages(CONNECTION).size();
+
+    // The token expires an hour after it was issued
+    Dates.useClock(Clock.offset(Clock.systemUTC(), Duration.ofSeconds(3601)));
+    changeCart("cart-1", 2);
+    start(CONNECTION, "q-1", "query { CartReadModel(id: \"cart-1\") { id } }");
+
+    List<Map<String, Object>> messages = socketMessages(CONNECTION);
+    assertThat(notifiedWhileValid).isGreaterThan(1);
+    assertThat(messages.subList(notifiedWhileValid, messages.size())).containsExactly(Map.of("type",
+        "connection_error", "payload", "The token of the connection has expired: send connection_init with a new token"));
+    assertThat(provider.readModels().subscriptions()).isEmpty();
+    assertThat(provider.connections().data(CONNECTION)).isEmpty();
+
+    init(CONNECTION, TestTokens.customer());
+    start(CONNECTION, "q-2", "query { CartReadModel(id: \"cart-1\") { id } }");
+    assertThat(socketMessages(CONNECTION)).extracting(message -> message.get("type") + ":" + message.get("id"))
+        .endsWith("connection_ack:null", "data:q-2", "complete:q-2");
+  }
+
+  @Test
+  void aConnectionLastsAtMostTheConfiguredDuration() {
+    config.subscriptions.maxConnectionDurationInSeconds = 60;
+    init(CONNECTION, null);
+
+    Dates.useClock(Clock.offset(Clock.systemUTC(), Duration.ofSeconds(61)));
+    start(CONNECTION, "q-1", "query { CartReadModel(id: \"cart-1\") { id } }");
+
+    assertThat(socketMessages(CONNECTION)).containsExactly(Map.of("type", "connection_ack"), Map.of("type",
+        "connection_error", "payload", "The connection has expired: send connection_init to authenticate it again"));
+    assertThat(provider.connections().data(CONNECTION)).isEmpty();
   }
 
   @Test

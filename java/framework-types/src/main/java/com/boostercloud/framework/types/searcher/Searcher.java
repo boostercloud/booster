@@ -30,6 +30,17 @@ import java.util.Optional;
  *     .search();
  * }</pre>
  *
+ * <p>With {@link #select(List)} the backend returns plain objects of the selected paths instead of {@code T} instances
+ * (TypeScript types them {@code Partial<T>}). Read them with {@link #searchSelected()}, {@link #searchOneSelected()}
+ * or {@link #searchSelectedPaginated()}; the typed {@link #search()}, {@link #searchOne()} and
+ * {@link #searchPaginated()} refuse a selection instead of handing out maps typed as {@code T}:
+ *
+ * <pre>{@code
+ * List<Map<String, Object>> skus = Booster.readModel(ProductReadModel.class)
+ *     .select(List.of("id", "sku"))
+ *     .searchSelected();
+ * }</pre>
+ *
  * @param <T> the read model type
  */
 public final class Searcher<T> {
@@ -80,7 +91,10 @@ public final class Searcher<T> {
   }
 
   /**
-   * Selects only some properties; {@code null} is ignored (an empty list is kept).
+   * Selects only some properties; {@code null} is ignored (an empty list is kept). The search then returns plain
+   * objects ({@code Map}s) of the selected paths, not {@code T} instances: run it with {@link #searchSelected()},
+   * {@link #searchOneSelected()}, {@link #searchSelectedPaginated()} or {@link #searchRaw()} (the typed searches
+   * refuse a selection).
    *
    * @param select projection paths ({@link ProjectionFor}, e.g. {@code "items[].id"})
    * @return this searcher
@@ -161,14 +175,12 @@ public final class Searcher<T> {
    * result.
    *
    * @return the first result, if any
+   * @throws IllegalStateException when {@link #select(List)} was called: use {@link #searchOneSelected()}
    */
   @SuppressWarnings("unchecked")
   public Optional<T> searchOne() {
-    Object result = searcherFunction.search(objectClass, filters, sortByList, 1, afterCursor, false, selectFor);
-    if (result instanceof List<?> list && !list.isEmpty()) {
-      return Optional.ofNullable((T) list.get(0));
-    }
-    return Optional.empty();
+    refuseSelection("searchOne()", "searchOneSelected()");
+    return Optional.ofNullable((T) firstResult());
   }
 
   /**
@@ -176,29 +188,100 @@ public final class Searcher<T> {
    * its {@code items}).
    *
    * @return the results
+   * @throws IllegalStateException when {@link #select(List)} was called: use {@link #searchSelected()}
    */
   @SuppressWarnings("unchecked")
   public List<T> search() {
-    Object result = searchRaw();
-    if (result instanceof ReadModelListResult<?> page) {
-      return (List<T>) page.items();
-    }
-    return result == null ? List.of() : (List<T>) result;
+    refuseSelection("search()", "searchSelected()");
+    return (List<T>) items(searchRaw());
   }
 
   /**
    * Runs the search with pagination on and returns the page ({@code { items, count, cursor }}).
    *
    * @return the page
+   * @throws IllegalStateException when {@link #select(List)} was called: use {@link #searchSelectedPaginated()}
    */
   @SuppressWarnings("unchecked")
   public ReadModelListResult<T> searchPaginated() {
+    refuseSelection("searchPaginated()", "searchSelectedPaginated()");
+    return (ReadModelListResult<T>) page();
+  }
+
+  /**
+   * {@link #search()} for a search with {@link #select(List)}: the plain objects of the selected paths.
+   *
+   * @return the results, one ordered map per item
+   * @throws IllegalStateException when no selection was set
+   */
+  @SuppressWarnings("unchecked")
+  public List<Map<String, Object>> searchSelected() {
+    requireSelection("searchSelected()");
+    return (List<Map<String, Object>>) items(searchRaw());
+  }
+
+  /**
+   * {@link #searchOne()} for a search with {@link #select(List)}.
+   *
+   * @return the plain object of the first result, if any
+   * @throws IllegalStateException when no selection was set
+   */
+  @SuppressWarnings("unchecked")
+  public Optional<Map<String, Object>> searchOneSelected() {
+    requireSelection("searchOneSelected()");
+    return Optional.ofNullable((Map<String, Object>) firstResult());
+  }
+
+  /**
+   * {@link #searchPaginated()} for a search with {@link #select(List)}.
+   *
+   * @return the page of plain objects
+   * @throws IllegalStateException when no selection was set
+   */
+  @SuppressWarnings("unchecked")
+  public ReadModelListResult<Map<String, Object>> searchSelectedPaginated() {
+    requireSelection("searchSelectedPaginated()");
+    return (ReadModelListResult<Map<String, Object>>) page();
+  }
+
+  private Object firstResult() {
+    Object result = searcherFunction.search(objectClass, filters, sortByList, 1, afterCursor, false, selectFor);
+    if (result instanceof List<?> list && !list.isEmpty()) {
+      return list.get(0);
+    }
+    return null;
+  }
+
+  private static List<?> items(Object result) {
+    if (result instanceof ReadModelListResult<?> page) {
+      return page.items();
+    }
+    return result == null ? List.of() : (List<?>) result;
+  }
+
+  private ReadModelListResult<?> page() {
     paginatedVersion = true;
     Object result = searchRaw();
     if (result instanceof ReadModelListResult<?> page) {
-      return (ReadModelListResult<T>) page;
+      return page;
     }
-    return ReadModelListResult.of(result == null ? List.of() : (List<T>) result);
+    return ReadModelListResult.of(result == null ? List.of() : (List<?>) result);
+  }
+
+  /** TypeScript types the results {@code Partial<T>}; a cast to {@code T} would fail later, in the caller. */
+  private void refuseSelection(String method, String selectedMethod) {
+    if (selectFor != null) {
+      throw new IllegalStateException(method + " returns " + objectClass.getSimpleName() + " instances, but select(...)"
+          + " makes the search return plain objects of the selected paths: call " + selectedMethod
+          + (method.equals("search()") ? " (or searchRaw())" : "") + " instead");
+    }
+  }
+
+  private void requireSelection(String method) {
+    if (selectFor == null) {
+      throw new IllegalStateException(method + " needs select(...): without a selection the search returns "
+          + objectClass.getSimpleName() + " instances");
+    }
   }
 
   /**

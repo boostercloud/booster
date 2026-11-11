@@ -2,6 +2,7 @@ package com.boostercloud.framework.core.services.graphql.websocketprotocol;
 
 import com.boostercloud.framework.common.Loggers;
 import com.boostercloud.framework.core.BoosterTokenVerifier;
+import com.boostercloud.framework.core.internal.Expirations;
 import com.boostercloud.framework.core.internal.Js;
 import com.boostercloud.framework.core.services.graphql.GraphQLExecution;
 import com.boostercloud.framework.types.BoosterConfig;
@@ -15,6 +16,7 @@ import com.boostercloud.framework.types.envelope.GraphQLRequestEnvelopeError;
 import com.boostercloud.framework.types.envelope.GraphQLRequestEnvelopeOrError;
 import com.boostercloud.framework.types.envelope.GraphQLRequestValue;
 import com.boostercloud.framework.types.envelope.UserEnvelope;
+import com.boostercloud.framework.types.errors.NotAuthorizedError;
 import com.boostercloud.framework.types.graphql.GraphQLComplete;
 import com.boostercloud.framework.types.graphql.GraphQLData;
 import com.boostercloud.framework.types.graphql.GraphQLErrorMessage;
@@ -44,7 +46,9 @@ import java.util.concurrent.Flow;
  *       the user) and sends {@code connection_ack};</li>
  *   <li>{@code start}: runs the operation with the user stored for the connection and the client's operation id;
  *       queries and mutations answer {@code data} then {@code complete}, subscriptions answer nothing (they are
- *       stored); a payload without {@code query} answers an {@code error} message;</li>
+ *       stored); a payload without {@code query} answers an {@code error} message. Java addition: once the stored
+ *       {@code expirationTime} or the {@code exp} claim of the stored user's token has passed, the connection data and
+ *       subscriptions are deleted and the operation is refused with a {@code connection_error};</li>
  *   <li>{@code stop}: stops the subscription and sends {@code complete} (a failure to send it is only logged);</li>
  *   <li>{@code connection_terminate}: deletes the connection data and its subscriptions; nothing is sent.</li>
  * </ul>
@@ -162,11 +166,39 @@ public class GraphQLWebsocketHandler {
     Optional<ConnectionDataEnvelope> connectionData = connectionManager.fetchData(config, connectionID);
     ConnectionDataEnvelope data = connectionData == null ? null : connectionData.orElse(null);
     logger.debug("Found connection data: ", data);
+    if (data != null) {
+      refuseExpired(connectionID, data);
+    }
     GraphQLStart.Payload payload = message.payload();
     return envelope.toBuilder()
         .currentUser(data == null ? null : data.user())
         .value(new GraphQLOperation(payload.query(), message.id(), payload.operationName(), payload.variables()))
         .build();
+  }
+
+  /**
+   * Java addition: the stored identity of a connection ends with the connection's {@code expirationTime} or with the
+   * expiry of its token. TypeScript reuses it for as long as the socket stays open, which only the AWS provider bounded
+   * (sockets closed after two hours, records deleted by TTL). An expired connection loses its data and subscriptions
+   * ({@code onTerminate}) and the client is told to send {@code connection_init} again.
+   */
+  private void refuseExpired(String connectionID, ConnectionDataEnvelope data) {
+    String reason;
+    if (Expirations.hasPassed(data.expirationTime())) {
+      reason = "The connection has expired: send connection_init to authenticate it again";
+    } else if (Expirations.tokenHasExpired(data.user())) {
+      reason = "The token of the connection has expired: send connection_init with a new token";
+    } else {
+      return;
+    }
+    Logger logger = Loggers.getLogger(config, "GraphQLWebsocketHandler#augmentEnvelope");
+    logger.debug("Deleting the expired connection " + connectionID + " and its subscriptions");
+    try {
+      callbacks.onTerminate(connectionID);
+    } catch (RuntimeException e) {
+      logger.warn("Could not delete the data and subscriptions of the expired connection " + connectionID + ": ", e);
+    }
+    throw new NotAuthorizedError(reason);
   }
 
   private void handleStop(String connectionID, GraphQLStop message) {

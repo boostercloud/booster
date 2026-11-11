@@ -25,7 +25,7 @@ Counts are ledger rows (a row may group several numbered items that share one te
 | Part | Rows | covered | fixed | differs | elsewhere | n/a | still missing |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1. TypeScript-pinned behaviours (specs 04–09) | 284 | 268 | 2 | 14 | 0 | 0 | 0 |
-| 2. Documentation checklist (spec 18, core-relevant) | 205 | 165 | 6 | 9 | 17 | 8 | 0 |
+| 2. Documentation checklist (spec 18, core-relevant) | 205 | 164 | 6 | 10 | 17 | 8 | 0 |
 
 Missing → fixed: 8 rows. Part 1: spec 04 #3 and #4 (`Booster.readModel(...).search()` was pinned one layer down, at
 the reader, not at the provider call). Part 2: F078 (asynchronous calculated fields), F282 and acceptance 26
@@ -495,7 +495,7 @@ modules and are not listed. "Integration" refers to `integration.*IntegrationTes
 | F231 | `{query, variables}` → `{data}` / `{errors}` | `BoosterGraphQLDispatcherTest#runsTheOperationWithTheResolverContext` | covered |
 | F232 | URL paths | — | elsewhere: providers |
 | F233 | queries and mutations over the websocket | Integration `SubscriptionsIntegrationTest#queriesAndMutationsThroughTheSocketAnswerDataAndComplete` | covered |
-| F234 | introspection enabled | `BoosterGraphQLDispatcherTest#isEnabledWithTheDefaultConfig` | covered |
+| F234 | introspection enabled (disabled: `__schema` and `__type` refused, see security-6) | `BoosterGraphQLDispatcherTest#isEnabledWithTheDefaultConfig`, `#canBeDisabled`, `#blocksTypeQueriesToo` | covered |
 | F235 | class-typed nested properties get nested filters and sorts; others `JSON` | `GraphQLQueryHelpersTest#nestsTheFiltersOfApplicationClasses`, `#sortsEveryStoredPropertyWithOrderPropertyExceptApplicationClasses` | covered |
 | F236 | `CommandName(input: {...})` → `true` for `void` | `GraphQLGeneratorTest#returnsTrueWhenTheCommandReturnsNothing` | covered |
 | F237 | read model by id | Integration `ReadModelQueriesIntegrationTest#findsAReadModelById` | covered |
@@ -508,7 +508,7 @@ modules and are not listed. "Integration" refers to `integration.*IntegrationTes
 | F244 | `ReadModelRequestEnvelope` fields | `GraphQLGeneratorTest#callsSearchWithTheExpectedPayload` | covered |
 | F245 | filter operator families, `and`/`or`/`not`, `isDefined` | `GraphQLQueryGeneratorTest#hasTheExpectedArgumentsForAStringProperty`, Integration `ReadModelQueriesIntegrationTest#combinesFiltersWithAndOrAndNot`, `#filtersOnArraysOfObjects` | covered (evaluation is the provider's) |
 | F246 | `eq`/`ne` `null`; `regex` support | Integration `ReadModelQueriesIntegrationTest#combinesFiltersWithAndOrAndNot` | elsewhere: providers evaluate filters |
-| F247 | `Booster.readModel(X).filter().select().search()`; instances without `select` | `BoosterTest#theSearcherCallsTheProviderSearchOnceWithTheTypeScriptArgumentsAndReturnsInstances`, Integration `ReadModelQueriesIntegrationTest#theSearcherPagesFromCode` | covered |
+| F247 | `Booster.readModel(X).filter().select().search()`; instances without `select` | `BoosterTest#theSearcherCallsTheProviderSearchOnceWithTheTypeScriptArgumentsAndReturnsInstances`, `#theSearcherReturnsPlainObjectsForASelectionThroughTheSelectedSearches`, Integration `ReadModelQueriesIntegrationTest#theSearcherPagesFromCode` | differs: with `select`, `searchSelected()` (TypeScript retypes `search()` to `Partial<T>`) |
 | F248 | `select` with `[]` array paths | `BoosterReadModelsReaderTest#usesTheTopLevelFieldOfArrayAndNestedPaths`, Integration `ReadModelQueriesIntegrationTest#selectsNestedPathsOfListsAndCountsWithoutItems` | covered |
 | F249 | `select` skips schema migrations | `BoosterReadModelsReaderTest#passesTheSelectionAndDoesNotMigrate`, Integration `MigrationsIntegrationTest#oldReadModelsAreMigratedWhenRead` | covered |
 | F250 | `sortBy` (one field; nested) | `GraphQLQueryHelpersTest#sortsEveryStoredPropertyWithOrderPropertyExceptApplicationClasses`, Integration `ReadModelQueriesIntegrationTest#pagesThroughASortedListWithTheCursor` | covered (one-field limit is the provider's) |
@@ -620,3 +620,15 @@ modules and are not listed. "Integration" refers to `integration.*IntegrationTes
 | 37 | health defaults disabled; enabled tree | `BoosterHealthServiceTest#everythingDisabledByDefaultGivesAnEmptyHealthyResponse`, `#allIndicatorsAreUp` | covered |
 | 38 | throwing component → `DOWN`, 503 | `BoosterHealthIndicatorsTest#anExceptionIsDownWithTheErrorAsDetails`, `BoosterHealthServiceTest#anIndicatorThatThrowsFailsTheWholeRequest` | differs (code wins, see F315) |
 | 39 | rejected `globalAuthorizer` → 401 | `BoosterHealthServiceTest#validationFailsWithTheWrongRole` | covered |
+
+## Part 3 — Review fixes that diverge from TypeScript on purpose
+
+Defects found by the port review that TypeScript shares. For security issues the port takes the secure behaviour; each
+divergence is also listed in README "Differences from TypeScript".
+
+| Ref | Java behaviour (TypeScript) | Java test | Status |
+| --- | --- | --- | --- |
+| security-1 | the subscription pub-sub evaluates every top-level property, operator and nested property, plus `and`/`or`/`not` and `isDefined` (TypeScript: the first property decides, so a validating before hook can be bypassed with a second filter property) | `services.pubsub.FilteredReadModelPubSubTest#aValidatingBeforeHookCannotBeBypassedWithAnotherFilterProperty`, `#filtersAddedByABeforeHookAfterTheClientOnesApplyToo`, `#everyTopLevelPropertyMustMatch`, `#everyNestedPropertyMustMatch`, `#andOrAndNotCombineFilters`, `#isDefinedChecksThatThePropertyHasAValue` | differs (security) |
+| security-6 | with introspection disabled, `__type` selections (aliases, fragments, inline fragments) are refused too; `__typename` is allowed (TypeScript: operation name `IntrospectionQuery` or the text `__schema` only) | `BoosterGraphQLDispatcherTest#blocksTypeQueriesToo`, `#stillAnswersTypeQueriesWhenEnabledAndTypenameWhenDisabled` | differs (security) |
+| security-4 | websocket identities expire: a `start` after the connection's `expirationTime` or the stored token's `exp` deletes the connection (`onTerminate`) and answers `connection_error`; the notifier skips and deletes subscriptions past their `expirationTime` or token `exp` (TypeScript: checked once at `connection_init`, lifetime left to the provider's TTL) | `services.graphql.websocketprotocol.GraphQLWebsocketHandlerTest#refusesAnExpiredConnectionAndDeletesItsDataAndSubscriptions`, `#refusesAConnectionWhoseTokenHasExpired`, `#acceptsATokenThatHasNotExpiredYet`, `BoosterSubscribersNotifierTest#skipsAndDeletesExpiredSubscriptionsAndSubscriptionsWhoseTokenHasExpired`, `#aFailureToDeleteAnExpiredSubscriptionIsLoggedAndTheOthersAreNotified`, Integration `SubscriptionsIntegrationTest#aConnectionStopsActingAsItsUserOnceItsTokenExpires`, `#aConnectionLastsAtMostTheConfiguredDuration` | differs (security) |
+| core-4 | a number with a fraction bound to a whole-number property (`int quantity` given `2.5`, every Java number being a GraphQL `Float`) fails with `Cannot convert 2.5 to int: the number is not an integer` instead of being truncated by Jackson (TypeScript keeps `2.5`) | `InstancesTest#refusesNumbersWithAFractionForIntegralProperties` (framework-common-helpers), Integration `ErrorHandlingIntegrationTest#aWholeNumberInputWithAFractionIsRejectedInsteadOfTruncated` | differs |

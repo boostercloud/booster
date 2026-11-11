@@ -44,11 +44,20 @@ Promises.forEachAllSettledAndFulfilled(entityGroups, group -> process(group));  
   whose parameter names match their fields (`-parameters`) or their no-argument constructor;
   final fields that no constructor sets cannot be overwritten (an error explains how to fix the
   class). A raw value that already is an instance of the target class is returned unchanged.
+* A number with a fraction (or `NaN`/infinite) bound to a whole-number property (`int`, `long`,
+  `short`, `byte`, their boxes, `OptionalInt`/`OptionalLong`, `BigInteger`) fails with
+  `Cannot convert 2.5 to int: the number is not an integer`; integral doubles such as `2.0` are
+  accepted. TypeScript has one number type and keeps `2.5`; Jackson alone would truncate it silently,
+  and every Java number is a GraphQL `Float` input. Classes bound by Jackson (`@JsonCreator`,
+  `@JsonValue`, `@JsonTypeInfo`) keep Jackson's coercion.
 * `createInstanceWithCalculatedProperties` returns an ordered `Map` (TypeScript a plain object) and
   follows the same rules for absent/`null` paths; since nested values are hydrated, calculated fields
   of nested objects are evaluated too (TypeScript sees plain objects there). Calculated fields
-  returning `CompletionStage`/`Future` are waited for. Malformed selections raise
-  `IllegalArgumentException`s where TypeScript raises `TypeError`s.
+  returning `CompletionStage`/`Future` are waited for. `Optional`s (the Java form of `T | undefined`,
+  also `OptionalInt`/`OptionalLong`/`OptionalDouble`) are read as their value, `null` when empty, at
+  every level of the selection: nested objects, lists and leaves, like the plain values TypeScript
+  reads (`Instances.unwrapOptional`). Malformed selections raise `IllegalArgumentException`s where
+  TypeScript raises `TypeError`s.
 * `Promises`: futures replace promises. `allSettledAndFulfilled` joins already started futures; the
   `run*`/`map*`/`forEach*` variants start each task on a virtual thread. They return the values
   instead of the settled-result records. Tasks run in parallel (JavaScript interleaves on one

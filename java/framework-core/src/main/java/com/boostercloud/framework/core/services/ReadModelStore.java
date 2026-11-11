@@ -598,16 +598,21 @@ public class ReadModelStore {
   // Dynamic values
   // ---------------------------------------------------------------------------------------------------------------
 
-  /** {@code instance[property]}: a map key, or the property (field, component or calculated field) of an instance. */
+  /**
+   * {@code instance[property]}: a map key, or the property (field, component or calculated field) of an instance. An
+   * {@code Optional} (the Java form of {@code T | undefined}) is its value, {@code null} when empty, so an absent join
+   * or sequence key is skipped like an undefined one.
+   */
   static Object readProperty(Object instance, String property) {
     if (instance == null || property == null) {
       return null;
     }
     if (instance instanceof Map<?, ?> map) {
-      return map.get(property);
+      return Instances.unwrapOptional(map.get(property));
     }
     Optional<PropertyMetadata> metadata = ClassMetadata.of(instance.getClass()).field(property);
-    return metadata.map(propertyMetadata -> UserCode.await(propertyMetadata.readValue(instance))).orElse(null);
+    return metadata.map(propertyMetadata -> Instances.unwrapOptional(UserCode.await(propertyMetadata.readValue(instance))))
+        .orElse(null);
   }
 
   private static boolean isArray(Object value) {

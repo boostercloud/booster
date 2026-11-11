@@ -3,6 +3,7 @@ package com.boostercloud.framework.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
@@ -45,6 +46,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
@@ -187,15 +190,37 @@ class BoosterGraphQLDispatcherTest extends BoosterTestSupport {
           .isEqualTo("Instrospection queries are disabled. Check the configuration if you want to enable them.");
     }
 
-    @Test
-    void doesNotBlockTypeQueries() {
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "{ __type(name: \"Query\") { name } }",
+        "{ q: __type(name: \"Mutation\") { fields { name args { name } } } }",
+        "query Q { ...F } fragment F on Query { __type(name: \"Query\") { name } }",
+        "query Q { ... on Query { __type(name: \"Query\") { name } } }",
+        "query Q { ... @include(if: true) { __type(name: \"Query\") { name } } }"})
+    void blocksTypeQueriesToo(String query) {
+      // TypeScript only looks for the IntrospectionQuery operation name and the "__schema" text
       config.enableGraphQLIntrospection = false;
-      BoosterGraphQLDispatcher dispatcher = dispatcherFor(message()
-          .value(operation("{ __type(name: \"Query\") { name } }")).build());
+      BoosterGraphQLDispatcher dispatcher = dispatcherFor(message().value(operation(query)).build());
 
       dispatcher.dispatch("raw request");
 
+      assertThat(handledResult(Map.of())).isEqualTo(Map.of("errors", List.of(Map.of(
+          "message", "Instrospection queries are disabled. Check the configuration if you want to enable them.",
+          "extensions", Map.of("code", "InvalidProtocolError")))));
+    }
+
+    @Test
+    void stillAnswersTypeQueriesWhenEnabledAndTypenameWhenDisabled() {
+      BoosterGraphQLDispatcher enabled = dispatcherFor(message()
+          .value(operation("{ __type(name: \"Query\") { name } }")).build());
+      enabled.dispatch("raw request");
       assertThat(handledResult(Map.of())).isEqualTo(Map.of("data", Map.of("__type", Map.of("name", "Query"))));
+
+      config.enableGraphQLIntrospection = false;
+      clearInvocations(graphQL);
+      BoosterGraphQLDispatcher disabled = dispatcherFor(message().value(operation("{ __typename }")).build());
+      disabled.dispatch("raw request");
+      assertThat(handledResult(Map.of())).isEqualTo(Map.of("data", Map.of("__typename", "Query")));
     }
 
     @Test
@@ -289,7 +314,8 @@ class BoosterGraphQLDispatcherTest extends BoosterTestSupport {
     void storesSubscriptionsAndAnswersNothing() {
       UserEnvelope user = UserEnvelope.builder().username("user@example.com").build();
       when(connections.fetchData(config, "connection-1")).thenReturn(java.util.Optional.of(
-          new com.boostercloud.framework.types.envelope.ConnectionDataEnvelope(1, user)));
+          new com.boostercloud.framework.types.envelope.ConnectionDataEnvelope(
+              com.boostercloud.framework.types.Dates.nowEpochSeconds() + 3600, user)));
       BoosterGraphQLDispatcher dispatcher = dispatcherFor(message().connectionID("connection-1")
           .value(new GraphQLStart("operation-1", new GraphQLStart.Payload(
               "subscription { ProductReadModel(id: \"42\") { id sku } }", null, null)))

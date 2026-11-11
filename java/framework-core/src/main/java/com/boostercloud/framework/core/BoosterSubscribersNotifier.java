@@ -3,6 +3,7 @@ package com.boostercloud.framework.core;
 import com.boostercloud.framework.common.Instances;
 import com.boostercloud.framework.common.Loggers;
 import com.boostercloud.framework.common.Promises;
+import com.boostercloud.framework.core.internal.Expirations;
 import com.boostercloud.framework.core.instrumentation.Tracer;
 import com.boostercloud.framework.core.services.graphql.GraphQLGenerator;
 import com.boostercloud.framework.core.services.graphql.GraphQLResolverContext;
@@ -59,8 +60,10 @@ import org.reactivestreams.Subscription;
  * </ol>
  *
  * <p>{@link #dispatch} never throws: any failure (aggregated across subscriptions) is logged with
- * {@code logger.error}. The expiration time, the authorizer and the stored filters of a subscription are not checked
- * here (the filters are rebuilt by the subscription resolver from the stored document).
+ * {@code logger.error}. Java addition: a subscription whose expiration time has passed, or whose user's token
+ * ({@code exp} claim) has expired, is skipped and deleted. The authorizer and the stored filters of a subscription are
+ * not checked here (the filters are rebuilt by the subscription resolver from the stored document, and the read
+ * model's before hooks run again with the stored user).
  *
  * <p>Contract with the subscription resolvers: the {@link GraphQLResolverContext} is the local context and is stored
  * in the {@code GraphQLContext} under the key {@code GraphQLResolverContext.class} (read it with
@@ -113,7 +116,7 @@ public class BoosterSubscribersNotifier {
             logger.debug("Received the following event for subscription dispatching: ", request);
             List<ReadModelEnvelope> readModelEnvelopes = config.provider().readModels().rawToEnvelopes(config, request);
             logger.debug("[SubsciptionDispatcher] The following ReadModels were updated: ", readModelEnvelopes);
-            List<SubscriptionEnvelope> subscriptions = getSubscriptions(readModelEnvelopes);
+            List<SubscriptionEnvelope> subscriptions = dropExpired(getSubscriptions(readModelEnvelopes));
             logger.debug("Found the following subscriptions for those read models: ", subscriptions);
 
             ReadModelPubSub pubSub = getPubSub(readModelEnvelopes);
@@ -149,6 +152,33 @@ public class BoosterSubscribersNotifier {
       }
     }
     return subscriptions;
+  }
+
+  /**
+   * Java addition: a subscription whose {@code expirationTime} has passed, or whose user's token has expired, is not
+   * run and is deleted (best effort). TypeScript notifies every stored subscription and relies on the provider to
+   * remove the expired ones, which only DynamoDB's TTL did.
+   */
+  private List<SubscriptionEnvelope> dropExpired(List<SubscriptionEnvelope> subscriptions) {
+    Logger logger = Loggers.getLogger(config, "BoosterSubscribersNotifier#dropExpired");
+    List<SubscriptionEnvelope> live = new ArrayList<>();
+    for (SubscriptionEnvelope subscription : subscriptions) {
+      if (!Expirations.hasPassed(subscription.expirationTime())
+          && !Expirations.tokenHasExpired(subscription.currentUser())) {
+        live.add(subscription);
+        continue;
+      }
+      String subscriptionID = subscription.operation() == null ? null : subscription.operation().id();
+      logger.debug("Deleting the expired subscription " + subscriptionID + " of connection "
+          + subscription.connectionID());
+      try {
+        config.provider().readModels().deleteSubscription(config, subscription.connectionID(), subscriptionID);
+      } catch (RuntimeException e) {
+        logger.warn("Could not delete the expired subscription " + subscriptionID + " of connection "
+            + subscription.connectionID() + ": ", e);
+      }
+    }
+    return live;
   }
 
   private ReadModelPubSub getPubSub(List<ReadModelEnvelope> readModelEnvelopes) {

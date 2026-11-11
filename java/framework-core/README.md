@@ -339,6 +339,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   object. `getProjectionFunction` returns a `ProjectionFunction` that finds the static method by name when called
   (TypeScript returns the function); a missing method fails inside the projection error handling, like calling
   `undefined`. Join keys: an entity-property join key whose value is a collection or array is the TypeScript array case.
+  An `Optional` join key or sequence key (the Java form of `T | undefined`) is read as its value: an empty one skips the
+  projection with the `Couldn't find the joinKey` warning, like an undefined TypeScript key, and an `Optional` list is
+  an array join key.
 * Decisions on the TypeScript latent defects (spec 07 §7): an array join key with several existing read models
   schedules every id once — with its read model, or without one when none exists — instead of `existing × ids` tasks
   (D3; the pinned single-read-model case and the one-task-per-row behaviour of sequenced read models are unchanged);
@@ -346,8 +349,8 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   handler swallows it the read model is skipped (D4; TypeScript then fails with a `TypeError`); a projection returning
   `null` fails with an explanation (TypeScript fails storing `undefined`); the warning for a missing join key prints
   the key (D7). Kept as in TypeScript: no id validation of the result (D11), the retry of a join-key function without
-  read model (D6), the stored operation name not passed to graphql-java (D9), no expiry/authorization check at
-  notification time (D10), `select: []` selecting nothing (D13).
+  read model (D6), the stored operation name not passed to graphql-java (D9), no authorizer check at notification
+  time (D10; expiry is checked, see the websocket identity note under GraphQL), `select: []` selecting nothing (D13).
 * `findById` with a list result (sequenced read models) returns every element migrated, in order — the documented
   behaviour (all the items of the id, or the exact match); TypeScript's `Object.assign` turns the array into one object
   and migrates it once, which its test pins (D1). Not found returns `null`.
@@ -356,7 +359,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   an explanation instead of a `TypeError`. GraphQL error arrays thrown by the notifier are
   `BoosterSubscribersNotifier.GraphQLErrors`.
 * A search with `select` returns maps of the selected paths holding the instance values (`UUID`s, not strings); without
-  it, instances. Non-paginated searches return the provider page's `items` (the provider always returns a
+  it, instances. From code, `Booster.readModel(X.class).select(...)` is read with `searchSelected()` (or
+  `searchOneSelected()`, `searchSelectedPaginated()`, `searchRaw()`); the typed `search()` refuses a selection (see
+  framework-types). Non-paginated searches return the provider page's `items` (the provider always returns a
   `ReadModelListResult`); `finderByIdFunction` returns the raw documents. `readModelSearchDocuments` is a Java addition
   (the documents behind a search, for the store).
 * Concurrency: projections, read model tasks, item migrations, selections, subscription fetches and notifications run on
@@ -364,9 +369,15 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   failure); user code must not share unsynchronised mutable state (JavaScript interleaves on one thread). The
   notifications of one subscription are sent one after the other, in the order of its results (TypeScript starts its
   `sendMessage` calls in that order).
-* The pub-sub keeps the TypeScript in-memory filter (first top-level property only, `includes` and nested filters decide
-  alone, `isDefined` ignored, combinators fail); values are compared in their JSON form and regular expressions use the
-  Java dialect. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
+* The pub-sub keeps the operator semantics of the TypeScript in-memory filter (strict `eq`/`ne`, JavaScript relational
+  comparisons, `includes` by partial object) but, **for security, evaluates the whole filter**: every top-level
+  property, every operator and every nested property must match, `and`/`or`/`not` combine filters and `isDefined`
+  checks that the property holds a value. TypeScript returns the result of the first top-level property (and of the
+  first nested property, or of `includes`) and ignores the rest, so a client could pass a before hook that validates
+  `filters.userId.eq` (the row-level security pattern of the documentation) with `{id: {ne: ""}, userId: {eq: <me>}}`
+  and still receive every user's changes over the websocket; hooks that add a filter after the client's were ignored
+  the same way. Values are compared in their JSON form and regular expressions use the Java dialect. Its iterator is a
+  plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
 * `BoosterSubscribersNotifier` executes the stored document with `GraphQLExecution` on graphql-java (TypeScript:
   `graphql.subscribe`), with `KEEP_SUBSCRIPTION_EVENTS_ORDERED`; a second constructor takes the schema (tests and
   embedders). As in TypeScript, searches with a selection (every GraphQL list query) return the stored properties
@@ -439,7 +450,9 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   dates (`Instant`, `Date`, `OffsetDateTime`, `ZonedDateTime`) are `Date`, `Map`s and JDK/Booster classes (`TimeKey`,
   `Duration`...) are `JSON`, sealed types of records/classes are unions (resolved by the value's simple class name),
   generic records are `JSON` with `<Name>_<arg>_PropertyFilter` filters, `@CalculatedField` methods are fields (not
-  filtered nor sorted).
+  filtered nor sorted). Because whole numbers are `Float` inputs too, a command, query or event input with a fraction
+  for an `int`/`long`/... property (`quantity: 2.5`) fails binding with `Invalid value for <Class>.<property>: Cannot
+  convert 2.5 to int: the number is not an integer` instead of being truncated (TypeScript keeps `2.5`).
 * Results handed to `handleResult` are raw JSON maps (`errors` first when present, then `data`) instead of
   `ExecutionResult` objects; websocket `data` payloads are the same maps. The websocket `error` message of a `start`
   without query carries `{message}` per error (framework-types `GraphQLErrorMessage`); TypeScript serialises its
@@ -456,11 +469,25 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   (`GraphQLExecution.validate`, used by the dispatcher and the subscribers notifier): graphql-java's "good faith
   introspection" rule (which rejects a `__Type.fields`/`inputFields` selected inside another one, as the schema suites
   of the integration tests do) and its query complexity limits are not applied.
+* With `enableGraphQLIntrospection = false`, an operation that selects `__type` anywhere (aliases, fragments and inline
+  fragments included) is refused like a `__schema` one (`Instrospection queries are disabled...`, `InvalidProtocolError`);
+  `__typename` stays available. TypeScript only checks the `IntrospectionQuery` operation name and the `__schema` text,
+  so `{ __type(name: "Mutation") { fields { name args { name } } } }` still revealed the schema type by type.
 * `Date` scalar: values are written with milliseconds and `Z` from the Java date types and from ISO strings
   (TypeScript only accepts `Date` objects); inputs parse with `Dates.parse` (ISO instants, offsets, local date-times
   taken as UTC — JavaScript takes them as local time —, plain dates as UTC midnight; RFC 2822 is not accepted) and
   become the normalised ISO **string** (TypeScript: a `Date` object), so filters and inputs stay raw values.
   `JSON` is Booster's own scalar (graphql-scalars is not available): outputs go through `BoosterJson.toRaw`.
+* **Websocket identities expire (security).** TypeScript verifies the `connection_init` token once and reuses the
+  stored user for every later operation and notification, bounded only by the provider: AWS closes sockets after two
+  hours and DynamoDB's TTL deletes the records, while the local TTL index never fires on epoch seconds (local Q8), the
+  Azure `ttl` is the absolute epoch (Azure Q2) and the local socket has no idle timeout. Core now enforces the times
+  itself: a `start` on a connection whose stored `expirationTime` (`maxConnectionDurationInSeconds`) or whose user's
+  token `exp` has passed deletes the connection data and subscriptions (`onTerminate`) and answers `connection_error`
+  (`The connection has expired: send connection_init to authenticate it again` / `The token of the connection has
+  expired: send connection_init with a new token`); the notifier skips and deletes subscriptions whose
+  `expirationTime` (`maxDurationInSeconds`) or user's token `exp` has passed. A client re-authenticates with a new
+  `connection_init` on the same socket.
 * Subscription resolvers return a `Flow.Publisher` (`IteratorPublisher`) over the pub-sub's `Iterator`; graphql-java
   uses each published item as the field value (TypeScript `resolve: (source) => source`). An exhausted iterator
   completes on subscription, without demand. The websocket handler takes
@@ -468,7 +495,8 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   `'next' in result`). Over HTTP, `runGraphQLOperation` returns that publisher too.
 * Fields without resolver are read by `PropertyResolver`: map entries for raw documents, otherwise the
   `ClassMetadata` property (record components, fields of any visibility, calculated-field methods), falling back to
-  getters; `Optional`s are unwrapped. `getFields` (the `select` projection) is ported over graphql-java's AST with the
+  getters; `Optional`s are unwrapped (the `select` projection of list queries unwraps them too, at every level).
+  `getFields` (the `select` projection) is ported over graphql-java's AST with the
   same rules (aliases ignored, unknown fields skipped, fragments inlined, `[]` for lists of objects).
 * The event search arguments become `EventSearchParameters` (`fromMap`), by-id arguments a Booster `UUID` and a
   `TimeKey` sequence value (`null` when omitted); commands without input get a `null` value.
