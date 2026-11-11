@@ -18,8 +18,23 @@ import java.util.regex.PatternSyntaxException;
  * unanchored search ({@link java.util.regex.Matcher#find()}). Flags: {@code i}, {@code m}, {@code s}, {@code u} and
  * {@code v} change matching; {@code g}, {@code y} and {@code d} are accepted and ignored because NeDB's single
  * {@code test} call does not depend on them; unknown or repeated flags are rejected like in JavaScript.
+ *
+ * <p>Bounded evaluation (Java-only, a security measure): filters hand client-supplied patterns to the store, and a
+ * backtracking engine can take exponential time on a short value ({@code ^(.*a){12}$}). An evaluation over a value of
+ * {@code n} characters may read {@link #budget(int) max(10⁸, 4·n²)} characters of it, and never more than
+ * {@link #MAX_STEPS} (backtracking reads them again): enough for patterns that scan the value a few times per start
+ * position ({@code .*x.*y} is quadratic), which JavaScript runs in comparable time, and a fraction of a second up to a
+ * few seconds of CPU. Beyond that, and when the pattern recurses deeper than the thread's stack allows (a repeated
+ * alternation over a very long value), it fails with {@link TooComplexError} instead of pinning a thread or throwing
+ * {@link StackOverflowError}. JavaScript has no such limit; patterns that stay within it behave exactly the same.
  */
 public final class JsRegExp {
+
+  /** The smallest budget of an evaluation, in characters read (about half a second). */
+  public static final long MIN_STEPS = 100_000_000L;
+
+  /** The largest budget of an evaluation, in characters read (a few seconds). */
+  public static final long MAX_STEPS = 1_000_000_000L;
 
   private final String source;
   private final String flags;
@@ -95,7 +110,92 @@ public final class JsRegExp {
    * @return whether the pattern occurs in the value
    */
   public boolean test(String value) {
-    return pattern.matcher(value).find();
+    return find(pattern, value, this::toString);
+  }
+
+  /**
+   * An unanchored search with the bounded evaluation of {@link JsRegExp}.
+   *
+   * @param pattern the pattern
+   * @param value the string to search
+   * @return whether the pattern occurs in the value
+   * @throws TooComplexError when the evaluation exceeds its {@link #budget(int) budget} or the stack
+   */
+  public static boolean find(Pattern pattern, String value) {
+    return find(pattern, value, () -> "/" + pattern.pattern() + "/");
+  }
+
+  /**
+   * @param length the length of the value an evaluation searches
+   * @return the characters it may read: {@code max(MIN_STEPS, 4·length²)}, at most {@link #MAX_STEPS}
+   */
+  public static long budget(int length) {
+    return Math.min(MAX_STEPS, Math.max(MIN_STEPS, 4L * length * length));
+  }
+
+  private static boolean find(Pattern pattern, String value, java.util.function.Supplier<String> literal) {
+    try {
+      return pattern.matcher(new BoundedInput(value, budget(value.length()))).find();
+    } catch (BoundedInput.Exhausted | StackOverflowError e) {
+      throw new TooComplexError("The regular expression " + literal.get() + " is too complex to evaluate against a "
+          + "value of " + value.length() + " characters; simplify it");
+    }
+  }
+
+  /** The input of one evaluation: counts the characters the engine reads and stops it beyond its budget. */
+  private static final class BoundedInput implements CharSequence {
+    /** Thrown when the budget is spent; preallocated, as it is only a signal. */
+    private static final class Exhausted extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+      private static final Exhausted INSTANCE = new Exhausted();
+
+      private Exhausted() {
+        super(null, null, false, false);
+      }
+    }
+
+    private final String value;
+    private long remaining;
+
+    BoundedInput(String value, long budget) {
+      this.value = value;
+      this.remaining = budget;
+    }
+
+    @Override
+    public char charAt(int index) {
+      if (--remaining < 0) {
+        throw Exhausted.INSTANCE;
+      }
+      return value.charAt(index);
+    }
+
+    @Override
+    public int length() {
+      return value.length();
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return value.substring(start, end);
+    }
+
+    @Override
+    public String toString() {
+      return value;
+    }
+  }
+
+  /**
+   * A regular expression whose evaluation exceeded its {@link #budget(int) budget} (catastrophic backtracking) or the
+   * stack. The search that evaluated it fails with this error.
+   */
+  public static final class TooComplexError extends IllegalArgumentException {
+    private static final long serialVersionUID = 1L;
+
+    TooComplexError(String message) {
+      super(message);
+    }
   }
 
   @Override

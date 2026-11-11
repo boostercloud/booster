@@ -24,14 +24,16 @@ import java.util.function.Supplier;
  * <h2>Storage format</h2>
  * One JSON document per line ({@link Serialization}). Every insert and update appends the full new version of the
  * document; a removal appends {@code {"$$deleted":true,"_id":"…"}}; index definitions are lines
- * {@code {"$$indexCreated":{…}}} (and {@code {"$$indexRemoved":"field"}}). On load the file is replayed (the last line
- * of each {@code _id} wins) and rewritten compacted, crash-safely ({@code <file>~} then an atomic rename).
+ * {@code {"$$indexCreated":{…}}} (and {@code {"$$indexRemoved":"field"}}). A write of several lines (an insert of
+ * several documents, a multi update or remove) is preceded by {@code {"$$batch":<n>}}, which makes it atomic on load
+ * (NeDB ignores that line). On load the file is replayed (the last line of each {@code _id} wins) and rewritten
+ * compacted, crash-safely ({@code <file>~} then an atomic rename).
  *
  * <h2>Durability and recovery</h2>
  * A write method returns only after its lines were written and flushed with {@code FileChannel.force}; if the write
- * fails, the in-memory state is rolled back and the error is thrown. On load an incomplete last line (a write
- * interrupted by a crash) is discarded; other corrupt lines are skipped, and loading fails with
- * {@link CorruptDataFileException} when they exceed {@code corruptAlertThreshold} (NeDB's rule). See
+ * fails, the in-memory state is rolled back and the error is thrown. On load an incomplete last line, or an
+ * incomplete last batch (a write interrupted by a crash), is discarded; other corrupt lines are skipped, and loading
+ * fails with {@link CorruptDataFileException} when they exceed {@code corruptAlertThreshold} (NeDB's rule). See
  * {@link Persistence}.
  *
  * <h2>Semantics</h2>
@@ -47,13 +49,19 @@ import java.util.function.Supplier;
  * threads. The datastore loads itself lazily on the first operation; {@link #loadDatabase()} reloads it from disk.
  *
  * <h2>Differences from NeDB</h2>
- * Callbacks/promises become blocking calls; appends are flushed; a torn last line is not counted as corruption; lines
- * are split on {@code \n} only; U+0085, U+2028, U+2029 and surrogates are written escaped; ids are monotonic; failed
- * loads can be retried; memory-only lookup indexes ({@link #ensureLookupIndex(String)}) speed up equality queries
- * without changing results; growth-triggered compaction is available
- * ({@link DatastoreOptions#autocompactionLineThreshold()}).
+ * Callbacks/promises become blocking calls; appends are flushed; multi-line appends are atomic batches; a torn last
+ * line or batch is not counted as corruption; lines are split on {@code \n} only; U+0085, U+2028, U+2029 and
+ * surrogates are written escaped; ids are monotonic; failed loads can be retried; memory-only lookup indexes
+ * ({@link #ensureLookupIndex(String)}) speed up equality queries without changing results; growth-triggered
+ * compaction is available ({@link DatastoreOptions#autocompactionLineThreshold()}).
  */
 public class Datastore implements AutoCloseable {
+
+  /**
+   * The key of the header line of an atomic batch, {@code {"$$batch":<n>}}: the {@code n} lines that follow belong to
+   * one write and are applied on load only when all of them are present.
+   */
+  public static final String BATCH_HEADER_KEY = "$$batch";
 
   private final DatastoreOptions options;
   private final Persistence persistence;
@@ -72,10 +80,18 @@ public class Datastore implements AutoCloseable {
    * @param options the options
    */
   public Datastore(DatastoreOptions options) {
+    this(options, Persistence.ChannelFactory.DEFAULT);
+  }
+
+  /**
+   * @param options the options
+   * @param channels opens the channels the data file is written through (tests inject write failures with it)
+   */
+  Datastore(DatastoreOptions options, Persistence.ChannelFactory channels) {
     this.options = options;
     this.persistence = options.inMemoryOnly()
         ? null
-        : new Persistence(options.filename(), options.corruptAlertThreshold(), options.warnings());
+        : new Persistence(options.filename(), options.corruptAlertThreshold(), options.warnings(), channels);
     this.idGenerator = new IdGenerator(options.clock());
     this.indexes.put("_id", new Index("_id", true, false, false));
   }
@@ -671,7 +687,8 @@ public class Datastore implements AutoCloseable {
   }
 
   /**
-   * {@code insertAsync([documents])}: stores several documents atomically in memory and with a single flushed append.
+   * {@code insertAsync([documents])}: stores several documents atomically, in memory and on disk: a single flushed
+   * append whose lines are applied on load only when all of them are present.
    *
    * @param newDocuments the documents
    * @return copies of the stored documents
@@ -718,6 +735,27 @@ public class Datastore implements AutoCloseable {
         copies.add(Model.copyDocument(document));
       }
       return copies;
+    } finally {
+      write.unlock();
+    }
+  }
+
+  /**
+   * Java-only: builds the documents while holding the write lock, then inserts them like {@link #insert(List)}. Values
+   * the builder takes (a timestamp, a sequence number) therefore follow the order in which documents become visible:
+   * nothing else is written to this collection between building and inserting.
+   *
+   * @param builder returns the documents; it may be called again if the caller retries
+   * @return copies of the stored documents
+   */
+  public List<Map<String, Object>> insertBuilt(Supplier<? extends List<? extends Map<String, Object>>> builder) {
+    loadDatabaseIfNeeded();
+    Lock write = lock.writeLock();
+    write.lock();
+    try {
+      ensureOpen();
+      // the write lock is reentrant: insert(List) runs atomically with the builder
+      return insert(builder.get());
     } finally {
       write.unlock();
     }
@@ -824,6 +862,11 @@ public class Datastore implements AutoCloseable {
     }
   }
 
+  /**
+   * Removes the documents from memory, then appends their {@code $$deleted} markers. Like insert and update, the
+   * in-memory state changes first, so a growth-triggered compaction run by that append rewrites the file without the
+   * removed documents; if the append fails, the documents are put back.
+   */
   private void removeDocuments(List<Map<String, Object>> removed) {
     if (removed.isEmpty()) {
       return;
@@ -835,10 +878,18 @@ public class Datastore implements AutoCloseable {
       marker.put("_id", document.get("_id"));
       lines.add(Serialization.serialize(marker));
     }
-    persist(lines, removed.size() * 2L);
     for (Map<String, Object> document : removed) {
       removeFromIndexes(document);
       documents.remove(document.get("_id"));
+    }
+    try {
+      persist(lines, removed.size() * 2L);
+    } catch (RuntimeException e) {
+      for (Map<String, Object> document : removed) {
+        documents.put(document.get("_id"), document);
+        addToIndexes(document);
+      }
+      throw e;
     }
   }
 
@@ -875,7 +926,7 @@ public class Datastore implements AutoCloseable {
       return;
     }
     persistence.append(lines);
-    obsoleteLines += newlyObsoleteLines;
+    obsoleteLines += newlyObsoleteLines + Persistence.framingLines(lines.size());
     int threshold = options.autocompactionLineThreshold();
     if (threshold > 0 && obsoleteLines >= threshold && obsoleteLines > documents.size()) {
       try {

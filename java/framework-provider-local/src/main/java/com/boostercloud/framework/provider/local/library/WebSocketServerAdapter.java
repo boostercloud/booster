@@ -113,6 +113,7 @@ public class WebSocketServerAdapter implements AutoCloseable {
     }
     Logger logger = logger("WebSocketServerAdapter#constructor#handleUpgrade");
     logger.info("Starting websocket server on ws://localhost:" + wsPort + PATH);
+    JettyLogging.prepare();
     QueuedThreadPool threadPool = new QueuedThreadPool();
     threadPool.setName("booster-websocket");
     threadPool.setDaemon(true);
@@ -168,6 +169,18 @@ public class WebSocketServerAdapter implements AutoCloseable {
    */
   public Set<String> connectionIds() {
     return Set.copyOf(clients.keySet());
+  }
+
+  /**
+   * Whether a connection is open in this process. A connection is registered before its {@code CONNECT} is processed
+   * and unregistered after its {@code DISCONNECT} was, so every connection or subscription row stored for an open
+   * connection belongs to a registered one.
+   *
+   * @param connectionId a connection id
+   * @return whether that connection is open
+   */
+  public boolean hasConnection(String connectionId) {
+    return connectionId != null && clients.containsKey(connectionId);
   }
 
   /**

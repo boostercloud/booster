@@ -116,7 +116,9 @@ public final class EventsAdapter {
    * {@code storeEvents(userApp, eventRegistry, nonPersistedEventEnvelopes, config)}: stores the events one by one, in
    * order, each with its own {@code createdAt}, then hands the whole batch (even an empty one) to
    * {@code userApp.boosterEventDispatcher} and waits for it. If storing an event fails, the previous ones stay stored,
-   * nothing is dispatched and the error propagates. This is the TypeScript behaviour, without crash recovery.
+   * nothing is dispatched and the error propagates. This is the TypeScript behaviour, without crash recovery; its
+   * {@code createdAt} is taken before the store's lock, which TypeScript's single-threaded executor keeps in order but
+   * concurrent threads do not (the provider uses the journal variant, which takes it under the lock).
    *
    * @param userApp the application
    * @param eventRegistry the registry
@@ -151,8 +153,11 @@ public final class EventsAdapter {
    * {@link #recoverUndispatchedEvents}.
    *
    * <p>The events of the batch (the events one command, event handler or scheduled command registered) are stored
-   * atomically, with one flushed append ({@link EventRegistry#storeAll}): a crash leaves all of them stored or none,
-   * never part of the batch. Each still gets its own {@code createdAt}, in order.
+   * atomically, with one flushed append framed as an atomic batch ({@link EventRegistry#storeEventBatch}): a failed
+   * write is truncated away and a crash that cuts the append is discarded as a whole on the next load, so all of them
+   * are stored or none, never part of the batch. Each still gets its own {@code createdAt}, in order, taken while the
+   * events write lock is held: the {@code createdAt} order of the stored events is the order in which they became
+   * visible, which core's reduction from the latest snapshot ({@code createdAt} strictly after it) relies on.
    *
    * @param userApp the application
    * @param eventRegistry the registry
@@ -178,19 +183,21 @@ public final class EventsAdapter {
     }
     journal.addPending(entries);
     try {
-      List<EventEnvelope> persistedEventEnvelopes = new ArrayList<>();
       List<Map<String, Object>> documents = new ArrayList<>(nonPersistedEventEnvelopes.size());
       for (int i = 0; i < nonPersistedEventEnvelopes.size(); i++) {
-        EventEnvelope persisted = nonPersistedEventEnvelopes.get(i).persisted(Dates.nowIso());
-        Map<String, Object> document = Envelopes.toDocument(persisted);
+        // the registry replaces this createdAt with the one it takes under its write lock
+        Map<String, Object> document =
+            Envelopes.toDocument(nonPersistedEventEnvelopes.get(i).persisted(Dates.nowIso()));
         document.put("_id", ids.get(i));
         documents.add(document);
-        persistedEventEnvelopes.add(persisted.toBuilder().id(ids.get(i)).build());
       }
-      Retrier.retryIfError(tryNumber -> {
-        eventRegistry.storeAll(documents);
-        return null;
-      }, OptimisticConcurrencyUnexpectedVersionError.class);
+      List<String> createdAts = Retrier.retryIfError(tryNumber -> eventRegistry.storeEventBatch(documents),
+          OptimisticConcurrencyUnexpectedVersionError.class);
+      List<EventEnvelope> persistedEventEnvelopes = new ArrayList<>(nonPersistedEventEnvelopes.size());
+      for (int i = 0; i < nonPersistedEventEnvelopes.size(); i++) {
+        persistedEventEnvelopes.add(nonPersistedEventEnvelopes.get(i).persisted(createdAts.get(i)).toBuilder()
+            .id(ids.get(i)).build());
+      }
       logger.debug("EventEnvelopes stored: ", persistedEventEnvelopes);
       userApp.boosterEventDispatcher(persistedEventEnvelopes);
       return persistedEventEnvelopes;

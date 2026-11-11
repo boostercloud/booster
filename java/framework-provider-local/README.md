@@ -30,6 +30,7 @@ Core loads it from `config.providerPackage = "com.boostercloud.framework.provide
 | `library.GraphQLAdapter` | `library/graphql-adapter.ts` | `rawGraphQLRequestToEnvelope` |
 | `library.ApiAdapter` (`APIResult`, `Success`, `Failure`) | `library/api-adapter.ts` | `requestSucceeded`, `requestFailed`, `healthRequestResult` |
 | `library.WebSocketServerAdapter`, `ConnectionContext`, `ExpressWebSocketMessage` | `library/web-socket-server-adapter.ts` | the Jetty websocket server |
+| `library.JettyLogging` | (Java-only) | Jetty logs through SLF4J; no provider is shipped, and without one SLF4J's fallback notice is kept quiet |
 | `library.ConnectionsAdapter`, `library.SubscriptionAdapter` | `library/connections-adapter.ts`, `library/subscription-adapter.ts` | connection data, messages, subscriptions |
 | `library.ScheduledAdapter`, `library.RocketAdapter`, `library.HealthAdapter` | `library/scheduled-adapter.ts`, `library/rocket-adapter.ts`, `library/health-adapter.ts` | scheduled triggers, rockets, sensor |
 | `library.LocalHttpRequest` | (Express `Request`) | the raw HTTP request the infrastructure hands to core |
@@ -50,6 +51,7 @@ Every file is relative to the project directory (the working directory of the pr
 | `.booster/connections.json` | websocket connections `{ expirationTime, user, connectionID }`, plus a TTL index on `expirationTime` |
 | `.booster/subscriptions.json` | `SubscriptionEnvelope`s, plus a TTL index on `expirationTime` |
 | `.booster/dispatch_journal.json` | Java-only: events whose dispatch has not finished (see below) |
+| `.booster/booster.lock` | Java-only: locked by the running server, holds its process id (see below) |
 
 The format is NeDB's, so files written by the TypeScript provider are read by the Java one and vice versa
 (pinned by `NedbFixtureCompatibilityTest` with files in the TypeScript format):
@@ -58,6 +60,9 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
 * inserts and updates append the full new version of the document, removals append
   `{"$$deleted":true,"_id":"…"}`, index definitions are `{"$$indexCreated":{…}}` lines
   (`{"$$indexRemoved":"field"}` removes one); dates are `{"$$date": <epoch millis>}`;
+* Java-only: a write of several lines (a batch of events, a multi update or remove) starts with a header line
+  `{"$$batch":<n>}` that makes it atomic on load (see below). NeDB ignores that line, like every line without `_id`,
+  so the files stay readable by the TypeScript provider;
 * when a file is loaded it is replayed (the last line of each `_id` wins) and rewritten compacted:
   `<file>~` is written and flushed, then renamed over the file atomically, then the directory is flushed
   (NeDB's `crashSafeWriteFileLines`); a missing file is restored from `<file>~` if a crash interrupted that
@@ -69,11 +74,27 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   with `FileChannel.force`. A failed write is rolled back in memory and the file is truncated back to its
   previous length, so no acknowledged write is lost and no partial line is left for the next append.
 * On load, an unparsable last line without a terminating newline is a write interrupted by a crash: it is
-  discarded (with a warning) and does not count as corruption. Other unparsable lines are skipped; if they are
+  discarded (with a warning) and does not count as corruption. So is a batch at the end of the file whose lines are
+  not all there or not all readable (a crash cut its append short, or a power loss wrote its pages out of order): the
+  whole batch is discarded, never a part of it. A damaged batch followed by more lines was complete when it was
+  acknowledged: none of its lines is applied and all of them count as corrupt. Other unparsable lines are skipped; if
+  they are
   more than 10 % of the non-empty lines (NeDB's `corruptAlertThreshold`), loading fails with
   `CorruptDataFileException` and NeDB's message
   (`40% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to prevent dataloss.`),
   leaving the file untouched.
+* **One process per `.booster` directory** (not in TypeScript). Each process keeps its own in-memory copy of the
+  files and compacts them by replacing them, so two processes on the same files would each serve only their own
+  writes, and the appends of one would go to a file the other had replaced. `LocalProviderRuntime.lockDataDirectory()`
+  (called by the local infrastructure at start-up) takes an operating-system lock on `.booster/booster.lock` until the
+  runtime closes or the process ends (also when it is killed); a second runtime fails with
+  `Another Booster process (pid N) is using the data files of <dir>. ...`.
+* **Connections and subscriptions left by a crash** (not in TypeScript). Connections live in the process, so the
+  connection and subscription rows of a process that died without processing their `DISCONNECT` can never be used
+  again; TypeScript keeps them for ever (the TTL index never expires them, Q8) and runs every one of those
+  subscriptions on each change of its read model, failing to send. `LocalProviderRuntime.removeStaleConnections()`
+  (called at start-up) deletes the rows of every connection that is not open in this process; rows of connections
+  that open meanwhile are kept.
 * `LocalProviderRuntime.loadExistingDataFiles()` (Java-only, called by the local infrastructure at start-up) loads
   every data file that exists, so a damaged file is found when the application starts (and refuses to start when it
   is beyond the threshold) instead of by the first request that touches it; missing files are still created on first
@@ -92,19 +113,22 @@ The format is NeDB's, so files written by the TypeScript provider are read by th
   had started are dropped too (core's at-most-once rule once `storeDispatched` returned `true`), so
   `storeDispatched` answers `false` for a re-dispatched event core already saw, which makes re-dispatching safe.
   A failed recovery keeps the pending entries for the next one. Dispatches running in the current process are
-  never touched, so recovery can run while the application serves requests.
+  never touched, not even one that finishes while the recovery reads the journal, so recovery can run while the
+  application serves requests (the websocket server is already serving when the start-up recovery runs).
 * **Atomic event batches** (not in TypeScript). `events.store` writes the events of one batch (what one command,
-  event handler or scheduled command registered) with a single flushed append (`EventRegistry.storeAll`), so a
-  crash or a failed write leaves all of them stored or none: a command is never half applied. TypeScript (and
+  event handler or scheduled command registered) with a single flushed append, framed by a `{"$$batch":<n>}` header
+  (`EventRegistry.storeEventBatch`). A failed write is truncated away, and a crash that cuts the append at any byte
+  (a `SIGKILL` during a short write, a power loss before the flush completed) leaves a batch that the next load
+  discards as a whole: all of the events are stored or none, a command is never half applied. TypeScript (and
   `EventsAdapter.storeEvents` without journal) inserts them one by one.
 
 ## Differences from TypeScript
 
 Store (NeDB replacement):
 
-* Writes are flushed (NeDB does not flush appends) and rolled back on failure; a torn last line is recovered
-  instead of counting as corruption; a failed load can be retried (NeDB never retries); the datastore loads
-  itself on first use.
+* Writes are flushed (NeDB does not flush appends) and rolled back on failure; a write of several lines is an
+  atomic batch (`{"$$batch":<n>}` header); a torn last line or batch is recovered instead of counting as corruption;
+  a failed load can be retried (NeDB never retries); the datastore loads itself on first use.
 * Generated `_id`s start with a clock-based monotonic counter, so unsorted results and sort ties (for example
   events created in the same millisecond, TypeScript quirk Q1) come in insertion order instead of random order.
   The order rule itself is NeDB's (ascending `_id` unless a persistent index supplies the candidates).
@@ -113,6 +137,14 @@ Store (NeDB replacement):
   implementations instead of becoming a corrupt line for NeDB.
 * Memory-only lookup indexes (on `entityID`, `entityTypeName`, `typeName`, `value.id`, `connectionID`,
   `className`) narrow equality queries; they are never persisted and never change results or their order.
+* Regular-expression evaluation is bounded (security): filters hand client text to the store as patterns
+  (`regex`, `iRegex`, and the unescaped sources of `contains`/`beginsWith`/`includes`), and a backtracking engine can
+  take exponential time on a short value (`^(.*a){20}$`). An evaluation over a value of `n` characters may read
+  `max(10⁸, 4·n²)` characters of it (at most 10⁹: from about half a second to a few seconds of CPU), which keeps
+  quadratic patterns such as `.*x.*y` over long values working; beyond that, or deeper recursion than the stack
+  allows (a repeated alternation over a very long value), the search fails with `JsRegExp.TooComplexError`
+  (`The regular expression /…/ is too complex to evaluate against a value of N characters; simplify it`). TypeScript
+  has no limit.
 * Regular expressions keep JavaScript's syntax: `JsRegExp` translates the source (Annex B grammar, flags `i`, `m`,
   `s`, `u`) into an equivalent Java pattern, so a lone `{`, `\s` with Unicode spaces, `$` at the very end only,
   identity and octal escapes, `[]`/`[^]` and the like behave as in JavaScript, and invalid sources throw
@@ -136,6 +168,13 @@ Provider:
   never finds anything, so websocket operations ran without the user, Q2); `readModels.deleteSubscription`
   matches `operation.id` (TypeScript filters on a `subscriptionID` field that does not exist, so `stop` never
   deleted anything, Q9).
+* `events.store` gives each event its `createdAt` while holding the events write lock, strictly increasing within
+  the process (the current time, or 1 ms after the previous event when the clock did not move on or went back), so
+  the `createdAt` order of the events is the order in which they become visible. Core reduces an entity from its
+  latest snapshot with the events created strictly after it, and on virtual threads an event stamped before the lock
+  could become visible after a newer one had been snapshotted, and be left out of its entity for good (TypeScript's
+  single-threaded executor keeps the order; there, events of the same millisecond share a `createdAt`). Under a burst
+  of more than one event per millisecond, `createdAt` can run a few milliseconds ahead of the clock.
 * `events.store` returns (and dispatches) the events with their database `id`, records them in the dispatch
   journal, stores the batch atomically (one append; TypeScript stores the events one by one, so a failure or a
   crash can leave the first ones stored), and `events.storeDispatched` deduplicates through that journal
@@ -154,7 +193,9 @@ Provider:
   `notImplemented` returns `undefined`).
 * The provider state is a process-wide `LocalProviderRuntime` created on first use; the websocket server starts
   with the first `Provider.provider(...)` call, once per process (TypeScript binds the port again on every call,
-  Q20). If the port is taken, the error is logged instead of crashing the process.
+  Q20). If the port is taken, the error is logged instead of crashing the process. The server locks the `.booster`
+  directory, so a second process on the same project does not start (TypeScript lets both run on the same files), and
+  removes at start-up the connections and subscriptions a crashed process left (see "Durability and recovery").
 * The websocket server (Jetty) processes the events of each connection in order, on a virtual thread, including
   frames received before the `CONNECT` dispatch finished (TypeScript loses them and processes messages
   concurrently, Q11); handler failures are logged (TypeScript: unhandled rejections); closed connections are
@@ -188,7 +229,8 @@ ascending (Q5), the projection quirks of `select` (Q6, Q7), the TTL index never 
 `expirationTime`s and losing its TTL after a reload (Q8), event search returning soft-deleted events (Q16),
 soft-deleted events gaining an `id` field (Q17), the `.booster` files being created lazily so that the
 database health checks report `DOWN` until first use (Q19), unescaped regular-expression sources for
-`contains`/`beginsWith`/`includes`, and `deleteReadModel` swallowing registry errors.
+`contains`/`beginsWith`/`includes` (their evaluation is bounded like any pattern's, see above), and `deleteReadModel`
+swallowing registry errors.
 
 ## Not implemented
 
@@ -210,3 +252,7 @@ that fixed it, or the reason for an intentional difference. Besides the ports of
 * `store.StoreStressTest`, `store.KillDuringWriteStressTest` (a writer JVM killed with `SIGKILL`) and
   `ProviderStressTest` cover concurrency on virtual threads, compaction under load, truncated and zero-filled data
   files and 100k-document collections.
+* `store.DatastoreTest.WriteFailuresAndFlushes` injects write failures into the real files
+  (`store.FaultInjectingChannels`: an append that stops halfway, a truncate that fails) and checks that every write
+  is flushed before the call returns. That a flushed write survives a power loss depends on the device and is not
+  tested.

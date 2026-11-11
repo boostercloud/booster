@@ -37,6 +37,12 @@ public final class Paths {
    */
   public static final String DISPATCH_JOURNAL_DATABASE = internalPath("dispatch_journal.json");
 
+  /**
+   * Java-only: the file a running server locks so that a second process cannot use the same data files (see
+   * {@code LocalProviderRuntime.lockDataDirectory}).
+   */
+  public static final String LOCK_FILE = internalPath("booster.lock");
+
   private Paths() {}
 
   /** {@code path.normalize(path.join('.', '.booster', filename))}. */

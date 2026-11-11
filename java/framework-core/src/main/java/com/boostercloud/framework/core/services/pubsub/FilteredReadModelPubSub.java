@@ -39,7 +39,8 @@ import java.util.regex.Pattern;
  *       arrays by reference), {@code lt}/{@code gt}/{@code gte}/{@code lte} (JavaScript relational comparison: a
  *       missing property passes), {@code in} (the operand includes the value), {@code contains} (string or array),
  *       {@code beginsWith} (string), {@code includes} (array; an object operand matches items with those properties),
- *       {@code regex}/{@code iRegex} (unanchored search, Java regular expressions), {@code isDefined} (the property
+ *       {@code regex}/{@code iRegex} (unanchored search, Java regular expressions, with a bounded evaluation: a
+ *       catastrophically backtracking pattern fails instead of pinning the thread), {@code isDefined} (the property
  *       exists and is not {@code null}, as the providers store no nulls);</li>
  *   <li>a nested property filter (every one of its properties must match) on a missing or {@code null} object fails,
  *       as in TypeScript; any other key with a non-object operand is ignored.</li>
@@ -250,9 +251,63 @@ public class FilteredReadModelPubSub implements ReadModelPubSub {
   private static boolean regex(Object readModelPropValue, Object element, boolean ignoreCase) {
     if (readModelPropValue instanceof String text) {
       int flags = ignoreCase ? Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE : 0;
-      return Pattern.compile(jsString(element), flags).matcher(text).find();
+      String source = jsString(element);
+      try {
+        return Pattern.compile(source, flags).matcher(new BoundedInput(text)).find();
+      } catch (BoundedInput.Exhausted | StackOverflowError e) {
+        throw new IllegalArgumentException("The regular expression /" + source + "/ is too complex to evaluate "
+            + "against a value of " + text.length() + " characters; simplify it");
+      }
     }
     return false;
+  }
+
+  /**
+   * Java-only, a security measure: the subscriber's pattern runs on every change of the read model, so its evaluation
+   * may read at most {@code max(10⁸, 4·n²)} characters of a value of {@code n} characters (never more than 10⁹), the
+   * budget of the local provider's {@code JsRegExp}; beyond it (catastrophic backtracking) or the stack, the
+   * subscription fails with an error instead of pinning the thread that stores the read model.
+   */
+  private static final class BoundedInput implements CharSequence {
+    private static final class Exhausted extends RuntimeException {
+      private static final long serialVersionUID = 1L;
+      private static final Exhausted INSTANCE = new Exhausted();
+
+      private Exhausted() {
+        super(null, null, false, false);
+      }
+    }
+
+    private final String value;
+    private long remaining;
+
+    BoundedInput(String value) {
+      this.value = value;
+      this.remaining = Math.min(1_000_000_000L, Math.max(100_000_000L, 4L * value.length() * value.length()));
+    }
+
+    @Override
+    public char charAt(int index) {
+      if (--remaining < 0) {
+        throw Exhausted.INSTANCE;
+      }
+      return value.charAt(index);
+    }
+
+    @Override
+    public int length() {
+      return value.length();
+    }
+
+    @Override
+    public CharSequence subSequence(int start, int end) {
+      return value.substring(start, end);
+    }
+
+    @Override
+    public String toString() {
+      return value;
+    }
   }
 
   private static boolean contains(Object readModelPropValue, Object element) {

@@ -257,6 +257,46 @@ class JsRegExpTest {
   }
 
   @Test
+  void catastrophicBacktrackingStopsWithAnErrorInsteadOfPinningTheThread() {
+    JsRegExp regExp = new JsRegExp("^(.*a){20}$");
+    String value = "a".repeat(40) + "!";
+    long start = System.nanoTime();
+    org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(30), () ->
+        assertThatThrownBy(() -> regExp.test(value))
+            .isInstanceOf(JsRegExp.TooComplexError.class)
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessage("The regular expression /^(.*a){20}$/ is too complex to evaluate against a value of 41 "
+                + "characters; simplify it"));
+    System.out.println("Budget of " + JsRegExp.budget(value.length()) + " steps spent in "
+        + (System.nanoTime() - start) / 1_000_000 + " ms");
+    // raw Java patterns handed to the store are bounded the same way
+    assertThatThrownBy(() -> JsRegExp.find(java.util.regex.Pattern.compile("^(.*a){20}$"), value))
+        .isInstanceOf(JsRegExp.TooComplexError.class)
+        .hasMessageStartingWith("The regular expression /^(.*a){20}$/ is too complex");
+  }
+
+  @Test
+  void patternsWithinTheBudgetAreUnaffected() {
+    String value = "a".repeat(4000) + "x" + "b".repeat(4000) + "y";
+    assertThat(new JsRegExp(".*x.*y").test(value)).isTrue();
+    // quadratic backtracking over 8000 characters stays within the budget, which grows with the value
+    assertThat(new JsRegExp(".*x.*z").test(value)).isFalse();
+    assertThat(JsRegExp.budget(41)).isEqualTo(JsRegExp.MIN_STEPS);
+    assertThat(JsRegExp.budget(8002)).isEqualTo(4L * 8002 * 8002);
+    assertThat(JsRegExp.budget(1_000_000)).isEqualTo(JsRegExp.MAX_STEPS);
+    assertThat(new JsRegExp("^(a+)+$").test("a".repeat(30) + "!")).isFalse();
+    assertThat(new JsRegExp("y$").test(value)).isTrue();
+  }
+
+  @Test
+  void recursionDeeperThanTheStackBecomesTheSameError() {
+    assertThatThrownBy(() -> new JsRegExp("(a|b)*c").test("ab".repeat(500_000)))
+        .isInstanceOf(JsRegExp.TooComplexError.class)
+        .hasMessage("The regular expression /(a|b)*c/ is too complex to evaluate against a value of 1000000 "
+            + "characters; simplify it");
+  }
+
+  @Test
   void syntaxErrorsAreTitledLikeTypeScript() {
     assertThatThrownBy(() -> new JsRegExp("(")).satisfies(e -> assertThat(e.getClass().getSimpleName())
         .isEqualTo("SyntaxError"));

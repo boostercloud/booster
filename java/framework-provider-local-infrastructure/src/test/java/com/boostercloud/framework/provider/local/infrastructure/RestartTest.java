@@ -166,6 +166,47 @@ class RestartTest {
   }
 
   @Test
+  void aSecondServerOnTheSameDataFilesDoesNotStart() {
+    LocalServer first = fixture.start(directory, storingApp());
+    LocalProviderRuntime second = ServerFixture.runtime(directory, new FakeUserApp(fixture.config));
+    try {
+      org.assertj.core.api.Assertions.assertThatThrownBy(() -> Infrastructure.infrastructure(List.of(),
+              fixture.options(second)).startServer(fixture.config, 0))
+          .isInstanceOf(IllegalStateException.class)
+          .hasMessageStartingWith("Another Booster process (pid " + ProcessHandle.current().pid()
+              + ") is using the data files of " + directory.resolve(".booster").toAbsolutePath());
+      org.mockito.Mockito.verify(fixture.logger).error(org.mockito.ArgumentMatchers.eq(
+          "[Booster]|LocalInfrastructure#start: "), org.mockito.ArgumentMatchers.startsWith(
+          "The server does not start: Another Booster process"));
+    } finally {
+      second.close();
+    }
+    // the first one keeps serving, and the directory can be used again once it stopped
+    assertThat(Http1Client.postJson(first.graphqlURL(), "{\"cartId\":\"cart-1\"}").statusCode()).isEqualTo(200);
+    first.close();
+    LocalServer third = fixture.start(directory, storingApp());
+    assertThat(third.runtime().eventRegistry().count(Map.of())).isEqualTo(1);
+  }
+
+  @Test
+  void connectionsAndSubscriptionsLeftByACrashAreRemovedAtStartUp() throws IOException {
+    // what a process killed while a client had a subscription open leaves in .booster
+    Path booster = Files.createDirectories(directory.resolve(".booster"));
+    Files.writeString(booster.resolve("connections.json"), "{\"expirationTime\":1794525260,\"user\":null,"
+        + "\"connectionID\":\"8e8b1d2c-dead\",\"_id\":\"Aa1Bb2Cc3Dd4Ee5F\"}\n");
+    Files.writeString(booster.resolve("subscriptions.json"), "{\"connectionID\":\"8e8b1d2c-dead\","
+        + "\"className\":\"ProductReadModel\",\"expirationTime\":1794525260,\"_id\":\"Mm2Nn3Oo4Pp5Qq6R\"}\n");
+
+    LocalServer server = fixture.start(directory, new FakeUserApp(fixture.config));
+
+    assertThat(server.runtime().connectionRegistry().count()).isZero();
+    assertThat(server.runtime().subscriptionRegistry().count()).isZero();
+    org.mockito.Mockito.verify(fixture.logger).info("[Booster]|LocalInfrastructure#start: ", "Removed 1 websocket "
+        + "connection(s) and 1 subscription(s) left by a previous run that did not stop gracefully (clients reconnect "
+        + "and subscribe again)");
+  }
+
+  @Test
   void missingDataFilesAreStillCreatedOnFirstUse() {
     LocalServer server = fixture.start(directory, storingApp());
     assertThat(Files.exists(directory.resolve(".booster/events.json"))).isFalse();

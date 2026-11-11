@@ -54,13 +54,25 @@ The `declare module 'http' { rawBody }` augmentation of `index.ts` is `HttpReque
 3. The port is bound (failing with `Could not listen on port N: ...` when taken) and each rocket's
    `mountStack(config, router, new InfrastructureRocketMetadata(port))` runs, in `config.rockets` order, on the same
    router, after the framework routes.
-4. Java-only start-up check: `runtime.loadExistingDataFiles()` loads the `.booster` files that exist. A torn last
+4. Java-only: `runtime.lockDataDirectory()` takes an operating-system lock on `.booster/booster.lock` (holding the
+   process id) for the life of the process. A second process on the same project (another `boost start` with
+   another `--port`, an IDE run next to it) does not start: it logs `The server does not start: Another Booster
+   process (pid N) is using the data files of <project>/.booster. ...` and exits with code 1, instead of serving its
+   own copy of the data and losing some of the other process's writes. The lock dies with the process, also when it
+   is killed.
+   Java-only start-up check: `runtime.loadExistingDataFiles()` loads the `.booster` files that exist. A torn last
    line (a write cut by a crash) and up to 10 % of corrupt lines are skipped with a warning
    (`[Booster local store] Discarding an incomplete last line of ...`, `Skipped N corrupt line(s) of ...`); a file
    with more than 10 % of corrupt lines fails the start with NeDB's `CorruptDataFileException`
    (`N% of the data file is corrupt, more than given corruptAlertThreshold (10%). Cautiously refusing to start NeDB to
    prevent dataloss.`), logged as `Could not load the data files of <project>/.booster; the server does not start: ...`,
    so `Booster.run` reports `The 'start' operation failed` and exits with code 1, leaving the file untouched.
+   Then `runtime.removeStaleConnections()` deletes the websocket connections and subscriptions stored for
+   connections this process does not have open: those of a process that ended without processing their
+   `DISCONNECT` (killed, out of memory, power loss). Connections live in the process, so those rows can never be used
+   again, and each of their subscriptions would otherwise run on every change of its read model and log
+   `There is no open websocket connection with id ...` (TypeScript keeps them for ever). Clients reconnect and
+   subscribe again. It logs `Removed N websocket connection(s) and M subscription(s) left by a previous run ...`.
 5. Java-only start-up recovery: `runtime.recoverUndispatchedEvents(config)` re-dispatches the events a crash left
    stored but undispatched (`framework-provider-local` README, "Durability and recovery"); a failure is logged and the
    server starts anyway (the entries stay for the next start).
@@ -84,6 +96,11 @@ own port (`LOCAL_ENVIRONMENT_WEBSOCKET_SERVER_PORT`, default `65529`), path `/we
 
 Requests run on virtual threads (Jetty 12 `QueuedThreadPool` with a virtual-thread executor), so handlers block
 freely. Jetty is configured like Node: no `Server` header, 16 KiB of request headers, lenient URI checks.
+
+Jetty logs through SLF4J (Booster logs through `config.logger`). The module ships no SLF4J provider, so the
+application chooses: with none, SLF4J uses its no-operation logger and the framework keeps SLF4J's notice about that
+quiet (`JettyLogging` in `framework-provider-local`); an application that adds one (logback, slf4j-simple...) gets
+Jetty's logs through it, with no "multiple SLF4J providers" warning and no doubt about which provider wins.
 
 ### Graceful shutdown
 
@@ -179,8 +196,10 @@ Lifecycle:
   port 0 (TypeScript passes the requested port); a taken port fails `start` with an exception (Node crashes with an
   unhandled `EADDRINUSE`). When the bound port differs from `BOOSTER_INTERNAL_LOCAL_PORT`, the variable is overridden
   in-process (`InternalInfo.setBoosterLocalPort`) so the health sensor probes the right URL.
-* The start-up load of the existing data files (a corrupt file stops the start; TypeScript loads each NeDB file on
-  first use, so it starts and the requests touching the file fail), start-up recovery of undispatched events, the
+* The lock of the `.booster` directory (TypeScript lets two processes share the files), the removal of the
+  connections and subscriptions a crash left, the start-up load of the existing data files (a corrupt file stops the
+  start; TypeScript loads each NeDB file on first use, so it starts and the requests touching the file fail),
+  start-up recovery of undispatched events, the
   websocket server being (re)started with the HTTP server, the listening
   and stopping log lines, `unmountStack()` on shutdown: Java-only.
 * `deploy`, `nuke` and `synth` exist and throw `UnsupportedOperationException` with the CLI's message
@@ -250,5 +269,6 @@ rocket routes too (a rocket that streams an upload must not receive it as `appli
   upload/download, unmount), `GracefulShutdownTest` (in-flight requests finish, new connections refused, stores
   closed), `SignalShutdownTest` (SIGTERM to a real JVM running `start`), `RestartTest` (data survives a restart; events
   left undispatched by a crash are re-dispatched at start-up; a torn last line or a few corrupt lines are discarded
-  before the server serves, too many corrupt lines fail the start) and `testhelper.*Test` (counters and queries over NeDB
+  before the server serves, too many corrupt lines fail the start; a second server on the same data files does not
+  start; connections and subscriptions a crash left are removed) and `testhelper.*Test` (counters and queries over NeDB
   files, readiness).

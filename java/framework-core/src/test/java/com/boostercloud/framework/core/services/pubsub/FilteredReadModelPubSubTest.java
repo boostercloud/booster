@@ -132,6 +132,19 @@ class FilteredReadModelPubSubTest {
     }
 
     @Test
+    void aPatternThatBacktracksCatastrophicallyFailsInsteadOfPinningTheThread() {
+      CartReadModel cart = new CartReadModel(UUID.of("cart-1"), "o".repeat(40) + "!", 1, List.of(), List.of(),
+          Map.of());
+      org.junit.jupiter.api.Assertions.assertTimeoutPreemptively(java.time.Duration.ofSeconds(30), () ->
+          assertThatThrownBy(() -> FilteredReadModelPubSub.filterReadModel(cart,
+              filter("status", filter("regex", "^(.*o){20}$"))))
+              .isInstanceOf(IllegalArgumentException.class)
+              .hasMessage("The regular expression /^(.*o){20}$/ is too complex to evaluate against a value of 41 "
+                  + "characters; simplify it"));
+      assertThat(FilteredReadModelPubSub.filterReadModel(cart, filter("status", filter("iRegex", "^O+!$")))).isTrue();
+    }
+
+    @Test
     void includesMatchesItemsPartially() {
       assertThat(matches("items", filter("includes", filter("sku", "s2")))).isTrue();
       assertThat(matches("items", filter("includes", filter("sku", "s2", "quantity", 1)))).isFalse();

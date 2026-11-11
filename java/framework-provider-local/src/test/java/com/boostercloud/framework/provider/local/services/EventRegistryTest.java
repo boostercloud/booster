@@ -62,6 +62,52 @@ class EventRegistryTest {
   }
 
   @Nested
+  class StoreEventBatch {
+    @AfterEach
+    void resetClock() {
+      com.boostercloud.framework.types.Dates.resetClock();
+    }
+
+    private void useClock(String instant) {
+      com.boostercloud.framework.types.Dates.useClock(
+          java.time.Clock.fixed(Instant.parse(instant), java.time.ZoneOffset.UTC));
+    }
+
+    @Test
+    void givesStrictlyIncreasingCreatedAtsEvenWithinOneMillisecond() {
+      useClock("2026-11-10T09:15:27.412Z");
+      Map<String, Object> first = raw(Mocks.event());
+      Map<String, Object> second = raw(Mocks.event());
+      assertThat(eventRegistry.storeEventBatch(List.of(first, second)))
+          .containsExactly("2026-11-10T09:15:27.412Z", "2026-11-10T09:15:27.413Z");
+      assertThat(first).containsEntry("createdAt", "2026-11-10T09:15:27.412Z");
+      // a clock that goes back does not take createdAt back either
+      useClock("2026-11-10T09:00:00.000Z");
+      assertThat(eventRegistry.storeEventBatch(List.of(raw(Mocks.event()))))
+          .containsExactly("2026-11-10T09:15:27.414Z");
+      useClock("2026-11-10T10:00:00.000Z");
+      assertThat(eventRegistry.storeEventBatch(List.of(raw(Mocks.event()))))
+          .containsExactly("2026-11-10T10:00:00.000Z");
+      assertThat(eventRegistry.query(map("kind", "event"))).extracting(e -> e.get("createdAt")).containsExactly(
+          "2026-11-10T09:15:27.412Z", "2026-11-10T09:15:27.413Z", "2026-11-10T09:15:27.414Z",
+          "2026-11-10T10:00:00.000Z");
+      assertThat(eventRegistry.storeEventBatch(List.of())).isEmpty();
+    }
+
+    @Test
+    void startsAfterTheLatestStoredCreatedAt() {
+      Map<String, Object> stored = raw(Mocks.event());
+      stored.put("createdAt", "2026-11-10T09:15:27.412Z");
+      eventRegistry.store(stored);
+      eventRegistry.events().close();
+      eventRegistry = new EventRegistry(project.resolve(".booster/events.json"));
+      useClock("2026-11-10T09:15:27.000Z");
+      assertThat(eventRegistry.storeEventBatch(List.of(raw(Mocks.event()))))
+          .containsExactly("2026-11-10T09:15:27.413Z");
+    }
+  }
+
+  @Nested
   class Query {
     @Test
     void withADbFullOfRandomEventsShouldReturnTheExpectedEvent() throws Exception {

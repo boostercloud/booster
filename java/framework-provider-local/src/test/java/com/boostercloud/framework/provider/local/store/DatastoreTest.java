@@ -484,6 +484,122 @@ class DatastoreTest {
     }
 
     @Test
+    void writesOfSeveralLinesStartWithABatchHeader() throws IOException {
+      Datastore datastore = open();
+      datastore.insert(map("_id", "a", "v", 1));
+      datastore.insert(List.of(map("_id", "b", "v", 1), map("_id", "c", "v", 1)));
+      datastore.update(map("v", 1), map("$set", map("v", 2)), UpdateOptions.MULTI);
+      datastore.remove(map("_id", map("$in", list("a", "b"))), true);
+      assertThat(lines()).containsExactly(
+          "{\"_id\":\"a\",\"v\":1}",
+          "{\"$$batch\":2}",
+          "{\"_id\":\"b\",\"v\":1}",
+          "{\"_id\":\"c\",\"v\":1}",
+          "{\"$$batch\":3}",
+          "{\"_id\":\"a\",\"v\":2}",
+          "{\"_id\":\"b\",\"v\":2}",
+          "{\"_id\":\"c\",\"v\":2}",
+          "{\"$$batch\":2}",
+          "{\"$$deleted\":true,\"_id\":\"a\"}",
+          "{\"$$deleted\":true,\"_id\":\"b\"}");
+      // the headers are obsolete lines too (they never describe the live state): 1 + (1 + 3 replaced versions)
+      // + (1 + 2 deletion markers + 2 removed versions)
+      assertThat(datastore.obsoleteLines()).isEqualTo(10);
+      Datastore reopened = open();
+      assertThat(reopened.find(map()).exec()).containsExactly(map("_id", "c", "v", 2));
+      assertThat(warnings).isEmpty();
+    }
+
+    @Test
+    void aBatchCutShortByACrashIsDiscardedAsAWhole() throws IOException {
+      Datastore datastore = open();
+      datastore.insert(map("_id", "before", "v", 0));
+      int batchStart = Files.readAllBytes(file).length;
+      datastore.insert(List.of(map("_id", "e0", "payload", "x".repeat(40)), map("_id", "e1", "payload", "y".repeat(40))));
+      datastore.close();
+      byte[] complete = Files.readAllBytes(file);
+      // every place a crash can cut the append: the batch is all there, or not there at all
+      for (int cut = batchStart; cut < complete.length; cut++) {
+        Files.write(file, java.util.Arrays.copyOf(complete, cut));
+        warnings.clear();
+        Datastore reloaded = open();
+        List<Object> ids = reloaded.find(map()).exec().stream().map(d -> d.get("_id")).toList();
+        assertThat(ids).as("cut at byte %d", cut).isIn(List.of("before"), List.of("before", "e0", "e1"));
+        assertThat(warnings).as("cut at byte %d", cut).noneMatch(w -> w.contains("corrupt"));
+        reloaded.close();
+      }
+    }
+
+    @Test
+    void aBatchWhoseLineIsUnreadableAtTheEndOfTheFileIsAnInterruptedWriteToo() throws IOException {
+      // a power loss can write the pages of an append out of order: a garbled line followed by intact ones
+      writeFile("{\"_id\":\"before\"}\n{\"$$batch\":3}\n{\"_id\":\"e0\"}\n\u0000\u0000\u0000\u0000\n{\"_id\":\"e2\"}\n");
+      Datastore datastore = open();
+      assertThat(datastore.find(map()).exec()).containsExactly(map("_id", "before"));
+      assertThat(warnings).anyMatch(w -> w.contains("incomplete batch of 3 line(s)"))
+          .noneMatch(w -> w.contains("corrupt"));
+      assertThat(lines()).containsExactly("{\"_id\":\"before\"}");
+    }
+
+    @Test
+    void aDamagedBatchThatMoreLinesFollowIsLostAndCountsAsCorrupt() throws IOException {
+      String content = "{\"_id\":\"before\"}\n{\"$$batch\":2}\n{\"_id\":\"e0\"}\ngarbage\n{\"_id\":\"after\"}\n";
+      writeFile(content);
+      assertThatThrownBy(() -> open().loadDatabase()).isInstanceOf(CorruptDataFileException.class)
+          .satisfies(e -> assertThat(((CorruptDataFileException) e).corruptItems()).isEqualTo(2));
+      Datastore lenient = open(DatastoreOptions.of(file).withCorruptAlertThreshold(0.5));
+      assertThat(lenient.find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("after", "before");
+      assertThat(warnings).anyMatch(w -> w.contains("Skipped 2 corrupt line(s)"));
+    }
+
+    @Test
+    void aBatchHeaderBeforeThePreviousBatchEndedLosesThatBatch() throws IOException {
+      writeFile("{\"$$batch\":3}\n{\"_id\":\"lost\"}\n{\"$$batch\":2}\n{\"_id\":\"a\"}\n{\"_id\":\"b\"}\n");
+      Datastore lenient = open(DatastoreOptions.of(file).withCorruptAlertThreshold(0.5));
+      assertThat(lenient.find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("a", "b");
+      assertThat(warnings).anyMatch(w -> w.contains("Skipped 1 corrupt line(s)"));
+    }
+
+    @Test
+    void aRemovalThatTriggersTheGrowthCompactionIsOnDiskToo() {
+      // the dispatch journal's lifecycle: insert, $set, remove. The remove that crosses the threshold compacts the
+      // file; the compacted file must already be without the removed document (and stay so after a reload)
+      Path journal = directory.resolve("journal.json");
+      Datastore datastore = open(DatastoreOptions.of(journal).withAutocompactionLineThreshold(10));
+      for (int i = 0; i < 7; i++) {
+        String id = "id" + i;
+        datastore.insert(map("_id", id, "state", "pending"));
+        datastore.update(map("_id", id), map("$set", map("state", "dispatched")), UpdateOptions.DEFAULTS);
+        datastore.remove(map("_id", id), false);
+        assertThat(datastore.size()).isZero();
+        Datastore reloaded = open(DatastoreOptions.of(journal));
+        assertThat(reloaded.getAllData()).as("file after step %d", i).isEmpty();
+        reloaded.close();
+      }
+    }
+
+    @Test
+    void aFailedRemovalKeepsTheDocumentsAndTheirIndexes() throws IOException {
+      Path data = directory.resolve("remove.json");
+      Datastore store = open(DatastoreOptions.of(data));
+      store.ensureIndex(IndexOptions.unique("k", true));
+      store.insert(map("_id", "a", "k", "x"));
+      store.compactDatafile();
+      data.toFile().setWritable(false);
+      try {
+        org.junit.jupiter.api.Assumptions.assumeFalse(data.toFile().canWrite(), "running as root");
+        assertThatThrownBy(() -> store.remove(map("_id", "a"), false)).isInstanceOf(NedbError.class);
+        assertThat(store.find(map("k", "x")).exec()).containsExactly(map("_id", "a", "k", "x"));
+      } finally {
+        data.toFile().setWritable(true);
+      }
+      assertThatThrownBy(() -> store.insert(map("_id", "b", "k", "x"))).isInstanceOf(NedbError.class)
+          .hasMessageContaining("unique constraint");
+      assertThat(store.remove(map("k", "x"), false)).isEqualTo(1);
+      assertThat(store.size()).isZero();
+    }
+
+    @Test
     void periodicCompaction() throws IOException {
       Datastore datastore = open();
       datastore.insert(map("_id", "a"));
@@ -529,6 +645,92 @@ class DatastoreTest {
       datastore.insert(map("a", 1));
       assertThat(datastore.count(null)).isEqualTo(1);
       assertThat(datastore.filename()).isNull();
+    }
+  }
+
+  /**
+   * Write failures injected into the real files ({@link FaultInjectingChannels}), and the flushes of every write.
+   * Whether a flushed write survives a power loss is up to the device and cannot be tested here; what is pinned is
+   * that every acknowledged write is flushed before the call returns.
+   */
+  @Nested
+  class WriteFailuresAndFlushes {
+    private final FaultInjectingChannels channels = new FaultInjectingChannels();
+
+    private Datastore openFaulty() {
+      Datastore datastore = new Datastore(DatastoreOptions.of(file).withWarnings(warnings::add), channels);
+      opened.add(datastore);
+      return datastore;
+    }
+
+    private List<String> operations() {
+      return channels.log.stream().map(entry -> entry.replaceAll(" \\d+$", "")).toList();
+    }
+
+    @Test
+    void anAppendThatFailsHalfwayIsCutBackSoTheNextOneStartsOnItsOwnLine() throws IOException {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a", "v", 1));
+      long sizeBefore = Files.size(file);
+      channels.log.clear();
+      channels.failNextWriteAfter(7);
+      assertThatThrownBy(() -> datastore.insert(map("_id", "b", "v", 2))).isInstanceOf(NedbError.class)
+          .hasMessageContaining("No space left on device");
+      assertThat(channels.log).containsExactly("partial-write test.json 7", "truncate test.json " + sizeBefore,
+          "force test.json false");
+      assertThat(Files.size(file)).isEqualTo(sizeBefore);
+      assertThat(datastore.find(map()).exec()).containsExactly(map("_id", "a", "v", 1));
+
+      datastore.insert(map("_id", "c", "v", 3));
+      assertThat(lines()).containsExactly("{\"_id\":\"a\",\"v\":1}", "{\"_id\":\"c\",\"v\":3}");
+      assertThat(open().find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("a", "c");
+      assertThat(warnings).isEmpty();
+    }
+
+    @Test
+    void whenAFailedAppendCannotBeCutBackTheStoreRefusesWritesUntilItIsReloaded() {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a"));
+      channels.failNextWriteAfter(3);
+      channels.failTruncate(true);
+      assertThatThrownBy(() -> datastore.insert(map("_id", "b"))).isInstanceOf(NedbError.class);
+      channels.failTruncate(false);
+      assertThatThrownBy(() -> datastore.insert(map("_id", "c"))).isInstanceOf(NedbError.class)
+          .hasMessageContaining("could not be repaired after a failed write");
+      assertThat(datastore.find(map()).exec()).containsExactly(map("_id", "a"));
+
+      datastore.loadDatabase();
+      assertThat(warnings).anyMatch(w -> w.contains("incomplete last line"));
+      datastore.insert(map("_id", "c"));
+      assertThat(open().find(map()).exec()).extracting(d -> d.get("_id")).containsExactly("a", "c");
+    }
+
+    @Test
+    void everyWriteIsFlushedBeforeTheCallReturns() {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a"));
+      channels.log.clear();
+      datastore.insert(map("_id", "b"));
+      datastore.update(map("_id", "b"), map("$set", map("x", 1)), UpdateOptions.DEFAULTS);
+      datastore.remove(map("_id", "a"), false);
+      datastore.ensureIndex(IndexOptions.unique("x", true));
+      assertThat(operations()).containsExactly(
+          "write test.json", "force test.json false",
+          "write test.json", "force test.json false",
+          "write test.json", "force test.json false",
+          "write test.json", "force test.json false");
+    }
+
+    @Test
+    void compactionFlushesTheNewFileBeforeItReplacesTheOldOne() throws IOException {
+      Datastore datastore = openFaulty();
+      datastore.insert(map("_id", "a"));
+      datastore.insert(map("_id", "b"));
+      datastore.remove(map("_id", "a"), false);
+      channels.log.clear();
+      datastore.compactDatafile();
+      assertThat(operations()).containsExactly("write test.json~", "force test.json~ true");
+      assertThat(lines()).containsExactly("{\"_id\":\"b\"}");
     }
   }
 

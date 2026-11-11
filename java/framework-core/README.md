@@ -376,8 +376,12 @@ module (core-1 registration and dispatch, core-2a events, core-2b read models an
   first nested property, or of `includes`) and ignores the rest, so a client could pass a before hook that validates
   `filters.userId.eq` (the row-level security pattern of the documentation) with `{id: {ne: ""}, userId: {eq: <me>}}`
   and still receive every user's changes over the websocket; hooks that add a filter after the client's were ignored
-  the same way. Values are compared in their JSON form and regular expressions use the Java dialect. Its iterator is a
-  plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for graphql-java.
+  the same way. Values are compared in their JSON form and regular expressions use the Java dialect. A
+  `regex`/`iRegex` evaluation is bounded (security: the subscriber's pattern runs on every change): beyond
+  `max(10⁸, 4·n²)` characters read over a value of `n` characters (at most 10⁹), or the stack, that subscription fails
+  with `The regular expression /…/ is too complex to evaluate ...` instead of pinning the thread that stores the read
+  model; TypeScript has no limit. Its iterator is a plain `Iterator`; `ReadModelPubSub.toPublisher` adapts it for
+  graphql-java.
 * `BoosterSubscribersNotifier` executes the stored document with `GraphQLExecution` on graphql-java (TypeScript:
   `graphql.subscribe`), with `KEEP_SUBSCRIPTION_EVENTS_ORDERED`; a second constructor takes the schema (tests and
   embedders). As in TypeScript, searches with a selection (every GraphQL list query) return the stored properties

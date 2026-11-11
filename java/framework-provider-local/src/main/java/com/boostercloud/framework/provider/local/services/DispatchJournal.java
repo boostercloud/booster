@@ -9,6 +9,7 @@ import com.boostercloud.framework.types.Dates;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * re-dispatch; entries whose event was never stored (the crash happened before the insert) are dropped.
  *
  * <p>Entries of dispatches running in this process are tracked in memory ({@link #isInFlight(String)}) so that a
- * recovery run concurrently with normal traffic never re-dispatches them.
+ * recovery run concurrently with normal traffic (the websocket server already serves while the server starts) never
+ * re-dispatches them, not even one that finishes while the recovery reads the journal.
  */
 public class DispatchJournal {
 
@@ -198,14 +200,32 @@ public class DispatchJournal {
     return entries(DISPATCHED);
   }
 
+  /**
+   * The entries in that state that no dispatch of this process owns. A dispatch of this process adds its ids to the
+   * in-flight set before it writes its entries and leaves the set only after it removed them, so an entry that was read
+   * while its dispatch ran and is no longer in flight afterwards is gone from the journal by then: reading the
+   * candidates again after the in-flight check drops those (a dispatch that finished between the two steps would
+   * otherwise be taken for an undispatched event and processed a second time).
+   */
   private List<Map<String, Object>> entries(String state) {
-    List<Map<String, Object>> result = new ArrayList<>();
+    List<Map<String, Object>> candidates = new ArrayList<>();
     for (Map<String, Object> entry : journal.find(Map.of("state", state)).exec()) {
       if (!isInFlight(String.valueOf(entry.get("_id")))) {
-        result.add(entry);
+        candidates.add(entry);
       }
     }
-    return result;
+    if (candidates.isEmpty()) {
+      return candidates;
+    }
+    Map<String, Object> stillThere = new LinkedHashMap<>();
+    stillThere.put("_id", Map.of("$in", candidates.stream().map(entry -> entry.get("_id")).toList()));
+    stillThere.put("state", state);
+    Set<Object> ids = new HashSet<>();
+    for (Map<String, Object> entry : journal.find(stillThere).exec()) {
+      ids.add(entry.get("_id"));
+    }
+    candidates.removeIf(entry -> !ids.contains(entry.get("_id")));
+    return candidates;
   }
 
   /**

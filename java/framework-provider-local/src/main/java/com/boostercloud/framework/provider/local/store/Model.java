@@ -220,7 +220,7 @@ public final class Model {
     if (regExp instanceof JsRegExp jsRegExp) {
       return jsRegExp.test(value);
     }
-    return ((Pattern) regExp).matcher(value).find();
+    return JsRegExp.find((Pattern) regExp, value);
   }
 
   /**

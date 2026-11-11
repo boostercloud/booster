@@ -36,9 +36,13 @@ import java.util.concurrent.TimeUnit;
  *   <li>the port is bound (failing fast when it is taken), and {@code BOOSTER_INTERNAL_LOCAL_PORT} is set to it
  *       in-process when it differs (port 0);
  *   <li>each rocket's {@code mountStack(config, router, { port })}, in order, on the same router;
+ *   <li>Java-only: the {@code .booster} directory is locked ({@code LocalProviderRuntime.lockDataDirectory}): when
+ *       another process serves the same data files the start fails (logged, the port released);
  *   <li>Java-only: the existing data files are loaded ({@code LocalProviderRuntime.loadExistingDataFiles}): a torn
  *       last line or a few corrupt lines are skipped with a warning, a file with more than 10 % of corrupt lines fails
  *       the start ({@code CorruptDataFileException}, logged, the port released);
+ *   <li>Java-only: the websocket connections and subscriptions left by a process that did not stop gracefully are
+ *       removed ({@code LocalProviderRuntime.removeStaleConnections}), so they are not run on every later change;
  *   <li>Java-only: {@code recoverUndispatchedEvents} re-dispatches the events a crash left undispatched (errors are
  *       logged and do not stop the start);
  *   <li>the provider's websocket server is started if it is not running yet ({@code ws://localhost:65529/websocket});
@@ -136,12 +140,24 @@ public final class LocalServer implements AutoCloseable {
       mountedRockets.add(rocket);
     }
     try {
+      runtime.lockDataDirectory();
+    } catch (RuntimeException e) {
+      logger.error("The server does not start: " + e.getMessage());
+      throw e;
+    }
+    try {
       runtime.loadExistingDataFiles();
     } catch (RuntimeException e) {
       logger.error("Could not load the data files of "
           + Paths.resolve(runtime.baseDirectory(), Paths.BOOSTER_FOLDER).toAbsolutePath()
           + "; the server does not start: " + e.getMessage());
       throw e;
+    }
+    LocalProviderRuntime.StaleConnections stale = runtime.removeStaleConnections();
+    if (stale.connections() > 0 || stale.subscriptions() > 0) {
+      logger.info("Removed " + stale.connections() + " websocket connection(s) and " + stale.subscriptions()
+          + " subscription(s) left by a previous run that did not stop gracefully (clients reconnect and subscribe "
+          + "again)");
     }
     try {
       recoveredEvents = runtime.recoverUndispatchedEvents(config);

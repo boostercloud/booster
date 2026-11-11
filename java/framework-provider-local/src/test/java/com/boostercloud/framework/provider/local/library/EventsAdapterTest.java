@@ -231,6 +231,9 @@ class EventsAdapterTest {
     void withTheJournalTheEventsGetTheirIdsAndTheBatchIsTracked() {
       DispatchJournal journal = mock(DispatchJournal.class);
       when(mockEventRegistry.createNewId()).thenReturn("id1", "id2");
+      // the registry gives the createdAt values (under its write lock)
+      when(mockEventRegistry.storeEventBatch(any()))
+          .thenReturn(List.of("2026-11-10T09:15:27.412Z", "2026-11-10T09:15:27.413Z"));
       Dates.useClock(Clock.fixed(Instant.parse("2026-11-10T09:15:27.412Z"), ZoneOffset.UTC));
       NonPersistedEventEnvelope second = Mocks.nonPersistedEvent();
       List<EventEnvelope> stored = EventsAdapter.storeEvents(mockUserApp, mockEventRegistry, journal,
@@ -244,11 +247,86 @@ class EventsAdapterTest {
       firstDocument.put("_id", "id1");
       Map<String, Object> secondDocument = raw(second.persisted("2026-11-10T09:15:27.412Z"));
       secondDocument.put("_id", "id2");
-      inOrder.verify(mockEventRegistry).storeAll(List.of(firstDocument, secondDocument));
+      inOrder.verify(mockEventRegistry).storeEventBatch(List.of(firstDocument, secondDocument));
       inOrder.verify(mockUserApp).boosterEventDispatcher(stored);
       inOrder.verify(journal).remove(List.of("id1", "id2"));
       verify(mockEventRegistry, never()).store(any());
       assertThat(stored).extracting(EventEnvelope::id).containsExactly("id1", "id2");
+      assertThat(stored).extracting(EventEnvelope::createdAt)
+          .containsExactly("2026-11-10T09:15:27.412Z", "2026-11-10T09:15:27.413Z");
+      assertThat(stored.get(1)).isEqualTo(second.persisted("2026-11-10T09:15:27.413Z").toBuilder().id("id2").build());
+    }
+
+    /** A store whose inserts pause the thread named {@code "A"} before they take the write lock. */
+    private static final class PausingDatastore extends com.boostercloud.framework.provider.local.store.Datastore {
+      final java.util.concurrent.CountDownLatch paused = new java.util.concurrent.CountDownLatch(1);
+      final java.util.concurrent.CountDownLatch resume = new java.util.concurrent.CountDownLatch(1);
+
+      PausingDatastore(Path file) {
+        super(com.boostercloud.framework.provider.local.store.DatastoreOptions.of(file));
+      }
+
+      private void pauseThreadA() {
+        if (Thread.currentThread().getName().equals("A")) {
+          paused.countDown();
+          try {
+            resume.await(10, java.util.concurrent.TimeUnit.SECONDS);
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          }
+        }
+      }
+
+      @Override
+      public List<Map<String, Object>> insert(List<? extends Map<String, Object>> newDocuments) {
+        pauseThreadA();
+        return super.insert(newDocuments);
+      }
+
+      @Override
+      public List<Map<String, Object>> insertBuilt(
+          java.util.function.Supplier<? extends List<? extends Map<String, Object>>> builder) {
+        pauseThreadA();
+        return super.insertBuilt(builder);
+      }
+    }
+
+    @Test
+    void eventsGetTheirCreatedAtInTheOrderTheyBecomeVisible(@TempDir Path directory) throws Exception {
+      // Thread A is preempted on its way to the events lock while B stores an event of the same entity, and a
+      // reduction then snapshots the entity at B's createdAt. Core later reduces from that snapshot with the events
+      // created strictly after it, so A's event must not carry an older createdAt than B's.
+      PausingDatastore store = new PausingDatastore(directory.resolve("events.json"));
+      EventRegistry registry = new EventRegistry(store);
+      DispatchJournal journal = new DispatchJournal(directory.resolve("dispatch_journal.json"));
+      NonPersistedEventEnvelope eventA = Mocks.nonPersistedEvent();
+      NonPersistedEventEnvelope eventB = eventA.toBuilder().value(map("from", "B")).build();
+      try {
+        java.util.concurrent.CompletableFuture<List<EventEnvelope>> storingA =
+            new java.util.concurrent.CompletableFuture<>();
+        Thread.ofVirtual().name("A").start(() -> {
+          try {
+            storingA.complete(EventsAdapter.storeEvents(mockUserApp, registry, journal, List.of(eventA), mockConfig));
+          } catch (RuntimeException e) {
+            storingA.completeExceptionally(e);
+          }
+        });
+        assertThat(store.paused.await(10, java.util.concurrent.TimeUnit.SECONDS)).isTrue();
+        Thread.sleep(5);
+        EventEnvelope storedB =
+            EventsAdapter.storeEvents(mockUserApp, registry, journal, List.of(eventB), mockConfig).get(0);
+        String snapshotPoint = storedB.createdAt();
+        store.resume.countDown();
+        EventEnvelope storedA = storingA.get(10, java.util.concurrent.TimeUnit.SECONDS).get(0);
+
+        assertThat(storedA.createdAt()).isGreaterThan(snapshotPoint);
+        assertThat(EventsAdapter.readEntityEventsSince(registry, mockConfig, eventA.entityTypeName(),
+            eventA.entityID(), snapshotPoint)).extracting(EventEnvelope::id).containsExactly(storedA.id());
+      } finally {
+        store.resume.countDown();
+        store.close();
+        journal.datastore().close();
+      }
     }
 
     @Test
@@ -272,8 +350,37 @@ class EventsAdapterTest {
         List<EventEnvelope> stored = EventsAdapter.storeEvents(mockUserApp, registry, journal,
             List.of(mockEventEnvelop, Mocks.nonPersistedEvent(), Mocks.nonPersistedEvent()), mockConfig);
         assertThat(registry.count()).isEqualTo(3);
-        assertThat(Files.readAllLines(eventsFile)).hasSize(3);
+        // one append: the batch header and the three events
+        assertThat(Files.readAllLines(eventsFile)).hasSize(4).first().isEqualTo("{\"$$batch\":3}");
         assertThat(stored).extracting(EventEnvelope::id).doesNotContainNull().doesNotHaveDuplicates();
+      } finally {
+        registry.events().close();
+        journal.datastore().close();
+      }
+    }
+
+    @Test
+    void aCrashThatCutsTheAppendOfABatchLeavesNoneOfItsEvents(@TempDir Path directory) throws IOException {
+      // a power loss, or a short write killed halfway, can leave any prefix of the append on disk
+      Path eventsFile = directory.resolve("events.json");
+      EventRegistry registry = new EventRegistry(eventsFile);
+      DispatchJournal journal = new DispatchJournal(directory.resolve("dispatch_journal.json"));
+      try {
+        EventsAdapter.storeEvents(mockUserApp, registry, journal, List.of(Mocks.nonPersistedEvent()), mockConfig);
+        int before = Files.readAllBytes(eventsFile).length;
+        EventsAdapter.storeEvents(mockUserApp, registry, journal,
+            List.of(Mocks.nonPersistedEvent(), Mocks.nonPersistedEvent(), Mocks.nonPersistedEvent()), mockConfig);
+        byte[] complete = Files.readAllBytes(eventsFile);
+        for (int cut = before; cut < complete.length; cut += 7) {
+          Path crashed = directory.resolve("crashed-" + cut + ".json");
+          Files.write(crashed, java.util.Arrays.copyOf(complete, cut));
+          EventRegistry restarted = new EventRegistry(crashed);
+          try {
+            assertThat(restarted.count()).as("cut at byte %d", cut).isIn(1, 4);
+          } finally {
+            restarted.events().close();
+          }
+        }
       } finally {
         registry.events().close();
         journal.datastore().close();

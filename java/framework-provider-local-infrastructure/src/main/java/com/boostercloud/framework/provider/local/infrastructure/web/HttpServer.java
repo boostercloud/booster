@@ -53,6 +53,7 @@ public final class HttpServer implements AutoCloseable {
   public HttpServer(int port, RequestHandler app, Duration stopTimeout, Supplier<Logger> logger) {
     this.app = Objects.requireNonNull(app, "app");
     this.logger = Objects.requireNonNull(logger, "logger");
+    com.boostercloud.framework.provider.local.library.JettyLogging.prepare();
     QueuedThreadPool threadPool = new QueuedThreadPool();
     threadPool.setName("booster-local-http");
     threadPool.setDaemon(true);

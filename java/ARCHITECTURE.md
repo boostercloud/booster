@@ -276,7 +276,9 @@ Reading from code: `Booster.readModel(CartReadModel.class).filter(Map.of("id", M
   (an unchecked exception with a `code` and optional `data`).
 * `Logger` (`debug/info/warn/error`) and `getLogger(config, location, prefix)` are ported as-is;
   the default implementation writes to the console honouring `config.logLevel`. No SLF4J in
-  framework code (Jetty's own logging is routed to a no-op binding).
+  framework code. Jetty logs through SLF4J; the framework ships no SLF4J provider (the application may add one, and
+  Jetty then logs through it); without one, SLF4J's no-operation fallback is used and its notice is kept quiet
+  (`JettyLogging`).
 * Concretely: `BoosterError extends RuntimeException`; `code()` defaults to the runtime class's
   simple name. `BoosterErrors.httpStatusCodeFor(error)` matches the **exact simple class name**
   (a subclass of `NotFoundError` maps to 500, as in TypeScript); `TypeLevel.toClassTitle(error)`

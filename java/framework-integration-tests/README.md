@@ -281,7 +281,8 @@ kills (`SIGKILL`), damages and starts again on the same `.booster` files.
    (`FileChannel.force`) and dispatched in-process, so everything acknowledged before a crash is in the store after
    it, exactly once.
 2. **A command is all or nothing.** The events one command (event handler, scheduled command) registers are written
-   with a single append: a crash leaves all of them or none, never part of a `ChangeMultipleCartItems`.
+   with a single append, framed as an atomic batch (`{"$$batch":<n>}` header) that a load applies only as a whole: a
+   crash that cuts the append at any byte leaves all of them or none, never part of a `ChangeMultipleCartItems`.
 3. **Undispatched events are recovered once.** Events stored but whose dispatch had not started when the process
    died are re-dispatched at start-up, before the server serves (`Re-dispatched N event(s) ...`).
 4. **At most once, and the gap closes.** An event whose processing core had already started (`storeDispatched`) when
@@ -298,11 +299,15 @@ kills (`SIGKILL`), damages and starts again on the same `.booster` files.
    prevent dataloss.`), leaving the file untouched, and starts again once it is repaired.
 7. **Graceful stop.** `SIGTERM` ends with exit code 143 after in-flight requests and running scheduled commands
    finished and the websocket connections were closed (their `DISCONNECT` deletes their subscriptions). Subscription
-   clients reconnect by themselves and re-send their subscriptions.
+   clients reconnect by themselves and re-send their subscriptions. After a crash, the next start deletes the
+   connections and subscriptions of the dead process instead (`Removed N websocket connection(s) and M
+   subscription(s) left by a previous run ...`).
 8. **Scheduled commands** are scheduled again by every start (runs that fell while the process was down are not
    replayed: the schedule is a cron).
 9. **One format.** The files are NeDB's, so a `.booster` directory written by the TypeScript provider is served by
    the Java application, which keeps writing it in the same format.
+10. **One process per project.** The server locks `.booster/booster.lock`; a second process on the same project
+    does not start (`Another Booster process (pid N) is using the data files of ...`, exit code 1).
 
 ### Suites
 
