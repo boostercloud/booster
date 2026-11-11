@@ -1,0 +1,22 @@
+package {{{basePackage}}}.config;
+
+import com.boostercloud.framework.core.Booster;
+import com.boostercloud.framework.core.BoosterConfigurator;
+
+/** The environments of the application. Select one with {@code boost <command> -e <environment>}. */
+public class Config implements BoosterConfigurator {
+  @Override
+  public void configure() {
+    Booster.configure("local", config -> {
+      config.appName = "{{{appNameLiteral}}}";
+      config.providerPackage = "com.boostercloud.framework.provider.local";
+    });
+{{#productionProvider}}
+
+    Booster.configure("production", config -> {
+      config.appName = "{{{appNameLiteral}}}";
+      config.providerPackage = "{{{productionProviderLiteral}}}";
+    });
+{{/productionProvider}}
+  }
+}

@@ -1,0 +1,16 @@
+# Build output (anchored so that source packages named 'target' are not ignored)
+/target/
+/*/target/
+/rockets/*/target/
+*.class
+# Local Booster runtime data (local provider)
+.booster/
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+# OS
+.DS_Store

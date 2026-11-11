@@ -1,0 +1,2 @@
+{"$$indexCreated":{"fieldName":"expirationTime","expireAfterSeconds":172800}}
+{"expirationTime":1762862400,"user":{"username":"ada@example.com","roles":["UserWithEmail"],"claims":{"id":"ada@example.com","email":"ada@example.com","booster:role":"UserWithEmail","iat":1762682400,"exp":1762686000,"iss":"booster","sub":"ada@example.com"}},"connectionID":"9e8d7c6b-5a49-4382-9170-605f4e3d2c1b","_id":"wC1oN2nE3cT4iO5n"}

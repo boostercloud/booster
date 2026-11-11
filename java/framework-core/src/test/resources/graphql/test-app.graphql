@@ -1,0 +1,357 @@
+type Address {
+  street: String!
+  zip: Float!
+}
+
+input AddressArrayPropertyFilter {
+  includes: JSON
+  isDefined: Boolean
+}
+
+input AddressPropertyFilter {
+  street: StringPropertyFilter
+  zip: NumberPropertyFilter
+  and: [AddressPropertyFilter]
+  or: [AddressPropertyFilter]
+  not: AddressPropertyFilter
+  isDefined: Boolean
+}
+
+input AddressPropertySortBy {
+  street: orderProperty
+  zip: orderProperty
+}
+
+type Bike {
+  brand: String!
+}
+
+input BooleanPropertyFilter {
+  eq: Boolean
+  ne: Boolean
+  isDefined: Boolean
+}
+
+type Car {
+  wheels: Float!
+}
+
+type Category {
+  name: String!
+  parent: Category
+}
+
+input CategoryPropertyFilter {
+  name: StringPropertyFilter
+  parent: CategoryPropertyFilter
+  and: [CategoryPropertyFilter]
+  or: [CategoryPropertyFilter]
+  not: CategoryPropertyFilter
+  isDefined: Boolean
+}
+
+input CategoryPropertySortBy {
+  name: orderProperty
+  parent: CategoryPropertySortBy
+}
+
+input CreateProductInput {
+  sku: String!
+  price: Float!
+}
+
+"Date custom scalar type"
+scalar Date
+
+input DatePropertyFilter {
+  eq: Date
+  ne: Date
+  lte: Date
+  lt: Date
+  gte: Date
+  gt: Date
+  in: [Date]
+  isDefined: Boolean
+}
+
+input DeleteProductInput {
+  productId: ID!
+}
+
+enum EntityType {
+  Product
+}
+
+type EventQueryResponse {
+  type: String!
+  entity: String!
+  entityID: ID!
+  requestID: ID!
+  user: User
+  createdAt: String!
+  value: JSON!
+  deletedAt: String
+}
+
+enum EventType {
+  ProductCreated
+}
+
+input FindProductsInput {
+  sku: String
+}
+
+input GetStockInput {
+  productId: ID!
+}
+
+"The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404_1st_edition_october_2009.pdf)."
+scalar JSON
+
+input ListProductReadModelFilter {
+  id: UUIDPropertyFilter
+  sku: StringPropertyFilter
+  price: NumberPropertyFilter
+  available: BooleanPropertyFilter
+  createdAt: DatePropertyFilter
+  tags: StringArrayPropertyFilter
+  address: AddressPropertyFilter
+  size: SizePropertyFilter
+  metadata: JSON
+  vehicle: JSON
+  page: Page_string_PropertyFilter
+  addresses: AddressArrayPropertyFilter
+  category: CategoryPropertyFilter
+  and: [ListProductReadModelFilter]
+  or: [ListProductReadModelFilter]
+  not: ListProductReadModelFilter
+}
+
+input ListTimelineReadModelFilter {
+  id: UUIDPropertyFilter
+  timestamp: JSON
+  text: StringPropertyFilter
+  and: [ListTimelineReadModelFilter]
+  or: [ListTimelineReadModelFilter]
+  not: ListTimelineReadModelFilter
+}
+
+type Mutation {
+  CreateProduct(input: CreateProductInput!): ID!
+  DeleteProduct(input: DeleteProductInput!): JSON!
+}
+
+input NumberPropertyFilter {
+  eq: Float
+  ne: Float
+  lte: Float
+  lt: Float
+  gte: Float
+  gt: Float
+  in: [Float]
+  isDefined: Boolean
+}
+
+input Page_string_PropertyFilter {
+  items: TArrayPropertyFilter
+  first: JSON
+  and: [Page_string_PropertyFilter]
+  or: [Page_string_PropertyFilter]
+  not: Page_string_PropertyFilter
+  isDefined: Boolean
+}
+
+type ProductReadModel {
+  id: ID!
+  sku: String!
+  price: Float!
+  available: Boolean!
+  createdAt: Date!
+  tags: [String!]!
+  address: Address
+  size: Size!
+  metadata: JSON!
+  vehicle: Vehicle!
+  page: JSON!
+  addresses: [Address!]!
+  category: Category
+  priceWithTaxes: Float!
+}
+
+type ProductReadModelConnection {
+  items: [ProductReadModel!]!
+  count: Int!
+  cursor: JSON
+}
+
+input ProductReadModelFilter {
+  id: UUIDPropertyFilter
+  sku: StringPropertyFilter
+  price: NumberPropertyFilter
+  available: BooleanPropertyFilter
+  createdAt: DatePropertyFilter
+  tags: StringArrayPropertyFilter
+  address: AddressPropertyFilter
+  size: SizePropertyFilter
+  metadata: JSON
+  vehicle: JSON
+  page: Page_string_PropertyFilter
+  addresses: AddressArrayPropertyFilter
+  category: CategoryPropertyFilter
+  and: [ProductReadModelFilter]
+  or: [ProductReadModelFilter]
+  not: ProductReadModelFilter
+  isDefined: Boolean
+}
+
+input ProductReadModelSortBy {
+  id: orderProperty
+  sku: orderProperty
+  price: orderProperty
+  available: orderProperty
+  createdAt: orderProperty
+  tags: orderProperty
+  address: AddressPropertySortBy
+  size: orderProperty
+  metadata: orderProperty
+  vehicle: orderProperty
+  page: orderProperty
+  addresses: AddressPropertySortBy
+  category: CategoryPropertySortBy
+}
+
+input ProductReadModelSubscriptionFilter {
+  id: UUIDPropertyFilter
+  sku: StringPropertyFilter
+  price: NumberPropertyFilter
+  available: BooleanPropertyFilter
+  createdAt: DatePropertyFilter
+  tags: StringArrayPropertyFilter
+  address: AddressPropertyFilter
+  size: SizePropertyFilter
+  metadata: JSON
+  vehicle: JSON
+  page: Page_string_PropertyFilter
+  addresses: AddressArrayPropertyFilter
+  category: CategoryPropertyFilter
+  and: [ProductReadModelSubscriptionFilter]
+  or: [ProductReadModelSubscriptionFilter]
+  not: ProductReadModelSubscriptionFilter
+  isDefined: Boolean
+}
+
+type Query {
+  ProductReadModel(id: ID!): ProductReadModel
+  TimelineReadModel(id: ID!, timestamp: ID): [TimelineReadModel]
+  ProductReadModels(filter: ProductReadModelFilter): [ProductReadModel!]! @deprecated(reason : "Method is deprecated. Use List* methods")
+  TimelineReadModels(filter: TimelineReadModelFilter): [TimelineReadModel!]! @deprecated(reason : "Method is deprecated. Use List* methods")
+  ListProductReadModels(filter: ListProductReadModelFilter, limit: Int, sortBy: ProductReadModelSortBy, afterCursor: JSON): ProductReadModelConnection!
+  ListTimelineReadModels(filter: ListTimelineReadModelFilter, limit: Int, sortBy: TimelineReadModelSortBy, afterCursor: JSON): TimelineReadModelConnection!
+  eventsByEntity(entity: EntityType!, entityID: ID, from: String, to: String, limit: Int): [EventQueryResponse]
+  eventsByType(type: EventType!, from: String, to: String, limit: Int): [EventQueryResponse]
+  GetStock(input: GetStockInput!): Float!
+  FindProducts(input: FindProductsInput!): [Address!]!
+}
+
+enum Size {
+  SMALL
+  LARGE
+}
+
+input SizePropertyFilter {
+  eq: Size
+  ne: Size
+  isDefined: Boolean
+}
+
+input StringArrayPropertyFilter {
+  includes: String
+  isDefined: Boolean
+}
+
+input StringPropertyFilter {
+  eq: String
+  ne: String
+  lte: String
+  lt: String
+  gte: String
+  gt: String
+  in: [String]
+  beginsWith: String
+  contains: String
+  regex: String
+  iRegex: String
+  isDefined: Boolean
+}
+
+type Subscription {
+  ProductReadModel(id: ID!): ProductReadModel
+  TimelineReadModel(id: ID!): TimelineReadModel
+  ProductReadModels(filter: ProductReadModelSubscriptionFilter): ProductReadModel
+  TimelineReadModels(filter: TimelineReadModelSubscriptionFilter): TimelineReadModel
+}
+
+input TArrayPropertyFilter {
+  includes: JSON
+  isDefined: Boolean
+}
+
+type TimelineReadModel {
+  id: ID!
+  timestamp: JSON!
+  text: String!
+}
+
+type TimelineReadModelConnection {
+  items: [TimelineReadModel!]!
+  count: Int!
+  cursor: JSON
+}
+
+input TimelineReadModelFilter {
+  id: UUIDPropertyFilter
+  timestamp: JSON
+  text: StringPropertyFilter
+  and: [TimelineReadModelFilter]
+  or: [TimelineReadModelFilter]
+  not: TimelineReadModelFilter
+  isDefined: Boolean
+}
+
+input TimelineReadModelSortBy {
+  id: orderProperty
+  timestamp: orderProperty
+  text: orderProperty
+}
+
+input TimelineReadModelSubscriptionFilter {
+  id: UUIDPropertyFilter
+  timestamp: JSON
+  text: StringPropertyFilter
+  and: [TimelineReadModelSubscriptionFilter]
+  or: [TimelineReadModelSubscriptionFilter]
+  not: TimelineReadModelSubscriptionFilter
+  isDefined: Boolean
+}
+
+input UUIDPropertyFilter {
+  eq: ID
+  ne: ID
+  in: [ID]
+  beginsWith: String
+  contains: String
+  isDefined: Boolean
+}
+
+type User {
+  id: String
+  username: String!
+  roles: [String!]
+}
+
+union Vehicle = Car | Bike
+
+enum orderProperty {
+  ASC
+  DESC
+}

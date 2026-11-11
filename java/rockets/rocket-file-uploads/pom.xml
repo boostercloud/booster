@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.boostercloud</groupId>
+    <artifactId>booster-parent</artifactId>
+    <version>4.1.0</version>
+    <relativePath>../../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>booster-rocket-file-uploads</artifactId>
+  <name>Booster file uploads rocket</name>
+  <description>File uploads rocket (types, core, local and Azure implementations).</description>
+
+  <!-- One module for the six TypeScript packages: types + core (application side), the local runtime and
+       infrastructure, the Azure runtime and infrastructure. -->
+  <dependencies>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-common-helpers</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-core</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-local</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-local-infrastructure</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-azure</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-azure-infrastructure</artifactId>
+    </dependency>
+    <!-- end-to-end tests: GraphQL clients and counters of the application tester -->
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-application-tester</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

@@ -1,0 +1,19 @@
+package {{{packageName}}};
+
+{{#imports}}
+import {{{fqn}}};
+{{/imports}}
+
+@ReadModel(authorize = /* Specify authorized roles here. Use All.class to authorize anyone */)
+public record {{{name}}}(
+    UUID id{{#fields}},
+    {{{type}}} {{{name}}}{{/fields}}
+) {
+{{#projections}}
+
+  @Projects(entity = {{{entityName}}}.class, joinKey = "{{{entityId}}}")
+  public static ProjectionResult<{{{name}}}> project{{{entityName}}}({{{entityName}}} entity, {{{name}}} current{{{name}}}) {
+    return ProjectionResult.of(/* NEW {{name}} HERE */);
+  }
+{{/projections}}
+}

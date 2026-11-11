@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.boostercloud</groupId>
+    <artifactId>booster-parent</artifactId>
+    <version>4.1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>booster-cli</artifactId>
+  <name>Booster CLI</name>
+  <description>The boost command line tool.</description>
+
+  <!--
+    The CLI talks to a user project only through files and processes (Maven and the application's own
+    main class), so it deliberately has no compile-time dependency on the framework modules.
+  -->
+  <dependencies>
+    <dependency>
+      <groupId>info.picocli</groupId>
+      <artifactId>picocli</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.spullara.mustache.java</groupId>
+      <artifactId>compiler</artifactId>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <!-- Only the version descriptor is filtered: templates contain ${...} placeholders for the generated pom -->
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>com/boostercloud/cli/booster-cli.properties</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <excludes>
+          <exclude>com/boostercloud/cli/booster-cli.properties</exclude>
+        </excludes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <!--
+        The jar's Main-Class, com.boostercloud.cli.launcher.JavaVersionCheck (src/main/java8), is compiled for Java 8
+        so that an older JVM can load it and print that the CLI needs Java 27, instead of an UnsupportedClassVersionError.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>java-version-check</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <release>8</release>
+              <compileSourceRoots>
+                <compileSourceRoot>${project.basedir}/src/main/java8</compileSourceRoot>
+              </compileSourceRoots>
+              <compilerArgs>
+                <!-- no "release 8 is obsolete" warnings -->
+                <arg>-Xlint:all,-options</arg>
+              </compilerArgs>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>com.boostercloud.cli.launcher.JavaVersionCheck</mainClass>
+            </manifest>
+          </archive>
+        </configuration>
+      </plugin>
+      <!--
+        Executable fat jar used by bin/boost: target/booster-cli-<version>.jar. It replaces the main artifact, so the
+        pom that is installed or deployed with it is the dependency-reduced one (written under target/): picocli and
+        the mustache compiler are inside the jar and must not reach consumers a second time as dependencies.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>true</createDependencyReducedPom>
+              <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>module-info.class</exclude>
+                    <exclude>META-INF/versions/*/module-info.class</exclude>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.boostercloud.cli.launcher.JavaVersionCheck</mainClass>
+                  <manifestEntries>
+                    <Implementation-Title>${project.name}</Implementation-Title>
+                    <Implementation-Version>${project.version}</Implementation-Version>
+                  </manifestEntries>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

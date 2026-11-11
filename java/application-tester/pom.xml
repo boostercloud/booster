@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.boostercloud</groupId>
+    <artifactId>booster-parent</artifactId>
+    <version>4.1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>booster-application-tester</artifactId>
+  <name>Booster application tester</name>
+  <description>Helpers to test deployed Booster applications (GraphQL, HTTP, tokens).</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-common-helpers</artifactId>
+    </dependency>
+    <!-- GraphQL document parsing/printing for the test client (Apollo's gql tag + addTypename transform) -->
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java</artifactId>
+    </dependency>
+
+    <!-- In-JVM fake GraphQL HTTP + WebSocket server used by the tests -->
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty.websocket</groupId>
+      <artifactId>jetty-websocket-jetty-server</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

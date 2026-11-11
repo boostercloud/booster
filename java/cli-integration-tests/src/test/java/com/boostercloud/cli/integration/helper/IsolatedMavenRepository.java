@@ -1,0 +1,202 @@
+package com.boostercloud.cli.integration.helper;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.function.Supplier;
+
+/**
+ * The Maven repository the generated projects are built against: the Java counterpart of
+ * {@code overrideWithBoosterLocalDependencies} ({@code integration/helper/deps-helper.ts}), which points the
+ * {@code @boostercloud/*} dependencies of a sandbox at the packed {@code .tgz} files of the monorepo.
+ *
+ * <p>The profile {@code e2e} installs the framework artifacts of the reactor into
+ * {@link CliTestEnvironment#isolatedRepository()} (never into {@code ~/.m2}). Every Maven run started by the CLI gets
+ * {@code MAVEN_ARGS=-s <settings.xml>} (Maven 3.9+ reads it), and that settings file
+ *
+ * <ul>
+ *   <li>uses the isolated repository as the local repository, so the framework artifacts resolve from there and
+ *       nothing is written anywhere else;</li>
+ *   <li>declares the local repository of the build running the suite as a {@code file://} remote repository (read
+ *       only; checksums ignored, because a local repository does not always keep them), so the third-party
+ *       artifacts and plugins already downloaded are copied instead of fetched again;</li>
+ *   <li>keeps Maven Central (from the super POM) as the last resort for anything missing.</li>
+ * </ul>
+ */
+public final class IsolatedMavenRepository {
+  /** The id of the {@code file://} repository in the generated settings. */
+  public static final String USER_REPOSITORY_ID = "booster-it-user-local-repository";
+
+  private static final List<String> FRAMEWORK_ARTIFACTS =
+      List.of(
+          "booster-parent",
+          "booster-metadata",
+          "booster-framework-types",
+          "booster-framework-common-helpers",
+          "booster-framework-core",
+          "booster-framework-provider-local",
+          "booster-framework-provider-local-infrastructure",
+          "booster-framework-provider-azure",
+          "booster-framework-provider-azure-infrastructure");
+
+  private static Path settings;
+
+  private IsolatedMavenRepository() {}
+
+  /**
+   * Writes the settings file (once per test JVM) after checking that the profile installed the framework.
+   *
+   * @return {@code <work>/maven/settings.xml}, or a file in a temporary directory when that path contains whitespace
+   *     (see {@link #settingsLocation})
+   * @throws IllegalStateException when a framework artifact is missing from the isolated repository
+   */
+  public static synchronized Path settingsFile() {
+    if (settings == null) {
+      checkFrameworkIsInstalled();
+      Path file = settingsLocation(CliTestEnvironment.workDirectory(), IsolatedMavenRepository::temporaryDirectory);
+      write(file, settingsXml(CliTestEnvironment.isolatedRepository(), CliTestEnvironment.userRepository()));
+      settings = file;
+    }
+    return settings;
+  }
+
+  /**
+   * Where the settings file goes. {@code bin/mvn} expands {@code MAVEN_ARGS} unquoted, so the shell splits it on
+   * whitespace and {@code -s} must get a path without any. The work directory is inside the checkout, which may
+   * contain spaces ({@code /Users/ann/My Projects/booster}): then the file goes to a new directory under
+   * {@code java.io.tmpdir}, removed when the test JVM exits. Only this file moves; the paths written inside it (the
+   * repositories) may contain whitespace.
+   *
+   * @param workDirectory the work directory of the suite
+   * @param temporaryDirectory creates the fallback directory
+   * @return the settings file to write
+   * @throws IllegalStateException when the fallback contains whitespace too
+   */
+  static Path settingsLocation(Path workDirectory, Supplier<Path> temporaryDirectory) {
+    Path file = workDirectory.resolve("maven").resolve("settings.xml");
+    if (!containsWhitespace(file)) {
+      return file;
+    }
+    Path fallback = temporaryDirectory.get().resolve("settings.xml");
+    if (containsWhitespace(fallback)) {
+      throw new IllegalStateException(
+          "bin/mvn splits MAVEN_ARGS on whitespace, so the settings file needs a path without any, but both "
+              + file + " and " + fallback + " have some. Pass -Dbooster.it.work=<a directory without whitespace>"
+              + " (or -Djava.io.tmpdir=...) to the build.");
+    }
+    return fallback;
+  }
+
+  private static boolean containsWhitespace(Path path) {
+    return path.toString().chars().anyMatch(Character::isWhitespace);
+  }
+
+  private static Path temporaryDirectory() {
+    try {
+      Path directory = Files.createTempDirectory("booster-it-maven-");
+      directory.toFile().deleteOnExit();
+      directory.resolve("settings.xml").toFile().deleteOnExit();
+      return directory;
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+
+  /**
+   * The settings file contents.
+   *
+   * @param localRepository the isolated repository
+   * @param userRepository the repository read through {@code file://}
+   * @return the XML document
+   */
+  public static String settingsXml(Path localRepository, Path userRepository) {
+    String userRepositoryUrl = userRepository.toUri().toString();
+    return """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <!-- Generated by the Booster CLI integration tests (IsolatedMavenRepository) -->
+        <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+          <localRepository>%1$s</localRepository>
+          <interactiveMode>false</interactiveMode>
+          <profiles>
+            <profile>
+              <id>booster-it</id>
+              <repositories>
+                <repository>
+                  <id>%2$s</id>
+                  <url>%3$s</url>
+                  <releases><enabled>true</enabled><checksumPolicy>ignore</checksumPolicy></releases>
+                  <snapshots><enabled>false</enabled></snapshots>
+                </repository>
+              </repositories>
+              <pluginRepositories>
+                <pluginRepository>
+                  <id>%2$s</id>
+                  <url>%3$s</url>
+                  <releases><enabled>true</enabled><checksumPolicy>ignore</checksumPolicy></releases>
+                  <snapshots><enabled>false</enabled></snapshots>
+                </pluginRepository>
+              </pluginRepositories>
+            </profile>
+          </profiles>
+          <activeProfiles>
+            <activeProfile>booster-it</activeProfile>
+          </activeProfiles>
+        </settings>
+        """
+        .formatted(localRepository, USER_REPOSITORY_ID, userRepositoryUrl);
+  }
+
+  /**
+   * A git configuration for the projects the CLI initialises ({@code GIT_CONFIG_GLOBAL}): the TypeScript suite sets
+   * {@code user.name}/{@code user.email} in the global git configuration of the machine when they are missing; this
+   * suite never touches it and gives git an identity of its own instead.
+   *
+   * @return {@code <work>/git/gitconfig}
+   */
+  public static synchronized Path gitConfigFile() {
+    Path file = CliTestEnvironment.workDirectory().resolve("git").resolve("gitconfig");
+    if (!Files.exists(file)) {
+      write(
+          file,
+          """
+          [user]
+          \tname = Booster Test
+          \temail = test@booster.cloud
+          [init]
+          \tdefaultBranch = main
+          [commit]
+          \tgpgsign = false
+          """);
+    }
+    return file;
+  }
+
+  private static void checkFrameworkIsInstalled() {
+    String version = CliTestEnvironment.boosterVersion();
+    Path repository = CliTestEnvironment.isolatedRepository();
+    for (String artifact : FRAMEWORK_ARTIFACTS) {
+      Path pom = repository.resolve("com/boostercloud").resolve(artifact).resolve(version)
+          .resolve(artifact + "-" + version + ".pom");
+      if (!Files.isRegularFile(pom)) {
+        throw new IllegalStateException(
+            "The framework artifact com.boostercloud:" + artifact + ":" + version + " is not installed in "
+                + repository + ". The profile 'e2e' installs it before the tests: from java/, run"
+                + " mvn -B -Pe2e -pl cli-integration-tests -am verify");
+      }
+    }
+  }
+
+  private static void write(Path file, String contents) {
+    try {
+      Files.createDirectories(file.getParent());
+      Files.writeString(file, contents, StandardCharsets.UTF_8);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+  }
+}

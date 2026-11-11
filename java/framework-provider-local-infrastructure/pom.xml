@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.boostercloud</groupId>
+    <artifactId>booster-parent</artifactId>
+    <version>4.1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+
+  <artifactId>booster-framework-provider-local-infrastructure</artifactId>
+  <name>Booster local provider infrastructure</name>
+  <description>Local HTTP server (GraphQL, health, rockets), scheduler and test helper.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-provider-local</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-types</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.boostercloud</groupId>
+      <artifactId>booster-framework-common-helpers</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-server</artifactId>
+    </dependency>
+    <!-- Jetty logs through SLF4J. A library must not choose the application's SLF4J provider, so none is shipped
+         (JettyLogging keeps SLF4J's no-provider notice quiet); the tests use the no-op one. -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-nop</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+</project>

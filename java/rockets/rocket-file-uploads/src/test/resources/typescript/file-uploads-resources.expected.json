@@ -1,0 +1,183 @@
+{
+  "_derivation": [
+    "What the TypeScript Azure infrastructure rocket (rocket-file-uploads-azure-infrastructure 3.2.0, src/synth/*.ts) adds to cdk.tf.json for app 'test', environment 'production', config.env {CUSTOM_SETTING: 'custom value'} and the README storages (ClientST -> clientst / rocketfiles, cmsst / rocketfiles), walked by hand attribute by attribute.",
+    "cdktn tokens are written as the Terraform expressions they synthesize to: rocketStorage.name -> ${azurerm_storage_account.<id>.name}, .id -> ${...id}, functionApp.fqn -> azurerm_windows_function_app.<id>, resourceGroup.name/location -> ${azurerm_resource_group.<id>.name|location}.",
+    "Construct ids: toTerraformName(appPrefix 'testproduction', '<storage>rfst') and toTerraformName(appPrefix, 'rffunc') are literal; the container ids (toTerraformName(<name token>, 'rfsb<container>')) and the role assignment ids (toTerraformName(<id token> + <name token>, 'rfrlb'|'rfrlr')) are computed from token strings, so they are opaque: id null.",
+    "Resource ids of the framework (resource group testproductionrg, service plan testproductionpsp, host storage testproductionsp, Cosmos DB account testproductiondba, application function app testproductionfunc) are those of the framework's own synthesis."
+  ],
+  "resources": [
+    {
+      "type": "azurerm_storage_account",
+      "id": "stproductionclientstrfst",
+      "source": "terraform-storage-account.ts",
+      "attributes": {
+        "name": "clientst",
+        "resource_group_name": "${azurerm_resource_group.testproductionrg.name}",
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "account_replication_type": "LRS",
+        "account_tier": "Standard",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_storage_container",
+      "id": null,
+      "source": "terraform-storage-container.ts",
+      "attributes": {
+        "name": "rocketfiles",
+        "storage_account_id": "${azurerm_storage_account.stproductionclientstrfst.id}",
+        "container_access_type": "private",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_storage_account",
+      "id": "testproductioncmsstrfst",
+      "source": "terraform-storage-account.ts",
+      "attributes": {
+        "name": "cmsst",
+        "resource_group_name": "${azurerm_resource_group.testproductionrg.name}",
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "account_replication_type": "LRS",
+        "account_tier": "Standard",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_storage_container",
+      "id": null,
+      "source": "terraform-storage-container.ts",
+      "attributes": {
+        "name": "rocketfiles",
+        "storage_account_id": "${azurerm_storage_account.testproductioncmsstrfst.id}",
+        "container_access_type": "private",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_windows_function_app",
+      "id": "testproductionrffunc",
+      "source": "terraform-function-app.ts",
+      "attributes": {
+        "name": "testproductionrgfilesfunc",
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "resource_group_name": "${azurerm_resource_group.testproductionrg.name}",
+        "service_plan_id": "${azurerm_service_plan.testproductionpsp.id}",
+        "app_settings": {
+          "WEBSITE_RUN_FROM_PACKAGE": "1",
+          "WEBSITE_CONTENTSHARE": "testproductionrffunc",
+          "CUSTOM_SETTING": "custom value",
+          "BOOSTER_ENV": "production",
+          "COSMOSDB_CONNECTION_STRING": "AccountEndpoint=https://${azurerm_cosmosdb_account.testproductiondba.name}.documents.azure.com:443/;AccountKey=${azurerm_cosmosdb_account.testproductiondba.primary_key};",
+          "BOOSTER_ROCKET_FUNCTION_ID": "rocket-files",
+          "${azurerm_storage_account.stproductionclientstrfst.name}__serviceUri": "https://${azurerm_storage_account.stproductionclientstrfst.name}.blob.core.windows.net",
+          "${azurerm_storage_account.testproductioncmsstrfst.name}__serviceUri": "https://${azurerm_storage_account.testproductioncmsstrfst.name}.blob.core.windows.net"
+        },
+        "storage_account_name": "${azurerm_storage_account.testproductionsp.name}",
+        "storage_account_access_key": "${azurerm_storage_account.testproductionsp.primary_access_key}",
+        "depends_on": ["azurerm_resource_group.testproductionrg"],
+        "lifecycle": { "ignore_changes": ["app_settings[\"WEBSITE_RUN_FROM_PACKAGE\"]"] },
+        "provider": "azurerm",
+        "site_config": { "application_stack": { "node_version": "~22" } },
+        "functions_extension_version": "~4",
+        "identity": { "type": "SystemAssigned" }
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (clientst, rocket function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.stproductionclientstrfst.id}",
+        "role_definition_name": "Storage Blob Data Contributor",
+        "principal_id": "${azurerm_windows_function_app.testproductionrffunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (clientst, rocket function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.stproductionclientstrfst.id}",
+        "role_definition_name": "Reader and Data Access",
+        "principal_id": "${azurerm_windows_function_app.testproductionrffunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (clientst, application function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.stproductionclientstrfst.id}",
+        "role_definition_name": "Storage Blob Data Contributor",
+        "principal_id": "${azurerm_windows_function_app.testproductionfunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (clientst, application function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.stproductionclientstrfst.id}",
+        "role_definition_name": "Reader and Data Access",
+        "principal_id": "${azurerm_windows_function_app.testproductionfunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (cmsst, rocket function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.testproductioncmsstrfst.id}",
+        "role_definition_name": "Storage Blob Data Contributor",
+        "principal_id": "${azurerm_windows_function_app.testproductionrffunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (cmsst, rocket function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.testproductioncmsstrfst.id}",
+        "role_definition_name": "Reader and Data Access",
+        "principal_id": "${azurerm_windows_function_app.testproductionrffunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (cmsst, application function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.testproductioncmsstrfst.id}",
+        "role_definition_name": "Storage Blob Data Contributor",
+        "principal_id": "${azurerm_windows_function_app.testproductionfunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    },
+    {
+      "type": "azurerm_role_assignment",
+      "id": null,
+      "source": "terraform-role-assignment.ts (cmsst, application function app)",
+      "attributes": {
+        "scope": "${azurerm_storage_account.testproductioncmsstrfst.id}",
+        "role_definition_name": "Reader and Data Access",
+        "principal_id": "${azurerm_windows_function_app.testproductionfunc.identity.0.principal_id}",
+        "provider": "azurerm"
+      }
+    }
+  ],
+  "changedResources": [
+    {
+      "type": "azurerm_windows_function_app",
+      "id": "testproductionfunc",
+      "source": "synth.ts: applicationSynthStack.functionApp!.addOverride('identity', { type: 'SystemAssigned' })",
+      "attributes": { "identity": { "type": "SystemAssigned" } }
+    }
+  ]
+}

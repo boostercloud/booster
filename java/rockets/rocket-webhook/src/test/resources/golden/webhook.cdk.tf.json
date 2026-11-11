@@ -1,0 +1,539 @@
+{
+  "//": {
+    "metadata": {
+      "backend": "local",
+      "stackName": "testproduction",
+      "version": "0.25.0"
+    },
+    "outputs": {
+      "azureFeature": {
+        "graphqlURL": "azureFeaturegraphqlURL_E7D4B382",
+        "httpURL": "azureFeaturehttpURL_8AD6F458",
+        "sensorHealthURL": "azureFeaturesensorHealthURL_9F4278B4"
+      }
+    }
+  },
+  "data": {
+    "azurerm_public_ip": {
+      "testproductiondatapip": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductiondatapip",
+            "uniqueId": "testproductiondatapip"
+          }
+        },
+        "name": "${azurerm_public_ip.pip.name}",
+        "provider": "azurerm",
+        "resource_group_name": "testproductionrg"
+      }
+    }
+  },
+  "output": {
+    "azureFeaturegraphqlURL_E7D4B382": {
+      "description": "The base URL for sending GraphQL mutations and queries",
+      "value": "http://${data.azurerm_public_ip.testproductiondatapip.fqdn}/production/graphql"
+    },
+    "azureFeaturehttpURL_8AD6F458": {
+      "description": "The base URL for all the auth endpoints",
+      "value": "http://${data.azurerm_public_ip.testproductiondatapip.fqdn}/production"
+    },
+    "azureFeaturesensorHealthURL_9F4278B4": {
+      "description": "The base URL for getting health information",
+      "value": "http://${data.azurerm_public_ip.testproductiondatapip.fqdn}/production/sensor/health"
+    }
+  },
+  "provider": {
+    "azurerm": [
+      {
+        "features": [
+          {}
+        ],
+        "resource_provider_registrations": "legacy",
+        "subscription_id": "subscription-id"
+      }
+    ]
+  },
+  "resource": {
+    "azurerm_application_gateway": {
+      "ag": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/ag",
+            "uniqueId": "ag"
+          }
+        },
+        "backend_address_pool": [
+          {
+            "fqdns": [
+              "${azurerm_windows_function_app.estproductionwebhookfunc.name}.azurewebsites.net"
+            ],
+            "name": "rocketWebHookBackendAddressPool"
+          }
+        ],
+        "backend_http_settings": [
+          {
+            "cookie_based_affinity": "Disabled",
+            "name": "mainBackendHttpSettings",
+            "pick_host_name_from_backend_address": true,
+            "port": 80,
+            "protocol": "Http",
+            "request_timeout": 20
+          }
+        ],
+        "frontend_ip_configuration": [
+          {
+            "name": "myFrontendIpConfiguration",
+            "public_ip_address_id": "${azurerm_public_ip.pip.id}"
+          }
+        ],
+        "frontend_port": [
+          {
+            "name": "myFrontendPort",
+            "port": 80
+          }
+        ],
+        "gateway_ip_configuration": [
+          {
+            "name": "myGatewayIpConfiguration",
+            "subnet_id": "${azurerm_subnet.testproductionvsn.id}"
+          }
+        ],
+        "http_listener": [
+          {
+            "frontend_ip_configuration_name": "myFrontendIpConfiguration",
+            "frontend_port_name": "myFrontendPort",
+            "name": "mainHttpListener",
+            "protocol": "Http"
+          }
+        ],
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgapigw",
+        "provider": "azurerm",
+        "request_routing_rule": [
+          {
+            "backend_address_pool_name": "functionManagementBackendAddressPool",
+            "backend_http_settings_name": "mainBackendHttpSettings",
+            "http_listener_name": "mainHttpListener",
+            "name": "mainRequestRoutingRule",
+            "priority": 100,
+            "rewrite_rule_set_name": "mainRewriteRuleSet",
+            "rule_type": "PathBasedRouting",
+            "url_path_map_name": "mainUrlPathMap"
+          }
+        ],
+        "resource_group_name": "testproductionrg",
+        "rewrite_rule_set": [
+          {
+            "name": "mainRewriteRuleSet",
+            "rewrite_rule": [
+              {
+                "condition": [
+                  {
+                    "ignore_case": true,
+                    "pattern": "/test",
+                    "variable": "var_request_uri"
+                  }
+                ],
+                "name": "testproductionrwf47ac10",
+                "rule_sequence": 1,
+                "url": {
+                  "components": "path_only",
+                  "path": "/api/test"
+                }
+              },
+              {
+                "condition": [
+                  {
+                    "ignore_case": true,
+                    "pattern": "/clients/other",
+                    "variable": "var_request_uri"
+                  }
+                ],
+                "name": "testproductionrw9b2d5f3",
+                "rule_sequence": 2,
+                "url": {
+                  "components": "path_only",
+                  "path": "/api/clients/other"
+                }
+              }
+            ]
+          }
+        ],
+        "sku": {
+          "capacity": 1,
+          "name": "Standard_v2",
+          "tier": "Standard_v2"
+        },
+        "url_path_map": [
+          {
+            "default_backend_address_pool_name": "functionManagementBackendAddressPool",
+            "default_backend_http_settings_name": "mainBackendHttpSettings",
+            "default_rewrite_rule_set_name": "mainRewriteRuleSet",
+            "name": "mainUrlPathMap",
+            "path_rule": [
+              {
+                "backend_address_pool_name": "rocketWebHookBackendAddressPool",
+                "backend_http_settings_name": "mainBackendHttpSettings",
+                "name": "testproductionruf47ac10",
+                "paths": [
+                  "/test",
+                  "/test/*"
+                ],
+                "rewrite_rule_set_name": "mainRewriteRuleSet"
+              },
+              {
+                "backend_address_pool_name": "rocketWebHookBackendAddressPool",
+                "backend_http_settings_name": "mainBackendHttpSettings",
+                "name": "testproductionru9b2d5f3",
+                "paths": [
+                  "/clients/other",
+                  "/clients/other/*"
+                ],
+                "rewrite_rule_set_name": "mainRewriteRuleSet"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "azurerm_cosmosdb_account": {
+      "testproductiondba": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductiondba",
+            "uniqueId": "testproductiondba"
+          }
+        },
+        "automatic_failover_enabled": true,
+        "consistency_policy": {
+          "consistency_level": "Session"
+        },
+        "depends_on": [
+          "azurerm_resource_group.testproductionrg"
+        ],
+        "geo_location": [
+          {
+            "failover_priority": 0,
+            "location": "${azurerm_resource_group.testproductionrg.location}"
+          }
+        ],
+        "is_virtual_network_filter_enabled": false,
+        "kind": "GlobalDocumentDB",
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "multiple_write_locations_enabled": false,
+        "name": "testproductionrgcdba",
+        "offer_type": "Standard",
+        "provider": "azurerm",
+        "resource_group_name": "testproductionrg"
+      }
+    },
+    "azurerm_cosmosdb_sql_container": {
+      "testproductiondispatche": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductiondispatche",
+            "uniqueId": "testproductiondispatche"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.testproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.testproductiondbd.name}",
+        "default_ttl": 300,
+        "name": "test-app-dispatched-events",
+        "partition_key_paths": [
+          "/eventId"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.testproductiondba.resource_group_name}",
+        "unique_key": [
+          {
+            "paths": [
+              "/eventId"
+            ]
+          }
+        ]
+      },
+      "testproductionevents": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionevents",
+            "uniqueId": "testproductionevents"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.testproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "database_name": "${azurerm_cosmosdb_sql_database.testproductiondbd.name}",
+        "name": "test-app-events-store",
+        "partition_key_paths": [
+          "/entityTypeName_entityID_kind"
+        ],
+        "partition_key_version": 2,
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_cosmosdb_account.testproductiondba.resource_group_name}"
+      }
+    },
+    "azurerm_cosmosdb_sql_database": {
+      "testproductiondbd": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductiondbd",
+            "uniqueId": "testproductiondbd"
+          }
+        },
+        "account_name": "${azurerm_cosmosdb_account.testproductiondba.name}",
+        "autoscale_settings": {
+          "max_throughput": 1000
+        },
+        "name": "test-app",
+        "provider": "azurerm",
+        "resource_group_name": "testproductionrg"
+      }
+    },
+    "azurerm_network_security_group": {
+      "testproductionsg": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionsg",
+            "uniqueId": "testproductionsg"
+          }
+        },
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgrjsg",
+        "resource_group_name": "testproductionrg",
+        "security_rule": [
+          {
+            "access": "Allow",
+            "description": null,
+            "destination_address_prefix": "*",
+            "destination_address_prefixes": null,
+            "destination_application_security_group_ids": null,
+            "destination_port_range": "*",
+            "destination_port_ranges": null,
+            "direction": "Inbound",
+            "name": "Allow-All-testproductionrgrjsg",
+            "priority": 100,
+            "protocol": "Tcp",
+            "source_address_prefix": "*",
+            "source_address_prefixes": null,
+            "source_application_security_group_ids": null,
+            "source_port_range": "*",
+            "source_port_ranges": null
+          },
+          {
+            "access": "Allow",
+            "description": null,
+            "destination_address_prefix": "*",
+            "destination_address_prefixes": null,
+            "destination_application_security_group_ids": null,
+            "destination_port_range": "*",
+            "destination_port_ranges": null,
+            "direction": "Outbound",
+            "name": "Allow-All-testproductionrgrjsgb",
+            "priority": 100,
+            "protocol": "Tcp",
+            "source_address_prefix": "*",
+            "source_address_prefixes": null,
+            "source_application_security_group_ids": null,
+            "source_port_range": "*",
+            "source_port_ranges": null
+          }
+        ]
+      }
+    },
+    "azurerm_public_ip": {
+      "pip": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/pip",
+            "uniqueId": "pip"
+          }
+        },
+        "allocation_method": "Static",
+        "domain_name_label": "testproductionrgapis",
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgpip",
+        "resource_group_name": "testproductionrg",
+        "sku": "Standard"
+      }
+    },
+    "azurerm_resource_group": {
+      "testproductionrg": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionrg",
+            "uniqueId": "testproductionrg"
+          }
+        },
+        "location": "East US",
+        "name": "testproductionrg",
+        "provider": "azurerm"
+      }
+    },
+    "azurerm_service_plan": {
+      "testproductionpsp": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionpsp",
+            "uniqueId": "testproductionpsp"
+          }
+        },
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgpsp",
+        "os_type": "Windows",
+        "provider": "azurerm",
+        "resource_group_name": "testproductionrg",
+        "sku_name": "Y1",
+        "worker_count": 1
+      }
+    },
+    "azurerm_storage_account": {
+      "testproductionsp": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionsp",
+            "uniqueId": "testproductionsp"
+          }
+        },
+        "account_replication_type": "LRS",
+        "account_tier": "Standard",
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgsp",
+        "provider": "azurerm",
+        "resource_group_name": "testproductionrg"
+      }
+    },
+    "azurerm_subnet": {
+      "testproductionvsn": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionvsn",
+            "uniqueId": "testproductionvsn"
+          }
+        },
+        "address_prefixes": [
+          "10.0.1.0/24"
+        ],
+        "name": "testproductionrgvsn",
+        "resource_group_name": "testproductionrg",
+        "virtual_network_name": "${azurerm_virtual_network.testproductionvn.name}"
+      }
+    },
+    "azurerm_subnet_network_security_group_association": {
+      "testproductionsnsg": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionsnsg",
+            "uniqueId": "testproductionsnsg"
+          }
+        },
+        "network_security_group_id": "${azurerm_network_security_group.testproductionsg.id}",
+        "subnet_id": "${azurerm_subnet.testproductionvsn.id}"
+      }
+    },
+    "azurerm_virtual_network": {
+      "testproductionvn": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionvn",
+            "uniqueId": "testproductionvn"
+          }
+        },
+        "address_space": [
+          "10.0.0.0/16"
+        ],
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgvn",
+        "resource_group_name": "testproductionrg"
+      }
+    },
+    "azurerm_windows_function_app": {
+      "estproductionwebhookfunc": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/estproductionwebhookfunc",
+            "uniqueId": "estproductionwebhookfunc"
+          }
+        },
+        "app_settings": {
+          "BOOSTER_APP_CLASS": "com.example.webhooks.Main",
+          "BOOSTER_ENV": "production",
+          "BOOSTER_ROCKET_FUNCTION_ID": "rocket-webhook",
+          "COSMOSDB_CONNECTION_STRING": "AccountEndpoint=https://${azurerm_cosmosdb_account.testproductiondba.name}.documents.azure.com:443/;AccountKey=${azurerm_cosmosdb_account.testproductiondba.primary_key};",
+          "CUSTOM_SETTING": "custom value",
+          "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "${azurerm_storage_account.testproductionsp.primary_connection_string}",
+          "WEBSITE_CONTENTSHARE": "estproductionwebhookfunc",
+          "WEBSITE_RUN_FROM_PACKAGE": "1"
+        },
+        "depends_on": [
+          "azurerm_resource_group.testproductionrg"
+        ],
+        "functions_extension_version": "~4",
+        "lifecycle": {
+          "ignore_changes": [
+            "app_settings[\"WEBSITE_RUN_FROM_PACKAGE\"]"
+          ]
+        },
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgwebhookfunc",
+        "provider": "azurerm",
+        "resource_group_name": "${azurerm_resource_group.testproductionrg.name}",
+        "service_plan_id": "${azurerm_service_plan.testproductionpsp.id}",
+        "site_config": {
+          "application_stack": {
+            "java_version": "21"
+          }
+        },
+        "storage_account_access_key": "${azurerm_storage_account.testproductionsp.primary_access_key}",
+        "storage_account_name": "${azurerm_storage_account.testproductionsp.name}"
+      },
+      "testproductionfunc": {
+        "//": {
+          "metadata": {
+            "path": "testproduction/testproductionfunc",
+            "uniqueId": "testproductionfunc"
+          }
+        },
+        "app_settings": "${merge({\"WEBSITE_RUN_FROM_PACKAGE\" = \"1\", \"WEBSITE_CONTENTSHARE\" = \"testproductionfunc\", \"CUSTOM_SETTING\" = \"custom value\", \"BOOSTER_ROCKET_FUNCTION_ID\" = \"overridden by the rocket\", \"WebPubSubConnectionString\" = \"\", \"BOOSTER_ENV\" = \"production\", \"BOOSTER_REST_API_URL\" = \"http://testproductionrgapis.eastus.cloudapp.azure.com/production\", \"EVENTHUB_CONNECTION_STRING\" = \"\", \"EVENTHUB_NAME\" = \"booster_events\", \"EVENTHUB_MAX_RETRIES\" = \"5\", \"EVENTHUB_MODE\" = \"exponential\", \"COSMOSDB_CONNECTION_STRING\" = \"AccountEndpoint=https://${azurerm_cosmosdb_account.testproductiondba.name}.documents.azure.com:443/;AccountKey=${azurerm_cosmosdb_account.testproductiondba.primary_key};\", \"WEBSITE_CONTENTAZUREFILECONNECTIONSTRING\" = azurerm_storage_account.testproductionsp.primary_connection_string, \"BOOSTER_APP_NAME\" = \"\", \"BOOSTER_APP_CLASS\" = \"com.example.webhooks.Main\"}, {\"ROCKET_FUNCTION_APP_NAMES\" = \"testproductionrgwebhookfunc\", \"ROCKET_PACKAGE_MAPPING\" = \"\"})}",
+        "depends_on": [
+          "azurerm_resource_group.testproductionrg"
+        ],
+        "functions_extension_version": "~4",
+        "lifecycle": {
+          "ignore_changes": [
+            "app_settings[\"WEBSITE_RUN_FROM_PACKAGE\"]"
+          ]
+        },
+        "location": "${azurerm_resource_group.testproductionrg.location}",
+        "name": "testproductionrgfpr",
+        "provider": "azurerm",
+        "resource_group_name": "testproductionrg",
+        "service_plan_id": "${azurerm_service_plan.testproductionpsp.id}",
+        "site_config": {
+          "application_stack": {
+            "java_version": "21"
+          }
+        },
+        "storage_account_access_key": "${azurerm_storage_account.testproductionsp.primary_access_key}",
+        "storage_account_name": "${azurerm_storage_account.testproductionsp.name}"
+      }
+    }
+  },
+  "terraform": {
+    "backend": {
+      "local": {
+        "path": "<PROJECT_ROOT>/terraform.testproduction.tfstate"
+      }
+    },
+    "required_providers": {
+      "azurerm": {
+        "source": "azurerm",
+        "version": "~> 5.0"
+      }
+    }
+  }
+}

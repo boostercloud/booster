@@ -1,0 +1,4 @@
+{
+  "code": "429",
+  "message": "Message: {\"Errors\":[\"Request rate is large. More Request Units may be needed, so no changes were made. Please retry this request later. Learn more: http://aka.ms/cosmosdb-error-429\"]}\r\nActivityId: 4d5c5b3e-0000-0000-0000-000000000000"
+}

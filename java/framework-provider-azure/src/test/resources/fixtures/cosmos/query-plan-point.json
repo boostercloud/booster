@@ -1,0 +1,30 @@
+{
+  "partitionedQueryExecutionInfoVersion": 2,
+  "queryInfo": {
+    "distinctType": "None",
+    "top": null,
+    "offset": null,
+    "limit": null,
+    "orderBy": [
+      "Descending"
+    ],
+    "orderByExpressions": [
+      "c.createdAt"
+    ],
+    "groupByExpressions": [],
+    "groupByAliases": [],
+    "aggregates": [],
+    "groupByAliasToAggregateType": {},
+    "rewrittenQuery": "SELECT c._rid, [{\"item\": c.createdAt}] AS orderByItems, c AS payload\nFROM c\nWHERE ({documentdb-formattableorderbyquery-filter})\nORDER BY c.createdAt DESC",
+    "hasSelectValue": false,
+    "dCountInfo": null
+  },
+  "queryRanges": [
+    {
+      "min": "05C1D9CD673398",
+      "max": "05C1D9CD673398",
+      "isMinInclusive": true,
+      "isMaxInclusive": true
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "statusCode": 201,
+    "requestCharge": 6.29,
+    "eTag": "\"0800f1c2-0000-0d00-0000-65a000000010\"",
+    "resourceBody": {
+      "id": "generated-1"
+    }
+  }
+]
