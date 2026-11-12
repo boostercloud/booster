@@ -6,16 +6,37 @@ interface ScheduledCommandInfo {
   metadata: ScheduledCommandMetadata
 }
 
-export function configureScheduler(config: BoosterConfig, userProject: any): void {
-  const triggerScheduleCommand = userProject['boosterTriggerScheduledCommand']
-  Object.keys(config.scheduledCommandHandlers)
+type TriggerScheduledCommands = (request: { typeName: string }) => Promise<void>
+
+export function configureScheduler(config: BoosterConfig, userProject: Record<string, unknown>): void {
+  const scheduledCommandInfos = Object.keys(config.scheduledCommandHandlers)
     .map((scheduledCommandName) => buildScheduledCommandInfo(config, scheduledCommandName))
     .filter((scheduledCommandInfo) => scheduledCommandInfo.metadata.scheduledOn)
-    .forEach((scheduledCommandInfo) => {
-      scheduler.scheduleJob(scheduledCommandInfo.name, createCronExpression(scheduledCommandInfo.metadata), () => {
-        triggerScheduleCommand({ typeName: scheduledCommandInfo.name })
-      })
+  if (scheduledCommandInfos.length === 0) return
+
+  const triggerScheduledCommands = getTriggerScheduledCommands(userProject)
+  scheduledCommandInfos.forEach((scheduledCommandInfo) => {
+    scheduler.scheduleJob(scheduledCommandInfo.name, createCronExpression(scheduledCommandInfo.metadata), () => {
+      triggerScheduledCommands({ typeName: scheduledCommandInfo.name }).catch((error) =>
+        console.error(`Scheduled command ${scheduledCommandInfo.name} failed:`, error)
+      )
     })
+  })
+}
+
+/**
+ * Resolves the scheduled commands trigger exported by the user app. `boosterTriggerScheduledCommands` is the
+ * current name; the deprecated `boosterTriggerScheduledCommand` alias is still accepted for older apps.
+ */
+function getTriggerScheduledCommands(userProject: Record<string, unknown>): TriggerScheduledCommands {
+  const trigger = userProject?.boosterTriggerScheduledCommands ?? userProject?.boosterTriggerScheduledCommand
+  if (typeof trigger !== 'function') {
+    throw new Error(
+      'Scheduled commands are defined, but the app does not export `boosterTriggerScheduledCommands`. ' +
+        "Add it to the exports from '@boostercloud/framework-core' in your app's src/index.ts"
+    )
+  }
+  return trigger as TriggerScheduledCommands
 }
 
 function createCronExpression(scheduledCommandMetadata: ScheduledCommandMetadata): string {
