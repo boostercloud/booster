@@ -1,10 +1,10 @@
 import { BoosterConfig, ScheduledCommandMetadata } from '@boostercloud/framework-types'
 import * as scheduler from 'node-schedule'
 import { restore, stub, fake, SinonStub } from 'sinon'
-import { configureScheduler } from '../src/scheduler'
+import { prepareScheduler } from '../src/scheduler'
 import { expect } from './expect'
 
-describe('configureScheduler', () => {
+describe('prepareScheduler', () => {
   let scheduleJobStub: SinonStub
   let config: BoosterConfig
 
@@ -27,14 +27,14 @@ describe('configureScheduler', () => {
   }
 
   it('schedules each scheduled command with its cron expression', () => {
-    configureScheduler(config, { boosterTriggerScheduledCommands: fake.resolves(undefined) })
+    prepareScheduler(config, { boosterTriggerScheduledCommands: fake.resolves(undefined) })()
 
     expect(scheduleJobStub).to.have.been.calledOnceWith('CheckCart', '0 */2 * * *')
   })
 
   it('triggers the command using `boosterTriggerScheduledCommands`', () => {
     const boosterTriggerScheduledCommands = fake.resolves(undefined)
-    configureScheduler(config, { boosterTriggerScheduledCommands })
+    prepareScheduler(config, { boosterTriggerScheduledCommands })()
 
     triggerScheduledJob()
 
@@ -43,7 +43,7 @@ describe('configureScheduler', () => {
 
   it('falls back to the deprecated `boosterTriggerScheduledCommand` export', () => {
     const boosterTriggerScheduledCommand = fake.resolves(undefined)
-    configureScheduler(config, { boosterTriggerScheduledCommand })
+    prepareScheduler(config, { boosterTriggerScheduledCommand })()
 
     triggerScheduledJob()
 
@@ -53,7 +53,7 @@ describe('configureScheduler', () => {
   it('prefers `boosterTriggerScheduledCommands` when both exports are present', () => {
     const boosterTriggerScheduledCommands = fake.resolves(undefined)
     const boosterTriggerScheduledCommand = fake.resolves(undefined)
-    configureScheduler(config, { boosterTriggerScheduledCommands, boosterTriggerScheduledCommand })
+    prepareScheduler(config, { boosterTriggerScheduledCommands, boosterTriggerScheduledCommand })()
 
     triggerScheduledJob()
 
@@ -61,10 +61,16 @@ describe('configureScheduler', () => {
     expect(boosterTriggerScheduledCommand).not.to.have.been.called
   })
 
+  it('does not schedule anything until the returned function is called', () => {
+    prepareScheduler(config, { boosterTriggerScheduledCommands: fake.resolves(undefined) })
+
+    expect(scheduleJobStub).not.to.have.been.called
+  })
+
   it('logs the error when the scheduled command fails', async () => {
     const error = new Error('boom')
     const consoleErrorStub = stub(console, 'error')
-    configureScheduler(config, { boosterTriggerScheduledCommands: fake.rejects(error) })
+    prepareScheduler(config, { boosterTriggerScheduledCommands: fake.rejects(error) })()
 
     triggerScheduledJob()
     await new Promise((resolve) => setImmediate(resolve))
@@ -73,14 +79,16 @@ describe('configureScheduler', () => {
   })
 
   it('throws a descriptive error when the app exports no trigger', () => {
-    expect(() => configureScheduler(config, {})).to.throw(/boosterTriggerScheduledCommands/)
+    expect(() => prepareScheduler(config, {})).to.throw(/boosterTriggerScheduledCommands/)
     expect(scheduleJobStub).not.to.have.been.called
   })
 
   it('does not require the trigger when there are no scheduled commands', () => {
     delete config.scheduledCommandHandlers['CheckCart']
 
-    expect(() => configureScheduler(config, {})).not.to.throw()
+    const startScheduler = prepareScheduler(config, {})
+    startScheduler()
+
     expect(scheduleJobStub).not.to.have.been.called
   })
 })

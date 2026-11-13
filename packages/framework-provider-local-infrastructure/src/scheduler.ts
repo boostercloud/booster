@@ -8,20 +8,25 @@ interface ScheduledCommandInfo {
 
 type TriggerScheduledCommands = (request: { typeName: string }) => Promise<void>
 
-export function configureScheduler(config: BoosterConfig, userProject: Record<string, unknown>): void {
+/**
+ * Validates the scheduled commands setup and returns a function that schedules them. The validation runs
+ * immediately, so a missing trigger export fails the provider startup instead of crashing later.
+ */
+export function prepareScheduler(config: BoosterConfig, userProject: Record<string, unknown>): () => void {
   const scheduledCommandInfos = Object.keys(config.scheduledCommandHandlers)
     .map((scheduledCommandName) => buildScheduledCommandInfo(config, scheduledCommandName))
     .filter((scheduledCommandInfo) => scheduledCommandInfo.metadata.scheduledOn)
-  if (scheduledCommandInfos.length === 0) return
+  if (scheduledCommandInfos.length === 0) return () => {}
 
   const triggerScheduledCommands = getTriggerScheduledCommands(userProject)
-  scheduledCommandInfos.forEach((scheduledCommandInfo) => {
-    scheduler.scheduleJob(scheduledCommandInfo.name, createCronExpression(scheduledCommandInfo.metadata), () => {
-      triggerScheduledCommands({ typeName: scheduledCommandInfo.name }).catch((error) =>
-        console.error(`Scheduled command ${scheduledCommandInfo.name} failed:`, error)
-      )
+  return () =>
+    scheduledCommandInfos.forEach((scheduledCommandInfo) => {
+      scheduler.scheduleJob(scheduledCommandInfo.name, createCronExpression(scheduledCommandInfo.metadata), () => {
+        triggerScheduledCommands({ typeName: scheduledCommandInfo.name }).catch((error) =>
+          console.error(`Scheduled command ${scheduledCommandInfo.name} failed:`, error)
+        )
+      })
     })
-  })
 }
 
 /**
