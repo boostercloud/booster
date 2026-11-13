@@ -5,7 +5,7 @@ import * as path from 'path'
 import { requestFailed } from './http'
 import { GraphQLController } from './controllers/graphql'
 import * as cors from 'cors'
-import { configureScheduler } from './scheduler'
+import { prepareScheduler } from './scheduler'
 import { RocketLoader } from '@boostercloud/framework-common-helpers'
 import { InfrastructureRocket } from './infrastructure-rocket'
 import { HealthController } from './controllers/health-controller'
@@ -46,6 +46,8 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       const expressServer = express()
       const router = express.Router()
       const userProject = require(path.join(process.cwd(), 'dist', 'index.js'))
+      // Validate before listening so a misconfigured app rejects `start()` instead of throwing in the callback
+      const startScheduler = prepareScheduler(config, userProject)
       const graphQLService = new GraphQLService(userProject as UserApp)
       const healthService = new HealthService(userProject as UserApp)
       router.use('/sensor/health', new HealthController(healthService).router)
@@ -77,9 +79,7 @@ export const Infrastructure = (rocketDescriptors?: RocketDescriptor[]): Provider
       })
       expressServer.use(router)
       expressServer.use(defaultErrorHandler)
-      expressServer.listen(port, () => {
-        configureScheduler(config, userProject)
-      })
+      expressServer.listen(port, startScheduler)
     },
   }
 }
